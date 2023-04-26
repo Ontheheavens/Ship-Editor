@@ -1,16 +1,11 @@
-package org.example;
+package oth.shipeditor;
 
 /*
  * HelloWorldSwing.java requires no other files.
  */
 
-import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
-import java.awt.image.BufferedImage;
-import java.awt.image.ImageObserver;
-import java.io.File;
-import java.io.IOException;
 
 public class Main {
 
@@ -21,38 +16,17 @@ public class Main {
      */
     private static void createAndShowGUI() {
         //Create and set up the window.
-        JFrame frame = new JFrame("HelloWorldSwing");
+        JFrame frame = new JFrame("Ship Editor");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
         frame.setMinimumSize(new Dimension(640, 480));
         frame.setLocationRelativeTo(null);
+        frame.setLayout(new BorderLayout());
 
         // Create and add the coordinate plane panel to the frame
         CoordinatePlanePanel planePanel = new CoordinatePlanePanel();
 
-        final BufferedImage image;
-
-        @SuppressWarnings("SpellCheckingInspection") String imagePath = "C:\\Games\\msdr_drone_shield.png";
-        try {
-            image = ImageIO.read(new File(imagePath));
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-
-        JPanel pane = new JPanel() {
-            @Override
-            protected void paintComponent(Graphics g) {
-                super.paintComponent(g);
-                float scaleMult = 15f;
-                Image scaled = image.getScaledInstance((int) (image.getWidth() * scaleMult),
-                        (int) (image.getHeight() * scaleMult), 0);
-                g.drawImage(scaled, 0, 0, null);
-            }
-        };
-
-//        frame.getContentPane().add(pane);
-
-        frame.getContentPane().add(planePanel);
+        frame.getContentPane().add(planePanel, BorderLayout.CENTER);
 
         JMenuBar menuBar = new JMenuBar();
         JMenu menu = menuBar.add(new JMenu("TEST"));

@@ -1,114 +1,190 @@
-package org.example;
+package oth.shipeditor;
 
-import javax.imageio.ImageIO;
+import lombok.Getter;
+import oth.shipeditor.components.Axii;
+import oth.shipeditor.components.ShipSprite;
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.awt.image.BufferedImage;
-import java.io.File;
-import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 public class CoordinatePlanePanel extends JPanel {
-    private static final int GRID_SIZE = 1;
-    private static final Color GRID_COLOR = Color.LIGHT_GRAY;
-    private static final Color AXIS_COLOR = Color.BLACK;
-    private static final double ZOOM_FACTOR = 1.2;
+    private static final double ZOOM_FACTOR = 1.25;
+    private static final double MIN_SCALE = 0.25;
+    private static final double MAX_SCALE = 125;
+    @Getter
+    private static CoordinatePlanePanel instance;
 
-    private double originX = 0;
-    private double originY = 0;
     private double scale = 1.0;
+    private ShipSprite sprite;
+    private Axii axii;
+    private boolean pressedRMB;
+
+    private Point shipCenter;
+
+    private List<Point> worldPoints = new ArrayList<>();
+
+    private int offsetX, offsetY;
+    private int panX, panY;
+    private int mouseX, mouseY;
 
     public CoordinatePlanePanel() {
+        instance = this;
         setPreferredSize(new Dimension(640, 480));
-        setBackground(Color.WHITE);
+        setBackground(Color.GRAY);
 
-        // Add mouse listeners for zooming and panning
-        addMouseWheelListener(e -> {
-            double oldScale = scale;
-            if (e.getWheelRotation() < 0) {
+        String imagePath = "C:\\Games\\aeroshuttle_base.png";
+        sprite = new ShipSprite(imagePath, this);
+        axii = new Axii();
+
+        addMouseWheelListener(event -> {
+
+            Point center = this.getCoordinateCenter();
+
+            int eventX = center.x - event.getX();
+            int eventY = center.y - event.getY();
+
+            if (event.getWheelRotation() < 0 && scale < MAX_SCALE) {
                 scale *= ZOOM_FACTOR;
-            } else {
+                offsetX -= eventX / 4;
+                offsetY -= eventY / 4;
+            } else if (event.getWheelRotation() > 0 && scale > MIN_SCALE) {
                 scale /= ZOOM_FACTOR;
+                offsetX += eventX / 5;
+                offsetY += eventY / 5;
             }
-            double factor = scale / oldScale;
-            originX *= factor;
-            originY *= factor;
+            sprite.setScale(scale);
+
             repaint();
         });
 
         addMouseListener(new MouseAdapter() {
-            private int x;
-            private int y;
 
             @Override
-            public void mousePressed(MouseEvent e) {
-                x = e.getX();
-                y = e.getY();
+            public void mousePressed(MouseEvent me) {
+                if(!SwingUtilities.isRightMouseButton(me)){
+                    worldPoints.add(getWorldPoint(me));
+                    return;
+                }
+                pressedRMB = true;
+                super.mousePressed(me);
+                panX = me.getX();
+                panY = me.getY();
+                repaint();
             }
 
             @Override
+            public void mouseReleased(MouseEvent e) {
+                super.mouseReleased(e);
+                if(SwingUtilities.isRightMouseButton(e)){
+                    pressedRMB = false;
+                }
+                repaint();
+            }
+        });
+
+        addMouseMotionListener(new MouseAdapter() {
+            @Override
             public void mouseDragged(MouseEvent e) {
-                int dx = e.getX() - x;
-                int dy = e.getY() - y;
-                originX -= dx / scale;
-                originY -= dy / scale;
-                x = e.getX();
-                y = e.getY();
+                super.mouseDragged(e);
+                if(SwingUtilities.isRightMouseButton(e)){
+                    offsetX -= (e.getX() - panX);
+                    offsetY -= (e.getY() - panY);
+                    mouseX = e.getX();
+                    mouseY = e.getY();
+                    panX = e.getX();
+                    panY = e.getY();
+                    repaint();
+                }
+            }
+
+            @Override
+            public void mouseMoved(MouseEvent e) {
+                super.mouseMoved(e);
+                mouseX = e.getX();
+                mouseY = e.getY();
                 repaint();
             }
         });
     }
 
+    public Point getShipCenter() {
+        if (shipCenter == null) {
+            shipCenter = getCoordinateCenter();
+        }
+        return shipCenter;
+    }
+
+    public Point getCoordinateCenter() {
+        int positionX = (this.getWidth() / 2) - offsetX;
+        int positionY = (this.getHeight() / 2) - offsetY;
+        return new Point(positionX, positionY);
+    }
+
     public void resetZoom() {
-        originX = 0;
-        originY = 0;
         scale = 1.0;
+        sprite.setScale(scale);
+        offsetX = 0;
+        offsetY = 0;
         repaint();
     }
 
     @Override
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
+        sprite.paint(g);
+        axii.paint(g);
+        Graphics2D g2D = (Graphics2D) g;
+        this.drawInfo(g2D);
 
-        final BufferedImage image;
+        int imageWidth = sprite.getImageWidth();
+        int imageHeight = sprite.getImageHeight();
+        Point anchor = sprite.getDefaultImageAnchor();
+        Point cursor = this.getMousePoint();
 
-        @SuppressWarnings("SpellCheckingInspection") String imagePath = "C:\\Games\\msdr_drone_shield.png";
-        try {
-            image = ImageIO.read(new File(imagePath));
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
 
-        Image scaled = image.getScaledInstance((int) (image.getWidth() * scale),
-                (int) (image.getHeight() * scale), 0);
-        g.drawImage(scaled, (int) originX, (int) originY, null);
+        g2D.drawRect((int) (cursor.x - (0.5 * scale)), anchor.y, (int) (1 * scale), imageHeight);
+        g2D.drawRect(anchor.x, (int) (cursor.y - (0.5 * scale)), imageWidth, (int) (1 * scale));
+    }
 
-        Graphics2D g2 = (Graphics2D) g;
-        g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+    public Point getWorldPoint(MouseEvent e) {
+        Point center = getCoordinateCenter();
+        Point mousePoint = e.getPoint();
+        int worldX = (int) ((mousePoint.getX() + center.getX()) * scale);
+        int worldY = (int) ((mousePoint.getY() + center.getY()) * scale);
+        return new Point(worldX, worldY);
+    }
 
-        int width = getWidth();
-        int height = getHeight();
+    public Point getMousePoint() {
+        Point anchor = sprite.getDefaultImageAnchor();
+        // Calculate cursor position relative to anchor.
+        double cursorRelX = (mouseX - anchor.x) / scale;
+        double cursorRelY = (mouseY - anchor.y) / scale;
+        // Align cursor position to nearest 0.5 scaled pixel.
+        double alignedCursorRelX = Math.round(cursorRelX * 2) / 2.0;
+        double alignedCursorRelY = Math.round(cursorRelY * 2) / 2.0;
+        // Calculate cursor position in scaled pixels.
+        int cursorX = (int) (anchor.x + alignedCursorRelX * scale);
+        int cursorY = (int) (anchor.y + alignedCursorRelY * scale);
+        return new Point(cursorX, cursorY);
+    }
 
-        // Draw the x-axis
-        g2.setColor(AXIS_COLOR);
-        g2.drawLine(0, (int) (originY * scale), width, (int) (originY * scale));
+    private void drawInfo(Graphics2D g) {
+        int height = this.getHeight() - 10;
+        Point center = this.getCoordinateCenter();
+        g.setFont(new Font("Orbitron", Font.BOLD, 16));
+        g.drawString((int)(scale * 100) + "%", 10, height);
+        double cursorX = Utility.round(mouseX / scale - center.x / scale, 1);
+        double cursorY = Utility.round(mouseY / scale - center.y / scale, 1);
+        g.drawString(Math.round(cursorX * 2) / 2.0 + "," + Math.round(cursorY * 2) / 2.0, 120, height);
+        g.drawString(String.valueOf(pressedRMB), 240, height);
 
-        // Draw the y-axis
-        g2.drawLine((int) (originX * scale), 0, (int) (originX * scale), height);
-
-        // Draw the grid
-        if (scale > 5) {
-            g2.setColor(GRID_COLOR);
-            for (int x = (int) (originX - width / (2.0 * scale)); x <= originX + width / (scale); x += GRID_SIZE) {
-                g2.drawLine((int) ((x - originX) * scale), 0, (int) ((x - originX) * scale), height);
-            }
-            for (int y = (int) (originY - height / (2.0 * scale)); y <= originY + height / (scale); y += GRID_SIZE) {
-                g2.drawLine(0, (int) ((y - originY) * scale), width, (int) ((y - originY) * scale));
-            }
+        for (Point point : worldPoints) {
+            g.drawOval((int) ((point.x / scale - offsetX)), (int) ((point.y / scale - offsetY)), (int) (1 * scale), (int) (1 * scale));
         }
     }
 
-
 }
-
