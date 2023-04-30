@@ -3,6 +3,8 @@ package oth.shipeditor;
 import de.javagl.viewer.Viewer;
 import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
+import org.kordamp.ikonli.fluentui.FluentUiRegularAL;
+import org.kordamp.ikonli.swing.FontIcon;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
@@ -38,7 +40,7 @@ public class PrimaryMenuBar {
                 "PNG Images", "png");
         chooser.setFileFilter(filter);
 
-        openOption.setIcon(UIManager.getIcon("FileView.directoryIcon"));
+        openOption.setIcon(FontIcon.of(FluentUiRegularAL.FOLDER_OPEN_20, 16));
         openOption.addActionListener(l -> SwingUtilities.invokeLater(() -> {
             int returnVal = chooser.showOpenDialog(parent.getMainFrame());
             if (returnVal == JFileChooser.APPROVE_OPTION) {
@@ -62,22 +64,20 @@ public class PrimaryMenuBar {
         Viewer shipView = parent.getShipView().getViewer();
 
         JMenuItem backgroundColorOption = viewMenu.add(new JMenuItem("Change background color"));
-        backgroundColorOption.addActionListener(l -> {
-            SwingUtilities.invokeLater(() -> {
-                Color chosen = JColorChooser.showDialog(parent.getMainFrame(), "Choose Background", Color.GRAY);
-                shipView.setBackground(chosen);
-                shipView.repaint();
-            });
-        });
+        backgroundColorOption.setIcon(FontIcon.of(FluentUiRegularAL.COLOR_BACKGROUND_20, 16));
+        backgroundColorOption.addActionListener(l -> SwingUtilities.invokeLater(() -> {
+            Color chosen = JColorChooser.showDialog(parent.getMainFrame(), "Choose Background", Color.GRAY);
+            shipView.setBackground(chosen);
+            shipView.repaint();
+        }));
 
         JMenuItem resetTransform = viewMenu.add(new JMenuItem("Reset view transforms"));
-        resetTransform.addActionListener(l -> {
-            SwingUtilities.invokeLater(() -> {
-                shipView.resetTransform();
-                parent.getShipView().getControls().setZoomLevel(1);
-                parent.getShipView().centerViewpoint();
-            });
-        });
+        resetTransform.setIcon(FontIcon.of(FluentUiRegularAL.ARROW_HOOK_UP_LEFT_20, 16));
+        resetTransform.addActionListener(l -> SwingUtilities.invokeLater(() -> {
+            shipView.resetTransform();
+            parent.getShipView().getControls().setZoomLevel(1);
+            parent.getShipView().centerViewpoint();
+        }));
 
         return viewMenu;
     }

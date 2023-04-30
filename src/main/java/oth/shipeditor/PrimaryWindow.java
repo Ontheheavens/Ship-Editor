@@ -19,11 +19,11 @@ public class PrimaryWindow {
     private static final PrimaryWindow instance = new PrimaryWindow();
 
     @Getter
-    private JFrame mainFrame;
+    private final JFrame mainFrame;
     @Getter
-    private ShipViewerPanel shipView;
+    private final ShipViewerPanel shipView;
 
-    private PrimaryMenuBar primaryMenu;
+    private final PrimaryMenuBar primaryMenu;
 
     @Getter
     private ViewerPointsPanel pointsPanel;
