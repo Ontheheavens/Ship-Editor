@@ -36,9 +36,7 @@ public class WorldPoint {
 
     @Override
     public String toString() {
-        return "WorldPoint{" +
-                "position=" + position +
-                '}';
+        return "WorldPoint{" + position.getX() + "," + position.getY() + '}';
     }
 
 }

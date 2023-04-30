@@ -89,8 +89,11 @@ public class ShipViewerControls implements MouseControl {
         }
         Point2D screenPoint = this.getAdjustedCursor();
         AffineTransform screenToWorld = viewer.getScreenToWorld();
-        Point2D worldPoint = screenToWorld.transform(screenPoint, null);
-        WorldPoint wrapped = new WorldPoint(worldPoint);
+        Point2D wP = screenToWorld.transform(screenPoint, null);
+        double roundedX = Math.round(wP.getX() * 2) / 2.0;
+        double roundedY = Math.round(wP.getY() * 2) / 2.0;
+        Point2D.Double rounded = new Point2D.Double(roundedX, roundedY);
+        WorldPoint wrapped = new WorldPoint(rounded);
         PrimaryWindow.getInstance().getPointsPanel().addPoint(wrapped);
         viewer.repaint();
     }

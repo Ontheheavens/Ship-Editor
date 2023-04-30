@@ -4,25 +4,9 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="15e1ddae-a5d1-4957-9383-c162c5526ac0" name="Changes" comment="26.04.23 - working prototype, coordinat. design flaw">
-      <change afterPath="$PROJECT_DIR$/.idea/.name" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/codeStyles/codeStyleConfig.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/oth/shipeditor/PrimaryMenuBar.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/oth/shipeditor/PrimaryWindow.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/oth/shipeditor/components/PointsPainter.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/oth/shipeditor/components/ShipViewerControls.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/oth/shipeditor/components/ShipViewerPanel.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/oth/shipeditor/components/ViewerPointsPanel.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/oth/shipeditor/components/entities/WorldPoint.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/resources/Log4j2.xml" afterDir="false" />
+    <list default="true" id="15e1ddae-a5d1-4957-9383-c162c5526ac0" name="Changes" comment="30.04.23 - JavaGL rewrite, viewer functionality.">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/pom.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/oth/shipeditor/CoordinatePlanePanel.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/oth/shipeditor/Main.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/oth/shipeditor/Main.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/oth/shipeditor/Utility.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/oth/shipeditor/Utility.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/oth/shipeditor/components/Axii.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/oth/shipeditor/components/Paintable.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/oth/shipeditor/components/ShipSprite.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/oth/shipeditor/components/ShipViewerControls.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/oth/shipeditor/components/ShipViewerControls.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -161,7 +145,7 @@
       <workItem from="1682775542719" duration="9587000" />
       <workItem from="1682788422535" duration="65000" />
       <workItem from="1682831680656" duration="488000" />
-      <workItem from="1682832925558" duration="17059000" />
+      <workItem from="1682832925558" duration="18179000" />
     </task>
     <task id="LOCAL-00001" summary="26.04.23 - working prototype, coordinat. design flaw">
       <created>1682499355313</created>
@@ -170,7 +154,14 @@
       <option name="project" value="LOCAL" />
       <updated>1682499355313</updated>
     </task>
-    <option name="localTasksCounter" value="2" />
+    <task id="LOCAL-00002" summary="30.04.23 - JavaGL rewrite, viewer functionality.">
+      <created>1682853284907</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1682853284907</updated>
+    </task>
+    <option name="localTasksCounter" value="3" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -189,7 +180,8 @@
   </component>
   <component name="VcsManagerConfiguration">
     <MESSAGE value="26.04.23 - working prototype, coordinat. design flaw" />
-    <option name="LAST_COMMIT_MESSAGE" value="26.04.23 - working prototype, coordinat. design flaw" />
+    <MESSAGE value="30.04.23 - JavaGL rewrite, viewer functionality." />
+    <option name="LAST_COMMIT_MESSAGE" value="30.04.23 - JavaGL rewrite, viewer functionality." />
   </component>
   <component name="XSLT-Support.FileAssociations.UIState">
     <expand />
