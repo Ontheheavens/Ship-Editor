@@ -30,7 +30,7 @@ public class ShipViewerPanel {
     private Painter guidesPaint;
     private Painter spriteBorderPaint;
     @Getter
-    private PointsPainter pointsPainter;
+    private final PointsPainter pointsPainter;
     @Getter
     private final ShipViewerControls controls;
 
@@ -66,7 +66,6 @@ public class ShipViewerPanel {
             g.drawImage(shipSprite, 0, 0, width, height, null);
             g.setTransform(oldAT);
         };
-        log.info("Adding new ship painter " + spritePainter + ".");
         viewer.addPainter(spritePainter, 2);
         this.shipPaint = spritePainter;
     }

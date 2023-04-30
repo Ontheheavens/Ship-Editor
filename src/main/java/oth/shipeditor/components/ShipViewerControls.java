@@ -30,6 +30,16 @@ public class ShipViewerControls implements MouseControl {
             InputEventPredicates.noModifiers()
     );
 
+    private final Predicate<MouseEvent> createPointPredicate = Predicates.and(
+            InputEventPredicates.buttonDown(1),
+            InputEventPredicates.shiftDown()
+    );
+
+    private final Predicate<MouseEvent> removePointPredicate = Predicates.and(
+            InputEventPredicates.buttonDown(3),
+            InputEventPredicates.shiftDown()
+    );
+
     private final Predicate<MouseEvent> rotatePredicate = InputEventPredicates.controlDown();
 
     /**
@@ -55,8 +65,8 @@ public class ShipViewerControls implements MouseControl {
     @Getter @Setter
     private double zoomLevel = 1;
 
-    public ShipViewerControls(Viewer parent) {
-        this.viewer = parent;
+    public ShipViewerControls(Viewer viewer) {
+        this.viewer = viewer;
     }
 
     @Override
@@ -81,21 +91,34 @@ public class ShipViewerControls implements MouseControl {
     }
 
     @Override
-    public void mousePressed(MouseEvent e)
-    {
+    public void mousePressed(MouseEvent e) {
+        PointsPainter painter  = PrimaryWindow.getInstance().getShipView().getPointsPainter();
         pressPoint.setLocation(e.getPoint());
-        if (!InputEventPredicates.buttonDown(1).test(e)) {
-            return;
+        if (createPointPredicate.test(e)) {
+            Point2D screenPoint = this.getAdjustedCursor();
+            AffineTransform screenToWorld = viewer.getScreenToWorld();
+            Point2D wP = screenToWorld.transform(screenPoint, null);
+            double roundedX = Math.round(wP.getX() * 2) / 2.0;
+            double roundedY = Math.round(wP.getY() * 2) / 2.0;
+            Point2D.Double rounded = new Point2D.Double(roundedX, roundedY);
+            if (!painter.pointAtCoordsExists(rounded)) {
+                WorldPoint wrapped = new WorldPoint(rounded);
+                painter.addPoint(wrapped);
+                viewer.repaint();
+            }
         }
-        Point2D screenPoint = this.getAdjustedCursor();
-        AffineTransform screenToWorld = viewer.getScreenToWorld();
-        Point2D wP = screenToWorld.transform(screenPoint, null);
-        double roundedX = Math.round(wP.getX() * 2) / 2.0;
-        double roundedY = Math.round(wP.getY() * 2) / 2.0;
-        Point2D.Double rounded = new Point2D.Double(roundedX, roundedY);
-        WorldPoint wrapped = new WorldPoint(rounded);
-        PrimaryWindow.getInstance().getPointsPanel().addPoint(wrapped);
-        viewer.repaint();
+        if (removePointPredicate.test(e)) {
+            WorldPoint toRemove = null;
+            for (WorldPoint wPoint : painter.getWorldPoints()) {
+                if (wPoint.isCursorInBounds()) {
+                    toRemove = wPoint;
+                }
+            }
+            if (toRemove != null) {
+                painter.removePoint(toRemove);
+            }
+            viewer.repaint();
+        }
     }
 
     @Override

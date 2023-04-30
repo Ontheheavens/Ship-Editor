@@ -17,24 +17,20 @@ public class PrimaryWindow {
 
     @Getter
     private static final PrimaryWindow instance = new PrimaryWindow();
-
     @Getter
     private final JFrame mainFrame;
     @Getter
-    private final ShipViewerPanel shipView;
-
-    private final PrimaryMenuBar primaryMenu;
-
+    private ShipViewerPanel shipView;
+    @Getter
+    private PrimaryMenuBar primaryMenu;
     @Getter
     private ViewerPointsPanel pointsPanel;
-
-    private final Dimension minimumSize = new Dimension(800, 600);
 
     private PrimaryWindow() {
         mainFrame = new JFrame("Ship Editor");
         mainFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
-        mainFrame.setMinimumSize(minimumSize);
+        mainFrame.setMinimumSize(new Dimension(800, 600));
         mainFrame.setLocationRelativeTo(null);
         mainFrame.getContentPane().setLayout(new BorderLayout());
 
@@ -54,7 +50,9 @@ public class PrimaryWindow {
 
         primaryMenu = new PrimaryMenuBar(this);
         mainFrame.setJMenuBar(primaryMenu.getMenuBar());
+    }
 
+    public void showWindow() {
         mainFrame.pack();
         mainFrame.setVisible(true);
     }
