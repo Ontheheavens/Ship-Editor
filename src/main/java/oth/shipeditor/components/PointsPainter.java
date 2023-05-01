@@ -4,6 +4,7 @@ import de.javagl.viewer.Painter;
 import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
 import oth.shipeditor.PrimaryWindow;
+import oth.shipeditor.Utility;
 import oth.shipeditor.components.entities.BoundPoint;
 import oth.shipeditor.components.entities.WorldPoint;
 
@@ -53,7 +54,7 @@ public class PointsPainter implements Painter {
     public void addPoint(WorldPoint point) {
         SwingUtilities.invokeLater(() -> {
             worldPoints.add(point);
-            getModel().addElement(point);
+            getPointsPanel().getModel().addElement(point);
             delegates.add(point.getPainter());
         });
     }
@@ -61,7 +62,7 @@ public class PointsPainter implements Painter {
     public void removePoint(WorldPoint point) {
         SwingUtilities.invokeLater(() -> {
             worldPoints.remove(point);
-            getModel().removeElement(point);
+            getPointsPanel().getModel().removeElement(point);
             delegates.remove(point.getPainter());
         });
 
@@ -74,24 +75,32 @@ public class PointsPainter implements Painter {
                     .filter(p -> p instanceof BoundPoint)
                     .map(p -> (BoundPoint) p).toList();
             if (bPoints.isEmpty()) return;
-            Color original = g.getColor();
-            g.setColor(Color.BLACK);
+            Stroke origStroke = g.getStroke();
+            Paint origPaint = g.getPaint();
             Point2D prev = worldToScreen.transform(bPoints.get(bPoints.size() - 1).getPosition(), null);
             for (BoundPoint p : bPoints) {
-                Point2D current = worldToScreen.transform(p.getPosition(), null);
-                g.drawLine((int) prev.getX(), (int) prev.getY(), (int) current.getX(), (int) current.getY());
-                prev = current;
+                Point2D curr = worldToScreen.transform(p.getPosition(), null);
+                Utility.drawBorderedLine(g, prev, curr, Color.LIGHT_GRAY);
+                prev = curr;
             }
             // Set the color to white for visual convenience.
-            g.setColor(Color.WHITE);
             Point2D first = worldToScreen.transform(bPoints.get(0).getPosition(), null);
-            g.drawLine((int) prev.getX(), (int) prev.getY(), (int) first.getX(), (int) first.getY());
-            g.setColor(original);
+            Utility.drawBorderedLine(g, prev, first, Color.DARK_GRAY);
+            if (this.getPointsPanel().getMode() == ViewerPointsPanel.PointsMode.CREATE) {
+                ShipViewerPanel viewerPanel = PrimaryWindow.getInstance().getShipView();
+                Point2D cursor = viewerPanel.getControls().getAdjustedCursor();
+                AffineTransform screenToWorld = viewerPanel.getViewer().getScreenToWorld();
+                Point2D adjusted = worldToScreen.transform(Utility.correctAdjustedCursor(cursor, screenToWorld), null);
+                Utility.drawBorderedLine(g, prev, adjusted, Color.WHITE);
+                Utility.drawBorderedLine(g, adjusted, first, Color.WHITE);
+            }
+            g.setStroke(origStroke);
+            g.setPaint(origPaint);
         };
     }
 
-    private DefaultListModel<WorldPoint> getModel() {
-        return PrimaryWindow.getInstance().getPointsPanel().getModel();
+    private ViewerPointsPanel getPointsPanel() {
+        return PrimaryWindow.getInstance().getPointsPanel();
     }
 
     public boolean pointAtCoordsExists(Point2D point2D) {

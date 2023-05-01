@@ -71,11 +71,7 @@ public class WorldPoint {
 
     @Override
     public String toString() {
-        String sel = "";
-        if (selected) {
-            sel = "[S]";
-        }
-        return sel + "WorldP{" + position.getX() + "," + position.getY() + '}';
+        return "WorldP{" + position.getX() + "," + position.getY() + '}';
     }
 
 }

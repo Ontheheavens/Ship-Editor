@@ -26,11 +26,7 @@ public class BoundPoint extends FeaturePoint{
 
     @Override
     public String toString() {
-        String sel = "";
-        if (super.isSelected()) {
-            sel = "[S]";
-        }
-        return sel + "BoundP{" + getPosition().getX() + "," + getPosition().getY() + '}';
+        return "BoundP{" + getPosition().getX() + "," + getPosition().getY() + '}';
     }
 
 }

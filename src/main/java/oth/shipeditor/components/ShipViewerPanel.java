@@ -110,11 +110,10 @@ public class ShipViewerPanel {
             double spriteW = shipSprite.getWidth();
             double spriteH = shipSprite.getHeight();
             Point2D anchor = new Point(0, 0);
-            double halfPixel = 2 / controls.getZoomLevel();
             double xLeft = Math.round((anchor.getX() - 0.5) * 2) / 2.0;
             double yTop = Math.round((anchor.getY() - 0.5) * 2) / 2.0;
-            double xGuide = Math.round((x - 0.5 + halfPixel) * 2) / 2.0;
-            double yGuide = Math.round((y - 0.5 + halfPixel) * 2) / 2.0;
+            double xGuide = Math.round((x - 0.5) * 2) / 2.0;
+            double yGuide = Math.round((y - 0.5) * 2) / 2.0;
 
             Rectangle2D axisX = new Rectangle2D.Double(xLeft + 0.5, yGuide, spriteW, 1);
             Rectangle2D axisY = new Rectangle2D.Double(xGuide, yTop + 0.5, 1, spriteH);
