@@ -3,6 +3,7 @@ package oth.shipeditor;
 import lombok.Getter;
 import oth.shipeditor.components.ShipViewerPanel;
 import oth.shipeditor.components.ViewerPointsPanel;
+import oth.shipeditor.components.ViewerStatusPanel;
 
 import javax.swing.*;
 import java.awt.*;
@@ -25,6 +26,10 @@ public class PrimaryWindow {
     private final PrimaryMenuBar primaryMenu;
     @Getter
     private final ViewerPointsPanel pointsPanel;
+    private final JPanel southPane;
+
+    @Getter
+    private final ViewerStatusPanel statusPanel;
 
     private PrimaryWindow() {
         mainFrame = new JFrame("Ship Editor");
@@ -36,12 +41,10 @@ public class PrimaryWindow {
 
         shipView = new ShipViewerPanel();
         shipView.getViewer().setBackground(Color.GRAY);
-
         mainFrame.getContentPane().add(shipView.getViewer(), BorderLayout.CENTER);
 
         pointsPanel = new ViewerPointsPanel();
         mainFrame.getContentPane().add(pointsPanel, BorderLayout.EAST);
-
         mainFrame.addComponentListener(new ComponentAdapter(){
             public void componentResized(ComponentEvent e){
                 shipView.centerViewpoint();
@@ -50,6 +53,14 @@ public class PrimaryWindow {
 
         primaryMenu = new PrimaryMenuBar(this);
         mainFrame.setJMenuBar(primaryMenu.getMenuBar());
+
+        southPane = new JPanel();
+        southPane.setLayout(new GridLayout());
+        statusPanel = new ViewerStatusPanel();
+        statusPanel.setDimensionsLabelString(shipView.getShipSprite());
+        statusPanel.setLayout(new FlowLayout(FlowLayout.LEADING));
+        southPane.add(statusPanel);
+        mainFrame.getContentPane().add(southPane, BorderLayout.SOUTH);
     }
 
     public void showWindow() {

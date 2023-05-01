@@ -10,6 +10,7 @@ import javax.imageio.ImageIO;
 import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.*;
+import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 
@@ -46,7 +47,9 @@ public class PrimaryMenuBar {
             if (returnVal == JFileChooser.APPROVE_OPTION) {
                 File file = chooser.getSelectedFile();
                 try {
-                    parent.getShipView().setShipSprite(ImageIO.read(file));
+                    BufferedImage sprite = ImageIO.read(file);
+                    parent.getShipView().setShipSprite(sprite);
+                    parent.getStatusPanel().setDimensionsLabelString(sprite);
                 } catch (IOException ex) {
                     throw new RuntimeException(ex);
                 }
