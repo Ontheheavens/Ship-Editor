@@ -7,8 +7,10 @@ import de.javagl.viewer.Viewer;
 import lombok.Getter;
 import lombok.Setter;
 import oth.shipeditor.PrimaryWindow;
+import oth.shipeditor.components.entities.BoundPoint;
 import oth.shipeditor.components.entities.WorldPoint;
 
+import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseWheelEvent;
@@ -27,6 +29,11 @@ public class ShipViewerControls implements MouseControl {
 
     private final Predicate<MouseEvent> translatePredicate = Predicates.and(
             InputEventPredicates.buttonDown(3),
+            InputEventPredicates.noModifiers()
+    );
+
+    private final Predicate<MouseEvent> selectPointPredicate = Predicates.and(
+            InputEventPredicates.buttonDown(1),
             InputEventPredicates.noModifiers()
     );
 
@@ -62,11 +69,21 @@ public class ShipViewerControls implements MouseControl {
 
     private final double rotationSpeed = 0.4;
 
+    private WorldPoint selected;
+
     @Getter @Setter
     private double zoomLevel = 1;
 
     public ShipViewerControls(Viewer viewer) {
         this.viewer = viewer;
+    }
+
+    private void repaintPointsPanel() {
+        SwingUtilities.invokeLater(() -> PrimaryWindow.getInstance().getPointsPanel().repaint());
+    }
+
+    private PointsPainter getPointsPaint() {
+        return PrimaryWindow.getInstance().getShipView().getPointsPainter();
     }
 
     @Override
@@ -92,7 +109,7 @@ public class ShipViewerControls implements MouseControl {
 
     @Override
     public void mousePressed(MouseEvent e) {
-        PointsPainter painter  = PrimaryWindow.getInstance().getShipView().getPointsPainter();
+        PointsPainter painter  = getPointsPaint();
         pressPoint.setLocation(e.getPoint());
         if (createPointPredicate.test(e)) {
             Point2D screenPoint = this.getAdjustedCursor();
@@ -102,23 +119,48 @@ public class ShipViewerControls implements MouseControl {
             double roundedY = Math.round(wP.getY() * 2) / 2.0;
             Point2D.Double rounded = new Point2D.Double(roundedX, roundedY);
             if (!painter.pointAtCoordsExists(rounded)) {
-                WorldPoint wrapped = new WorldPoint(rounded);
+                WorldPoint wrapped = new BoundPoint(rounded);
                 painter.addPoint(wrapped);
                 viewer.repaint();
             }
         }
         if (removePointPredicate.test(e)) {
-            WorldPoint toRemove = null;
-            for (WorldPoint wPoint : painter.getWorldPoints()) {
-                if (wPoint.isCursorInBounds()) {
-                    toRemove = wPoint;
-                }
-            }
+            WorldPoint toRemove = this.getMousedOver();
             if (toRemove != null) {
                 painter.removePoint(toRemove);
             }
             viewer.repaint();
         }
+        if (selectPointPredicate.test(e)) {
+            if (mousedOverPoint()) {
+                if (this.selected != null) {
+                    this.selected.setSelected(false);
+                }
+                this.selected = this.getMousedOver();
+                this.selected.setSelected(true);
+                viewer.repaint();
+            } else if (this.selected != null) {
+                this.selected.setSelected(false);
+                this.selected = null;
+                viewer.repaint();
+            }
+        }
+        repaintPointsPanel();
+    }
+
+    private boolean mousedOverPoint() {
+        return this.getMousedOver() != null;
+    }
+
+    private WorldPoint getMousedOver() {
+        PointsPainter painter  = getPointsPaint();
+        WorldPoint mousedOver = null;
+        for (WorldPoint wPoint : painter.getWorldPoints()) {
+            if (wPoint.isCursorInBounds()) {
+                mousedOver = wPoint;
+            }
+        }
+        return mousedOver;
     }
 
     @Override
@@ -137,12 +179,19 @@ public class ShipViewerControls implements MouseControl {
     }
 
     @Override
-    public void mouseDragged(MouseEvent e)
-    {
+    public void mouseDragged(MouseEvent e) {
         if (translatePredicate.test(e)) {
             int dx = e.getX() - previousPoint.x;
             int dy = e.getY() - previousPoint.y;
             viewer.translate(dx, dy);
+        }
+        if (selectPointPredicate.test(e) && selected != null) {
+            Point2D translated = viewer.getScreenToWorld().transform(getAdjustedCursor(), null);
+            double roundedX = Math.round(translated.getX() * 2) / 2.0;
+            double roundedY = Math.round(translated.getY() * 2) / 2.0;
+            this.selected.movePosition(roundedX, roundedY);
+            viewer.repaint();
+            repaintPointsPanel();
         }
         previousPoint.setLocation(e.getX(), e.getY());
         mousePoint = e.getPoint();

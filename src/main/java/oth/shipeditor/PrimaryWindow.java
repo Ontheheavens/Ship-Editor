@@ -20,11 +20,11 @@ public class PrimaryWindow {
     @Getter
     private final JFrame mainFrame;
     @Getter
-    private ShipViewerPanel shipView;
+    private final ShipViewerPanel shipView;
     @Getter
-    private PrimaryMenuBar primaryMenu;
+    private final PrimaryMenuBar primaryMenu;
     @Getter
-    private ViewerPointsPanel pointsPanel;
+    private final ViewerPointsPanel pointsPanel;
 
     private PrimaryWindow() {
         mainFrame = new JFrame("Ship Editor");
@@ -39,7 +39,7 @@ public class PrimaryWindow {
 
         mainFrame.getContentPane().add(shipView.getViewer(), BorderLayout.CENTER);
 
-        pointsPanel = new ViewerPointsPanel(shipView);
+        pointsPanel = new ViewerPointsPanel();
         mainFrame.getContentPane().add(pointsPanel, BorderLayout.EAST);
 
         mainFrame.addComponentListener(new ComponentAdapter(){

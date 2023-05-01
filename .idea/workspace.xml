@@ -4,13 +4,14 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="15e1ddae-a5d1-4957-9383-c162c5526ac0" name="Changes" comment="30.04.23 - Import FluentUI icons.">
+    <list default="true" id="15e1ddae-a5d1-4957-9383-c162c5526ac0" name="Changes" comment="30.04.23 - PointsPainter refactor.">
+      <change afterPath="$PROJECT_DIR$/src/main/java/oth/shipeditor/components/entities/BoundPoint.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/oth/shipeditor/components/entities/FeaturePoint.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/oth/shipeditor/Main.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/oth/shipeditor/Main.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/oth/shipeditor/PrimaryMenuBar.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/oth/shipeditor/PrimaryMenuBar.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/oth/shipeditor/PrimaryWindow.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/oth/shipeditor/PrimaryWindow.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/oth/shipeditor/components/PointsPainter.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/oth/shipeditor/components/PointsPainter.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/oth/shipeditor/components/ShipViewerControls.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/oth/shipeditor/components/ShipViewerControls.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/oth/shipeditor/components/ShipViewerPanel.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/oth/shipeditor/components/ShipViewerPanel.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/oth/shipeditor/components/ViewerPointsPanel.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/oth/shipeditor/components/ViewerPointsPanel.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/oth/shipeditor/components/entities/WorldPoint.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/oth/shipeditor/components/entities/WorldPoint.java" afterDir="false" />
     </list>
@@ -62,7 +63,7 @@
     &quot;project.structure.last.edited&quot;: &quot;Modules&quot;,
     &quot;project.structure.proportion&quot;: &quot;0.15&quot;,
     &quot;project.structure.side.proportion&quot;: &quot;0.31609195&quot;,
-    &quot;settings.editor.selected.configurable&quot;: &quot;preferences.sourceCode.Java&quot;
+    &quot;settings.editor.selected.configurable&quot;: &quot;profiler.jvm&quot;
   }
 }</component>
   <component name="RunManager">
@@ -135,7 +136,10 @@
       <workItem from="1682831680656" duration="488000" />
       <workItem from="1682832925558" duration="22892000" />
       <workItem from="1682863393945" duration="2356000" />
-      <workItem from="1682867969482" duration="4417000" />
+      <workItem from="1682867969482" duration="5409000" />
+      <workItem from="1682878260076" duration="2333000" />
+      <workItem from="1682917419267" duration="2597000" />
+      <workItem from="1682922018780" duration="13880000" />
     </task>
     <task id="LOCAL-00001" summary="26.04.23 - working prototype, coordinat. design flaw">
       <created>1682499355313</created>
@@ -165,7 +169,14 @@
       <option name="project" value="LOCAL" />
       <updated>1682862699460</updated>
     </task>
-    <option name="localTasksCounter" value="5" />
+    <task id="LOCAL-00005" summary="30.04.23 - PointsPainter refactor.">
+      <created>1682872524229</created>
+      <option name="number" value="00005" />
+      <option name="presentableId" value="LOCAL-00005" />
+      <option name="project" value="LOCAL" />
+      <updated>1682872524229</updated>
+    </task>
+    <option name="localTasksCounter" value="6" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -187,7 +198,8 @@
     <MESSAGE value="30.04.23 - JavaGL rewrite, viewer functionality." />
     <MESSAGE value="30.04.23 - WorldPoints proper rounding." />
     <MESSAGE value="30.04.23 - Import FluentUI icons." />
-    <option name="LAST_COMMIT_MESSAGE" value="30.04.23 - Import FluentUI icons." />
+    <MESSAGE value="30.04.23 - PointsPainter refactor." />
+    <option name="LAST_COMMIT_MESSAGE" value="30.04.23 - PointsPainter refactor." />
   </component>
   <component name="XSLT-Support.FileAssociations.UIState">
     <expand />
