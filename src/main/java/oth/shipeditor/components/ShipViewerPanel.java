@@ -36,6 +36,7 @@ public class ShipViewerPanel {
 
     public ShipViewerPanel() {
         viewer = new Viewer();
+
         controls = new ShipViewerControls(viewer);
         viewer.setMouseControl(controls);
         String imagePath = "C:\\Games\\legion_xiv.png";

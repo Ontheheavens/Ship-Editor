@@ -10,6 +10,7 @@ import oth.shipeditor.components.entities.WorldPoint;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.KeyEvent;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Point2D;
 import java.util.ArrayList;
@@ -33,6 +34,9 @@ public class PointsPainter implements Painter {
      */
     private final AffineTransform delegateWorldToScreen;
 
+    private boolean createBoundHotkeyPressed = false;
+    private final int createBoundHotkey = KeyEvent.VK_SHIFT;
+
     {
         SwingUtilities.invokeLater(new Runnable() {
         @Override
@@ -49,6 +53,27 @@ public class PointsPainter implements Painter {
         this.delegates = new ArrayList<>();
         this.worldPoints = new ArrayList<>();
         this.delegateWorldToScreen = new AffineTransform();
+        KeyboardFocusManager.getCurrentKeyboardFocusManager().addKeyEventDispatcher(ke -> {
+                switch (ke.getID()) {
+                    case KeyEvent.KEY_PRESSED:
+                        if (ke.getKeyCode() == createBoundHotkey) {
+                            createBoundHotkeyPressed = true;
+                            repaintViewer();
+                        }
+                        break;
+                    case KeyEvent.KEY_RELEASED:
+                        if (ke.getKeyCode() == createBoundHotkey) {
+                            createBoundHotkeyPressed = false;
+                            repaintViewer();
+                        }
+                        break;
+                }
+                return false;
+            });
+    }
+
+    private void repaintViewer() {
+        PrimaryWindow.getInstance().getShipView().getViewer().repaint();
     }
 
     public void addPoint(WorldPoint point) {
@@ -86,8 +111,8 @@ public class PointsPainter implements Painter {
             // Set the color to white for visual convenience.
             Point2D first = worldToScreen.transform(bPoints.get(0).getPosition(), null);
             Utility.drawBorderedLine(g, prev, first, Color.DARK_GRAY);
-            if (this.getPointsPanel().getMode() == ViewerPointsPanel.PointsMode.CREATE) {
-                ShipViewerPanel viewerPanel = PrimaryWindow.getInstance().getShipView();
+            ShipViewerPanel viewerPanel = PrimaryWindow.getInstance().getShipView();
+            if (this.getPointsPanel().getMode() == ViewerPointsPanel.PointsMode.CREATE && createBoundHotkeyPressed) {
                 Point2D cursor = viewerPanel.getControls().getAdjustedCursor();
                 AffineTransform screenToWorld = viewerPanel.getViewer().getScreenToWorld();
                 Point2D adjusted = worldToScreen.transform(Utility.correctAdjustedCursor(cursor, screenToWorld), null);

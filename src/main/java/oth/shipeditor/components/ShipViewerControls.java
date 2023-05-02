@@ -23,7 +23,7 @@ import java.util.function.Predicate;
  * @author Ontheheavens
  * @since 29.04.2023
  */
-@SuppressWarnings("FieldCanBeLocal")
+
 public class ShipViewerControls implements MouseControl {
 
     private final Viewer viewer;
@@ -63,17 +63,18 @@ public class ShipViewerControls implements MouseControl {
     @Getter
     private Point mousePoint = new Point();
 
+    public static final double ZOOMING_SPEED = 0.15;
+
+    public static final double ROTATION_SPEED = 0.4;
+
     /**
-     * Current zooming speed
+     * Is functionally connected to boolean flag in point instance,
+     * and to JList selection in points panel.
      */
-    private final double zoomingSpeed = 0.15;
-
-    private final double rotationSpeed = 0.4;
-
     @Getter @Setter
     private WorldPoint selected;
 
-    @Getter @Setter
+    @Getter
     private double zoomLevel = 1;
 
     public ShipViewerControls(Viewer viewer) {
@@ -81,7 +82,7 @@ public class ShipViewerControls implements MouseControl {
     }
 
     private void repaintPointsPanel() {
-        SwingUtilities.invokeLater(() -> PrimaryWindow.getInstance().getPointsPanel().repaint());
+        SwingUtilities.invokeLater(() -> getPointsPanel().repaint());
     }
 
     private PointsPainter getPointsPaint() {
@@ -134,20 +135,22 @@ public class ShipViewerControls implements MouseControl {
             }
             viewer.repaint();
         }
-        if (selectPointPredicate.test(e) && getPointsPanel().getMode() == ViewerPointsPanel.PointsMode.SELECT) {
-            ViewerPointsPanel viewerPointsPanel = PrimaryWindow.getInstance().getPointsPanel();
+        boolean selectingModes = getPointsPanel().getMode() == ViewerPointsPanel.PointsMode.SELECT ||
+                getPointsPanel().getMode() == ViewerPointsPanel.PointsMode.CREATE;
+        if (selectPointPredicate.test(e) && selectingModes) {
+            JList<WorldPoint> pointList = getPointsPanel().getPointContainer();
             if (mousedOverPoint()) {
                 if (this.selected != null) {
                     this.selected.setSelected(false);
                 }
                 this.selected = this.getMousedOver();
-                viewerPointsPanel.getPointContainer().setSelectedValue(this.selected, true);
+                pointList.setSelectedValue(this.selected, true);
                 this.selected.setSelected(true);
                 viewer.repaint();
             } else if (this.selected != null) {
                 this.selected.setSelected(false);
                 this.selected = null;
-                viewerPointsPanel.getPointContainer().setSelectedValue(null, true);
+                pointList.setSelectedValue(null, true);
                 viewer.repaint();
             }
         }
@@ -191,8 +194,9 @@ public class ShipViewerControls implements MouseControl {
             int dy = e.getY() - previousPoint.y;
             viewer.translate(dx, dy);
         }
-        if (selectPointPredicate.test(e) && selected != null
-                && getPointsPanel().getMode() == ViewerPointsPanel.PointsMode.SELECT) {
+        boolean draggingModes = getPointsPanel().getMode() == ViewerPointsPanel.PointsMode.SELECT ||
+                getPointsPanel().getMode() == ViewerPointsPanel.PointsMode.CREATE;
+        if (selectPointPredicate.test(e) && selected != null && draggingModes) {
             Point2D translated = viewer.getScreenToWorld().transform(getAdjustedCursor(), null);
             double roundedX = Math.round(translated.getX() * 2) / 2.0;
             double roundedY = Math.round(translated.getY() * 2) / 2.0;
@@ -202,6 +206,7 @@ public class ShipViewerControls implements MouseControl {
         }
         previousPoint.setLocation(e.getX(), e.getY());
         mousePoint = e.getPoint();
+        this.sendAdjustedCursorToStatus();
     }
 
     @Override
@@ -212,20 +217,47 @@ public class ShipViewerControls implements MouseControl {
             int dy = e.getY() - previousPoint.y;
             viewer.rotate(
                     pressPoint.x, pressPoint.y,
-                    Math.toRadians(dy)*rotationSpeed);
+                    Math.toRadians(dy)* ROTATION_SPEED);
         }
         previousPoint.setLocation(e.getX(), e.getY());
         viewer.repaint();
+        this.sendAdjustedCursorToStatus();
+    }
+
+    private void sendAdjustedCursorToStatus() {
+        SwingUtilities.invokeLater(() -> {
+            AffineTransform screenToWorld = viewer.getScreenToWorld();
+            Point2D adjustedCursor = Utility.correctAdjustedCursor(getAdjustedCursor(), screenToWorld);
+            PrimaryWindow.getInstance().getStatusPanel().setCursorCoordsLabel(adjustedCursor);
+        });
     }
 
     @Override
-    public void mouseWheelMoved(MouseWheelEvent e)
-    {
-        double d = Math.pow(1+zoomingSpeed, -e.getWheelRotation())-1;
+    public void mouseWheelMoved(MouseWheelEvent e) {
+        // Calculate the zoom factor - sign of wheel rotation argument determines the direction.
+        double d = Math.pow(1 + ZOOMING_SPEED, -e.getWheelRotation()) - 1;
         double factor = 1.0 + d;
-        if ((zoomLevel > 1200 && factor > 1 ) || (zoomLevel < 0.2 && factor < 1)) return;
-        viewer.zoom(e.getX(), e.getY(), factor, factor);
-        zoomLevel *= factor;
+        double max = 1200;
+        double min = 0.2;
+        if (zoomLevel * factor >= max) {
+            this.setZoomAtLimit(e.getX(), e.getY(), max);
+        } else if (zoomLevel * factor <= min) {
+            this.setZoomAtLimit(e.getX(), e.getY(), min);
+        } else {
+            viewer.zoom(e.getX(), e.getY(), factor, factor);
+            this.setZoomLevel(zoomLevel * factor);
+        }
+    }
+
+    private void setZoomAtLimit(int x, int y, double limit) {
+        double factor = limit / zoomLevel;
+        viewer.zoom(x, y, factor, factor);
+        this.setZoomLevel(limit);
+    }
+
+    public void setZoomLevel(double zoomLevel) {
+        this.zoomLevel = zoomLevel;
+        SwingUtilities.invokeLater(() -> PrimaryWindow.getInstance().getStatusPanel().setZoomLabel(zoomLevel));
     }
 
 }

@@ -26,6 +26,7 @@ public class PrimaryWindow {
     private final PrimaryMenuBar primaryMenu;
     @Getter
     private final ViewerPointsPanel pointsPanel;
+    @SuppressWarnings("FieldCanBeLocal")
     private final JPanel southPane;
 
     @Getter
@@ -46,6 +47,7 @@ public class PrimaryWindow {
         pointsPanel = new ViewerPointsPanel();
         mainFrame.getContentPane().add(pointsPanel, BorderLayout.EAST);
         mainFrame.addComponentListener(new ComponentAdapter(){
+            @Override
             public void componentResized(ComponentEvent e){
                 shipView.centerViewpoint();
             }
@@ -57,7 +59,6 @@ public class PrimaryWindow {
         southPane = new JPanel();
         southPane.setLayout(new GridLayout());
         statusPanel = new ViewerStatusPanel();
-        statusPanel.setDimensionsLabelString(shipView.getShipSprite());
         statusPanel.setLayout(new FlowLayout(FlowLayout.LEADING));
         southPane.add(statusPanel);
         mainFrame.getContentPane().add(southPane, BorderLayout.SOUTH);

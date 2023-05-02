@@ -49,7 +49,7 @@ public class PrimaryMenuBar {
                 try {
                     BufferedImage sprite = ImageIO.read(file);
                     parent.getShipView().setShipSprite(sprite);
-                    parent.getStatusPanel().setDimensionsLabelString(sprite);
+                    parent.getStatusPanel().setDimensionsLabel(sprite);
                 } catch (IOException ex) {
                     throw new RuntimeException(ex);
                 }

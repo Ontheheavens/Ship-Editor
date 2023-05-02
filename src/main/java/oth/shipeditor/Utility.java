@@ -1,5 +1,6 @@
 package oth.shipeditor;
 
+import javax.swing.*;
 import java.awt.*;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Point2D;
@@ -33,6 +34,12 @@ public class Utility {
         double roundedX = Math.round(wP.getX() * 2) / 2.0;
         double roundedY = Math.round(wP.getY() * 2) / 2.0;
         return new Point2D.Double(roundedX, roundedY);
+    }
+
+    public static JSeparator clone(JSeparator original) {
+        JSeparator copy = new JSeparator(original.getOrientation());
+        copy.setPreferredSize(original.getPreferredSize());
+        return copy;
     }
 
 }
