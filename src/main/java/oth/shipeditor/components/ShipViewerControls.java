@@ -6,6 +6,7 @@ import de.javagl.viewer.Predicates;
 import de.javagl.viewer.Viewer;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.extern.log4j.Log4j2;
 import oth.shipeditor.PrimaryWindow;
 import oth.shipeditor.Utility;
 import oth.shipeditor.components.entities.BoundPoint;
@@ -25,6 +26,7 @@ import java.util.function.Predicate;
  * @since 29.04.2023
  */
 
+@Log4j2
 public class ShipViewerControls implements MouseControl {
 
     private final Viewer viewer;
@@ -138,13 +140,17 @@ public class ShipViewerControls implements MouseControl {
                     viewer.repaint();
                 } else if (insertPointPredicate.test(e)) {
                     List<BoundPoint> twoClosest = painter.findClosestBoundPoints(rounded);
-                    List<WorldPoint> allPoints = painter.getWorldPoints();
-                    BoundPoint preceding = (BoundPoint) allPoints.get(painter.getLowestBoundPointIndex(twoClosest) + 1);
+                    List<BoundPoint> allPoints = painter.getBoundPoints();
+                    int index = painter.getLowestBoundPointIndex(twoClosest);
+                    if (index >= 0) index += 1;
+                    if (index > allPoints.size() - 1) index = 0;
+                    if (painter.getHighestBoundPointIndex(twoClosest) == allPoints.size() - 1 &&
+                            painter.getLowestBoundPointIndex(twoClosest) == 0) index = 0;
+                    BoundPoint preceding = painter.getBoundPoints().get(index);
                     BoundPoint wrapped = new BoundPoint(rounded);
                     painter.insertPoint(wrapped, preceding);
                     viewer.repaint();
                 }
-
             }
         }
         if (removePointPredicate.test(e)) {

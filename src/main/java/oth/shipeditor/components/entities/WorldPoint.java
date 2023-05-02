@@ -36,14 +36,9 @@ public class WorldPoint {
     }
 
     public double distance(Point2D other) {
-        Point2D thisPoint = this.getPosition();
-        double x1 = thisPoint.getX();
-        double y1 = thisPoint.getY();
-        double x2 = other.getX();
-        double y2 = other.getY();
-        double dx = x2 - x1;
-        double dy = y2 - y1;
-        return Math.sqrt(dx * dx + dy * dy);
+        double dx = other.getX() - this.getPosition().getX();
+        double dy = other.getY() - this.getPosition().getY();
+        return Math.hypot(dx, dy);
     }
 
     protected Painter getPointPainter() {
@@ -82,7 +77,7 @@ public class WorldPoint {
 
     @Override
     public String toString() {
-        return "WorldP{" + position.getX() + "," + position.getY() + '}';
+        return "Point {" + position.getX() + "," + position.getY() + '}';
     }
 
 }

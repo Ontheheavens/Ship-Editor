@@ -12,9 +12,9 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.awt.geom.AffineTransform;
+import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
 import java.util.ArrayList;
-import java.util.LinkedList;
 import java.util.List;
 
 /**
@@ -23,11 +23,8 @@ import java.util.List;
  */
 @Log4j2
 public class PointsPainter implements Painter {
-
     @Getter
     private final List<WorldPoint> worldPoints;
-
-    private final List<BoundPoint> boundPoints;
     @Getter
     private final List<Painter> delegates;
 
@@ -57,7 +54,6 @@ public class PointsPainter implements Painter {
     public PointsPainter() {
         this.delegates = new ArrayList<>();
         this.worldPoints = new ArrayList<>();
-        this.boundPoints = new LinkedList<>();
         this.delegateWorldToScreen = new AffineTransform();
         KeyboardFocusManager.getCurrentKeyboardFocusManager().addKeyEventDispatcher(ke -> {
             switch (ke.getID()) {
@@ -110,35 +106,22 @@ public class PointsPainter implements Painter {
     }
 
     public List<BoundPoint> findClosestBoundPoints(Point2D cursor) {
-        List<BoundPoint> boundPoints = this.getBoundPoints();
+        List<BoundPoint> boundPoints = new ArrayList<>(getBoundPoints());
+        boundPoints.add(boundPoints.get(0)); // Add first point to end of list.
         BoundPoint closestPoint1 = boundPoints.get(0);
         BoundPoint closestPoint2 = boundPoints.get(1);
-
-        double dist1 = closestPoint1.distance(cursor);
-        double dist2 = closestPoint2.distance(cursor);
-        if (dist2 < dist1) {
-            BoundPoint tmp = closestPoint1;
-            closestPoint1 = closestPoint2;
-            closestPoint2 = tmp;
-            double tmpDist = dist1;
-            dist1 = dist2;
-            dist2 = tmpDist;
-        }
-
-        for (int i = 2; i < boundPoints.size(); i++) {
+        double minDist = Double.MAX_VALUE;
+        for (int i = 0; i < boundPoints.size() - 1; i++) {
             BoundPoint currentPoint = boundPoints.get(i);
-            double dist = currentPoint.distance(cursor);
-            if (dist < dist1) {
-                closestPoint2 = closestPoint1;
+            BoundPoint nextPoint = boundPoints.get(i+1);
+            Line2D segment = new Line2D.Double(currentPoint.getPosition(), nextPoint.getPosition());
+            double dist = segment.ptSegDist(cursor);
+            if (dist < minDist) {
                 closestPoint1 = currentPoint;
-                dist2 = dist1;
-                dist1 = dist;
-            } else if (dist < dist2) {
-                closestPoint2 = currentPoint;
-                dist2 = dist;
+                closestPoint2 = nextPoint;
+                minDist = dist;
             }
         }
-
         List<BoundPoint> closestPoints = new ArrayList<>(2);
         closestPoints.add(closestPoint1);
         closestPoints.add(closestPoint2);
@@ -146,9 +129,15 @@ public class PointsPainter implements Painter {
     }
 
     public int getLowestBoundPointIndex(List<BoundPoint> closestPoints) {
-        int index1 = worldPoints.indexOf(closestPoints.get(0));
-        int index2 = worldPoints.indexOf(closestPoints.get(1));
+        int index1 = getBoundPoints().indexOf(closestPoints.get(0));
+        int index2 = getBoundPoints().indexOf(closestPoints.get(1));
         return Math.min(index1, index2);
+    }
+
+    public int getHighestBoundPointIndex(List<BoundPoint> closestPoints) {
+        int index1 = getBoundPoints().indexOf(closestPoints.get(0));
+        int index2 = getBoundPoints().indexOf(closestPoints.get(1));
+        return Math.max(index1, index2);
     }
 
     public void removePoint(WorldPoint point) {
@@ -160,7 +149,7 @@ public class PointsPainter implements Painter {
 
     }
 
-    private List<BoundPoint> getBoundPoints() {
+    public List<BoundPoint> getBoundPoints() {
         return worldPoints.stream().filter(p -> p instanceof BoundPoint).map(p -> (BoundPoint) p).toList();
     }
 
@@ -188,9 +177,10 @@ public class PointsPainter implements Painter {
                     Utility.drawBorderedLine(g, prev, adjusted, Color.WHITE);
                     Utility.drawBorderedLine(g, adjusted, first, Color.WHITE);
                 } else if (insertBoundHotkeyPressed) {
-                    List<BoundPoint> closest = this.findClosestBoundPoints(adjusted);
-                    Point2D preceding = worldToScreen.transform(closest.get(0).getPosition(), null);
-                    Point2D subsequent = worldToScreen.transform(closest.get(1).getPosition(), null);
+                    cursor = screenToWorld.transform(adjusted, null);
+                    List<BoundPoint> closest = this.findClosestBoundPoints(cursor);
+                    Point2D preceding = worldToScreen.transform(closest.get(1).getPosition(), null);
+                    Point2D subsequent = worldToScreen.transform(closest.get(0).getPosition(), null);
                     Utility.drawBorderedLine(g, preceding, adjusted, Color.WHITE);
                     Utility.drawBorderedLine(g, subsequent, adjusted, Color.WHITE);
                 }
