@@ -71,7 +71,7 @@ public class ShipViewerPanel {
         this.shipPaint = spritePainter;
     }
 
-    private Point getSpriteCenter() {
+    public Point getSpriteCenter() {
         return new Point(shipSprite.getWidth() / 2, shipSprite.getHeight() / 2);
     }
 

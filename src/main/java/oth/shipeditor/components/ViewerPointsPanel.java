@@ -20,8 +20,8 @@ import java.awt.geom.Point2D;
  * @since 30.04.2023
  */
 public class ViewerPointsPanel extends JPanel {
-    enum PointsMode {
-        DISABlED, SELECT, CREATE
+    public enum PointsMode {
+        DISABLED, SELECT, CREATE
     }
     @Getter
     private final JList<WorldPoint> pointContainer;
@@ -29,6 +29,10 @@ public class ViewerPointsPanel extends JPanel {
     private PointsMode mode;
     @Getter
     private final DefaultListModel<WorldPoint> model = new DefaultListModel<>();
+    @Getter
+    private JToggleButton selectModeButton;
+    @Getter
+    private JToggleButton createModeButton;
 
     static {
         SwingUtilities.invokeLater(() -> {
@@ -67,11 +71,11 @@ public class ViewerPointsPanel extends JPanel {
         this.add(modePanel, BorderLayout.NORTH);
         Border line = BorderFactory.createLineBorder(Color.DARK_GRAY);
         this.setBorder(line);
-        this.setMode(PointsMode.DISABlED);
+        this.setMode(PointsMode.DISABLED);
     }
 
     private void createModeButtons(JPanel modePanel) {
-        JToggleButton selectModeButton = new JToggleButton(FontIcon.of(FluentUiRegularMZ.SELECT_OBJECT_20, 16));
+        selectModeButton = new JToggleButton(FontIcon.of(FluentUiRegularMZ.SELECT_OBJECT_20, 16));
         selectModeButton.setToolTipText("Select, move and delete.");
         selectModeButton.addItemListener(ev -> {
             if (ev.getStateChange() == ItemEvent.SELECTED) {
@@ -79,11 +83,12 @@ public class ViewerPointsPanel extends JPanel {
             }
         });
         modePanel.add(selectModeButton);
-        JToggleButton createModeButton = new JToggleButton(FontIcon.of(FluentUiRegularAL.ADD_CIRCLE_20, 16));
+        createModeButton = new JToggleButton(FontIcon.of(FluentUiRegularAL.ADD_CIRCLE_20, 16));
         createModeButton.setToolTipText("Create new points.");
         createModeButton.addItemListener(ev -> {
             if (ev.getStateChange() == ItemEvent.SELECTED) {
                 this.setMode(PointsMode.CREATE);
+                PrimaryWindow.getInstance().getPrimaryMenu().toggleRotationFromMenu(false);
             }
         });
         modePanel.add(createModeButton);
@@ -93,7 +98,5 @@ public class ViewerPointsPanel extends JPanel {
         selectModeButton.setSelected(false);
         createModeButton.setSelected(false);
     }
-
-
 
 }

@@ -35,6 +35,17 @@ public class WorldPoint {
         this.painter = getPointPainter();
     }
 
+    public double distance(Point2D other) {
+        Point2D thisPoint = this.getPosition();
+        double x1 = thisPoint.getX();
+        double y1 = thisPoint.getY();
+        double x2 = other.getX();
+        double y2 = other.getY();
+        double dx = x2 - x1;
+        double dy = y2 - y1;
+        return Math.sqrt(dx * dx + dy * dy);
+    }
+
     protected Painter getPointPainter() {
         return new Painter() {
             final Point2D point = position;

@@ -17,6 +17,7 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseWheelEvent;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Point2D;
+import java.util.List;
 import java.util.function.Predicate;
 
 /**
@@ -28,6 +29,9 @@ public class ShipViewerControls implements MouseControl {
 
     private final Viewer viewer;
 
+    @Getter @Setter
+    private boolean rotationEnabled;
+
     private final Predicate<MouseEvent> translatePredicate = Predicates.and(
             InputEventPredicates.buttonDown(3),
             InputEventPredicates.noModifiers()
@@ -38,9 +42,14 @@ public class ShipViewerControls implements MouseControl {
             InputEventPredicates.noModifiers()
     );
 
-    private final Predicate<MouseEvent> createPointPredicate = Predicates.and(
+    private final Predicate<MouseEvent> appendPointPredicate = Predicates.and(
             InputEventPredicates.buttonDown(1),
             InputEventPredicates.shiftDown()
+    );
+
+    private final Predicate<MouseEvent> insertPointPredicate = Predicates.and(
+            InputEventPredicates.buttonDown(1),
+            InputEventPredicates.controlDown()
     );
 
     private final Predicate<MouseEvent> removePointPredicate = Predicates.and(
@@ -118,14 +127,24 @@ public class ShipViewerControls implements MouseControl {
     public void mousePressed(MouseEvent e) {
         PointsPainter painter  = getPointsPaint();
         pressPoint.setLocation(e.getPoint());
-        if (createPointPredicate.test(e) && getPointsPanel().getMode() == ViewerPointsPanel.PointsMode.CREATE) {
+        if (getPointsPanel().getMode() == ViewerPointsPanel.PointsMode.CREATE) {
             Point2D screenPoint = this.getAdjustedCursor();
             AffineTransform screenToWorld = viewer.getScreenToWorld();
             Point2D rounded = Utility.correctAdjustedCursor(screenPoint, screenToWorld);
             if (!painter.pointAtCoordsExists(rounded)) {
-                WorldPoint wrapped = new BoundPoint(rounded);
-                painter.addPoint(wrapped);
-                viewer.repaint();
+                if (appendPointPredicate.test(e)) {
+                    BoundPoint wrapped = new BoundPoint(rounded);
+                    painter.addPoint(wrapped);
+                    viewer.repaint();
+                } else if (insertPointPredicate.test(e)) {
+                    List<BoundPoint> twoClosest = painter.findClosestBoundPoints(rounded);
+                    List<WorldPoint> allPoints = painter.getWorldPoints();
+                    BoundPoint preceding = (BoundPoint) allPoints.get(painter.getLowestBoundPointIndex(twoClosest) + 1);
+                    BoundPoint wrapped = new BoundPoint(rounded);
+                    painter.insertPoint(wrapped, preceding);
+                    viewer.repaint();
+                }
+
             }
         }
         if (removePointPredicate.test(e)) {
@@ -212,8 +231,7 @@ public class ShipViewerControls implements MouseControl {
     @Override
     public void mouseMoved(MouseEvent e) {
         mousePoint = e.getPoint();
-        if (rotatePredicate.test(e))
-        {
+        if (rotatePredicate.test(e) && rotationEnabled) {
             int dy = e.getY() - previousPoint.y;
             viewer.rotate(
                     pressPoint.x, pressPoint.y,

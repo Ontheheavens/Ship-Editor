@@ -4,7 +4,10 @@ import de.javagl.viewer.Viewer;
 import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
 import org.kordamp.ikonli.fluentui.FluentUiRegularAL;
+import org.kordamp.ikonli.fluentui.FluentUiRegularMZ;
 import org.kordamp.ikonli.swing.FontIcon;
+import oth.shipeditor.components.ShipViewerControls;
+import oth.shipeditor.components.ViewerPointsPanel;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
@@ -24,6 +27,8 @@ public class PrimaryMenuBar {
     private final PrimaryWindow parent;
     @Getter
     private final JMenuBar menuBar;
+
+    private JMenuItem toggleRotate;
 
     public PrimaryMenuBar(PrimaryWindow parent) {
         this.parent = parent;
@@ -75,14 +80,32 @@ public class PrimaryMenuBar {
         }));
 
         JMenuItem resetTransform = viewMenu.add(new JMenuItem("Reset view transforms"));
-        resetTransform.setIcon(FontIcon.of(FluentUiRegularAL.ARROW_HOOK_UP_LEFT_20, 16));
+        resetTransform.setIcon(FontIcon.of(FluentUiRegularMZ.PICTURE_IN_PICTURE_20, 16));
         resetTransform.addActionListener(l -> SwingUtilities.invokeLater(() -> {
             shipView.resetTransform();
             parent.getShipView().getControls().setZoomLevel(1);
             parent.getShipView().centerViewpoint();
         }));
 
+        toggleRotate = viewMenu.add(new JCheckBoxMenuItem("Toggle view rotation"));
+        toggleRotate.setIcon(FontIcon.of(FluentUiRegularAL.ARROW_ROTATE_CLOCKWISE_20, 16));
+        toggleRotate.addActionListener(l -> SwingUtilities.invokeLater(() -> {
+            AbstractButton button = (AbstractButton) l.getSource();
+            this.toggleRotationFromMenu(button.isSelected());
+        }));
+
         return viewMenu;
+    }
+
+    public void toggleRotationFromMenu(boolean rotationEnabled) {
+        ShipViewerControls controls = parent.getShipView().getControls();
+        controls.setRotationEnabled(rotationEnabled);
+        toggleRotate.setSelected(rotationEnabled);
+        if (rotationEnabled) {
+            ViewerPointsPanel pointsPanel = PrimaryWindow.getInstance().getPointsPanel();
+            pointsPanel.setMode(ViewerPointsPanel.PointsMode.SELECT);
+            pointsPanel.getSelectModeButton().setSelected(true);
+        }
     }
 
 }

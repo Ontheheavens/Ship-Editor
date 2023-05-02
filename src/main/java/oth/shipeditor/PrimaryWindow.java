@@ -28,7 +28,6 @@ public class PrimaryWindow {
     private final ViewerPointsPanel pointsPanel;
     @SuppressWarnings("FieldCanBeLocal")
     private final JPanel southPane;
-
     @Getter
     private final ViewerStatusPanel statusPanel;
 

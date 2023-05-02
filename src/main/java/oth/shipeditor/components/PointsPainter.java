@@ -14,6 +14,7 @@ import java.awt.event.KeyEvent;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Point2D;
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 
 /**
@@ -26,6 +27,7 @@ public class PointsPainter implements Painter {
     @Getter
     private final List<WorldPoint> worldPoints;
 
+    private final List<BoundPoint> boundPoints;
     @Getter
     private final List<Painter> delegates;
 
@@ -34,8 +36,11 @@ public class PointsPainter implements Painter {
      */
     private final AffineTransform delegateWorldToScreen;
 
-    private boolean createBoundHotkeyPressed = false;
-    private final int createBoundHotkey = KeyEvent.VK_SHIFT;
+    private boolean appendBoundHotkeyPressed = false;
+    private boolean insertBoundHotkeyPressed = false;
+
+    private final int appendBoundHotkey = KeyEvent.VK_SHIFT;
+    private final int insertBoundHotkey = KeyEvent.VK_CONTROL;
 
     {
         SwingUtilities.invokeLater(new Runnable() {
@@ -52,24 +57,35 @@ public class PointsPainter implements Painter {
     public PointsPainter() {
         this.delegates = new ArrayList<>();
         this.worldPoints = new ArrayList<>();
+        this.boundPoints = new LinkedList<>();
         this.delegateWorldToScreen = new AffineTransform();
         KeyboardFocusManager.getCurrentKeyboardFocusManager().addKeyEventDispatcher(ke -> {
-                switch (ke.getID()) {
-                    case KeyEvent.KEY_PRESSED:
-                        if (ke.getKeyCode() == createBoundHotkey) {
-                            createBoundHotkeyPressed = true;
-                            repaintViewer();
-                        }
+            switch (ke.getID()) {
+                case KeyEvent.KEY_PRESSED:
+                    if (ke.getKeyCode() == appendBoundHotkey) {
+                        appendBoundHotkeyPressed = true;
+                        repaintViewer();
                         break;
-                    case KeyEvent.KEY_RELEASED:
-                        if (ke.getKeyCode() == createBoundHotkey) {
-                            createBoundHotkeyPressed = false;
-                            repaintViewer();
-                        }
+                    }
+                    if (ke.getKeyCode() == insertBoundHotkey) {
+                        insertBoundHotkeyPressed = true;
+                        repaintViewer();
                         break;
-                }
-                return false;
-            });
+                    }
+                case KeyEvent.KEY_RELEASED:
+                    if (ke.getKeyCode() == appendBoundHotkey) {
+                        appendBoundHotkeyPressed = false;
+                        repaintViewer();
+                        break;
+                    }
+                    if (ke.getKeyCode() == insertBoundHotkey) {
+                        insertBoundHotkeyPressed = false;
+                        repaintViewer();
+                        break;
+                    }
+            }
+            return false;
+        });
     }
 
     private void repaintViewer() {
@@ -84,6 +100,57 @@ public class PointsPainter implements Painter {
         });
     }
 
+    public void insertPoint(WorldPoint toInsert, WorldPoint preceding) {
+        int precedingIndex = worldPoints.indexOf(preceding);
+        SwingUtilities.invokeLater(() -> {
+            worldPoints.add(precedingIndex, toInsert);
+            getPointsPanel().getModel().insertElementAt(toInsert, precedingIndex);
+            delegates.add(toInsert.getPainter());
+        });
+    }
+
+    public List<BoundPoint> findClosestBoundPoints(Point2D cursor) {
+        List<BoundPoint> boundPoints = this.getBoundPoints();
+        BoundPoint closestPoint1 = boundPoints.get(0);
+        BoundPoint closestPoint2 = boundPoints.get(1);
+
+        double dist1 = closestPoint1.distance(cursor);
+        double dist2 = closestPoint2.distance(cursor);
+        if (dist2 < dist1) {
+            BoundPoint tmp = closestPoint1;
+            closestPoint1 = closestPoint2;
+            closestPoint2 = tmp;
+            double tmpDist = dist1;
+            dist1 = dist2;
+            dist2 = tmpDist;
+        }
+
+        for (int i = 2; i < boundPoints.size(); i++) {
+            BoundPoint currentPoint = boundPoints.get(i);
+            double dist = currentPoint.distance(cursor);
+            if (dist < dist1) {
+                closestPoint2 = closestPoint1;
+                closestPoint1 = currentPoint;
+                dist2 = dist1;
+                dist1 = dist;
+            } else if (dist < dist2) {
+                closestPoint2 = currentPoint;
+                dist2 = dist;
+            }
+        }
+
+        List<BoundPoint> closestPoints = new ArrayList<>(2);
+        closestPoints.add(closestPoint1);
+        closestPoints.add(closestPoint2);
+        return closestPoints;
+    }
+
+    public int getLowestBoundPointIndex(List<BoundPoint> closestPoints) {
+        int index1 = worldPoints.indexOf(closestPoints.get(0));
+        int index2 = worldPoints.indexOf(closestPoints.get(1));
+        return Math.min(index1, index2);
+    }
+
     public void removePoint(WorldPoint point) {
         SwingUtilities.invokeLater(() -> {
             worldPoints.remove(point);
@@ -93,12 +160,13 @@ public class PointsPainter implements Painter {
 
     }
 
+    private List<BoundPoint> getBoundPoints() {
+        return worldPoints.stream().filter(p -> p instanceof BoundPoint).map(p -> (BoundPoint) p).toList();
+    }
+
     private Painter createBoundLinesPainter() {
         return (g, worldToScreen, w, h) -> {
-            List<WorldPoint> points = getWorldPoints();
-            List<BoundPoint> bPoints = points.stream()
-                    .filter(p -> p instanceof BoundPoint)
-                    .map(p -> (BoundPoint) p).toList();
+            List<BoundPoint> bPoints = getBoundPoints();
             if (bPoints.isEmpty()) return;
             Stroke origStroke = g.getStroke();
             Paint origPaint = g.getPaint();
@@ -112,12 +180,20 @@ public class PointsPainter implements Painter {
             Point2D first = worldToScreen.transform(bPoints.get(0).getPosition(), null);
             Utility.drawBorderedLine(g, prev, first, Color.DARK_GRAY);
             ShipViewerPanel viewerPanel = PrimaryWindow.getInstance().getShipView();
-            if (this.getPointsPanel().getMode() == ViewerPointsPanel.PointsMode.CREATE && createBoundHotkeyPressed) {
+            if (this.getPointsPanel().getMode() == ViewerPointsPanel.PointsMode.CREATE) {
                 Point2D cursor = viewerPanel.getControls().getAdjustedCursor();
                 AffineTransform screenToWorld = viewerPanel.getViewer().getScreenToWorld();
                 Point2D adjusted = worldToScreen.transform(Utility.correctAdjustedCursor(cursor, screenToWorld), null);
-                Utility.drawBorderedLine(g, prev, adjusted, Color.WHITE);
-                Utility.drawBorderedLine(g, adjusted, first, Color.WHITE);
+                if (appendBoundHotkeyPressed) {
+                    Utility.drawBorderedLine(g, prev, adjusted, Color.WHITE);
+                    Utility.drawBorderedLine(g, adjusted, first, Color.WHITE);
+                } else if (insertBoundHotkeyPressed) {
+                    List<BoundPoint> closest = this.findClosestBoundPoints(adjusted);
+                    Point2D preceding = worldToScreen.transform(closest.get(0).getPosition(), null);
+                    Point2D subsequent = worldToScreen.transform(closest.get(1).getPosition(), null);
+                    Utility.drawBorderedLine(g, preceding, adjusted, Color.WHITE);
+                    Utility.drawBorderedLine(g, subsequent, adjusted, Color.WHITE);
+                }
             }
             g.setStroke(origStroke);
             g.setPaint(origPaint);
