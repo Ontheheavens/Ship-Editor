@@ -4,11 +4,10 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="15e1ddae-a5d1-4957-9383-c162c5526ac0" name="Changes" comment="02.05.23 - spaghetti code issues extending bounds functions.">
+    <list default="true" id="15e1ddae-a5d1-4957-9383-c162c5526ac0" name="Changes" comment="02.05.23 - insert bound point shenanigans solved.">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/oth/shipeditor/components/PointsPainter.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/oth/shipeditor/components/PointsPainter.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/oth/shipeditor/PrimaryWindow.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/oth/shipeditor/PrimaryWindow.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/oth/shipeditor/components/ShipViewerControls.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/oth/shipeditor/components/ShipViewerControls.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/oth/shipeditor/components/entities/BoundPoint.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/oth/shipeditor/components/entities/BoundPoint.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/oth/shipeditor/components/entities/WorldPoint.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/oth/shipeditor/components/entities/WorldPoint.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -59,7 +58,7 @@
     &quot;project.structure.last.edited&quot;: &quot;Modules&quot;,
     &quot;project.structure.proportion&quot;: &quot;0.15&quot;,
     &quot;project.structure.side.proportion&quot;: &quot;0.31609195&quot;,
-    &quot;settings.editor.selected.configurable&quot;: &quot;profiler.jvm&quot;
+    &quot;settings.editor.selected.configurable&quot;: &quot;editor.preferences.tabs&quot;
   }
 }</component>
   <component name="RunManager">
@@ -139,7 +138,13 @@
       <workItem from="1682937662280" duration="15462000" />
       <workItem from="1682959991905" duration="4024000" />
       <workItem from="1682964614516" duration="74000" />
-      <workItem from="1683008616722" duration="35713000" />
+      <workItem from="1683008616722" duration="35770000" />
+      <workItem from="1683049827817" duration="1313000" />
+      <workItem from="1683090760873" duration="5000" />
+      <workItem from="1683099232172" duration="2802000" />
+      <workItem from="1683137341684" duration="362000" />
+      <workItem from="1683180553944" duration="2036000" />
+      <workItem from="1683186021988" duration="2515000" />
     </task>
     <task id="LOCAL-00001" summary="26.04.23 - working prototype, coordinat. design flaw">
       <created>1682499355313</created>
@@ -211,7 +216,14 @@
       <option name="project" value="LOCAL" />
       <updated>1683037674573</updated>
     </task>
-    <option name="localTasksCounter" value="11" />
+    <task id="LOCAL-00011" summary="02.05.23 - insert bound point shenanigans solved.">
+      <created>1683049595826</created>
+      <option name="number" value="00011" />
+      <option name="presentableId" value="LOCAL-00011" />
+      <option name="project" value="LOCAL" />
+      <updated>1683049595826</updated>
+    </task>
+    <option name="localTasksCounter" value="12" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -240,7 +252,8 @@
     <MESSAGE value="01.05.23 - status functionality and bounds polish." />
     <MESSAGE value="02.05.23 - status functionality and bounds polish." />
     <MESSAGE value="02.05.23 - spaghetti code issues extending bounds functions." />
-    <option name="LAST_COMMIT_MESSAGE" value="02.05.23 - spaghetti code issues extending bounds functions." />
+    <MESSAGE value="02.05.23 - insert bound point shenanigans solved." />
+    <option name="LAST_COMMIT_MESSAGE" value="02.05.23 - insert bound point shenanigans solved." />
     <option name="OPTIMIZE_IMPORTS_BEFORE_PROJECT_COMMIT" value="true" />
   </component>
   <component name="XDebuggerManager">

@@ -138,7 +138,7 @@ public class ShipViewerControls implements MouseControl {
                     BoundPoint wrapped = new BoundPoint(rounded);
                     painter.addPoint(wrapped);
                     viewer.repaint();
-                } else if (insertPointPredicate.test(e)) {
+                } else if (insertPointPredicate.test(e) && painter.getBoundPoints().size() >= 2) {
                     List<BoundPoint> twoClosest = painter.findClosestBoundPoints(rounded);
                     List<BoundPoint> allPoints = painter.getBoundPoints();
                     int index = painter.getLowestBoundPointIndex(twoClosest);

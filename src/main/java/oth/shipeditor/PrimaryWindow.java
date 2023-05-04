@@ -28,6 +28,9 @@ public class PrimaryWindow {
     private final ViewerPointsPanel pointsPanel;
     @SuppressWarnings("FieldCanBeLocal")
     private final JPanel southPane;
+    private final JTabbedPane eastPane;
+
+
     @Getter
     private final ViewerStatusPanel statusPanel;
 
@@ -43,8 +46,12 @@ public class PrimaryWindow {
         shipView.getViewer().setBackground(Color.GRAY);
         mainFrame.getContentPane().add(shipView.getViewer(), BorderLayout.CENTER);
 
+        eastPane = new JTabbedPane();
+        eastPane.setTabPlacement(JTabbedPane.LEFT);
         pointsPanel = new ViewerPointsPanel();
-        mainFrame.getContentPane().add(pointsPanel, BorderLayout.EAST);
+        eastPane.addTab("B",pointsPanel);
+        eastPane.addTab("E",new JPanel());
+        mainFrame.getContentPane().add(eastPane, BorderLayout.EAST);
         mainFrame.addComponentListener(new ComponentAdapter(){
             @Override
             public void componentResized(ComponentEvent e){
