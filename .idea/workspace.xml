@@ -4,9 +4,9 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="15e1ddae-a5d1-4957-9383-c162c5526ac0" name="Changes" comment="04.05.23 - work slogging down, small edits only.">
+    <list default="true" id="15e1ddae-a5d1-4957-9383-c162c5526ac0" name="Changes" comment="04.05.23 - added JavaGL to pom.xml">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/pom.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/oth/shipeditor/components/ShipViewerPanel.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/oth/shipeditor/components/ShipViewerPanel.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -143,7 +143,7 @@
       <workItem from="1683137341684" duration="362000" />
       <workItem from="1683180553944" duration="2036000" />
       <workItem from="1683186021988" duration="6045000" />
-      <workItem from="1683206360087" duration="1379000" />
+      <workItem from="1683206360087" duration="1978000" />
     </task>
     <task id="LOCAL-00001" summary="26.04.23 - working prototype, coordinat. design flaw">
       <created>1682499355313</created>
@@ -229,7 +229,14 @@
       <option name="project" value="LOCAL" />
       <updated>1683193910038</updated>
     </task>
-    <option name="localTasksCounter" value="13" />
+    <task id="LOCAL-00013" summary="04.05.23 - added JavaGL to pom.xml">
+      <created>1683207790772</created>
+      <option name="number" value="00013" />
+      <option name="presentableId" value="LOCAL-00013" />
+      <option name="project" value="LOCAL" />
+      <updated>1683207790772</updated>
+    </task>
+    <option name="localTasksCounter" value="14" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -260,7 +267,8 @@
     <MESSAGE value="02.05.23 - spaghetti code issues extending bounds functions." />
     <MESSAGE value="02.05.23 - insert bound point shenanigans solved." />
     <MESSAGE value="04.05.23 - work slogging down, small edits only." />
-    <option name="LAST_COMMIT_MESSAGE" value="04.05.23 - work slogging down, small edits only." />
+    <MESSAGE value="04.05.23 - added JavaGL to pom.xml" />
+    <option name="LAST_COMMIT_MESSAGE" value="04.05.23 - added JavaGL to pom.xml" />
     <option name="OPTIMIZE_IMPORTS_BEFORE_PROJECT_COMMIT" value="true" />
   </component>
   <component name="XDebuggerManager">

@@ -13,6 +13,9 @@ import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.Objects;
 
 /**
  * Uses composition instead of extending Viewer.
@@ -39,9 +42,15 @@ public class ShipViewerPanel {
 
         controls = new ShipViewerControls(viewer);
         viewer.setMouseControl(controls);
-        String imagePath = "C:\\Games\\legion_xiv.png";
+
+        URI filePath;
         try {
-            this.shipSprite = ImageIO.read(new File(imagePath));
+            filePath = Objects.requireNonNull(getClass().getClassLoader().getResource("legion_xiv.png").toURI());
+        } catch (URISyntaxException e) {
+            throw new RuntimeException(e);
+        }
+        try {
+            this.shipSprite = ImageIO.read(new File(filePath));
             this.setShipSprite(shipSprite);
         } catch (IOException e) {
             throw new RuntimeException(e);
