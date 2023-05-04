@@ -45,7 +45,7 @@ public class ShipViewerPanel {
 
         URI filePath;
         try {
-            filePath = Objects.requireNonNull(getClass().getClassLoader().getResource("legion_xiv.png").toURI());
+            filePath = Objects.requireNonNull(getClass().getClassLoader().getResource("legion_xiv.png")).toURI();
         } catch (URISyntaxException e) {
             throw new RuntimeException(e);
         }

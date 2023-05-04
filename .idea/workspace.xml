@@ -4,8 +4,9 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="15e1ddae-a5d1-4957-9383-c162c5526ac0" name="Changes" comment="04.05.23 - added JavaGL to pom.xml">
+    <list default="true" id="15e1ddae-a5d1-4957-9383-c162c5526ac0" name="Changes" comment="04.05.23 - added ship sprite to resources.">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/pom.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/oth/shipeditor/components/ShipViewerPanel.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/oth/shipeditor/components/ShipViewerPanel.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -143,7 +144,7 @@
       <workItem from="1683137341684" duration="362000" />
       <workItem from="1683180553944" duration="2036000" />
       <workItem from="1683186021988" duration="6045000" />
-      <workItem from="1683206360087" duration="1978000" />
+      <workItem from="1683206360087" duration="3459000" />
     </task>
     <task id="LOCAL-00001" summary="26.04.23 - working prototype, coordinat. design flaw">
       <created>1682499355313</created>
@@ -236,7 +237,14 @@
       <option name="project" value="LOCAL" />
       <updated>1683207790772</updated>
     </task>
-    <option name="localTasksCounter" value="14" />
+    <task id="LOCAL-00014" summary="04.05.23 - added ship sprite to resources.">
+      <created>1683208435212</created>
+      <option name="number" value="00014" />
+      <option name="presentableId" value="LOCAL-00014" />
+      <option name="project" value="LOCAL" />
+      <updated>1683208435212</updated>
+    </task>
+    <option name="localTasksCounter" value="15" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -268,7 +276,8 @@
     <MESSAGE value="02.05.23 - insert bound point shenanigans solved." />
     <MESSAGE value="04.05.23 - work slogging down, small edits only." />
     <MESSAGE value="04.05.23 - added JavaGL to pom.xml" />
-    <option name="LAST_COMMIT_MESSAGE" value="04.05.23 - added JavaGL to pom.xml" />
+    <MESSAGE value="04.05.23 - added ship sprite to resources." />
+    <option name="LAST_COMMIT_MESSAGE" value="04.05.23 - added ship sprite to resources." />
     <option name="OPTIMIZE_IMPORTS_BEFORE_PROJECT_COMMIT" value="true" />
   </component>
   <component name="XDebuggerManager">
