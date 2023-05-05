@@ -64,7 +64,11 @@ public class ViewerPointsPanel extends JPanel {
             }
         });
         pointContainer.setBorder(new EmptyBorder(margin, margin, margin, margin));
-        this.add(pointContainer, BorderLayout.CENTER);
+        JScrollPane scrollableContainer = new JScrollPane(pointContainer);
+        Dimension listSize = new Dimension(pointContainer.getPreferredSize().width + 30,
+                pointContainer.getPreferredSize().height);
+        scrollableContainer.setPreferredSize(listSize);
+        this.add(scrollableContainer, BorderLayout.CENTER);
         JPanel modePanel = new JPanel();
         modePanel.setBorder(BorderFactory.createEtchedBorder());
         this.createModeButtons(modePanel);

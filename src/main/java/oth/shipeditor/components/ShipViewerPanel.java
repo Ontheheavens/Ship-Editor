@@ -7,6 +7,8 @@ import lombok.extern.log4j.Log4j2;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
@@ -40,17 +42,26 @@ public class ShipViewerPanel {
     public ShipViewerPanel() {
         viewer = new Viewer();
 
+        viewer.setMinimumSize(new Dimension(240, 120));
+
+        viewer.addComponentListener(new ComponentAdapter() {
+            @Override
+            public void componentResized(ComponentEvent e) {
+                ShipViewerPanel.this.centerViewpoint();
+            }
+        });
+
         controls = new ShipViewerControls(viewer);
         viewer.setMouseControl(controls);
 
-        URI filePath;
+        URI spritePath;
         try {
-            filePath = Objects.requireNonNull(getClass().getClassLoader().getResource("legion_xiv.png")).toURI();
+            spritePath = Objects.requireNonNull(getClass().getClassLoader().getResource("legion_xiv.png")).toURI();
         } catch (URISyntaxException e) {
             throw new RuntimeException(e);
         }
         try {
-            this.shipSprite = ImageIO.read(new File(filePath));
+            this.shipSprite = ImageIO.read(new File(spritePath));
             this.setShipSprite(shipSprite);
         } catch (IOException e) {
             throw new RuntimeException(e);

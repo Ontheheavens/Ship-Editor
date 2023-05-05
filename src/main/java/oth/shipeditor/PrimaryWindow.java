@@ -4,11 +4,13 @@ import lombok.Getter;
 import oth.shipeditor.components.ShipViewerPanel;
 import oth.shipeditor.components.ViewerPointsPanel;
 import oth.shipeditor.components.ViewerStatusPanel;
+import oth.shipeditor.data.HullData;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ComponentAdapter;
-import java.awt.event.ComponentEvent;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.Objects;
 
 /**
  * @author Ontheheavens
@@ -28,7 +30,7 @@ public class PrimaryWindow {
     private final ViewerPointsPanel pointsPanel;
     @SuppressWarnings("FieldCanBeLocal")
     private final JPanel southPane;
-    private final JTabbedPane eastPane;
+    private final JTabbedPane instrumentPane;
 
 
     @Getter
@@ -44,20 +46,19 @@ public class PrimaryWindow {
 
         shipView = new ShipViewerPanel();
         shipView.getViewer().setBackground(Color.GRAY);
-        mainFrame.getContentPane().add(shipView.getViewer(), BorderLayout.CENTER);
 
-        eastPane = new JTabbedPane();
-        eastPane.setTabPlacement(JTabbedPane.LEFT);
+        instrumentPane = new JTabbedPane();
+        instrumentPane.setTabPlacement(JTabbedPane.LEFT);
         pointsPanel = new ViewerPointsPanel();
-        eastPane.addTab("B",pointsPanel);
-        eastPane.addTab("E",new JPanel());
-        mainFrame.getContentPane().add(eastPane, BorderLayout.EAST);
-        mainFrame.addComponentListener(new ComponentAdapter(){
-            @Override
-            public void componentResized(ComponentEvent e){
-                shipView.centerViewpoint();
-            }
-        });
+        instrumentPane.addTab("B",pointsPanel);
+        instrumentPane.addTab("E",new JPanel());
+
+        JSplitPane splitter = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
+        splitter.setLeftComponent(shipView.getViewer());
+        splitter.setRightComponent(instrumentPane);
+        splitter.setResizeWeight(1);
+
+        mainFrame.getContentPane().add(splitter, BorderLayout.CENTER);
 
         primaryMenu = new PrimaryMenuBar(this);
         mainFrame.setJMenuBar(primaryMenu.getMenuBar());
@@ -68,10 +69,18 @@ public class PrimaryWindow {
         statusPanel.setLayout(new FlowLayout(FlowLayout.LEADING));
         southPane.add(statusPanel);
         mainFrame.getContentPane().add(southPane, BorderLayout.SOUTH);
+        mainFrame.pack();
     }
 
     public void showWindow() {
-        mainFrame.pack();
+        URI dataPath;
+        try {
+            dataPath = Objects.requireNonNull(getClass().getClassLoader().getResource("legion.ship")).toURI();
+        } catch (URISyntaxException e) {
+            throw new RuntimeException(e);
+        }
+        new HullData(dataPath);
+
         mainFrame.setVisible(true);
     }
 
