@@ -29,7 +29,7 @@ public class BoundPoint extends FeaturePoint{
     public String toString() {
         Point2D translated = this.getCoordinatesForDisplay();
         int index = PrimaryWindow.getInstance().getShipView().getPointsPainter().getBoundPoints().indexOf(this);
-        return index + "Bound {" + translated.getX() + "," + translated.getY() + '}';
+        return "Bound #" + index + " {" + translated.getX() + "," + translated.getY() + '}';
     }
 
 }

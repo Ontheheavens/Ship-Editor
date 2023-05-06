@@ -13,28 +13,20 @@ public class Utility {
 
     private Utility() {}
 
-    public static void drawBorderedLine(Graphics2D g, Point2D first, Point2D second, Color inner) {
-        Utility.drawBorderedLine(g, first, second, inner, Color.BLACK, 2f, 3f);
+    public static void drawBorderedLine(Graphics2D canvas, Point2D start, Point2D finish, Color inner) {
+        Utility.drawBorderedLine(canvas, start, finish, inner, Color.BLACK, 2f, 3f);
     }
 
-//    public static Point2D.Double translateFromSourceCoords(Point2D source) {
-//
-//    }
-//
-//    public static Point2D.Double translateToSourceCoords(Point2D representation) {
-//
-//    }
-
-    public static void drawBorderedLine(Graphics2D g, Point2D first, Point2D second,
+    public static void drawBorderedLine(Graphics2D canvas, Point2D start, Point2D finish,
                                          Color innerColor, Color outerColor, float innerWidth, float outerWidth) {
-        Stroke originalStroke = g.getStroke();
-        g.setColor(outerColor);
-        g.setStroke(new BasicStroke(outerWidth));
-        g.drawLine((int) first.getX(), (int) first.getY(), (int) second.getX(), (int) second.getY());
-        g.setColor(innerColor);
-        g.setStroke(new BasicStroke(innerWidth));
-        g.drawLine((int) first.getX(), (int) first.getY(), (int) second.getX(), (int) second.getY());
-        g.setStroke(originalStroke);
+        Stroke originalStroke = canvas.getStroke();
+        canvas.setColor(outerColor);
+        canvas.setStroke(new BasicStroke(outerWidth));
+        canvas.drawLine((int) start.getX(), (int) start.getY(), (int) finish.getX(), (int) finish.getY());
+        canvas.setColor(innerColor);
+        canvas.setStroke(new BasicStroke(innerWidth));
+        canvas.drawLine((int) start.getX(), (int) start.getY(), (int) finish.getX(), (int) finish.getY());
+        canvas.setStroke(originalStroke);
     }
 
     public static Point2D correctAdjustedCursor(Point2D adjustedCursor, AffineTransform screenToWorld) {

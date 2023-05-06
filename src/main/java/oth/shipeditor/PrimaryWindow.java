@@ -59,7 +59,7 @@ public class PrimaryWindow {
         JSplitPane splitter = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
         splitter.setLeftComponent(shipView.getViewer());
         splitter.setRightComponent(instrumentPane);
-        splitter.setResizeWeight(1);
+        splitter.setResizeWeight(0.95);
 
         mainFrame.getContentPane().add(splitter, BorderLayout.CENTER);
 
