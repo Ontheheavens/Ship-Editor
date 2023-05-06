@@ -13,7 +13,6 @@ import javax.swing.border.Border;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.awt.event.ItemEvent;
-import java.awt.geom.Point2D;
 
 /**
  * @author Ontheheavens
@@ -34,15 +33,6 @@ public class ViewerPointsPanel extends JPanel {
     @Getter
     private JToggleButton createModeButton;
 
-    static {
-        SwingUtilities.invokeLater(() -> {
-            PointsPainter painter = PrimaryWindow.getInstance().getShipView().getPointsPainter();
-            painter.addPoint(new WorldPoint(new Point2D.Double(0, 0)));
-            painter.addPoint(new WorldPoint(new Point2D.Double(25, 50)));
-
-        });
-    }
-
     public ViewerPointsPanel() {
         this.setLayout(new BorderLayout());
         pointContainer = new JList<>(model);
@@ -59,7 +49,7 @@ public class ViewerPointsPanel extends JPanel {
                     }
                     point.setSelected(true);
                     viewerPanel.getControls().setSelected(point);
-                    viewerPanel.getViewer().repaint();
+                    viewerPanel.repaint();
                 }
             }
         });

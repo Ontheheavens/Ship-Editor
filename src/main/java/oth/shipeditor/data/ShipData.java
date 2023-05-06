@@ -5,11 +5,11 @@ import de.javagl.viewer.Painter;
 import lombok.Getter;
 import lombok.Setter;
 import oth.shipeditor.PrimaryWindow;
-import oth.shipeditor.components.PointsPainter;
 import oth.shipeditor.components.ShipViewerPanel;
 import oth.shipeditor.components.entities.BoundPoint;
 import oth.shipeditor.components.entities.FeaturePoint;
 import oth.shipeditor.components.entities.WorldPoint;
+import oth.shipeditor.components.painters.PointsPainter;
 
 import java.awt.geom.Point2D;
 import java.io.File;

@@ -2,6 +2,7 @@ package oth.shipeditor.components.entities;
 
 import de.javagl.viewer.Painter;
 import oth.shipeditor.PrimaryWindow;
+import oth.shipeditor.components.painters.PointsPainter;
 
 import java.awt.geom.Point2D;
 
@@ -28,7 +29,8 @@ public class BoundPoint extends FeaturePoint{
     @Override
     public String toString() {
         Point2D translated = this.getCoordinatesForDisplay();
-        int index = PrimaryWindow.getInstance().getShipView().getPointsPainter().getBoundPoints().indexOf(this);
+        PointsPainter painter = PrimaryWindow.getInstance().getShipView().getPointsPainter();
+        int index = painter.getBoundPainter().getBoundPoints().indexOf(this);
         return "Bound #" + index + " {" + translated.getX() + "," + translated.getY() + '}';
     }
 

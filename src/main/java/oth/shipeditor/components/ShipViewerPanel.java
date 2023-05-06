@@ -4,6 +4,7 @@ import de.javagl.viewer.Painter;
 import de.javagl.viewer.Viewer;
 import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
+import oth.shipeditor.components.painters.PointsPainter;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
@@ -20,15 +21,12 @@ import java.net.URISyntaxException;
 import java.util.Objects;
 
 /**
- * Uses composition instead of extending Viewer.
  * @author Ontheheavens
  * @since 29.04.2023
  */
 @Log4j2
-public class ShipViewerPanel {
+public class ShipViewerPanel extends Viewer {
 
-    @Getter
-    private final Viewer viewer;
     @Getter
     private BufferedImage shipSprite;
     private Painter shipPaint;
@@ -40,20 +38,32 @@ public class ShipViewerPanel {
     private final ShipViewerControls controls;
 
     public ShipViewerPanel() {
-        viewer = new Viewer();
-
-        viewer.setMinimumSize(new Dimension(240, 120));
-
-        viewer.addComponentListener(new ComponentAdapter() {
+        this.setMinimumSize(new Dimension(240, 120));
+        this.addComponentListener(new ComponentAdapter() {
             @Override
             public void componentResized(ComponentEvent e) {
                 ShipViewerPanel.this.centerViewpoint();
             }
         });
+        this.setBackground(Color.GRAY);
 
-        controls = new ShipViewerControls(viewer);
-        viewer.setMouseControl(controls);
+        controls = new ShipViewerControls(this);
+        this.setMouseControl(controls);
 
+        this.pointsPainter = new PointsPainter();
+    }
+
+    public void initialize() {
+        this.initSprite();
+        this.drawGuides();
+        this.drawBorder();
+        this.drawSpriteCenter();
+
+        this.addPainter(this.pointsPainter, 3);
+        this.centerViewpoint();
+    }
+
+    private void initSprite() {
         URI spritePath;
         try {
             spritePath = Objects.requireNonNull(getClass().getClassLoader().getResource("legion_xiv.png")).toURI();
@@ -66,18 +76,10 @@ public class ShipViewerPanel {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-        this.drawGuides();
-        this.drawBorder();
-        this.drawSpriteCenter();
-
-        this.pointsPainter = new PointsPainter();
-        this.viewer.addPainter(this.pointsPainter, 3);
-
-        this.centerViewpoint();
     }
 
     public void setShipSprite(BufferedImage shipSprite) {
-        viewer.removePainter(shipPaint);
+        this.removePainter(shipPaint);
         this.shipSprite = shipSprite;
         Painter spritePainter = (g, worldToScreen, w, h) -> {
             AffineTransform oldAT = g.getTransform();
@@ -87,7 +89,7 @@ public class ShipViewerPanel {
             g.drawImage(shipSprite, 0, 0, width, height, null);
             g.setTransform(oldAT);
         };
-        viewer.addPainter(spritePainter, 2);
+        this.addPainter(spritePainter, 2);
         this.shipPaint = spritePainter;
     }
 
@@ -100,13 +102,13 @@ public class ShipViewerPanel {
     }
 
     public void centerViewpoint() {
-        AffineTransform worldToScreen = viewer.getWorldToScreen();
+        AffineTransform worldToScreen = this.getWorldToScreen();
         // Get the center of the sprite in screen coordinates.
         Point2D centerScreen = worldToScreen.transform(this.getSpriteCenter(), null);
         // Calculate the delta values to center the sprite.
-        double dx = (viewer.getWidth() / 2f) - centerScreen.getX();
-        double dy = (viewer.getHeight() / 2f) - centerScreen.getY();
-        viewer.translate(dx, dy);
+        double dx = (this.getWidth() / 2f) - centerScreen.getX();
+        double dy = (this.getHeight() / 2f) - centerScreen.getY();
+        this.translate(dx, dy);
     }
 
     private Point2D getAdjustedCursor() {
@@ -124,10 +126,10 @@ public class ShipViewerPanel {
      * and 0.5 scaled pixel snapping.
      */
     private void drawGuides() {
-        viewer.removePainter(guidesPaint);
+        this.removePainter(guidesPaint);
         Painter guidesPainter = (g, worldToScreen, w, h) -> {
             Point2D mousePoint = this.getAdjustedCursor();
-            AffineTransform screenToWorld = viewer.getScreenToWorld();
+            AffineTransform screenToWorld = this.getScreenToWorld();
             Point2D transformedMouse = screenToWorld.transform(mousePoint, mousePoint);
             double x = transformedMouse.getX();
             double y = transformedMouse.getY();
@@ -155,12 +157,12 @@ public class ShipViewerPanel {
             g.fill(guideY);
             g.setPaint(old);
         };
-        viewer.addPainter(guidesPainter, 5);
+        this.addPainter(guidesPainter, 5);
         this.guidesPaint = guidesPainter;
     }
 
     private void drawBorder() {
-        viewer.removePainter(spriteBorderPaint);
+        this.removePainter(spriteBorderPaint);
         Painter borderPainter = (g, worldToScreen, w, h) -> {
             int width = shipSprite.getWidth();
             int height = shipSprite.getHeight();
@@ -168,7 +170,7 @@ public class ShipViewerPanel {
             Shape transformed = worldToScreen.createTransformedShape(worldBorder);
             g.draw(transformed);
         };
-        viewer.addPainter(borderPainter, 5);
+        this.addPainter(borderPainter, 5);
         this.spriteBorderPaint = borderPainter;
     }
 
@@ -180,7 +182,7 @@ public class ShipViewerPanel {
             g.drawLine(x-l, y-l, x+l, y+l);
             g.drawLine(x-l, y+l, x+l, y-l);
         };
-        viewer.addPainter(centerPainter, 5);
+        this.addPainter(centerPainter, 5);
     }
 
 }

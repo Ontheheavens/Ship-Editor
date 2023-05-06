@@ -11,6 +11,8 @@ import oth.shipeditor.PrimaryWindow;
 import oth.shipeditor.Utility;
 import oth.shipeditor.components.entities.BoundPoint;
 import oth.shipeditor.components.entities.WorldPoint;
+import oth.shipeditor.components.painters.BoundPointsPainter;
+import oth.shipeditor.components.painters.PointsPainter;
 
 import javax.swing.*;
 import java.awt.*;
@@ -109,7 +111,7 @@ public class ShipViewerControls implements MouseControl {
 
     }
 
-    protected Point2D getAdjustedCursor() {
+    public Point2D getAdjustedCursor() {
         Point2D anchor = viewer.getWorldToScreen().transform(new Point(0, 0), null);
         Point mouse = this.getMousePoint();
         // Calculate cursor position relative to anchor.
@@ -128,6 +130,7 @@ public class ShipViewerControls implements MouseControl {
     @Override
     public void mousePressed(MouseEvent e) {
         PointsPainter painter  = getPointsPaint();
+        BoundPointsPainter boundPainter = painter.getBoundPainter();
         pressPoint.setLocation(e.getPoint());
         if (getPointsPanel().getMode() == ViewerPointsPanel.PointsMode.CREATE) {
             Point2D screenPoint = this.getAdjustedCursor();
@@ -138,17 +141,17 @@ public class ShipViewerControls implements MouseControl {
                     BoundPoint wrapped = new BoundPoint(rounded);
                     painter.addPoint(wrapped);
                     viewer.repaint();
-                } else if (insertPointPredicate.test(e) && painter.getBoundPoints().size() >= 2) {
-                    List<BoundPoint> twoClosest = painter.findClosestBoundPoints(rounded);
-                    List<BoundPoint> allPoints = painter.getBoundPoints();
-                    int index = painter.getLowestBoundPointIndex(twoClosest);
+                } else if (insertPointPredicate.test(e) && boundPainter.getBoundPoints().size() >= 2) {
+                    List<BoundPoint> twoClosest = boundPainter.findClosestBoundPoints(rounded);
+                    List<BoundPoint> allPoints = boundPainter.getBoundPoints();
+                    int index = boundPainter.getLowestBoundPointIndex(twoClosest);
                     if (index >= 0) index += 1;
                     if (index > allPoints.size() - 1) index = 0;
-                    if (painter.getHighestBoundPointIndex(twoClosest) == allPoints.size() - 1 &&
-                            painter.getLowestBoundPointIndex(twoClosest) == 0) index = 0;
-                    BoundPoint preceding = painter.getBoundPoints().get(index);
+                    if (boundPainter.getHighestBoundPointIndex(twoClosest) == allPoints.size() - 1 &&
+                            boundPainter.getLowestBoundPointIndex(twoClosest) == 0) index = 0;
+                    BoundPoint preceding = boundPainter.getBoundPoints().get(index);
                     BoundPoint wrapped = new BoundPoint(rounded);
-                    painter.insertPoint(wrapped, preceding);
+                    boundPainter.insertPoint(wrapped, preceding);
                     viewer.repaint();
                 }
             }

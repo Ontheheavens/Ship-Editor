@@ -15,7 +15,8 @@ public class Main {
         } catch (ReflectiveOperationException | UnsupportedLookAndFeelException ex) {
             ex.printStackTrace();
         }
-        PrimaryWindow.getInstance().showWindow();
+        PrimaryWindow window = PrimaryWindow.getInstance();
+        window.showGUI();
     }
 
     public static void main(String[] args) {

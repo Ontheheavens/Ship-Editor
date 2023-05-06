@@ -4,11 +4,20 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="15e1ddae-a5d1-4957-9383-c162c5526ac0" name="Changes" comment="06.05.23 - coordinate systems translations from JSON source.">
+    <list default="true" id="15e1ddae-a5d1-4957-9383-c162c5526ac0" name="Changes" comment="06.05.23 - minor naming refactor">
+      <change afterPath="$PROJECT_DIR$/src/main/java/oth/shipeditor/components/painters/BoundPointsPainter.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/oth/shipeditor/components/painters/PointsPainter.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/oth/shipeditor/Main.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/oth/shipeditor/Main.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/oth/shipeditor/PrimaryMenuBar.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/oth/shipeditor/PrimaryMenuBar.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/oth/shipeditor/PrimaryWindow.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/oth/shipeditor/PrimaryWindow.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/oth/shipeditor/Utility.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/oth/shipeditor/Utility.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/oth/shipeditor/components/PointsPainter.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/oth/shipeditor/components/ShipViewerControls.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/oth/shipeditor/components/ShipViewerControls.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/oth/shipeditor/components/ShipViewerPanel.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/oth/shipeditor/components/ShipViewerPanel.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/oth/shipeditor/components/ViewerPointsPanel.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/oth/shipeditor/components/ViewerPointsPanel.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/oth/shipeditor/components/ViewerStatusPanel.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/oth/shipeditor/components/ViewerStatusPanel.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/oth/shipeditor/components/entities/BoundPoint.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/oth/shipeditor/components/entities/BoundPoint.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/oth/shipeditor/components/entities/WorldPoint.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/oth/shipeditor/components/entities/WorldPoint.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/oth/shipeditor/data/ShipData.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/oth/shipeditor/data/ShipData.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -39,6 +48,9 @@
       </MavenGeneralSettings>
     </option>
   </component>
+  <component name="ProblemsViewState">
+    <option name="selectedTabId" value="ProjectErrors" />
+  </component>
   <component name="ProjectId" id="2NbRriMM4C5El6k6F0NT4mxZhbR" />
   <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
   <component name="ProjectViewState">
@@ -57,10 +69,11 @@
     "WebServerToolWindowFactoryState": "false",
     "extract.method.default.visibility": "private",
     "last_opened_file_path": "C:/Games/viewer-core",
-    "project.structure.last.edited": "Facets",
+    "project.structure.last.edited": "Libraries",
     "project.structure.proportion": "0.15",
     "project.structure.side.proportion": "0.38045976",
-    "settings.editor.selected.configurable": "editor.preferences.tabs"
+    "run.code.analysis.last.selected.profile": "pProject Default",
+    "settings.editor.selected.configurable": "reference.settings.ide.settings.uml"
   }
 }]]></component>
   <component name="RunManager">
@@ -155,7 +168,7 @@
       <workItem from="1683294050510" duration="1429000" />
       <workItem from="1683301014052" duration="4951000" />
       <workItem from="1683306504872" duration="9000" />
-      <workItem from="1683344053335" duration="14499000" />
+      <workItem from="1683344053335" duration="26882000" />
     </task>
     <task id="LOCAL-00001" summary="26.04.23 - working prototype, coordinat. design flaw">
       <created>1682499355313</created>
@@ -283,7 +296,14 @@
       <option name="project" value="LOCAL" />
       <updated>1683361941582</updated>
     </task>
-    <option name="localTasksCounter" value="19" />
+    <task id="LOCAL-00019" summary="06.05.23 - minor naming refactor">
+      <created>1683367323214</created>
+      <option name="number" value="00019" />
+      <option name="presentableId" value="LOCAL-00019" />
+      <option name="project" value="LOCAL" />
+      <updated>1683367323214</updated>
+    </task>
+    <option name="localTasksCounter" value="20" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -320,7 +340,8 @@
     <MESSAGE value="05.05.23 - JSON parsing classes." />
     <MESSAGE value="05.05.23 - coordinate systems translations from JSON source." />
     <MESSAGE value="06.05.23 - coordinate systems translations from JSON source." />
-    <option name="LAST_COMMIT_MESSAGE" value="06.05.23 - coordinate systems translations from JSON source." />
+    <MESSAGE value="06.05.23 - minor naming refactor" />
+    <option name="LAST_COMMIT_MESSAGE" value="06.05.23 - minor naming refactor" />
     <option name="OPTIMIZE_IMPORTS_BEFORE_PROJECT_COMMIT" value="true" />
   </component>
   <component name="XDebuggerManager">

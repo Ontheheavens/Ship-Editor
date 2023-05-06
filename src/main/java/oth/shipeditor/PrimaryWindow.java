@@ -16,39 +16,37 @@ import java.util.Objects;
  * @author Ontheheavens
  * @since 27.04.2023
  */
-public class PrimaryWindow {
+@SuppressWarnings("FieldCanBeLocal")
+public class PrimaryWindow extends JFrame {
 
     @Getter
     private static final PrimaryWindow instance = new PrimaryWindow();
-    @Getter
-    private final JFrame mainFrame;
+
     @Getter
     private final ShipViewerPanel shipView;
     @Getter
     private final PrimaryMenuBar primaryMenu;
     @Getter
     private final ViewerPointsPanel pointsPanel;
-    @SuppressWarnings("FieldCanBeLocal")
     private final JPanel southPane;
     private final JTabbedPane instrumentPane;
 
     @Getter
     private ShipData shipData;
 
-
     @Getter
     private final ViewerStatusPanel statusPanel;
 
     private PrimaryWindow() {
-        mainFrame = new JFrame("Ship Editor");
-        mainFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-
-        mainFrame.setMinimumSize(new Dimension(800, 600));
-        mainFrame.setLocationRelativeTo(null);
-        mainFrame.getContentPane().setLayout(new BorderLayout());
+        // Frame initialization.
+        this.setTitle("Ship Editor");
+        this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        this.setMinimumSize(new Dimension(800, 600));
+        this.setLocationRelativeTo(null);
+        this.getContentPane().setLayout(new BorderLayout());
 
         shipView = new ShipViewerPanel();
-        shipView.getViewer().setBackground(Color.GRAY);
+
 
         instrumentPane = new JTabbedPane();
         instrumentPane.setTabPlacement(JTabbedPane.LEFT);
@@ -57,34 +55,38 @@ public class PrimaryWindow {
         instrumentPane.addTab("E",new JPanel());
 
         JSplitPane splitter = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
-        splitter.setLeftComponent(shipView.getViewer());
+        splitter.setLeftComponent(shipView);
         splitter.setRightComponent(instrumentPane);
         splitter.setResizeWeight(0.95);
 
-        mainFrame.getContentPane().add(splitter, BorderLayout.CENTER);
+        this.getContentPane().add(splitter, BorderLayout.CENTER);
 
         primaryMenu = new PrimaryMenuBar(this);
-        mainFrame.setJMenuBar(primaryMenu.getMenuBar());
+        this.setJMenuBar(primaryMenu.getMenuBar());
 
         southPane = new JPanel();
         southPane.setLayout(new GridLayout());
         statusPanel = new ViewerStatusPanel();
         statusPanel.setLayout(new FlowLayout(FlowLayout.LEADING));
         southPane.add(statusPanel);
-        mainFrame.getContentPane().add(southPane, BorderLayout.SOUTH);
-        mainFrame.pack();
+        this.getContentPane().add(southPane, BorderLayout.SOUTH);
+        this.pack();
     }
 
-    public void showWindow() {
+    private void initializeComponents() {
+        shipView.initialize();
+    }
+
+    public void showGUI() {
         URI dataPath;
         try {
             dataPath = Objects.requireNonNull(getClass().getClassLoader().getResource("legion.ship")).toURI();
         } catch (URISyntaxException e) {
             throw new RuntimeException(e);
         }
+        this.initializeComponents();
         shipData = new ShipData(dataPath);
-
-        mainFrame.setVisible(true);
+        this.setVisible(true);
     }
 
 }

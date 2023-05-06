@@ -48,7 +48,7 @@ public class PrimaryMenuBar {
 
         openOption.setIcon(FontIcon.of(FluentUiRegularAL.FOLDER_OPEN_20, 16));
         openOption.addActionListener(l -> SwingUtilities.invokeLater(() -> {
-            int returnVal = chooser.showOpenDialog(parent.getMainFrame());
+            int returnVal = chooser.showOpenDialog(parent);
             if (returnVal == JFileChooser.APPROVE_OPTION) {
                 File file = chooser.getSelectedFile();
                 try {
@@ -69,12 +69,12 @@ public class PrimaryMenuBar {
 
     private JMenu createViewMenu() {
         JMenu viewMenu = new JMenu("View");
-        Viewer shipView = parent.getShipView().getViewer();
+        Viewer shipView = parent.getShipView();
 
         JMenuItem backgroundColorOption = viewMenu.add(new JMenuItem("Change background color"));
         backgroundColorOption.setIcon(FontIcon.of(FluentUiRegularAL.COLOR_BACKGROUND_20, 16));
         backgroundColorOption.addActionListener(l -> SwingUtilities.invokeLater(() -> {
-            Color chosen = JColorChooser.showDialog(parent.getMainFrame(), "Choose Background", Color.GRAY);
+            Color chosen = JColorChooser.showDialog(parent, "Choose Background", Color.GRAY);
             shipView.setBackground(chosen);
             shipView.repaint();
         }));

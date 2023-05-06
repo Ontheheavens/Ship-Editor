@@ -1,7 +1,6 @@
 package oth.shipeditor.components.entities;
 
 import de.javagl.viewer.Painter;
-import de.javagl.viewer.Viewer;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
@@ -81,8 +80,7 @@ public class WorldPoint {
             case WORLD -> {
             }
             case SCREEN -> {
-                Viewer viewer = viewerPanel.getViewer();
-                Point2D viewerLoc = viewer.getLocation();
+                Point2D viewerLoc = viewerPanel.getLocation();
                 Point2D mouse = viewerPanel.getControls().getMousePoint();
                 result = new Point2D.Double(
                         position.getX() - viewerLoc.getX(),

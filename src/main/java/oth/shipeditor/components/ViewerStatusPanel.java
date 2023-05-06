@@ -1,6 +1,5 @@
 package oth.shipeditor.components;
 
-import de.javagl.viewer.Viewer;
 import lombok.Getter;
 import org.kordamp.ikonli.fluentui.FluentUiRegularAL;
 import org.kordamp.ikonli.fluentui.FluentUiRegularMZ;
@@ -110,55 +109,42 @@ public class ViewerStatusPanel extends JPanel {
         PrimaryWindow.getInstance().getPointsPanel().repaint();
     }
 
+    private JRadioButtonMenuItem createCoordsOption(String text, ButtonGroup group,
+                                                    CoordsDisplayMode displayMode, boolean selected) {
+        JRadioButtonMenuItem menuItem = new JRadioButtonMenuItem(text);
+        menuItem.addActionListener(e -> {
+            ViewerStatusPanel.this.mode = displayMode;
+            this.repaintPointsPanel();
+            menuItem.setSelected(true);
+        });
+        group.add(menuItem);
+        menuItem.setSelected(selected);
+        return menuItem;
+    }
+
     private JPopupMenu createCoordsMenu() {
         String axes = "X , Y from ";
         JPopupMenu popupMenu = new JPopupMenu();
         ButtonGroup group = new ButtonGroup();
-        JRadioButtonMenuItem world = new JRadioButtonMenuItem(axes + "top left corner of sprite (World 0,0)");
 
-        world.addActionListener(e -> {
-            ViewerStatusPanel.this.mode = CoordsDisplayMode.WORLD;
-            this.repaintPointsPanel();
-            world.setSelected(true);
-        });
-        group.add(world);
-        world.setSelected(true);
+        JRadioButtonMenuItem world = createCoordsOption(axes + "top left corner of sprite (World 0,0)",
+                group, CoordsDisplayMode.WORLD, true);
         popupMenu.add(world);
 
-        JRadioButtonMenuItem screen = new JRadioButtonMenuItem(axes + "top left corner of viewer (Screen 0,0)");
-        screen.addActionListener(e -> {
-            ViewerStatusPanel.this.mode = CoordsDisplayMode.SCREEN;
-            this.repaintPointsPanel();
-            screen.setSelected(true);
-        });
-        group.add(screen);
+        JRadioButtonMenuItem screen = createCoordsOption(axes + "top left corner of viewer (Screen 0,0)",
+                group, CoordsDisplayMode.SCREEN, false);
         popupMenu.add(screen);
 
-        JRadioButtonMenuItem sprite = new JRadioButtonMenuItem(axes + "sprite center (Sprite 0,0)");
-        sprite.addActionListener(e -> {
-            ViewerStatusPanel.this.mode = CoordsDisplayMode.SPRITE_CENTER;
-            this.repaintPointsPanel();
-            sprite.setSelected(true);
-        });
-        group.add(sprite);
+        JRadioButtonMenuItem sprite = createCoordsOption(axes + "sprite center (Sprite 0,0)",
+                group, CoordsDisplayMode.SPRITE_CENTER, false);
         popupMenu.add(sprite);
 
-        JRadioButtonMenuItem shipCenterAnchor = new JRadioButtonMenuItem(axes + "bottom left corner of sprite (Ship Center Anchor 0,0)");
-        shipCenterAnchor.addActionListener(e -> {
-            ViewerStatusPanel.this.mode = CoordsDisplayMode.SHIPCENTER_ANCHOR;
-            this.repaintPointsPanel();
-            shipCenterAnchor.setSelected(true);
-        });
-        group.add(shipCenterAnchor);
+        JRadioButtonMenuItem shipCenterAnchor = createCoordsOption(axes + "bottom left corner of sprite (Ship Center Anchor 0,0)",
+                group, CoordsDisplayMode.SHIPCENTER_ANCHOR, false);
         popupMenu.add(shipCenterAnchor);
 
-        JRadioButtonMenuItem shipCenter = new JRadioButtonMenuItem(axes + "designated ship center (Ship Center 0,0)");
-        shipCenter.addActionListener(e -> {
-            ViewerStatusPanel.this.mode = CoordsDisplayMode.SHIP_CENTER;
-            this.repaintPointsPanel();
-            shipCenter.setSelected(true);
-        });
-        group.add(shipCenter);
+        JRadioButtonMenuItem shipCenter = createCoordsOption(axes + "designated ship center (Ship Center 0,0)",
+                group, CoordsDisplayMode.SHIP_CENTER, false);
         popupMenu.add(shipCenter);
 
         return popupMenu;
@@ -172,43 +158,35 @@ public class ViewerStatusPanel extends JPanel {
         Point2D cursor = adjustedCursor;
         ShipViewerPanel viewerPanel = PrimaryWindow.getInstance().getShipView();
         switch (mode) {
-            case WORLD -> {
-            }
             case SCREEN -> {
-                Viewer viewer = viewerPanel.getViewer();
-                Point2D viewerLoc = viewer.getLocation();
+                Point2D viewerLoc = viewerPanel.getLocation();
                 Point2D mouse = viewerPanel.getControls().getMousePoint();
-                cursor = new Point2D.Double(
-                        mouse.getX() - viewerLoc.getX(),
-                        mouse.getY() - viewerLoc.getY()
-                );
-                double roundedX = Math.round(cursor.getX() * 2) / 2.0;
-                double roundedY = Math.round(cursor.getY() * 2) / 2.0;
-                cursor =  new Point2D.Double(roundedX, roundedY);
+                double roundedX = Math.round((mouse.getX() - viewerLoc.getX()) * 2) / 2.0;
+                double roundedY = Math.round((mouse.getY() - viewerLoc.getY()) * 2) / 2.0;
+                cursor = new Point2D.Double(roundedX, roundedY);
             }
             case SPRITE_CENTER -> {
                 Point2D center = viewerPanel.getSpriteCenter();
-                cursor = new Point2D.Double(
-                        adjustedCursor.getX() - center.getX(),
-                        adjustedCursor.getY() - center.getY()
-                );
+                cursor = adjustCursorCoordinates(adjustedCursor, center);
             }
             case SHIPCENTER_ANCHOR -> {
                 Point2D center = viewerPanel.getShipCenterAnchor();
-                cursor = new Point2D.Double(
-                        adjustedCursor.getX() - center.getX(),
-                        -adjustedCursor.getY() + center.getY()
-                );
+                cursor = adjustCursorCoordinates(adjustedCursor, center);
             }
             case SHIP_CENTER -> {
                 Point2D center = PrimaryWindow.getInstance().getShipData().getTranslatedCenter();
-                cursor = new Point2D.Double(
-                        adjustedCursor.getX() - center.getX(),
-                        adjustedCursor.getY() - center.getY()
-                );
+                cursor = adjustCursorCoordinates(adjustedCursor, center);
             }
         }
+
         cursorCoords.setText(cursor.getX() + "," + cursor.getY());
+    }
+
+    private Point2D adjustCursorCoordinates(Point2D cursor, Point2D center) {
+        return new Point2D.Double(
+                cursor.getX() - center.getX(),
+                cursor.getY() - center.getY()
+        );
     }
 
     public void setZoomLabel(double zoomLevel) {
