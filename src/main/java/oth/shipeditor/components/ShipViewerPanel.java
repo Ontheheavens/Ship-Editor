@@ -95,6 +95,10 @@ public class ShipViewerPanel {
         return new Point(shipSprite.getWidth() / 2, shipSprite.getHeight() / 2);
     }
 
+    public Point getShipCenterAnchor() {
+        return new Point(0, shipSprite.getHeight());
+    }
+
     public void centerViewpoint() {
         AffineTransform worldToScreen = viewer.getWorldToScreen();
         // Get the center of the sprite in screen coordinates.

@@ -2,6 +2,7 @@ package oth.shipeditor.components;
 
 import de.javagl.viewer.Painter;
 import lombok.Getter;
+import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
 import oth.shipeditor.PrimaryWindow;
 import oth.shipeditor.Utility;
@@ -25,6 +26,8 @@ import java.util.List;
 public class PointsPainter implements Painter {
     @Getter
     private final List<WorldPoint> worldPoints;
+    @Setter
+    private List<BoundPoint> boundPoints;
     @Getter
     private final List<Painter> delegates;
 
@@ -54,6 +57,7 @@ public class PointsPainter implements Painter {
     public PointsPainter() {
         this.delegates = new ArrayList<>();
         this.worldPoints = new ArrayList<>();
+        this.boundPoints = new ArrayList<>();
         this.delegateWorldToScreen = new AffineTransform();
         KeyboardFocusManager.getCurrentKeyboardFocusManager().addKeyEventDispatcher(ke -> {
             switch (ke.getID()) {
@@ -93,6 +97,9 @@ public class PointsPainter implements Painter {
             worldPoints.add(point);
             getPointsPanel().getModel().addElement(point);
             delegates.add(point.getPainter());
+            if (point instanceof BoundPoint boundPoint) {
+                boundPoints.add(boundPoint);
+            }
         });
     }
 
@@ -102,6 +109,10 @@ public class PointsPainter implements Painter {
             worldPoints.add(precedingIndex, toInsert);
             getPointsPanel().getModel().insertElementAt(toInsert, precedingIndex);
             delegates.add(toInsert.getPainter());
+            if (toInsert instanceof BoundPoint boundPoint) {
+                int precedingBound = boundPoints.indexOf(preceding);
+                boundPoints.add(precedingBound, boundPoint);
+            }
         });
     }
 
@@ -145,12 +156,15 @@ public class PointsPainter implements Painter {
             worldPoints.remove(point);
             getPointsPanel().getModel().removeElement(point);
             delegates.remove(point.getPainter());
+            if (point instanceof BoundPoint boundPoint) {
+                boundPoints.remove(boundPoint);
+            }
         });
 
     }
 
     public List<BoundPoint> getBoundPoints() {
-        return worldPoints.stream().filter(p -> p instanceof BoundPoint).map(p -> (BoundPoint) p).toList();
+        return boundPoints;
     }
 
     private Painter createBoundLinesPainter() {

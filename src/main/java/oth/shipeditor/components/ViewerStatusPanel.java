@@ -1,6 +1,7 @@
 package oth.shipeditor.components;
 
 import de.javagl.viewer.Viewer;
+import lombok.Getter;
 import org.kordamp.ikonli.fluentui.FluentUiRegularAL;
 import org.kordamp.ikonli.fluentui.FluentUiRegularMZ;
 import org.kordamp.ikonli.swing.FontIcon;
@@ -21,10 +22,11 @@ import java.awt.image.BufferedImage;
  */
 public class ViewerStatusPanel extends JPanel {
 
-    enum CoordsDisplayMode {
-        WORLD, SCREEN, SPRITE_CENTER
+    public enum CoordsDisplayMode {
+        WORLD, SCREEN, SPRITE_CENTER, SHIPCENTER_ANCHOR, SHIP_CENTER
     }
 
+    @Getter
     private CoordsDisplayMode mode = CoordsDisplayMode.WORLD;
 
     private final JLabel dimensions;
@@ -104,13 +106,19 @@ public class ViewerStatusPanel extends JPanel {
         this.add(zoom);
     }
 
+    private void repaintPointsPanel() {
+        PrimaryWindow.getInstance().getPointsPanel().repaint();
+    }
+
     private JPopupMenu createCoordsMenu() {
         String axes = "X , Y from ";
         JPopupMenu popupMenu = new JPopupMenu();
         ButtonGroup group = new ButtonGroup();
         JRadioButtonMenuItem world = new JRadioButtonMenuItem(axes + "top left corner of sprite (World 0,0)");
+
         world.addActionListener(e -> {
             ViewerStatusPanel.this.mode = CoordsDisplayMode.WORLD;
+            this.repaintPointsPanel();
             world.setSelected(true);
         });
         group.add(world);
@@ -120,6 +128,7 @@ public class ViewerStatusPanel extends JPanel {
         JRadioButtonMenuItem screen = new JRadioButtonMenuItem(axes + "top left corner of viewer (Screen 0,0)");
         screen.addActionListener(e -> {
             ViewerStatusPanel.this.mode = CoordsDisplayMode.SCREEN;
+            this.repaintPointsPanel();
             screen.setSelected(true);
         });
         group.add(screen);
@@ -128,10 +137,30 @@ public class ViewerStatusPanel extends JPanel {
         JRadioButtonMenuItem sprite = new JRadioButtonMenuItem(axes + "sprite center (Sprite 0,0)");
         sprite.addActionListener(e -> {
             ViewerStatusPanel.this.mode = CoordsDisplayMode.SPRITE_CENTER;
+            this.repaintPointsPanel();
             sprite.setSelected(true);
         });
         group.add(sprite);
         popupMenu.add(sprite);
+
+        JRadioButtonMenuItem shipCenterAnchor = new JRadioButtonMenuItem(axes + "bottom left corner of sprite (Ship Center Anchor 0,0)");
+        shipCenterAnchor.addActionListener(e -> {
+            ViewerStatusPanel.this.mode = CoordsDisplayMode.SHIPCENTER_ANCHOR;
+            this.repaintPointsPanel();
+            shipCenterAnchor.setSelected(true);
+        });
+        group.add(shipCenterAnchor);
+        popupMenu.add(shipCenterAnchor);
+
+        JRadioButtonMenuItem shipCenter = new JRadioButtonMenuItem(axes + "designated ship center (Ship Center 0,0)");
+        shipCenter.addActionListener(e -> {
+            ViewerStatusPanel.this.mode = CoordsDisplayMode.SHIP_CENTER;
+            this.repaintPointsPanel();
+            shipCenter.setSelected(true);
+        });
+        group.add(shipCenter);
+        popupMenu.add(shipCenter);
+
         return popupMenu;
     }
 
@@ -159,6 +188,20 @@ public class ViewerStatusPanel extends JPanel {
             }
             case SPRITE_CENTER -> {
                 Point2D center = viewerPanel.getSpriteCenter();
+                cursor = new Point2D.Double(
+                        adjustedCursor.getX() - center.getX(),
+                        adjustedCursor.getY() - center.getY()
+                );
+            }
+            case SHIPCENTER_ANCHOR -> {
+                Point2D center = viewerPanel.getShipCenterAnchor();
+                cursor = new Point2D.Double(
+                        adjustedCursor.getX() - center.getX(),
+                        -adjustedCursor.getY() + center.getY()
+                );
+            }
+            case SHIP_CENTER -> {
+                Point2D center = PrimaryWindow.getInstance().getShipData().getTranslatedCenter();
                 cursor = new Point2D.Double(
                         adjustedCursor.getX() - center.getX(),
                         adjustedCursor.getY() - center.getY()

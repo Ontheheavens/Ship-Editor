@@ -1,11 +1,14 @@
 package oth.shipeditor.components.entities;
 
 import de.javagl.viewer.Painter;
+import de.javagl.viewer.Viewer;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
 import oth.shipeditor.PrimaryWindow;
 import oth.shipeditor.components.ShipViewerControls;
+import oth.shipeditor.components.ShipViewerPanel;
+import oth.shipeditor.components.ViewerStatusPanel;
 
 import java.awt.*;
 import java.awt.geom.AffineTransform;
@@ -69,9 +72,55 @@ public class WorldPoint {
         this.position.setLocation(x, y);
     }
 
+    public Point2D getCoordinatesForDisplay() {
+        Point2D result = this.position;
+        ViewerStatusPanel statusPanel = PrimaryWindow.getInstance().getStatusPanel();
+        ShipViewerPanel viewerPanel = PrimaryWindow.getInstance().getShipView();
+        ViewerStatusPanel.CoordsDisplayMode mode = statusPanel.getMode();
+        switch (mode) {
+            case WORLD -> {
+            }
+            case SCREEN -> {
+                Viewer viewer = viewerPanel.getViewer();
+                Point2D viewerLoc = viewer.getLocation();
+                Point2D mouse = viewerPanel.getControls().getMousePoint();
+                result = new Point2D.Double(
+                        position.getX() - viewerLoc.getX(),
+                        position.getY() - viewerLoc.getY()
+                );
+                double roundedX = Math.round(result.getX() * 2) / 2.0;
+                double roundedY = Math.round(result.getY() * 2) / 2.0;
+                result =  new Point2D.Double(roundedX, roundedY);
+            }
+            case SPRITE_CENTER -> {
+                Point2D center = viewerPanel.getSpriteCenter();
+                result = new Point2D.Double(
+                        position.getX() - center.getX(),
+                        position.getY() - center.getY()
+                );
+            }
+            case SHIPCENTER_ANCHOR -> {
+                Point2D center = viewerPanel.getShipCenterAnchor();
+                result = new Point2D.Double(
+                        position.getX() - center.getX(),
+                        -position.getY() + center.getY()
+                );
+            }
+            case SHIP_CENTER -> {
+                Point2D center = PrimaryWindow.getInstance().getShipData().getTranslatedCenter();
+                result = new Point2D.Double(
+                        position.getX() - center.getX(),
+                        position.getY() - center.getY()
+                );
+            }
+        }
+        return result;
+    }
+
     @Override
     public String toString() {
-        return "Point {" + position.getX() + "," + position.getY() + '}';
+        Point2D translated = this.getCoordinatesForDisplay();
+        return "Point {" + translated.getX() + "," + translated.getY() + '}';
     }
 
 }

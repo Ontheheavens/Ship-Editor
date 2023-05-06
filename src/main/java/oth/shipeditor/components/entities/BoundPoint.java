@@ -27,8 +27,9 @@ public class BoundPoint extends FeaturePoint{
 
     @Override
     public String toString() {
+        Point2D translated = this.getCoordinatesForDisplay();
         int index = PrimaryWindow.getInstance().getShipView().getPointsPainter().getBoundPoints().indexOf(this);
-        return index + "Bound {" + getPosition().getX() + "," + getPosition().getY() + '}';
+        return index + "Bound {" + translated.getX() + "," + translated.getY() + '}';
     }
 
 }

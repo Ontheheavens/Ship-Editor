@@ -17,6 +17,14 @@ public class Utility {
         Utility.drawBorderedLine(g, first, second, inner, Color.BLACK, 2f, 3f);
     }
 
+//    public static Point2D.Double translateFromSourceCoords(Point2D source) {
+//
+//    }
+//
+//    public static Point2D.Double translateToSourceCoords(Point2D representation) {
+//
+//    }
+
     public static void drawBorderedLine(Graphics2D g, Point2D first, Point2D second,
                                          Color innerColor, Color outerColor, float innerWidth, float outerWidth) {
         Stroke originalStroke = g.getStroke();

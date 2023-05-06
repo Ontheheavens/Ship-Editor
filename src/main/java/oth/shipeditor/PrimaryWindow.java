@@ -4,7 +4,7 @@ import lombok.Getter;
 import oth.shipeditor.components.ShipViewerPanel;
 import oth.shipeditor.components.ViewerPointsPanel;
 import oth.shipeditor.components.ViewerStatusPanel;
-import oth.shipeditor.data.HullData;
+import oth.shipeditor.data.ShipData;
 
 import javax.swing.*;
 import java.awt.*;
@@ -31,6 +31,9 @@ public class PrimaryWindow {
     @SuppressWarnings("FieldCanBeLocal")
     private final JPanel southPane;
     private final JTabbedPane instrumentPane;
+
+    @Getter
+    private ShipData shipData;
 
 
     @Getter
@@ -79,7 +82,7 @@ public class PrimaryWindow {
         } catch (URISyntaxException e) {
             throw new RuntimeException(e);
         }
-        new HullData(dataPath);
+        shipData = new ShipData(dataPath);
 
         mainFrame.setVisible(true);
     }
