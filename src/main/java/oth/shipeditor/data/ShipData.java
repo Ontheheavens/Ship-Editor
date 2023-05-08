@@ -25,6 +25,9 @@ public class ShipData {
     @Getter
     private final Hull hull;
 
+    @Getter
+    private String fileName;
+
     @Getter @Setter
     private Point2D.Double translatedCenter;
 
@@ -56,6 +59,7 @@ public class ShipData {
     private Hull loadHullFromURI(URI uri) {
         try {
             File file = new File(uri);
+            fileName = file.getName();
             ObjectMapper objectMapper = new ObjectMapper();
             return objectMapper.readValue(file, Hull.class);
         } catch (IOException e) {

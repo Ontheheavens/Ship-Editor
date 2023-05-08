@@ -29,11 +29,14 @@ public class ShipViewerPanel extends Viewer {
 
     @Getter
     private BufferedImage shipSprite;
+    @Getter
+    private boolean spriteLoaded;
     private Painter shipPaint;
     private Painter guidesPaint;
     private Painter spriteBorderPaint;
+    private Painter spriteCenterPaint;
     @Getter
-    private final PointsPainter pointsPainter;
+    private PointsPainter pointsPainter;
     @Getter
     private final ShipViewerControls controls;
 
@@ -49,17 +52,11 @@ public class ShipViewerPanel extends Viewer {
 
         controls = new ShipViewerControls(this);
         this.setMouseControl(controls);
-
-        this.pointsPainter = new PointsPainter();
     }
 
     public void initialize() {
         this.initSprite();
-        this.drawGuides();
-        this.drawBorder();
-        this.drawSpriteCenter();
 
-        this.addPainter(this.pointsPainter, 3);
         this.centerViewpoint();
     }
 
@@ -91,14 +88,28 @@ public class ShipViewerPanel extends Viewer {
         };
         this.addPainter(spritePainter, 2);
         this.shipPaint = spritePainter;
+
+        this.drawGuides();
+        this.drawBorder();
+        this.drawSpriteCenter();
+
+        this.removePainter(pointsPainter);
+        this.pointsPainter = new PointsPainter();
+        this.addPainter(this.pointsPainter, 3);
+
+        this.spriteLoaded = true;
     }
 
     public Point getSpriteCenter() {
-        return new Point(shipSprite.getWidth() / 2, shipSprite.getHeight() / 2);
+        if (shipSprite != null) {
+            return new Point(shipSprite.getWidth() / 2, shipSprite.getHeight() / 2);
+        } else return new Point();
     }
 
     public Point getShipCenterAnchor() {
-        return new Point(0, shipSprite.getHeight());
+        if (shipSprite != null) {
+            return new Point(0, shipSprite.getHeight());
+        } else return new Point();
     }
 
     public void centerViewpoint() {
@@ -175,14 +186,15 @@ public class ShipViewerPanel extends Viewer {
     }
 
     private void drawSpriteCenter() {
-        Painter centerPainter = (g, worldToScreen, w, h) -> {
+        this.removePainter(spriteCenterPaint);
+        this.spriteCenterPaint = (g, worldToScreen, w, h) -> {
             Point2D center = worldToScreen.transform(getSpriteCenter(), null);
             // Draw the two diagonal lines centered on the sprite center.
             int x = (int) center.getX(), y = (int) center.getY(), l = 5;
             g.drawLine(x-l, y-l, x+l, y+l);
             g.drawLine(x-l, y+l, x+l, y-l);
         };
-        this.addPainter(centerPainter, 5);
+        this.addPainter(spriteCenterPaint, 5);
     }
 
 }

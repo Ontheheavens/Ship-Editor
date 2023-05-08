@@ -20,6 +20,7 @@ import java.awt.geom.Point2D;
  */
 @Log4j2
 public class WorldPoint {
+
     @Getter
     private final Point2D position;
 

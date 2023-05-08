@@ -3,10 +3,10 @@ package oth.shipeditor.components.painters;
 import de.javagl.viewer.Painter;
 import lombok.Setter;
 import oth.shipeditor.PrimaryWindow;
-import oth.shipeditor.Utility;
 import oth.shipeditor.components.ShipViewerPanel;
 import oth.shipeditor.components.ViewerPointsPanel;
 import oth.shipeditor.components.entities.BoundPoint;
+import oth.shipeditor.utility.Utility;
 
 import javax.swing.*;
 import java.awt.*;

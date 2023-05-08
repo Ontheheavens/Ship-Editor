@@ -36,7 +36,7 @@ public class PointsPainter implements Painter {
     private final AffineTransform delegateWorldToScreen;
 
     /**
-     * Create a new painter that is a composition of the painters in delegate list.
+     * Painter responsible for display of base point entities - needs sub-painters for complete visuals.
      */
     public PointsPainter() {
         this.delegates = new ArrayList<>();

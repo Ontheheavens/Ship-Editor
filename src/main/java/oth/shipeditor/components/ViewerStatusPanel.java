@@ -5,7 +5,7 @@ import org.kordamp.ikonli.fluentui.FluentUiRegularAL;
 import org.kordamp.ikonli.fluentui.FluentUiRegularMZ;
 import org.kordamp.ikonli.swing.FontIcon;
 import oth.shipeditor.PrimaryWindow;
-import oth.shipeditor.Utility;
+import oth.shipeditor.utility.Utility;
 
 import javax.swing.*;
 import javax.swing.border.Border;
@@ -151,7 +151,12 @@ public class ViewerStatusPanel extends JPanel {
     }
 
     public void setDimensionsLabel(BufferedImage sprite) {
-        dimensions.setText(sprite.getWidth() + " x " + sprite.getHeight());
+        if (sprite != null) {
+            dimensions.setText(sprite.getWidth() + " x " + sprite.getHeight());
+        } else {
+            dimensions.setText("Sprite not loaded.");
+        }
+
     }
 
     public void setCursorCoordsLabel(Point2D adjustedCursor) {
@@ -170,10 +175,12 @@ public class ViewerStatusPanel extends JPanel {
                 cursor = adjustCursorCoordinates(adjustedCursor, center);
             }
             case SHIPCENTER_ANCHOR -> {
+                if (viewerPanel.getShipSprite() == null) return;
                 Point2D center = viewerPanel.getShipCenterAnchor();
                 cursor = adjustCursorCoordinates(adjustedCursor, center);
             }
             case SHIP_CENTER -> {
+                if (PrimaryWindow.getInstance().getShipData() == null) return;
                 Point2D center = PrimaryWindow.getInstance().getShipData().getTranslatedCenter();
                 cursor = adjustCursorCoordinates(adjustedCursor, center);
             }
