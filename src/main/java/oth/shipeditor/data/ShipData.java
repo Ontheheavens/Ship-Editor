@@ -4,17 +4,14 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import de.javagl.viewer.Painter;
 import lombok.Getter;
 import lombok.Setter;
-import oth.shipeditor.PrimaryWindow;
 import oth.shipeditor.components.ShipViewerPanel;
 import oth.shipeditor.components.entities.BoundPoint;
 import oth.shipeditor.components.entities.FeaturePoint;
 import oth.shipeditor.components.entities.WorldPoint;
-import oth.shipeditor.components.painters.PointsPainter;
 
 import java.awt.geom.Point2D;
 import java.io.File;
 import java.io.IOException;
-import java.net.URI;
 
 /**
  * @author Ontheheavens
@@ -31,22 +28,21 @@ public class ShipData {
     @Getter @Setter
     private Point2D.Double translatedCenter;
 
-    public ShipData(URI uri) {
-        hull = this.loadHullFromURI(uri);
+    public ShipData(File file) {
+        hull = this.loadHullFromURI(file);
         if (hull == null) throw new RuntimeException("Failed to load hull from URI!");
+    }
 
-        ShipViewerPanel viewerPanel = PrimaryWindow.getInstance().getShipView();
-        PointsPainter painter = viewerPanel.getPointsPainter();
-
+    public void initialize(ShipViewerPanel viewerPanel) {
         Point2D anchor = viewerPanel.getShipCenterAnchor();
         translatedCenter = new Point2D.Double(hull.center.x - anchor.getX(),
                 -hull.center.y + anchor.getY());
 
         WorldPoint shipCenter = createShipCenterPoint(translatedCenter);
-        painter.addPoint(shipCenter);
+        viewerPanel.getPointsPainter().addPoint(shipCenter);
         for (Point2D.Double bound : hull.bounds) {
             BoundPoint boundPoint = this.createTranslatedBound(bound, translatedCenter);
-            painter.addPoint(boundPoint);
+            viewerPanel.getPointsPainter().addPoint(boundPoint);
         }
     }
 
@@ -56,9 +52,8 @@ public class ShipData {
         return new BoundPoint(new Point2D.Double(translatedX, translatedY));
     }
 
-    private Hull loadHullFromURI(URI uri) {
+    private Hull loadHullFromURI(File file) {
         try {
-            File file = new File(uri);
             fileName = file.getName();
             ObjectMapper objectMapper = new ObjectMapper();
             return objectMapper.readValue(file, Hull.class);

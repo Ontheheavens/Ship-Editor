@@ -4,7 +4,7 @@ import de.javagl.viewer.Painter;
 import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
 import oth.shipeditor.PrimaryWindow;
-import oth.shipeditor.components.ViewerPointsPanel;
+import oth.shipeditor.components.BoundPointsPanel;
 import oth.shipeditor.components.entities.BoundPoint;
 import oth.shipeditor.components.entities.WorldPoint;
 
@@ -69,7 +69,7 @@ public class PointsPainter implements Painter {
 
     }
 
-    protected ViewerPointsPanel getPointsPanel() {
+    protected BoundPointsPanel getPointsPanel() {
         return PrimaryWindow.getInstance().getPointsPanel();
     }
 

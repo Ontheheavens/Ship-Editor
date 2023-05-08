@@ -6,7 +6,9 @@ import org.kordamp.ikonli.fluentui.FluentUiRegularAL;
 import org.kordamp.ikonli.fluentui.FluentUiRegularMZ;
 import org.kordamp.ikonli.swing.FontIcon;
 import oth.shipeditor.PrimaryWindow;
+import oth.shipeditor.components.control.ShipViewerControls;
 import oth.shipeditor.components.entities.WorldPoint;
+import oth.shipeditor.menubar.PrimaryMenuBar;
 
 import javax.swing.*;
 import javax.swing.border.Border;
@@ -18,7 +20,7 @@ import java.awt.event.ItemEvent;
  * @author Ontheheavens
  * @since 30.04.2023
  */
-public class ViewerPointsPanel extends JPanel {
+public class BoundPointsPanel extends JPanel {
     public enum PointsMode {
         DISABLED, SELECT, CREATE
     }
@@ -33,7 +35,7 @@ public class ViewerPointsPanel extends JPanel {
     @Getter
     private JToggleButton createModeButton;
 
-    public ViewerPointsPanel() {
+    public BoundPointsPanel() {
         this.setLayout(new BorderLayout());
         pointContainer = new JList<>(model);
         int margin = 3;
@@ -71,26 +73,45 @@ public class ViewerPointsPanel extends JPanel {
     private void createModeButtons(JPanel modePanel) {
         selectModeButton = new JToggleButton(FontIcon.of(FluentUiRegularMZ.SELECT_OBJECT_20, 16));
         selectModeButton.setToolTipText("Select, move and delete.");
-        selectModeButton.addItemListener(ev -> {
-            if (ev.getStateChange() == ItemEvent.SELECTED) {
-                this.setMode(PointsMode.SELECT);
-            }
-        });
         modePanel.add(selectModeButton);
         createModeButton = new JToggleButton(FontIcon.of(FluentUiRegularAL.ADD_CIRCLE_20, 16));
         createModeButton.setToolTipText("Create new points.");
-        createModeButton.addItemListener(ev -> {
-            if (ev.getStateChange() == ItemEvent.SELECTED) {
-                this.setMode(PointsMode.CREATE);
-                PrimaryWindow.getInstance().getPrimaryMenu().toggleRotationFromMenu(false);
-            }
-        });
         modePanel.add(createModeButton);
         ButtonGroup group = new ButtonGroup();
         group.add(selectModeButton);
         group.add(createModeButton);
         selectModeButton.setSelected(false);
         createModeButton.setSelected(false);
+    }
+
+    {
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                PrimaryMenuBar menuBar = PrimaryWindow.getInstance().getPrimaryMenu();
+                ShipViewerControls controls = PrimaryWindow.getControls();
+                selectModeButton.addItemListener(ev -> {
+                    if (ev.getStateChange() == ItemEvent.SELECTED) {
+                        BoundPointsPanel.this.setMode(PointsMode.SELECT);
+                        menuBar.getToggleRotate().setEnabled(true);
+                    }
+                });
+                createModeButton.addItemListener(ev -> {
+                    if (ev.getStateChange() == ItemEvent.SELECTED) {
+                        BoundPointsPanel.this.setMode(PointsMode.CREATE);
+                        controls.setRotationEnabled(false);
+                        menuBar.getToggleRotate().setSelected(false);
+                        menuBar.getToggleRotate().setEnabled(false);
+                    }
+                });
+                controls.getPCS().addPropertyChangeListener("rotationEnabled", evt -> {
+                    if (controls.isRotationEnabled()) {
+                        BoundPointsPanel.this.setMode(PointsMode.SELECT);
+                        selectModeButton.setSelected(true);
+                    }
+                });
+            }
+        });
     }
 
 }

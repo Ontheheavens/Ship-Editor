@@ -1,4 +1,4 @@
-package oth.shipeditor.components;
+package oth.shipeditor.components.control;
 
 import de.javagl.viewer.InputEventPredicates;
 import de.javagl.viewer.MouseControl;
@@ -7,10 +7,11 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
 import oth.shipeditor.PrimaryWindow;
-import oth.shipeditor.components.entities.BoundPoint;
+import oth.shipeditor.components.BoundPointsPanel;
+import oth.shipeditor.components.ShipViewerPanel;
 import oth.shipeditor.components.entities.WorldPoint;
-import oth.shipeditor.components.painters.BoundPointsPainter;
 import oth.shipeditor.components.painters.PointsPainter;
+import oth.shipeditor.utility.ChangeDispatchable;
 import oth.shipeditor.utility.Utility;
 
 import javax.swing.*;
@@ -19,7 +20,7 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseWheelEvent;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Point2D;
-import java.util.List;
+import java.beans.PropertyChangeSupport;
 import java.util.function.Predicate;
 
 /**
@@ -28,7 +29,7 @@ import java.util.function.Predicate;
  */
 
 @Log4j2
-public class ShipViewerControls implements MouseControl {
+public class ShipViewerControls implements MouseControl, ChangeDispatchable {
 
     private final ShipViewerPanel parentViewer;
 
@@ -43,16 +44,6 @@ public class ShipViewerControls implements MouseControl {
     private final Predicate<MouseEvent> selectPointPredicate = Predicates.and(
             InputEventPredicates.buttonDown(1),
             InputEventPredicates.noModifiers()
-    );
-
-    private final Predicate<MouseEvent> appendPointPredicate = Predicates.and(
-            InputEventPredicates.buttonDown(1),
-            InputEventPredicates.shiftDown()
-    );
-
-    private final Predicate<MouseEvent> insertPointPredicate = Predicates.and(
-            InputEventPredicates.buttonDown(1),
-            InputEventPredicates.controlDown()
     );
 
     private final Predicate<MouseEvent> removePointPredicate = Predicates.and(
@@ -86,28 +77,43 @@ public class ShipViewerControls implements MouseControl {
     @Getter @Setter
     private WorldPoint selected;
 
+    private final BoundEditingControl boundControl;
+
+    private final PropertyChangeSupport fieldChangeDispatcher = new PropertyChangeSupport(this);
+
     @Getter
     private double zoomLevel = 1;
 
     public ShipViewerControls(ShipViewerPanel parent) {
         this.parentViewer = parent;
+        this.rotationEnabled = true;
+        this.boundControl = new BoundEditingControl(this);
+        SwingUtilities.invokeLater(() ->
+                PrimaryWindow.getInstance().getPrimaryMenu().initToggleRotateOption(ShipViewerControls.this));
     }
 
     private void repaintPointsPanel() {
-        SwingUtilities.invokeLater(() -> getPointsPanel().repaint());
+        if (getPointsPanel() != null) {
+            SwingUtilities.invokeLater(() -> getPointsPanel().repaint());
+        }
     }
 
     private PointsPainter getPointsPaint() {
         return PrimaryWindow.getInstance().getShipView().getPointsPainter();
     }
 
-    private ViewerPointsPanel getPointsPanel() {
+    private BoundPointsPanel getPointsPanel() {
         return PrimaryWindow.getInstance().getPointsPanel();
     }
 
     @Override
     public void mouseClicked(MouseEvent e) {
 
+    }
+
+    @Override
+    public PropertyChangeSupport getPCS() {
+        return fieldChangeDispatcher;
     }
 
     public Point2D getAdjustedCursor() {
@@ -132,32 +138,11 @@ public class ShipViewerControls implements MouseControl {
         if (!parentViewer.isSpriteLoaded()) {
             return;
         }
-        BoundPointsPainter boundPainter = painter.getBoundPainter();
         pressPoint.setLocation(e.getPoint());
-        if (getPointsPanel().getMode() == ViewerPointsPanel.PointsMode.CREATE) {
-            Point2D screenPoint = this.getAdjustedCursor();
-            AffineTransform screenToWorld = parentViewer.getScreenToWorld();
-            Point2D rounded = Utility.correctAdjustedCursor(screenPoint, screenToWorld);
-            if (!painter.pointAtCoordsExists(rounded)) {
-                if (appendPointPredicate.test(e)) {
-                    BoundPoint wrapped = new BoundPoint(rounded);
-                    painter.addPoint(wrapped);
-                    parentViewer.repaint();
-                } else if (insertPointPredicate.test(e) && boundPainter.getBoundPoints().size() >= 2) {
-                    List<BoundPoint> twoClosest = boundPainter.findClosestBoundPoints(rounded);
-                    List<BoundPoint> allPoints = boundPainter.getBoundPoints();
-                    int index = boundPainter.getLowestBoundPointIndex(twoClosest);
-                    if (index >= 0) index += 1;
-                    if (index > allPoints.size() - 1) index = 0;
-                    if (boundPainter.getHighestBoundPointIndex(twoClosest) == allPoints.size() - 1 &&
-                            boundPainter.getLowestBoundPointIndex(twoClosest) == 0) index = 0;
-                    BoundPoint preceding = boundPainter.getBoundPoints().get(index);
-                    BoundPoint wrapped = new BoundPoint(rounded);
-                    boundPainter.insertPoint(wrapped, preceding);
-                    parentViewer.repaint();
-                }
-            }
-        }
+
+        this.boundControl.checkForBoundCreation(e, getPointsPanel(),
+                painter, parentViewer);
+
         if (removePointPredicate.test(e)) {
             WorldPoint toRemove = this.getMousedOver();
             if (toRemove != null) {
@@ -165,22 +150,21 @@ public class ShipViewerControls implements MouseControl {
             }
             parentViewer.repaint();
         }
-        boolean selectingModes = getPointsPanel().getMode() == ViewerPointsPanel.PointsMode.SELECT ||
-                getPointsPanel().getMode() == ViewerPointsPanel.PointsMode.CREATE;
-        if (selectPointPredicate.test(e) && selectingModes) {
-            JList<WorldPoint> pointList = getPointsPanel().getPointContainer();
+
+        if (selectPointPredicate.test(e)) {
+//            JList<WorldPoint> pointList = getPointsPanel().getPointContainer();
             if (mousedOverPoint()) {
                 if (this.selected != null) {
                     this.selected.setSelected(false);
                 }
                 this.selected = this.getMousedOver();
-                pointList.setSelectedValue(this.selected, true);
+//                pointList.setSelectedValue(this.selected, true);
                 this.selected.setSelected(true);
                 parentViewer.repaint();
             } else if (this.selected != null) {
                 this.selected.setSelected(false);
                 this.selected = null;
-                pointList.setSelectedValue(null, true);
+//                pointList.setSelectedValue(null, true);
                 parentViewer.repaint();
             }
         }
@@ -224,9 +208,8 @@ public class ShipViewerControls implements MouseControl {
             int dy = e.getY() - previousPoint.y;
             parentViewer.translate(dx, dy);
         }
-        boolean draggingModes = getPointsPanel().getMode() == ViewerPointsPanel.PointsMode.SELECT ||
-                getPointsPanel().getMode() == ViewerPointsPanel.PointsMode.CREATE;
-        if (selectPointPredicate.test(e) && selected != null && draggingModes) {
+
+        if (selectPointPredicate.test(e) && selected != null) {
             Point2D translated = parentViewer.getScreenToWorld().transform(getAdjustedCursor(), null);
             double roundedX = Math.round(translated.getX() * 2) / 2.0;
             double roundedY = Math.round(translated.getY() * 2) / 2.0;

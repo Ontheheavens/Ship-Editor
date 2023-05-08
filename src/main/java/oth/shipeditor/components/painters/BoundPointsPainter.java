@@ -3,8 +3,8 @@ package oth.shipeditor.components.painters;
 import de.javagl.viewer.Painter;
 import lombok.Setter;
 import oth.shipeditor.PrimaryWindow;
+import oth.shipeditor.components.BoundPointsPanel;
 import oth.shipeditor.components.ShipViewerPanel;
-import oth.shipeditor.components.ViewerPointsPanel;
 import oth.shipeditor.components.entities.BoundPoint;
 import oth.shipeditor.utility.Utility;
 
@@ -139,7 +139,7 @@ public class BoundPointsPainter implements Painter {
         Point2D first = worldToScreen.transform(bPoints.get(0).getPosition(), null);
         Utility.drawBorderedLine(g, prev, first, Color.DARK_GRAY);
         ShipViewerPanel viewerPanel = PrimaryWindow.getInstance().getShipView();
-        if (parent.getPointsPanel().getMode() == ViewerPointsPanel.PointsMode.CREATE) {
+        if (parent.getPointsPanel().getMode() == BoundPointsPanel.PointsMode.CREATE) {
             Point2D cursor = viewerPanel.getControls().getAdjustedCursor();
             AffineTransform screenToWorld = viewerPanel.getScreenToWorld();
             Point2D adjusted = worldToScreen.transform(Utility.correctAdjustedCursor(cursor, screenToWorld), null);

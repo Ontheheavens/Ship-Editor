@@ -5,9 +5,9 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
 import oth.shipeditor.PrimaryWindow;
-import oth.shipeditor.components.ShipViewerControls;
 import oth.shipeditor.components.ShipViewerPanel;
 import oth.shipeditor.components.ViewerStatusPanel;
+import oth.shipeditor.components.control.ShipViewerControls;
 
 import java.awt.*;
 import java.awt.geom.AffineTransform;

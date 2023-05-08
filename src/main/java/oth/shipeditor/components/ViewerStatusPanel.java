@@ -39,7 +39,7 @@ public class ViewerStatusPanel extends JPanel {
     {
         SwingUtilities.invokeLater(() -> {
             ShipViewerPanel viewerPanel = PrimaryWindow.getInstance().getShipView();
-            setDimensionsLabel(viewerPanel.getShipSprite());
+            setDimensionsLabel(PrimaryWindow.getInstance().getShipSprite());
             setCursorCoordsLabel(new Point2D.Double(0,0));
             setZoomLabel(viewerPanel.getControls().getZoomLevel());
         });
@@ -106,7 +106,10 @@ public class ViewerStatusPanel extends JPanel {
     }
 
     private void repaintPointsPanel() {
-        PrimaryWindow.getInstance().getPointsPanel().repaint();
+        BoundPointsPanel boundsPanel = PrimaryWindow.getInstance().getPointsPanel();
+        if (boundsPanel != null) {
+            boundsPanel.repaint();
+        }
     }
 
     private JRadioButtonMenuItem createCoordsOption(String text, ButtonGroup group,
@@ -175,7 +178,7 @@ public class ViewerStatusPanel extends JPanel {
                 cursor = adjustCursorCoordinates(adjustedCursor, center);
             }
             case SHIPCENTER_ANCHOR -> {
-                if (viewerPanel.getShipSprite() == null) return;
+                if (PrimaryWindow.getInstance().getShipSprite() == null) return;
                 Point2D center = viewerPanel.getShipCenterAnchor();
                 cursor = adjustCursorCoordinates(adjustedCursor, center);
             }

@@ -4,9 +4,10 @@ import de.javagl.viewer.Painter;
 import de.javagl.viewer.Viewer;
 import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
+import oth.shipeditor.PrimaryWindow;
+import oth.shipeditor.components.control.ShipViewerControls;
 import oth.shipeditor.components.painters.PointsPainter;
 
-import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
@@ -14,11 +15,6 @@ import java.awt.geom.AffineTransform;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
-import java.io.File;
-import java.io.IOException;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.util.Objects;
 
 /**
  * @author Ontheheavens
@@ -27,8 +23,6 @@ import java.util.Objects;
 @Log4j2
 public class ShipViewerPanel extends Viewer {
 
-    @Getter
-    private BufferedImage shipSprite;
     @Getter
     private boolean spriteLoaded;
     private Painter shipPaint;
@@ -54,30 +48,12 @@ public class ShipViewerPanel extends Viewer {
         this.setMouseControl(controls);
     }
 
-    public void initialize() {
-        this.initSprite();
-
-        this.centerViewpoint();
+    private BufferedImage getLoadedSprite() {
+        return PrimaryWindow.getInstance().getShipSprite();
     }
 
-    private void initSprite() {
-        URI spritePath;
-        try {
-            spritePath = Objects.requireNonNull(getClass().getClassLoader().getResource("legion_xiv.png")).toURI();
-        } catch (URISyntaxException e) {
-            throw new RuntimeException(e);
-        }
-        try {
-            this.shipSprite = ImageIO.read(new File(spritePath));
-            this.setShipSprite(shipSprite);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    public void setShipSprite(BufferedImage shipSprite) {
+    public void loadShipSprite(BufferedImage shipSprite) {
         this.removePainter(shipPaint);
-        this.shipSprite = shipSprite;
         Painter spritePainter = (g, worldToScreen, w, h) -> {
             AffineTransform oldAT = g.getTransform();
             g.transform(worldToScreen);
@@ -89,8 +65,8 @@ public class ShipViewerPanel extends Viewer {
         this.addPainter(spritePainter, 2);
         this.shipPaint = spritePainter;
 
-        this.drawGuides();
-        this.drawBorder();
+        this.drawGuides(shipSprite);
+        this.drawBorder(shipSprite);
         this.drawSpriteCenter();
 
         this.removePainter(pointsPainter);
@@ -98,17 +74,19 @@ public class ShipViewerPanel extends Viewer {
         this.addPainter(this.pointsPainter, 3);
 
         this.spriteLoaded = true;
+
+        this.centerViewpoint();
     }
 
     public Point getSpriteCenter() {
-        if (shipSprite != null) {
-            return new Point(shipSprite.getWidth() / 2, shipSprite.getHeight() / 2);
+        if (getLoadedSprite() != null) {
+            return new Point(getLoadedSprite().getWidth() / 2, getLoadedSprite().getHeight() / 2);
         } else return new Point();
     }
 
     public Point getShipCenterAnchor() {
-        if (shipSprite != null) {
-            return new Point(0, shipSprite.getHeight());
+        if (getLoadedSprite() != null) {
+            return new Point(0, getLoadedSprite().getHeight());
         } else return new Point();
     }
 
@@ -136,7 +114,7 @@ public class ShipViewerPanel extends Viewer {
      * Note: considerable size of implementation is necessary due to the Viewer rotating functionality
      * and 0.5 scaled pixel snapping.
      */
-    private void drawGuides() {
+    private void drawGuides(BufferedImage shipSprite) {
         this.removePainter(guidesPaint);
         Painter guidesPainter = (g, worldToScreen, w, h) -> {
             Point2D mousePoint = this.getAdjustedCursor();
@@ -172,7 +150,7 @@ public class ShipViewerPanel extends Viewer {
         this.guidesPaint = guidesPainter;
     }
 
-    private void drawBorder() {
+    private void drawBorder(BufferedImage shipSprite) {
         this.removePainter(spriteBorderPaint);
         Painter borderPainter = (g, worldToScreen, w, h) -> {
             int width = shipSprite.getWidth();

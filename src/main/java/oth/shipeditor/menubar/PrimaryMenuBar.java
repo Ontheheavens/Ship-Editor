@@ -1,25 +1,20 @@
 package oth.shipeditor.menubar;
 
 import de.javagl.viewer.Viewer;
+import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
 import org.kordamp.ikonli.Ikon;
 import org.kordamp.ikonli.fluentui.FluentUiRegularAL;
 import org.kordamp.ikonli.fluentui.FluentUiRegularMZ;
 import org.kordamp.ikonli.swing.FontIcon;
 import oth.shipeditor.PrimaryWindow;
-import oth.shipeditor.components.ShipViewerControls;
-import oth.shipeditor.components.ViewerPointsPanel;
+import oth.shipeditor.components.control.ShipViewerControls;
 import oth.shipeditor.utility.ChangeDispatchable;
 
-import javax.imageio.ImageIO;
 import javax.swing.*;
-import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.*;
 import java.awt.event.ActionListener;
-import java.awt.image.BufferedImage;
 import java.beans.PropertyChangeListener;
-import java.io.File;
-import java.io.IOException;
 import java.util.function.Supplier;
 
 /**
@@ -31,6 +26,9 @@ public class PrimaryMenuBar extends JMenuBar {
 
     private final PrimaryWindow parent;
 
+    private FileMenu fileMenu;
+
+    @Getter
     private JMenuItem toggleRotate;
 
     public PrimaryMenuBar(PrimaryWindow parent) {
@@ -40,32 +38,8 @@ public class PrimaryMenuBar extends JMenuBar {
     }
 
     private JMenu createFileMenu() {
-        JMenu fileMenu = new JMenu("File");
-
-        JMenuItem openOption = fileMenu.add(new JMenuItem("Open"));
-        JFileChooser chooser = new JFileChooser();
-        FileNameExtensionFilter filter = new FileNameExtensionFilter(
-                "PNG Images", "png");
-        chooser.setFileFilter(filter);
-
-        openOption.setIcon(FontIcon.of(FluentUiRegularAL.FOLDER_OPEN_20, 16));
-        openOption.addActionListener(l -> SwingUtilities.invokeLater(() -> {
-            int returnVal = chooser.showOpenDialog(parent);
-            if (returnVal == JFileChooser.APPROVE_OPTION) {
-                File file = chooser.getSelectedFile();
-                try {
-                    BufferedImage sprite = ImageIO.read(file);
-                    parent.getShipView().setShipSprite(sprite);
-                    parent.getStatusPanel().setDimensionsLabel(sprite);
-                } catch (IOException ex) {
-                    throw new RuntimeException(ex);
-                }
-                log.info("Opening: " + file.getName() + ".");
-            } else {
-                log.info("Open command cancelled by user.");
-            }
-        }));
-
+        fileMenu = new FileMenu();
+        fileMenu.initialize();
         return fileMenu;
     }
 
@@ -78,7 +52,7 @@ public class PrimaryMenuBar extends JMenuBar {
                     Color chosen = JColorChooser.showDialog(parent, "Choose Background", Color.GRAY);
                     shipView.setBackground(chosen);
                     shipView.repaint();
-                }), parent::getShipView, parent);
+                }), parent::getShipView, "shipView", parent, false);
         viewMenu.add(changeBackground);
 
         JMenuItem resetTransform = this.createOptionWithAssociate("Reset view transforms",
@@ -87,55 +61,60 @@ public class PrimaryMenuBar extends JMenuBar {
                     shipView.resetTransform();
                     parent.getShipView().getControls().setZoomLevel(1);
                     parent.getShipView().centerViewpoint();
-                }), parent::getShipView, parent);
+                }), parent::getShipView, "shipView",parent, false);
         viewMenu.add(resetTransform);
 
-        JMenuItem toggleRotate = this.createOptionWithAssociate("Toggle view rotation",
+        toggleRotate = this.createOptionWithAssociate("Toggle view rotation",
                 FluentUiRegularAL.ARROW_ROTATE_CLOCKWISE_20, l -> SwingUtilities.invokeLater(() -> {
                     AbstractButton button = (AbstractButton) l.getSource();
-                    this.toggleRotationFromMenu(button.isSelected());
-                }), parent::getShipView, parent);
+                    ShipViewerControls controls = parent.getShipView().getControls();
+                    controls.setRotationEnabled(button.isSelected());
+                }), parent::getShipView, "shipView",parent, true);
         viewMenu.add(toggleRotate);
 
         return viewMenu;
     }
 
-    private JMenuItem createMenuOption(String text, Ikon icon, ActionListener action) {
-        JMenuItem newOption = new JMenuItem(text);
+    private JMenuItem createMenuOption(String text, Ikon icon, ActionListener action, boolean checkbox) {
+        JMenuItem newOption;
+        if (checkbox) {
+            newOption = new JCheckBoxMenuItem(text);
+        } else {
+            newOption = new JMenuItem(text);
+        }
         newOption.setIcon(FontIcon.of(icon, 16));
         newOption.addActionListener(action);
         return newOption;
     }
 
+    /**
+     * Creates a menu option with an association to a component. If the associated component is null,
+     * the option will be unavailable.
+     * @param text       The text for the menu option.
+     * @param icon       The icon for the menu option.
+     * @param action     The action listener for the menu option.
+     * @param getter     A supplier that provides the associated component - e.g. instance method reference.
+     * @param instance   An instance implementing the {@link ChangeDispatchable} interface.
+     * @return The created {@link JMenuItem} option.
+     */
     private JMenuItem createOptionWithAssociate(String text, Ikon icon, ActionListener action,
-                                                Supplier<?> associated, ChangeDispatchable instance) {
-        JMenuItem newOption = createMenuOption(text, icon, action);
-        if (associated.get() == null) {
+                                                Supplier<?> getter, String field,
+                                                ChangeDispatchable instance, boolean checkbox) {
+        JMenuItem newOption = createMenuOption(text, icon, action, checkbox);
+        if (getter.get() == null) {
             newOption.setEnabled(false);
         }
-        instance.getPCS().addPropertyChangeListener("shipView", evt -> {
-            newOption.setEnabled(evt.getNewValue() != null);
-        });
+        instance.getPCS().addPropertyChangeListener(field,
+                evt -> newOption.setEnabled(evt.getNewValue() != null));
         return newOption;
     }
 
-    private JMenuItem createOptionWithListeners(String text, Ikon icon, ActionListener action,
-                                                Supplier<?> associated, ChangeDispatchable instance,
-                                                PropertyChangeListener listener) {
-        JMenuItem newOption = createOptionWithAssociate(text, icon, action, associated, instance);
-        instance.getPCS().addPropertyChangeListener(listener);
-        return newOption;
+    public void initToggleRotateOption(ShipViewerControls controls) {
+        PropertyChangeListener rotationChangeListener = evt ->
+                toggleRotate.setSelected(controls.isRotationEnabled());
+        controls.getPCS().addPropertyChangeListener("rotationEnabled", rotationChangeListener);
+        toggleRotate.setSelected(controls.isRotationEnabled());
     }
 
-    public void toggleRotationFromMenu(boolean rotationEnabled) {
-        ShipViewerControls controls = parent.getShipView().getControls();
-        controls.setRotationEnabled(rotationEnabled);
-        toggleRotate.setSelected(rotationEnabled);
-        if (rotationEnabled) {
-            ViewerPointsPanel pointsPanel = PrimaryWindow.getInstance().getPointsPanel();
-            pointsPanel.setMode(ViewerPointsPanel.PointsMode.SELECT);
-            pointsPanel.getSelectModeButton().setSelected(true);
-        }
-    }
 
 }
