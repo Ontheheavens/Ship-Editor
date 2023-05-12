@@ -1,7 +1,7 @@
 # Ship-Editor
 Visualizer and editor of object data in JSON format using GUI written with Swing.
 
-Uses JavaGL library for low-level AffineTransform functionality.
+Uses JavaGL library for low-level AffineTransform functionality, Jackson for JSON handling and Lombok for boilerplate code.
 
 ## Development Note 12.05.23:
 
