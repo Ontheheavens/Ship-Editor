@@ -4,21 +4,62 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="15e1ddae-a5d1-4957-9383-c162c5526ac0" name="Changes" comment="08.05.23 - architecture refactor with PropertyChangeListeners, module-info file.">
-      <change afterPath="$PROJECT_DIR$/src/main/java/oth/shipeditor/components/control/BoundEditingControl.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/oth/shipeditor/menubar/FileMenu.java" afterDir="false" />
+    <list default="true" id="15e1ddae-a5d1-4957-9383-c162c5526ac0" name="Changes" comment="08.05.23 - serious refactors.">
+      <change afterPath="$PROJECT_DIR$/src/main/java/oth/shipeditor/communication/BusEventListener.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/oth/shipeditor/communication/EventBus.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/oth/shipeditor/communication/events/BusEvent.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/oth/shipeditor/communication/events/HullFileOpened.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/oth/shipeditor/communication/events/PointPanelRepaintQueued.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/oth/shipeditor/communication/events/SpriteOpened.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/oth/shipeditor/communication/events/viewer/ViewerBackgroundChanged.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/oth/shipeditor/communication/events/viewer/ViewerEvent.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/oth/shipeditor/communication/events/viewer/ViewerRepaintQueued.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/oth/shipeditor/communication/events/viewer/control/ViewerCursorMoved.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/oth/shipeditor/communication/events/viewer/control/ViewerGuidesToggled.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/oth/shipeditor/communication/events/viewer/control/ViewerRotationToggled.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/oth/shipeditor/communication/events/viewer/control/ViewerTransformsReset.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/oth/shipeditor/communication/events/viewer/control/ViewerZoomChanged.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/oth/shipeditor/communication/events/viewer/layers/ShipLayerCreated.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/oth/shipeditor/communication/events/viewer/layers/ShipLayerUpdated.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/oth/shipeditor/communication/events/viewer/points/BoundCreationModeChanged.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/oth/shipeditor/communication/events/viewer/points/BoundCreationQueued.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/oth/shipeditor/communication/events/viewer/points/BoundInsertedConfirmed.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/oth/shipeditor/communication/events/viewer/points/PointAddConfirmed.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/oth/shipeditor/communication/events/viewer/points/PointDragQueued.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/oth/shipeditor/communication/events/viewer/points/PointRemoveQueued.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/oth/shipeditor/communication/events/viewer/points/PointRemovedConfirmed.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/oth/shipeditor/communication/events/viewer/points/PointSelectQueued.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/oth/shipeditor/communication/events/viewer/points/PointSelectedConfirmed.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/oth/shipeditor/components/BoundList.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/oth/shipeditor/components/PointsDisplay.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/oth/shipeditor/components/painters/AbstractPointPainter.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/oth/shipeditor/components/painters/GuidesPainter.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/oth/shipeditor/components/painters/LayerPainter.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/oth/shipeditor/menubar/Files.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/oth/shipeditor/representation/LayerManager.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/oth/shipeditor/representation/ShipLayer.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/pom.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/module-info.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/module-info.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/oth/shipeditor/PrimaryWindow.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/oth/shipeditor/PrimaryWindow.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/oth/shipeditor/components/ShipViewerControls.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/oth/shipeditor/components/control/ShipViewerControls.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/oth/shipeditor/Main.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/oth/shipeditor/Main.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/oth/shipeditor/PrimaryWindow.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/oth/shipeditor/Window.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/oth/shipeditor/components/BoundPointsPanel.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/oth/shipeditor/components/BoundPointsPanel.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/oth/shipeditor/components/ShipViewerPanel.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/oth/shipeditor/components/ShipViewerPanel.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/oth/shipeditor/components/ViewerPointsPanel.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/oth/shipeditor/components/BoundPointsPanel.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/oth/shipeditor/components/ViewerStatusPanel.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/oth/shipeditor/components/ViewerStatusPanel.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/oth/shipeditor/components/control/BoundEditingControl.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/oth/shipeditor/components/control/BoundEditingControl.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/oth/shipeditor/components/control/ShipViewerControls.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/oth/shipeditor/components/control/ShipViewerControls.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/oth/shipeditor/components/entities/BoundPoint.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/oth/shipeditor/components/entities/BoundPoint.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/oth/shipeditor/components/entities/WorldPoint.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/oth/shipeditor/components/entities/WorldPoint.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/oth/shipeditor/components/painters/BoundPointsPainter.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/oth/shipeditor/components/painters/BoundPointsPainter.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/oth/shipeditor/components/painters/PointsPainter.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/oth/shipeditor/components/painters/PointsPainter.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/oth/shipeditor/data/ShipData.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/oth/shipeditor/data/ShipData.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/oth/shipeditor/components/painters/PointsPainter.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/oth/shipeditor/components/painters/WorldPointsPainter.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/oth/shipeditor/data/EngineSlot.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/oth/shipeditor/representation/data/EngineSlot.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/oth/shipeditor/data/Hull.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/oth/shipeditor/representation/data/Hull.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/oth/shipeditor/data/ShipData.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/oth/shipeditor/representation/data/ShipData.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/oth/shipeditor/data/WeaponSlot.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/oth/shipeditor/representation/data/WeaponSlot.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/oth/shipeditor/menubar/FileMenu.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/oth/shipeditor/menubar/FileMenu.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/oth/shipeditor/menubar/PrimaryMenuBar.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/oth/shipeditor/menubar/PrimaryMenuBar.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/oth/shipeditor/utility/ChangeDispatchable.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/oth/shipeditor/utility/Utility.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/oth/shipeditor/utility/Utility.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -33,6 +74,7 @@
         <option value="module-info" />
         <option value="Interface" />
         <option value="Class" />
+        <option value="Record" />
       </list>
     </option>
   </component>
@@ -77,7 +119,7 @@
     "project.structure.proportion": "0.15",
     "project.structure.side.proportion": "0.38045976",
     "run.code.analysis.last.selected.profile": "pProject Default",
-    "settings.editor.selected.configurable": "reference.projectsettings.compiler.javacompiler"
+    "settings.editor.selected.configurable": "reference.settings.ide.settings.uml"
   }
 }]]></component>
   <component name="RunManager" selected="Application.Main">
@@ -94,8 +136,21 @@
         <option name="Make" enabled="true" />
       </method>
     </configuration>
-    <configuration name="oth.shipeditor.PrimaryWindow" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
-      <option name="MAIN_CLASS_NAME" value="oth.shipeditor.PrimaryWindow" />
+    <configuration name="oth.shipeditor.communication.EventBus$Exceptions" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
+      <option name="MAIN_CLASS_NAME" value="oth.shipeditor.communication.EventBus$Exceptions" />
+      <module name="ship_editor" />
+      <extension name="coverage">
+        <pattern>
+          <option name="PATTERN" value="oth.shipeditor.communication.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="oth.shipeditor.interfaces.PrimaryWindow" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
+      <option name="MAIN_CLASS_NAME" value="oth.shipeditor.interfaces.PrimaryWindow" />
       <module name="ship_editor" />
       <extension name="coverage">
         <pattern>
@@ -110,7 +165,8 @@
     <recent_temporary>
       <list>
         <item itemvalue="Application.Main" />
-        <item itemvalue="Application.oth.shipeditor.PrimaryWindow" />
+        <item itemvalue="Application.oth.shipeditor.communication.EventBus$Exceptions" />
+        <item itemvalue="Application.oth.shipeditor.interfaces.PrimaryWindow" />
       </list>
     </recent_temporary>
   </component>
@@ -192,7 +248,31 @@
       <workItem from="1683474764215" duration="40000" />
       <workItem from="1683482516050" duration="4097000" />
       <workItem from="1683520411218" duration="2393000" />
-      <workItem from="1683531054008" duration="36627000" />
+      <workItem from="1683531054008" duration="37022000" />
+      <workItem from="1683612914904" duration="10351000" />
+      <workItem from="1683633711111" duration="314000" />
+      <workItem from="1683637082828" duration="3793000" />
+      <workItem from="1683725404310" duration="660000" />
+      <workItem from="1683732011880" duration="1598000" />
+      <workItem from="1683737695874" duration="1632000" />
+      <workItem from="1683812251241" duration="627000" />
+      <workItem from="1683816607271" duration="2383000" />
+      <workItem from="1683905849888" duration="2335000" />
+      <workItem from="1683912653341" duration="596000" />
+      <workItem from="1683948590376" duration="153000" />
+      <workItem from="1683949647366" duration="1993000" />
+      <workItem from="1683958128065" duration="2996000" />
+      <workItem from="1684157307074" duration="991000" />
+      <workItem from="1684166140446" duration="8000" />
+      <workItem from="1684243895243" duration="625000" />
+      <workItem from="1684331191745" duration="789000" />
+      <workItem from="1684345509542" duration="138000" />
+      <workItem from="1684766124162" duration="866000" />
+      <workItem from="1685022147886" duration="89000" />
+      <workItem from="1685193623854" duration="1310000" />
+      <workItem from="1685201504701" duration="5395000" />
+      <workItem from="1685247725100" duration="30181000" />
+      <workItem from="1685330926680" duration="37900000" />
     </task>
     <task id="LOCAL-00001" summary="26.04.23 - working prototype, coordinat. design flaw">
       <created>1682499355313</created>
@@ -341,7 +421,14 @@
       <option name="project" value="LOCAL" />
       <updated>1683554377376</updated>
     </task>
-    <option name="localTasksCounter" value="22" />
+    <task id="LOCAL-00022" summary="08.05.23 - serious refactors.">
+      <created>1683573111549</created>
+      <option name="number" value="00022" />
+      <option name="presentableId" value="LOCAL-00022" />
+      <option name="project" value="LOCAL" />
+      <updated>1683573111549</updated>
+    </task>
+    <option name="localTasksCounter" value="23" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -381,7 +468,8 @@
     <MESSAGE value="06.05.23 - minor naming refactor" />
     <MESSAGE value="06.05.23 - numerous refactors to increase maintainability." />
     <MESSAGE value="08.05.23 - architecture refactor with PropertyChangeListeners, module-info file." />
-    <option name="LAST_COMMIT_MESSAGE" value="08.05.23 - architecture refactor with PropertyChangeListeners, module-info file." />
+    <MESSAGE value="08.05.23 - serious refactors." />
+    <option name="LAST_COMMIT_MESSAGE" value="08.05.23 - serious refactors." />
     <option name="OPTIMIZE_IMPORTS_BEFORE_PROJECT_COMMIT" value="true" />
   </component>
   <component name="XDebuggerManager">
@@ -391,6 +479,12 @@
           <properties class="java.lang.UnsupportedOperationException" package="java.lang" />
           <option name="timeStamp" value="1" />
         </breakpoint>
+        <line-breakpoint enabled="true" type="java-field">
+          <url>file://$PROJECT_DIR$/src/main/java/oth/shipeditor/components/ShipViewerPanel.java</url>
+          <line>35</line>
+          <properties field="layerPainters" class="oth.shipeditor.components.ShipViewerPanel" />
+          <option name="timeStamp" value="2" />
+        </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>
   </component>

@@ -4,7 +4,11 @@ import lombok.Getter;
 import org.kordamp.ikonli.fluentui.FluentUiRegularAL;
 import org.kordamp.ikonli.fluentui.FluentUiRegularMZ;
 import org.kordamp.ikonli.swing.FontIcon;
-import oth.shipeditor.PrimaryWindow;
+import oth.shipeditor.Window;
+import oth.shipeditor.communication.EventBus;
+import oth.shipeditor.communication.events.viewer.control.ViewerCursorMoved;
+import oth.shipeditor.communication.events.viewer.control.ViewerZoomChanged;
+import oth.shipeditor.components.painters.LayerPainter;
 import oth.shipeditor.utility.Utility;
 
 import javax.swing.*;
@@ -25,6 +29,8 @@ public class ViewerStatusPanel extends JPanel {
         WORLD, SCREEN, SPRITE_CENTER, SHIPCENTER_ANCHOR, SHIP_CENTER
     }
 
+    private static double zoomLevel = 1f;
+
     @Getter
     private CoordsDisplayMode mode = CoordsDisplayMode.WORLD;
 
@@ -36,45 +42,22 @@ public class ViewerStatusPanel extends JPanel {
 
     private final Border normal = this.createLabelBorder(false);
     private final Border hovered = this.createLabelBorder(true);
-    {
-        SwingUtilities.invokeLater(() -> {
-            ShipViewerPanel viewerPanel = PrimaryWindow.getInstance().getShipView();
-            setDimensionsLabel(PrimaryWindow.getInstance().getShipSprite());
-            setCursorCoordsLabel(new Point2D.Double(0,0));
-            setZoomLabel(viewerPanel.getControls().getZoomLevel());
-        });
-    }
-
-    private Border createLabelBorder(boolean hover) {
-        Border empty = BorderFactory.createEmptyBorder(0, 4, 0, 4);
-        if (hover) {
-            Border hovered = BorderFactory.createLoweredBevelBorder();
-            return BorderFactory.createCompoundBorder(hovered, empty);
-        } else {
-            Border normal = BorderFactory.createRaisedBevelBorder();
-            return BorderFactory.createCompoundBorder(normal, empty);
-        }
-    }
 
     public ViewerStatusPanel() {
         super();
-
         FontIcon dimensionIcon = FontIcon.of(FluentUiRegularMZ.SLIDE_SIZE_24, 20);
         dimensions = new JLabel("", dimensionIcon, JLabel.TRAILING);
         dimensions.setToolTipText("Width / Height");
         this.add(dimensions);
-
         JSeparator separator = new JSeparator(JSeparator.VERTICAL);
         separator.setPreferredSize(new Dimension(1, dimensionIcon.getIconHeight()));
         this.add(separator);
-
         FontIcon mouseIcon = FontIcon.of(FluentUiRegularAL.CURSOR_HOVER_20, 20);
         cursorCoords = new JLabel("", mouseIcon, JLabel.TRAILING);
         cursorCoords.setBorder(normal);
         cursorCoords.setToolTipText("Click to change coordinate system");
         JPopupMenu popupMenu = this.createCoordsMenu();
         cursorCoords.addMouseListener(new MouseAdapter() {
-
             @Override
             public void mouseEntered(MouseEvent e) {
                 super.mouseEntered(e);
@@ -96,17 +79,43 @@ public class ViewerStatusPanel extends JPanel {
         });
 
         this.add(cursorCoords);
-
         this.add(Utility.clone(separator));
-
         FontIcon zoomIcon = FontIcon.of(FluentUiRegularMZ.ZOOM_IN_20, 20);
         zoom = new JLabel("", zoomIcon, JLabel.TRAILING);
         zoom.setToolTipText("Sprite Scale");
         this.add(zoom);
+
+        this.initListeners();
+    }
+
+    private void initListeners() {
+        EventBus.subscribe(ViewerZoomChanged.class, event -> {
+            zoomLevel = event.newValue();
+            setZoomLabel(zoomLevel);
+        });
+        EventBus.subscribe(ViewerCursorMoved.class, event -> {
+            setCursorCoordsLabel(event.adjustedAndCorrected());
+        });
+        SwingUtilities.invokeLater(() -> {
+            setDimensionsLabel(null);
+            setCursorCoordsLabel(new Point2D.Double(0,0));
+            setZoomLabel(zoomLevel);
+        });
+    }
+
+    private Border createLabelBorder(boolean hover) {
+        Border empty = BorderFactory.createEmptyBorder(0, 4, 0, 4);
+        if (hover) {
+            Border hovered = BorderFactory.createLoweredBevelBorder();
+            return BorderFactory.createCompoundBorder(hovered, empty);
+        } else {
+            Border normal = BorderFactory.createRaisedBevelBorder();
+            return BorderFactory.createCompoundBorder(normal, empty);
+        }
     }
 
     private void repaintPointsPanel() {
-        BoundPointsPanel boundsPanel = PrimaryWindow.getInstance().getPointsPanel();
+        BoundPointsPanel boundsPanel = Window.getFrame().getPointsPanel();
         if (boundsPanel != null) {
             boundsPanel.repaint();
         }
@@ -164,7 +173,8 @@ public class ViewerStatusPanel extends JPanel {
 
     public void setCursorCoordsLabel(Point2D adjustedCursor) {
         Point2D cursor = adjustedCursor;
-        ShipViewerPanel viewerPanel = PrimaryWindow.getInstance().getShipView();
+        ShipViewerPanel viewerPanel = Window.getFrame().getShipView();
+        LayerPainter selectedLayer = viewerPanel.getSelectedLayer();
         switch (mode) {
             case SCREEN -> {
                 Point2D viewerLoc = viewerPanel.getLocation();
@@ -174,17 +184,17 @@ public class ViewerStatusPanel extends JPanel {
                 cursor = new Point2D.Double(roundedX, roundedY);
             }
             case SPRITE_CENTER -> {
-                Point2D center = viewerPanel.getSpriteCenter();
+                Point2D center = selectedLayer.getSpriteCenter();
                 cursor = adjustCursorCoordinates(adjustedCursor, center);
             }
             case SHIPCENTER_ANCHOR -> {
-                if (PrimaryWindow.getInstance().getShipSprite() == null) return;
+                if (selectedLayer.getShipSprite() == null) return;
                 Point2D center = viewerPanel.getShipCenterAnchor();
                 cursor = adjustCursorCoordinates(adjustedCursor, center);
             }
             case SHIP_CENTER -> {
-                if (PrimaryWindow.getInstance().getShipData() == null) return;
-                Point2D center = PrimaryWindow.getInstance().getShipData().getTranslatedCenter();
+                if (selectedLayer == null) return;
+                Point2D center = selectedLayer.getTranslatedCenter();
                 cursor = adjustCursorCoordinates(adjustedCursor, center);
             }
         }

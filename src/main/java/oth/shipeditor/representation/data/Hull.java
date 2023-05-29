@@ -1,7 +1,8 @@
-package oth.shipeditor.data;
+package oth.shipeditor.representation.data;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import lombok.Getter;
 import oth.shipeditor.parsing.Point2DArrayParser;
 import oth.shipeditor.parsing.Point2DParser;
 
@@ -34,6 +35,7 @@ public class Hull {
     @JsonProperty("width")
     private double width;
 
+    @Getter
     @JsonProperty("center")
     @JsonDeserialize(using = Point2DParser.class)
     Point2D.Double center;
@@ -63,6 +65,7 @@ public class Hull {
     @JsonProperty("engineSlots")
     private EngineSlot[] engineSlots;
 
+    @Getter
     @JsonProperty("bounds")
     @JsonDeserialize(using = Point2DArrayParser.class)
     Point2D.Double[] bounds;

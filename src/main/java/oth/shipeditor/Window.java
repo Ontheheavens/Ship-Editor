@@ -2,18 +2,17 @@ package oth.shipeditor;
 
 import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
+import oth.shipeditor.communication.EventBus;
+import oth.shipeditor.communication.events.viewer.layers.ShipLayerCreated;
 import oth.shipeditor.components.BoundPointsPanel;
 import oth.shipeditor.components.ShipViewerPanel;
 import oth.shipeditor.components.ViewerStatusPanel;
-import oth.shipeditor.components.control.ShipViewerControls;
-import oth.shipeditor.data.ShipData;
 import oth.shipeditor.menubar.PrimaryMenuBar;
-import oth.shipeditor.utility.ChangeDispatchable;
+import oth.shipeditor.representation.LayerManager;
+import oth.shipeditor.representation.ShipLayer;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.image.BufferedImage;
-import java.beans.PropertyChangeSupport;
 
 /**
  * @author Ontheheavens
@@ -21,30 +20,15 @@ import java.beans.PropertyChangeSupport;
  */
 @SuppressWarnings("FieldCanBeLocal")
 @Log4j2
-public class PrimaryWindow extends JFrame implements ChangeDispatchable {
+public class Window extends JFrame {
 
-    @Getter
-    private static final PrimaryWindow instance = new PrimaryWindow();
+    private static final Window global = new Window();
 
     @Getter
     private final PrimaryMenuBar primaryMenu;
 
-    private final PropertyChangeSupport fieldChangeDispatcher = new PropertyChangeSupport(this);
-
     /**
-     * Runtime representation of JSON ship file.
-     */
-    @Getter
-    private ShipData shipData;
-
-    /**
-     * Loaded instance of PNG ship sprite.
-     */
-    @Getter
-    private BufferedImage shipSprite;
-
-    /**
-     * Complex component responsible for ship sprite display.
+     * Complex component responsible for ship layers display.
      */
     @Getter
     private ShipViewerPanel shipView = null;
@@ -71,49 +55,68 @@ public class PrimaryWindow extends JFrame implements ChangeDispatchable {
     @Getter
     private ViewerStatusPanel statusPanel = null;
 
-    private PrimaryWindow() {
-        // Frame initialization block.
+    private final LayerManager layerManager;
+
+    private Window() {
+        log.info("Creating window.");
         this.setTitle("Ship Editor");
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         this.setMinimumSize(new Dimension(800, 600));
+
+        // This centers the frame.
         this.setLocationRelativeTo(null);
         this.getContentPane().setLayout(new BorderLayout());
 
         primaryMenu = new PrimaryMenuBar(this);
         this.setJMenuBar(primaryMenu);
 
+        this.layerManager = new LayerManager();
+        this.layerManager.initListeners();
+        this.initLoaderListeners();
 
         this.pack();
+    }
+
+    public static Window getFrame() {
+        return global;
+    }
+
+    private void initLoaderListeners() {
+        EventBus.subscribe(ShipLayerCreated.class, event -> {
+            if (shipView == null) {
+                if (event.newLayer().getShipSprite() != null) {
+                    loadShipView(event.newLayer());
+                }
+            } else {
+                if (event.newLayer().getShipSprite() != null) {
+                    shipView.loadLayer(event.newLayer());
+                }
+            }
+        });
     }
 
     /**
      *  Meant to be called when the PNG sprite file loads.
      */
-    public void loadShipView(BufferedImage shipSprite) {
+    public void loadShipView(ShipLayer newLayer) {
 
         this.setShipView(new ShipViewerPanel());
-        this.shipSprite = shipSprite;
-        shipView.loadShipSprite(shipSprite);
+        shipView.loadLayer(newLayer);
 
         southPane = new JPanel();
         southPane.setLayout(new GridLayout());
         statusPanel = new ViewerStatusPanel();
         statusPanel.setLayout(new FlowLayout(FlowLayout.LEADING));
-        statusPanel.setDimensionsLabel(shipSprite);
+        statusPanel.setDimensionsLabel(newLayer.getShipSprite());
         southPane.add(statusPanel);
         this.getContentPane().add(southPane, BorderLayout.SOUTH);
-    }
-
-    public void setShipData(ShipData data) {
-
     }
 
     /**
      *  Meant to be called when ship JSON file loads.
      */
-    public void loadEditingPanes(ShipData data) {
-
-        data.initialize(this.getShipView());
+    public void loadEditingPanes() {
+        log.info("Loading editing panes.");
 
         instrumentPane = new JTabbedPane();
         instrumentPane.setTabPlacement(JTabbedPane.LEFT);
@@ -129,24 +132,12 @@ public class PrimaryWindow extends JFrame implements ChangeDispatchable {
         this.getContentPane().add(splitter, BorderLayout.CENTER);
     }
 
-    public static ShipViewerControls getControls() {
-        if (getInstance().getShipView() != null) {
-            return getInstance().getShipView().getControls();
-        } else throw new RuntimeException("GetControls() was called on null ShipView!");
-    }
-
-    @Override
-    public PropertyChangeSupport getPCS() {
-        return this.fieldChangeDispatcher;
-    }
-
     public void setShipView(ShipViewerPanel newPanel) {
         ShipViewerPanel old = this.shipView;
         if (old != null) {
             this.remove(old);
         }
         this.shipView = newPanel;
-        this.fieldChangeDispatcher.firePropertyChange("shipView", old, this.shipView);
         if (this.shipView != null) {
             this.add(this.shipView);
         }

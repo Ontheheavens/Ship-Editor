@@ -1,4 +1,4 @@
-package oth.shipeditor.data;
+package oth.shipeditor.representation.data;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;

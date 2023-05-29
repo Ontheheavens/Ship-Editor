@@ -11,6 +11,9 @@ import java.awt.geom.Point2D;
  */
 public class Utility {
 
+    /**
+     * Private constructor prevents instantiation of utility class.
+     */
     private Utility() {}
 
     public static void drawBorderedLine(Graphics2D canvas, Point2D start, Point2D finish, Color inner) {

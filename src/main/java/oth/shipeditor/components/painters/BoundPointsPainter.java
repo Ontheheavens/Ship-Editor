@@ -1,9 +1,12 @@
 package oth.shipeditor.components.painters;
 
 import de.javagl.viewer.Painter;
-import lombok.Setter;
-import oth.shipeditor.PrimaryWindow;
-import oth.shipeditor.components.BoundPointsPanel;
+import oth.shipeditor.communication.EventBus;
+import oth.shipeditor.communication.events.viewer.ViewerRepaintQueued;
+import oth.shipeditor.communication.events.viewer.points.BoundCreationModeChanged;
+import oth.shipeditor.communication.events.viewer.points.BoundCreationQueued;
+import oth.shipeditor.communication.events.viewer.points.BoundInsertedConfirmed;
+import oth.shipeditor.components.PointsDisplay;
 import oth.shipeditor.components.ShipViewerPanel;
 import oth.shipeditor.components.entities.BoundPoint;
 import oth.shipeditor.utility.Utility;
@@ -21,30 +24,28 @@ import java.util.List;
  * @author Ontheheavens
  * @since 06.05.2023
  */
-public class BoundPointsPainter implements Painter {
-
-    private final PointsPainter parent;
-    @Setter
-    private List<BoundPoint> boundPoints;
+public class BoundPointsPainter extends AbstractPointPainter<BoundPoint> implements Painter {
 
     private boolean appendBoundHotkeyPressed = false;
     private boolean insertBoundHotkeyPressed = false;
 
+    private PointsDisplay.InteractionMode coupledModeState;
+
+    private final ShipViewerPanel parent;
+
     private final int appendBoundHotkey = KeyEvent.VK_SHIFT;
     private final int insertBoundHotkey = KeyEvent.VK_CONTROL;
 
-    public BoundPointsPainter(PointsPainter parent) {
-        this.boundPoints = new ArrayList<>();
+    public BoundPointsPainter(ShipViewerPanel parent) {
+        super();
         this.parent = parent;
         this.initHotkeys();
+        this.initModeListener();
+        this.initCreationListener();
     }
 
-    private void repaintViewer() {
-        PrimaryWindow.getInstance().getShipView().repaint();
-    }
-
-    public List<BoundPoint> getBoundPoints() {
-        return boundPoints;
+    private void queueViewerRepaint() {
+        EventBus.publish(new ViewerRepaintQueued());
     }
 
     private void initHotkeys() {
@@ -64,19 +65,48 @@ public class BoundPointsPainter implements Painter {
                         break;
                     }
             }
-            repaintViewer();
+            queueViewerRepaint();
             return false;
         });
     }
 
+    private void initModeListener() {
+        EventBus.subscribe(BoundCreationModeChanged.class,
+                event -> coupledModeState = event.newMode());
+    }
+
+    private void initCreationListener() {
+        EventBus.subscribe(BoundCreationQueued.class, event -> {
+            if (coupledModeState != PointsDisplay.InteractionMode.CREATE) return;
+            Point2D position = event.position();
+            if (!pointAtCoordsExists(position)) {
+                if (!event.toInsert()) {
+                    BoundPoint wrapped = new BoundPoint(position);
+                    addPoint(wrapped);
+                    queueViewerRepaint();
+                } else if (getPointsIndex().size() >= 2) {
+                    List<BoundPoint> twoClosest = findClosestBoundPoints(position);
+                    List<BoundPoint> allPoints = getPointsIndex();
+                    int index = getLowestBoundPointIndex(twoClosest);
+                    if (index >= 0) index += 1;
+                    if (index > allPoints.size() - 1) index = 0;
+                    if (getHighestBoundPointIndex(twoClosest) == allPoints.size() - 1 &&
+                            getLowestBoundPointIndex(twoClosest) == 0) index = 0;
+                    BoundPoint preceding = getPointsIndex().get(index);
+                    BoundPoint wrapped = new BoundPoint(position);
+                    insertPoint(wrapped, preceding);
+                    queueViewerRepaint();
+                }
+            }
+        });
+    }
+
     public void insertPoint(BoundPoint toInsert, BoundPoint preceding) {
-        int precedingIndex = parent.getWorldPoints().indexOf(preceding);
+        int precedingIndex = getPointsIndex().indexOf(preceding);
         SwingUtilities.invokeLater(() -> {
-            parent.getWorldPoints().add(precedingIndex, toInsert);
-            parent.getPointsPanel().getModel().insertElementAt(toInsert, precedingIndex);
-            parent.getDelegates().add(toInsert.getPainter());
-            int precedingBound = boundPoints.indexOf(preceding);
-            boundPoints.add(precedingBound, toInsert);
+            getPointsIndex().add(precedingIndex, toInsert);
+            EventBus.publish(new BoundInsertedConfirmed(toInsert, precedingIndex));
+            getDelegates().add(toInsert.getPainter());
         });
     }
 
@@ -89,7 +119,7 @@ public class BoundPointsPainter implements Painter {
     }
 
     public List<BoundPoint> findClosestBoundPoints(Point2D cursor) {
-        List<BoundPoint> boundPoints = new ArrayList<>(getBoundPoints());
+        List<BoundPoint> boundPoints = new ArrayList<>(getPointsIndex());
         boundPoints.add(boundPoints.get(0)); // Add first point to end of list.
         BoundPoint closestPoint1 = boundPoints.get(0);
         BoundPoint closestPoint2 = boundPoints.get(1);
@@ -112,20 +142,20 @@ public class BoundPointsPainter implements Painter {
     }
 
     public int getLowestBoundPointIndex(List<BoundPoint> closestPoints) {
-        int index1 = getBoundPoints().indexOf(closestPoints.get(0));
-        int index2 = getBoundPoints().indexOf(closestPoints.get(1));
+        int index1 = getPointsIndex().indexOf(closestPoints.get(0));
+        int index2 = getPointsIndex().indexOf(closestPoints.get(1));
         return Math.min(index1, index2);
     }
 
     public int getHighestBoundPointIndex(List<BoundPoint> closestPoints) {
-        int index1 = getBoundPoints().indexOf(closestPoints.get(0));
-        int index2 = getBoundPoints().indexOf(closestPoints.get(1));
+        int index1 = getPointsIndex().indexOf(closestPoints.get(0));
+        int index2 = getPointsIndex().indexOf(closestPoints.get(1));
         return Math.max(index1, index2);
     }
 
     @Override
     public void paint(Graphics2D g, AffineTransform worldToScreen, double w, double h) {
-        List<BoundPoint> bPoints = getBoundPoints();
+        List<BoundPoint> bPoints = getPointsIndex();
         if (bPoints.isEmpty()) return;
         Stroke origStroke = g.getStroke();
         Paint origPaint = g.getPaint();
@@ -138,10 +168,9 @@ public class BoundPointsPainter implements Painter {
         // Set the color to white for visual convenience.
         Point2D first = worldToScreen.transform(bPoints.get(0).getPosition(), null);
         Utility.drawBorderedLine(g, prev, first, Color.DARK_GRAY);
-        ShipViewerPanel viewerPanel = PrimaryWindow.getInstance().getShipView();
-        if (parent.getPointsPanel().getMode() == BoundPointsPanel.PointsMode.CREATE) {
-            Point2D cursor = viewerPanel.getControls().getAdjustedCursor();
-            AffineTransform screenToWorld = viewerPanel.getScreenToWorld();
+        if (coupledModeState == PointsDisplay.InteractionMode.CREATE) {
+            Point2D cursor = parent.getControls().getAdjustedCursor();
+            AffineTransform screenToWorld = parent.getScreenToWorld();
             Point2D adjusted = worldToScreen.transform(Utility.correctAdjustedCursor(cursor, screenToWorld), null);
             if (appendBoundHotkeyPressed) {
                 Utility.drawBorderedLine(g, prev, adjusted, Color.WHITE);

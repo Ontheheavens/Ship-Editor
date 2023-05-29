@@ -18,7 +18,7 @@ public class Main {
                 ex.printStackTrace();
                 throw new RuntimeException();
             }
-            PrimaryWindow window = PrimaryWindow.getInstance();
+            Window window = Window.getFrame();
             window.showGUI();
         });
     }

@@ -12,13 +12,14 @@
     requires com.fasterxml.jackson.annotation;
     requires com.fasterxml.jackson.databind;
 
-    exports oth.shipeditor.data;
+    exports oth.shipeditor.representation;
+    exports oth.shipeditor.representation.data;
     exports oth.shipeditor.parsing;
     exports oth.shipeditor.components;
     exports oth.shipeditor.components.painters;
     exports oth.shipeditor.components.entities;
 
-    opens oth.shipeditor.data;
+    opens oth.shipeditor.representation.data;
     opens oth.shipeditor.parsing;
     opens oth.shipeditor.components;
     exports oth.shipeditor.components.control;
