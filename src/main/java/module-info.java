@@ -9,6 +9,7 @@
     requires org.kordamp.ikonli.swing;
     requires org.kordamp.ikonli.fluentui;
     requires org.apache.logging.log4j;
+    requires com.fasterxml.jackson.core;
     requires com.fasterxml.jackson.annotation;
     requires com.fasterxml.jackson.databind;
 

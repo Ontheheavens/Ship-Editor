@@ -90,8 +90,7 @@ public class ShipViewerPanel extends Viewer {
     }
 
     public void loadLayer(ShipLayer newLayer) {
-        LayerPainter newPainter = new LayerPainter(newLayer);
-//        newPainter.initialize(this, newLayer);
+        LayerPainter newPainter = new LayerPainter(newLayer, this);
         this.layerPainters.add(newPainter);
         this.addPainter(newPainter, 2);
         this.selectedLayer = newPainter;

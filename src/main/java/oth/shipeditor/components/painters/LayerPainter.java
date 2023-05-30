@@ -34,7 +34,10 @@ public class LayerPainter implements Painter {
     @Getter
     private BufferedImage shipSprite;
 
-    public LayerPainter(ShipLayer layer) {
+    private final ShipViewerPanel viewer;
+
+    public LayerPainter(ShipLayer layer, ShipViewerPanel viewer) {
+        this.viewer = viewer;
         this.parentLayer = layer;
         this.shipSprite = layer.getShipSprite();
         this.initListeners();
@@ -43,7 +46,12 @@ public class LayerPainter implements Painter {
     private void initListeners() {
         EventBus.subscribe(ShipLayerUpdated.class, event -> {
             if (event.updated() == LayerPainter.this.parentLayer) {
-                LayerPainter.this.shipSprite = event.updated().getShipSprite();
+                if (parentLayer.getShipSprite() != null) {
+                    LayerPainter.this.shipSprite = parentLayer.getShipSprite();
+                }
+                if (parentLayer.getShipData() != null) {
+                    LayerPainter.this.initialize(viewer, parentLayer);
+                }
             }
         });
     }

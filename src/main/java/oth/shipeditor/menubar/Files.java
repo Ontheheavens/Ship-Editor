@@ -22,6 +22,8 @@ import java.io.IOException;
 @Log4j2
 public class Files {
 
+    private static File lastDirectory = null;
+
     private Files() {}
 
     /**
@@ -29,11 +31,15 @@ public class Files {
      */
     public static Runnable createOpenSpriteAction() {
         return () -> {
-            JFileChooser spriteChooser = new JFileChooser();
+            JFileChooser spriteChooser = new JFileChooser("C:\\Games\\Ship Editor\\src\\main\\resources");
+            if (lastDirectory != null) {
+                spriteChooser.setCurrentDirectory(lastDirectory);
+            }
             FileNameExtensionFilter spriteFilter = new FileNameExtensionFilter(
                     "PNG Images", "png");
             spriteChooser.setFileFilter(spriteFilter);
             int returnVal = spriteChooser.showOpenDialog(Window.getFrame());
+            lastDirectory = spriteChooser.getCurrentDirectory();
             Files.tryOpenSprite(returnVal,spriteChooser);
         };
     }
@@ -53,7 +59,22 @@ public class Files {
         }
     }
 
-    public static void tryOpenShipData(int returnVal, JFileChooser shipDataChooser, Window parentFrame) {
+    public static Runnable createOpenHullFileAction() {
+        return () -> {
+            JFileChooser shipDataChooser = new JFileChooser("C:\\Games\\Ship Editor\\src\\main\\resources");
+            if (lastDirectory != null) {
+                shipDataChooser.setCurrentDirectory(lastDirectory);
+            }
+            FileNameExtensionFilter shipDataFilter = new FileNameExtensionFilter(
+                    "JSON ship files", "ship");
+            shipDataChooser.setFileFilter(shipDataFilter);
+            int returnVal = shipDataChooser.showOpenDialog(Window.getFrame());
+            lastDirectory = shipDataChooser.getCurrentDirectory();
+            Files.tryOpenHullFile(returnVal, shipDataChooser);
+        };
+    }
+
+    public static void tryOpenHullFile(int returnVal, JFileChooser shipDataChooser) {
         if (returnVal == JFileChooser.APPROVE_OPTION) {
             File file = shipDataChooser.getSelectedFile();
             EventBus.publish(new HullFileOpened(Files.loadHullFile(file)));

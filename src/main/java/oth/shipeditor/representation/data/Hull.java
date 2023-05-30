@@ -65,6 +65,8 @@ public class Hull {
     @JsonProperty("engineSlots")
     private EngineSlot[] engineSlots;
 
+    // TODO: implement undo.
+
     @Getter
     @JsonProperty("bounds")
     @JsonDeserialize(using = Point2DArrayParser.class)

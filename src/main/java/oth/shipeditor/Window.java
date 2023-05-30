@@ -4,6 +4,7 @@ import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
 import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.viewer.layers.ShipLayerCreated;
+import oth.shipeditor.communication.events.viewer.layers.ShipLayerUpdated;
 import oth.shipeditor.components.BoundPointsPanel;
 import oth.shipeditor.components.ShipViewerPanel;
 import oth.shipeditor.components.ViewerStatusPanel;
@@ -81,6 +82,7 @@ public class Window extends JFrame {
         return global;
     }
 
+    // TODO: this is all wrong, replace later.
     private void initLoaderListeners() {
         EventBus.subscribe(ShipLayerCreated.class, event -> {
             if (shipView == null) {
@@ -90,6 +92,13 @@ public class Window extends JFrame {
             } else {
                 if (event.newLayer().getShipSprite() != null) {
                     shipView.loadLayer(event.newLayer());
+                }
+            }
+        });
+        EventBus.subscribe(ShipLayerUpdated.class, event -> {
+            if (shipView != null) {
+                if (event.updated().getShipData() != null) {
+                    loadEditingPanes();
                 }
             }
         });

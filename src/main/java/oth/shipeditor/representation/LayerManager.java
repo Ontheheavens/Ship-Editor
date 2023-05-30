@@ -50,6 +50,8 @@ public class LayerManager {
         });
     }
 
+    // TODO: implement layer tab and multiple layer support
+
     private void initOpenHullListener() {
         EventBus.subscribe(HullFileOpened.class, event -> {
             Hull hull = event.hull();
