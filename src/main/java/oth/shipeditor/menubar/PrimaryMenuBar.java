@@ -63,9 +63,11 @@ public class PrimaryMenuBar extends JMenuBar {
         toggleRotate.setIcon(FontIcon.of(FluentUiRegularAL.ARROW_ROTATE_CLOCKWISE_20, 16));
         toggleRotate.addActionListener(l -> SwingUtilities.invokeLater(() ->
                 EventBus.publish(new ViewerRotationToggled(toggleRotate.isSelected(), true))));
-        EventBus.subscribe(ViewerRotationToggled.class, event -> {
-            toggleRotate.setSelected(event.isSelected());
-            toggleRotate.setEnabled(event.isEnabled());
+        EventBus.subscribe(event -> {
+            if (event instanceof ViewerRotationToggled checked) {
+                toggleRotate.setSelected(checked.isSelected());
+                toggleRotate.setEnabled(checked.isEnabled());
+            }
         });
         viewMenu.add(toggleRotate);
 

@@ -84,21 +84,24 @@ public class Window extends JFrame {
 
     // TODO: this is all wrong, replace later.
     private void initLoaderListeners() {
-        EventBus.subscribe(ShipLayerCreated.class, event -> {
-            if (shipView == null) {
-                if (event.newLayer().getShipSprite() != null) {
-                    loadShipView(event.newLayer());
-                }
-            } else {
-                if (event.newLayer().getShipSprite() != null) {
-                    shipView.loadLayer(event.newLayer());
+        EventBus.subscribe(event -> {
+            if (event instanceof ShipLayerCreated checked) {
+                if (shipView == null) {
+                    if (checked.newLayer().getShipSprite() != null) {
+                        loadShipView(checked.newLayer());
+                    }
+                } else {
+                    if (checked.newLayer().getShipSprite() != null) {
+                        shipView.loadLayer(checked.newLayer());
+                    }
                 }
             }
         });
-        EventBus.subscribe(ShipLayerUpdated.class, event -> {
-            if (shipView != null) {
-                if (event.updated().getShipData() != null) {
-                    loadEditingPanes();
+        EventBus.subscribe(event -> {
+            if (event instanceof ShipLayerUpdated checked) {
+                if (shipView == null) return;
+                if (checked.updated().getShipData() != null && instrumentPane == null) {
+//                    loadEditingPanes();
                 }
             }
         });
@@ -119,13 +122,19 @@ public class Window extends JFrame {
         statusPanel.setDimensionsLabel(newLayer.getShipSprite());
         southPane.add(statusPanel);
         this.getContentPane().add(southPane, BorderLayout.SOUTH);
+        this.loadEditingPanes();
+        this.refreshContent();
+    }
+
+    private void refreshContent() {
+        this.getContentPane().revalidate();
+        this.getContentPane().repaint();
     }
 
     /**
      *  Meant to be called when ship JSON file loads.
      */
     public void loadEditingPanes() {
-        log.info("Loading editing panes.");
 
         instrumentPane = new JTabbedPane();
         instrumentPane.setTabPlacement(JTabbedPane.LEFT);
@@ -137,8 +146,8 @@ public class Window extends JFrame {
         splitter.setLeftComponent(shipView);
         splitter.setRightComponent(instrumentPane);
         splitter.setResizeWeight(0.95);
-
         this.getContentPane().add(splitter, BorderLayout.CENTER);
+        this.refreshContent();
     }
 
     public void setShipView(ShipViewerPanel newPanel) {

@@ -4,8 +4,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.log4j.Log4j2;
 import oth.shipeditor.Window;
 import oth.shipeditor.communication.EventBus;
-import oth.shipeditor.communication.events.HullFileOpened;
-import oth.shipeditor.communication.events.SpriteOpened;
+import oth.shipeditor.communication.events.files.HullFileOpened;
+import oth.shipeditor.communication.events.files.SpriteOpened;
 import oth.shipeditor.representation.data.Hull;
 
 import javax.imageio.ImageIO;

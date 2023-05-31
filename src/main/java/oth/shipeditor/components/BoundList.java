@@ -1,7 +1,6 @@
 package oth.shipeditor.components;
 
 import oth.shipeditor.Window;
-import oth.shipeditor.communication.BusEventListener;
 import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.viewer.ViewerRepaintQueued;
 import oth.shipeditor.communication.events.viewer.points.PointSelectQueued;
@@ -23,14 +22,12 @@ public class BoundList extends JList<BoundPoint> {
     public BoundList(DefaultListModel<BoundPoint> model) {
         super(model);
         this.addListSelectionListener(e -> {
-            if (!e.getValueIsAdjusting()) {
-                int index = this.getSelectedIndex();
-                if (index != -1) {
-                    BoundPoint point = this.getModel().getElementAt(index);
-                    point.setSelected(true);
-                    EventBus.publish(new PointSelectQueued<>(point));
-                    EventBus.publish(new ViewerRepaintQueued());
-                }
+            int index = this.getSelectedIndex();
+            if (index != -1) {
+                BoundPoint point = this.getModel().getElementAt(index);
+                point.setSelected(true);
+                EventBus.publish(new PointSelectQueued(point));
+                EventBus.publish(new ViewerRepaintQueued());
             }
         });
         this.setCellRenderer(new BoundPointCellRenderer());
@@ -40,18 +37,22 @@ public class BoundList extends JList<BoundPoint> {
     }
 
     private void initPointListeners() {
-        EventBus.subscribe(PointSelectedConfirmed.class,
-                (BusEventListener<PointSelectedConfirmed<BoundPoint>>) event ->
-                        BoundList.this.setSelectedValue(event.point(), true));
+        EventBus.subscribe(event -> {
+            if (event instanceof PointSelectedConfirmed checked && checked.point() instanceof BoundPoint) {
+                BoundList.this.setSelectedValue(checked.point(), true);
+            }
+        });
     }
 
-    static class BoundPointCellRenderer extends JLabel implements ListCellRenderer<BoundPoint> {
+    static class BoundPointCellRenderer extends DefaultListCellRenderer{
         @Override
-        public Component getListCellRendererComponent(JList<? extends BoundPoint> list, BoundPoint point, int index,
+        public Component getListCellRendererComponent(JList<?> list, Object point, int index,
                                                       boolean isSelected, boolean cellHasFocus) {
-            Point2D position = point.getPosition();
-            String displayText = "X: " + position.getX() + ", Y: " + position.getY();
-            this.setText(displayText);
+            super.getListCellRendererComponent(list, point, index, isSelected, cellHasFocus);
+            BoundPoint checked = (BoundPoint) point;
+            Point2D position = checked.getPosition();
+            String displayText = "Bound #" + index + ": (X:" + position.getX() + ",Y:" + position.getY() + ")";
+            setText(displayText);
             return this;
         }
     }

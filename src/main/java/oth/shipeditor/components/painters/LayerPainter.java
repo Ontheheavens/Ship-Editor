@@ -7,7 +7,7 @@ import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.viewer.layers.ShipLayerUpdated;
 import oth.shipeditor.components.ShipViewerPanel;
 import oth.shipeditor.components.entities.BoundPoint;
-import oth.shipeditor.components.entities.FeaturePoint;
+import oth.shipeditor.components.entities.ShipCenterPoint;
 import oth.shipeditor.components.entities.WorldPoint;
 import oth.shipeditor.representation.ShipLayer;
 import oth.shipeditor.representation.data.Hull;
@@ -26,7 +26,7 @@ public class LayerPainter implements Painter {
     @Getter @Setter
     private Point2D anchorOffset = new Point2D.Double(0, 0);
 
-    private ShipLayer parentLayer;
+    private final ShipLayer parentLayer;
 
     @Getter @Setter
     private Point2D translatedCenter;
@@ -36,6 +36,8 @@ public class LayerPainter implements Painter {
 
     private final ShipViewerPanel viewer;
 
+    private boolean initialized = false;
+
     public LayerPainter(ShipLayer layer, ShipViewerPanel viewer) {
         this.viewer = viewer;
         this.parentLayer = layer;
@@ -44,13 +46,14 @@ public class LayerPainter implements Painter {
     }
 
     private void initListeners() {
-        EventBus.subscribe(ShipLayerUpdated.class, event -> {
-            if (event.updated() == LayerPainter.this.parentLayer) {
+        EventBus.subscribe(event -> {
+            if (event instanceof ShipLayerUpdated checked) {
+                if (checked.updated() != LayerPainter.this.parentLayer) return;
                 if (parentLayer.getShipSprite() != null) {
                     LayerPainter.this.shipSprite = parentLayer.getShipSprite();
                 }
-                if (parentLayer.getShipData() != null) {
-                    LayerPainter.this.initialize(viewer, parentLayer);
+                if (parentLayer.getShipData() != null && !initialized) {
+                    LayerPainter.this.initialize();
                 }
             }
         });
@@ -71,18 +74,20 @@ public class LayerPainter implements Painter {
         g.setTransform(oldAT);
     }
 
-    public void initialize(ShipViewerPanel viewerPanel, ShipLayer layer) {
-        Hull hull = layer.getShipData().getHull();
-        Point2D anchor = viewerPanel.getShipCenterAnchor();
+    public void initialize() {
+        Hull hull = parentLayer.getShipData().getHull();
+        Point2D anchor = viewer.getShipCenterAnchor();
         translatedCenter = new Point2D.Double(hull.getCenter().x - anchor.getX(),
                 -hull.getCenter().y + anchor.getY());
 
         WorldPoint shipCenter = createShipCenterPoint(translatedCenter);
-        viewerPanel.getPointsPainter().addPoint(shipCenter);
+        viewer.getPointsPainter().addPoint(shipCenter);
         for (Point2D.Double bound : hull.getBounds()) {
             BoundPoint boundPoint = this.createTranslatedBound(bound, translatedCenter);
-            viewerPanel.getPointsPainter().addPoint(boundPoint);
+            viewer.getBoundsPainter().addPoint(boundPoint);
         }
+        initialized = true;
+        viewer.repaint();
     }
 
     private BoundPoint createTranslatedBound(Point2D bound, Point2D translatedCenter) {
@@ -91,22 +96,8 @@ public class LayerPainter implements Painter {
         return new BoundPoint(new Point2D.Double(translatedX, translatedY));
     }
 
-    private WorldPoint createShipCenterPoint(Point2D translatedCenter) {
-        return new FeaturePoint(translatedCenter) {
-            @Override
-            protected Painter createSecondaryPainter() {
-                return (g, worldToScreen, w, h) -> {
-                    Point2D center = worldToScreen.transform(getPosition(), null);
-                    int x = (int) center.getX(), y = (int) center.getY(), l = 15;
-                    g.drawLine(x - l, y - l, x + l, y + l);
-                    g.drawLine(x - l, y + l, x + l, y - l);
-                };
-            }
-            @Override
-            public String toString() {
-                return "ShipCenter";
-            }
-        };
+    private ShipCenterPoint createShipCenterPoint(Point2D translatedCenter) {
+        return new ShipCenterPoint(translatedCenter);
     }
 
 }

@@ -1,12 +1,12 @@
 package oth.shipeditor.components;
 
 import lombok.Getter;
+import lombok.extern.log4j.Log4j2;
 import org.kordamp.ikonli.fluentui.FluentUiRegularAL;
 import org.kordamp.ikonli.fluentui.FluentUiRegularMZ;
 import org.kordamp.ikonli.swing.FontIcon;
-import oth.shipeditor.communication.BusEventListener;
 import oth.shipeditor.communication.EventBus;
-import oth.shipeditor.communication.events.PointPanelRepaintQueued;
+import oth.shipeditor.communication.events.components.BoundPointPanelRepaintQueued;
 import oth.shipeditor.communication.events.viewer.control.ViewerRotationToggled;
 import oth.shipeditor.communication.events.viewer.points.BoundCreationModeChanged;
 import oth.shipeditor.communication.events.viewer.points.BoundInsertedConfirmed;
@@ -23,6 +23,7 @@ import java.awt.event.ItemEvent;
  * @author Ontheheavens
  * @since 30.04.2023
  */
+@Log4j2
 public class BoundPointsPanel extends JPanel implements PointsDisplay<BoundPoint> {
 
     @Getter
@@ -65,18 +66,28 @@ public class BoundPointsPanel extends JPanel implements PointsDisplay<BoundPoint
     }
 
     private void initPointListener() {
-        EventBus.subscribe(PointPanelRepaintQueued.class,
-                (BusEventListener<PointPanelRepaintQueued<BoundPoint>>) event -> this.repaint());
-        EventBus.subscribe(PointAddConfirmed.class,
-                        (BusEventListener<PointAddConfirmed<BoundPoint>>) event ->
-                                model.addElement(event.point()));
-        EventBus.subscribe(BoundInsertedConfirmed.class,
-                event -> model.insertElementAt(event.toInsert(),
-                        event.precedingIndex()));
-        EventBus.subscribe(PointRemovedConfirmed.class,
-                (BusEventListener<PointRemovedConfirmed<BoundPoint>>) event ->
-                        model.removeElement(event.point())
-        );
+        EventBus.subscribe(event -> {
+            if (event instanceof BoundPointPanelRepaintQueued) {
+                this.repaint();
+            }
+        });
+        EventBus.subscribe(event -> {
+            if (event instanceof PointAddConfirmed checked && checked.point() instanceof BoundPoint point) {
+                model.addElement(point);
+                boundPointContainer.setSelectedIndex(model.indexOf(point));
+            }
+        });
+        EventBus.subscribe(event -> {
+            if (event instanceof BoundInsertedConfirmed checked) {
+                model.insertElementAt(checked.toInsert(), checked.precedingIndex());
+                boundPointContainer.setSelectedIndex(model.indexOf(checked.toInsert()));
+            }
+        });
+        EventBus.subscribe(event -> {
+            if (event instanceof PointRemovedConfirmed checked && checked.point() instanceof BoundPoint point) {
+                model.removeElement(point);
+            }
+        });
     }
 
     private void createModeButtons(JPanel modePanel) {
@@ -106,10 +117,13 @@ public class BoundPointsPanel extends JPanel implements PointsDisplay<BoundPoint
                 EventBus.publish(new ViewerRotationToggled(false, false));
             }
         });
-        EventBus.subscribe(ViewerRotationToggled.class, event -> {
-            if (event.isSelected()) {
-                BoundPointsPanel.this.setMode(InteractionMode.SELECT);
-                selectModeButton.setSelected(true);
+        EventBus.subscribe(event -> {
+            if (event instanceof ViewerRotationToggled checked) {
+                if (checked.isSelected()) {
+                    BoundPointsPanel.this.setMode(InteractionMode.SELECT);
+                    selectModeButton.setSelected(true);
+                }
+
             }
         });
     }

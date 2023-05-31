@@ -44,17 +44,23 @@ public class GuidesPainter implements Painter {
     }
 
     public void listenForToggling() {
-        EventBus.subscribe(ViewerGuidesToggled.class, event -> {
-            if (parent.getSelectedLayer() == null) return;
-            BufferedImage shipSprite = parent.getSelectedLayer().getShipSprite();
-            this.guidesPaint = event.guidesEnabled() ? createGuidesPainter(shipSprite) : null;
-            this.bordersPaint = event.bordersEnabled() ? createBordersPainter(shipSprite) : null;
-            this.centerPaint = event.centerEnabled() ? createSpriteCenterPainter(shipSprite) : null;
+        EventBus.subscribe(event -> {
+            if (event instanceof ViewerGuidesToggled checked) {
+                if (parent.getSelectedLayer() == null) return;
+                BufferedImage shipSprite = parent.getSelectedLayer().getShipSprite();
+                this.guidesPaint = checked.guidesEnabled() ? createGuidesPainter(shipSprite) : null;
+                this.bordersPaint = checked.bordersEnabled() ? createBordersPainter(shipSprite) : null;
+                this.centerPaint = checked.centerEnabled() ? createSpriteCenterPainter(shipSprite) : null;
+            }
         });
     }
 
     private void initCursorListener() {
-        EventBus.subscribe(ViewerCursorMoved.class, event -> cursor = event.adjusted());
+        EventBus.subscribe(event -> {
+            if (event instanceof ViewerCursorMoved checked) {
+                cursor = checked.adjusted();
+            }
+        });
     }
 
     @Override

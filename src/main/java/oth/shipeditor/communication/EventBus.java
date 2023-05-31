@@ -1,52 +1,40 @@
 package oth.shipeditor.communication;
 
+import lombok.extern.log4j.Log4j2;
 import oth.shipeditor.communication.events.BusEvent;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * @author Ontheheavens
  * @since 09.05.2023
  */
+@Log4j2
 public class EventBus {
 
     private static final EventBus bus = new EventBus();
 
-    private final HashMap<Class<? extends BusEvent>, List<BusEventListener<? extends BusEvent>>> subscribers;
+    private final Set<BusEventListener> subscribers;
 
     private EventBus() {
-        this.subscribers = new HashMap<>();
+        this.subscribers = new HashSet<>();
     }
 
-    public static <T extends BusEvent> void subscribe(Class<T> eventClass, BusEventListener<? extends T> listener) {
-        List<BusEventListener<? extends BusEvent>> eventListeners = bus.subscribers.computeIfAbsent(eventClass,
-                k -> new ArrayList<>());
-        eventListeners.add(listener);
+    public static BusEventListener subscribe(BusEventListener listener) {
+        bus.subscribers.add(listener);
+        return listener;
     }
 
-    public static <T extends BusEvent> void unsubscribe(Class<T> eventClass, BusEventListener<? extends T> listener) {
-        List<BusEventListener<? extends BusEvent>> eventListeners = bus.subscribers.get(eventClass);
-        if (eventListeners != null) {
-            eventListeners.remove(listener);
-            if (eventListeners.isEmpty()) {
-                bus.subscribers.remove(eventClass);
-            }
+    public static void unsubscribe(BusEventListener listener) {
+        bus.subscribers.remove(listener);
+    }
+
+    public static void publish(BusEvent event) {
+        Set<BusEventListener> receivers = new HashSet<>(bus.subscribers);
+        for (BusEventListener receiver : receivers) {
+            receiver.handleEvent(event);
         }
-    }
-
-    public static <T extends BusEvent> void publish(T event) {
-        Class<? extends BusEvent> eventClass = event.getClass();
-        List<BusEventListener<?>> eventListeners = bus.subscribers.get(eventClass);
-        if (eventListeners != null) {
-            for (BusEventListener<?> listener : eventListeners) {
-                // We know it's the correct type because we just got the class from the event instance.
-                @SuppressWarnings("unchecked") BusEventListener<T> typedListener = (BusEventListener<T>) listener;
-                typedListener.handleEvent(event);
-            }
-        }
-
     }
 
 }

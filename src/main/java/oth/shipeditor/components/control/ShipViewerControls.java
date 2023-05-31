@@ -77,14 +77,17 @@ public class ShipViewerControls implements MouseControl {
 
     public ShipViewerControls(ShipViewerPanel parent) {
         this.parentViewer = parent;
-        this.setRotationEnabled(true);
+        this.setRotationEnabled(false);
         this.boundControl = new BoundEditingControl(this);
         this.initListeners();
     }
 
     private void initListeners() {
-        EventBus.subscribe(ViewerRotationToggled.class,
-                event -> setRotationEnabled(event.isSelected()));
+        EventBus.subscribe(event -> {
+            if (event instanceof ViewerRotationToggled checked) {
+                setRotationEnabled(checked.isSelected());
+            }
+        });
     }
 
     private void setRotationEnabled(boolean enabled) {
@@ -97,18 +100,15 @@ public class ShipViewerControls implements MouseControl {
     @Override
     public void mousePressed(MouseEvent event) {
         pressPoint.setLocation(event.getPoint());
-
         if (!parentViewer.isSpriteLoaded()) {
             return;
         }
         this.boundControl.tryBoundCreation(event, parentViewer.getScreenToWorld());
-
         if (removePointPredicate.test(event)) {
             EventBus.publish(new PointRemoveQueued());
         }
-
         if (selectPointPredicate.test(event)) {
-            EventBus.publish(new PointSelectQueued<>(null));
+            EventBus.publish(new PointSelectQueued(null));
         }
     }
 

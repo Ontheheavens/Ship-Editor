@@ -9,14 +9,12 @@ import javax.swing.*;
 public class Main {
 
     public static void main(String[] args) {
-        // Schedule a job for the event-dispatching thread:
-        // Creating and showing this application's GUI.
         SwingUtilities.invokeLater(() -> {
             try {
                 UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
             } catch (ReflectiveOperationException | UnsupportedLookAndFeelException ex) {
                 ex.printStackTrace();
-                throw new RuntimeException();
+                throw new RuntimeException("Look-and-feel setup failed!");
             }
             Window window = Window.getFrame();
             window.showGUI();

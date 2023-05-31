@@ -34,8 +34,15 @@ public class WorldPoint {
     private boolean selected = false;
 
     static {
-        EventBus.subscribe(ViewerCursorMoved.class,
-                event -> viewerCursor = event.rawCursor());
+        EventBus.subscribe(event -> {
+            if (event instanceof ViewerCursorMoved checked) {
+                viewerCursor = checked.rawCursor();
+            }
+        });
+    }
+
+    public WorldPoint() {
+        this(new Point2D.Double());
     }
 
     public WorldPoint(Point2D position) {

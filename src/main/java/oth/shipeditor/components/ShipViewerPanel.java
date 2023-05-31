@@ -6,6 +6,7 @@ import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
 import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.viewer.ViewerBackgroundChanged;
+import oth.shipeditor.communication.events.viewer.ViewerRepaintQueued;
 import oth.shipeditor.communication.events.viewer.control.ViewerTransformsReset;
 import oth.shipeditor.components.control.ShipViewerControls;
 import oth.shipeditor.components.painters.BoundPointsPainter;
@@ -78,14 +79,23 @@ public class ShipViewerPanel extends Viewer {
     }
 
     private void initListeners() {
-        EventBus.subscribe(ViewerTransformsReset.class, event -> {
-            controls.setZoomLevel(1);
-            resetTransform();
-            centerViewpoint();
+        EventBus.subscribe(event -> {
+            if(event instanceof ViewerRepaintQueued) {
+                repaint();
+            }
         });
-        EventBus.subscribe(ViewerBackgroundChanged.class, event -> {
-            setBackground(event.newColor());
-            repaint();
+        EventBus.subscribe(event -> {
+            if(event instanceof ViewerTransformsReset) {
+                controls.setZoomLevel(1);
+                resetTransform();
+                centerViewpoint();
+            }
+        });
+        EventBus.subscribe(event -> {
+            if(event instanceof ViewerBackgroundChanged checked) {
+                setBackground(checked.newColor());
+                repaint();
+            }
         });
     }
 
@@ -112,6 +122,7 @@ public class ShipViewerPanel extends Viewer {
         double dx = (this.getWidth() / 2f) - centerScreen.getX();
         double dy = (this.getHeight() / 2f) - centerScreen.getY();
         this.translate(dx, dy);
+        this.repaint();
     }
 
 }

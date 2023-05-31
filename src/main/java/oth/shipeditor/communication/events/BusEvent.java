@@ -6,5 +6,4 @@ package oth.shipeditor.communication.events;
  * @since 10.05.2023
  */
 public interface BusEvent {
-
 }

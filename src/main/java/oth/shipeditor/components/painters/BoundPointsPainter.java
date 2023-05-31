@@ -1,6 +1,7 @@
 package oth.shipeditor.components.painters;
 
 import de.javagl.viewer.Painter;
+import lombok.extern.log4j.Log4j2;
 import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.viewer.ViewerRepaintQueued;
 import oth.shipeditor.communication.events.viewer.points.BoundCreationModeChanged;
@@ -9,9 +10,9 @@ import oth.shipeditor.communication.events.viewer.points.BoundInsertedConfirmed;
 import oth.shipeditor.components.PointsDisplay;
 import oth.shipeditor.components.ShipViewerPanel;
 import oth.shipeditor.components.entities.BoundPoint;
+import oth.shipeditor.components.entities.WorldPoint;
 import oth.shipeditor.utility.Utility;
 
-import javax.swing.*;
 import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.awt.geom.AffineTransform;
@@ -24,7 +25,8 @@ import java.util.List;
  * @author Ontheheavens
  * @since 06.05.2023
  */
-public class BoundPointsPainter extends AbstractPointPainter<BoundPoint> implements Painter {
+@Log4j2
+public class BoundPointsPainter extends AbstractPointPainter implements Painter {
 
     private boolean appendBoundHotkeyPressed = false;
     private boolean insertBoundHotkeyPressed = false;
@@ -42,6 +44,21 @@ public class BoundPointsPainter extends AbstractPointPainter<BoundPoint> impleme
         this.initHotkeys();
         this.initModeListener();
         this.initCreationListener();
+        this.setInteractionEnabled(false);
+    }
+
+    @Override
+    protected BoundPoint getTypeReference() {
+        return new BoundPoint(new Point2D.Double());
+    }
+
+    @Override
+    protected List<BoundPoint> getPointsIndex() {
+        List<BoundPoint> allPoints = new ArrayList<>();
+        for (WorldPoint retrieved : pointsIndex) {
+            allPoints.add((BoundPoint) retrieved);
+        }
+        return allPoints;
     }
 
     private void queueViewerRepaint() {
@@ -71,43 +88,52 @@ public class BoundPointsPainter extends AbstractPointPainter<BoundPoint> impleme
     }
 
     private void initModeListener() {
-        EventBus.subscribe(BoundCreationModeChanged.class,
-                event -> coupledModeState = event.newMode());
+        EventBus.subscribe(event -> {
+            if (event instanceof BoundCreationModeChanged checked) {
+                coupledModeState = checked.newMode();
+                setInteractionEnabled(checked.newMode() == PointsDisplay.InteractionMode.SELECT);
+            }
+        });
     }
 
     private void initCreationListener() {
-        EventBus.subscribe(BoundCreationQueued.class, event -> {
-            if (coupledModeState != PointsDisplay.InteractionMode.CREATE) return;
-            Point2D position = event.position();
-            if (!pointAtCoordsExists(position)) {
-                if (!event.toInsert()) {
-                    BoundPoint wrapped = new BoundPoint(position);
-                    addPoint(wrapped);
-                    queueViewerRepaint();
-                } else if (getPointsIndex().size() >= 2) {
-                    List<BoundPoint> twoClosest = findClosestBoundPoints(position);
-                    List<BoundPoint> allPoints = getPointsIndex();
-                    int index = getLowestBoundPointIndex(twoClosest);
-                    if (index >= 0) index += 1;
-                    if (index > allPoints.size() - 1) index = 0;
-                    if (getHighestBoundPointIndex(twoClosest) == allPoints.size() - 1 &&
-                            getLowestBoundPointIndex(twoClosest) == 0) index = 0;
-                    BoundPoint preceding = getPointsIndex().get(index);
-                    BoundPoint wrapped = new BoundPoint(position);
-                    insertPoint(wrapped, preceding);
-                    queueViewerRepaint();
+        EventBus.subscribe(event -> {
+            if (event instanceof BoundCreationQueued checked) {
+                if (coupledModeState != PointsDisplay.InteractionMode.CREATE) return;
+                if (!pointAtCoordsExists(checked.position())) {
+                    createBound(checked);
                 }
             }
         });
     }
 
+    private void createBound(BoundCreationQueued event) {
+        Point2D position = event.position();
+        if (!event.toInsert()) {
+            BoundPoint wrapped = new BoundPoint(position);
+            addPoint(wrapped);
+            queueViewerRepaint();
+        } else if (getPointsIndex().size() >= 2) {
+            List<BoundPoint> twoClosest = findClosestBoundPoints(position);
+            List<BoundPoint> allPoints = getPointsIndex();
+            int index = getLowestBoundPointIndex(twoClosest);
+            if (index >= 0) index += 1;
+            if (index > allPoints.size() - 1) index = 0;
+            if (getHighestBoundPointIndex(twoClosest) == allPoints.size() - 1 &&
+                    getLowestBoundPointIndex(twoClosest) == 0) index = 0;
+            BoundPoint preceding = allPoints.get(index);
+            BoundPoint wrapped = new BoundPoint(position);
+            insertPoint(wrapped, preceding);
+            queueViewerRepaint();
+        }
+    }
+
     public void insertPoint(BoundPoint toInsert, BoundPoint preceding) {
         int precedingIndex = getPointsIndex().indexOf(preceding);
-        SwingUtilities.invokeLater(() -> {
-            getPointsIndex().add(precedingIndex, toInsert);
-            EventBus.publish(new BoundInsertedConfirmed(toInsert, precedingIndex));
-            getDelegates().add(toInsert.getPainter());
-        });
+        pointsIndex.add(precedingIndex, toInsert);
+        EventBus.publish(new BoundInsertedConfirmed(toInsert, precedingIndex));
+        getDelegates().add(toInsert.getPainter());
+        log.info(toInsert);
     }
 
     private void setHotkeyState(boolean isAppendHotkey, boolean state) {
@@ -155,6 +181,7 @@ public class BoundPointsPainter extends AbstractPointPainter<BoundPoint> impleme
 
     @Override
     public void paint(Graphics2D g, AffineTransform worldToScreen, double w, double h) {
+        super.paint(g, worldToScreen, w, h);
         List<BoundPoint> bPoints = getPointsIndex();
         if (bPoints.isEmpty()) return;
         Stroke origStroke = g.getStroke();

@@ -89,18 +89,20 @@ public class ViewerStatusPanel extends JPanel {
     }
 
     private void initListeners() {
-        EventBus.subscribe(ViewerZoomChanged.class, event -> {
-            zoomLevel = event.newValue();
-            setZoomLabel(zoomLevel);
+        EventBus.subscribe(event -> {
+            if (event instanceof ViewerZoomChanged checked) {
+                zoomLevel = checked.newValue();
+                setZoomLabel(zoomLevel);
+            }
         });
-        EventBus.subscribe(ViewerCursorMoved.class, event -> {
-            setCursorCoordsLabel(event.adjustedAndCorrected());
+        EventBus.subscribe(event -> {
+            if (event instanceof ViewerCursorMoved checked) {
+                setCursorCoordsLabel(checked.adjustedAndCorrected());
+            }
         });
-        SwingUtilities.invokeLater(() -> {
-            setDimensionsLabel(null);
-            setCursorCoordsLabel(new Point2D.Double(0,0));
-            setZoomLabel(zoomLevel);
-        });
+        setDimensionsLabel(null);
+        setCursorCoordsLabel(new Point2D.Double(0,0));
+        setZoomLabel(zoomLevel);
     }
 
     private Border createLabelBorder(boolean hover) {
