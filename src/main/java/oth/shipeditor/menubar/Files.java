@@ -2,7 +2,6 @@ package oth.shipeditor.menubar;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.log4j.Log4j2;
-import oth.shipeditor.Window;
 import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.files.HullFileOpened;
 import oth.shipeditor.communication.events.files.SpriteOpened;
@@ -38,7 +37,7 @@ public class Files {
             FileNameExtensionFilter spriteFilter = new FileNameExtensionFilter(
                     "PNG Images", "png");
             spriteChooser.setFileFilter(spriteFilter);
-            int returnVal = spriteChooser.showOpenDialog(Window.getFrame());
+            int returnVal = spriteChooser.showOpenDialog(null);
             lastDirectory = spriteChooser.getCurrentDirectory();
             Files.tryOpenSprite(returnVal,spriteChooser);
         };
@@ -47,16 +46,20 @@ public class Files {
     public static void tryOpenSprite(int returnVal, JFileChooser spriteChooser) {
         if (returnVal == JFileChooser.APPROVE_OPTION) {
             File file = spriteChooser.getSelectedFile();
-            try {
-                BufferedImage sprite = ImageIO.read(file);
-                EventBus.publish(new SpriteOpened(sprite));
-            } catch (IOException ex) {
-                throw new RuntimeException(ex);
-            }
-            log.info("Opening: " + file.getName() + ".");
+            Files.loadSprite(file);
         } else {
             log.info("Open command cancelled by user.");
         }
+    }
+
+    public static void loadSprite(File file) {
+        try {
+            BufferedImage sprite = ImageIO.read(file);
+            EventBus.publish(new SpriteOpened(sprite, file.getName()));
+        } catch (IOException ex) {
+            throw new RuntimeException(ex);
+        }
+        log.info("Opening: " + file.getName() + ".");
     }
 
     public static Runnable createOpenHullFileAction() {
@@ -68,7 +71,7 @@ public class Files {
             FileNameExtensionFilter shipDataFilter = new FileNameExtensionFilter(
                     "JSON ship files", "ship");
             shipDataChooser.setFileFilter(shipDataFilter);
-            int returnVal = shipDataChooser.showOpenDialog(Window.getFrame());
+            int returnVal = shipDataChooser.showOpenDialog(null);
             lastDirectory = shipDataChooser.getCurrentDirectory();
             Files.tryOpenHullFile(returnVal, shipDataChooser);
         };
@@ -77,21 +80,22 @@ public class Files {
     public static void tryOpenHullFile(int returnVal, JFileChooser shipDataChooser) {
         if (returnVal == JFileChooser.APPROVE_OPTION) {
             File file = shipDataChooser.getSelectedFile();
-            EventBus.publish(new HullFileOpened(Files.loadHullFile(file)));
-            log.info("Opening: " + file.getName() + ".");
+            Files.loadHullFile(file);
         } else {
             log.info("Open command cancelled by user.");
         }
     }
 
-    public static Hull loadHullFile(File file) {
+    public static void loadHullFile(File file) {
         try {
             ObjectMapper objectMapper = new ObjectMapper();
-            return objectMapper.readValue(file, Hull.class);
+            Hull hull = objectMapper.readValue(file, Hull.class);
+            EventBus.publish(new HullFileOpened(hull, file.getName()));
+            log.info("Opening: " + file.getName() + ".");
         } catch (IOException e) {
             e.printStackTrace();
         }
-        return null;
+
     }
 
 }

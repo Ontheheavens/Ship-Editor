@@ -16,7 +16,7 @@ public class Main {
                 ex.printStackTrace();
                 throw new RuntimeException("Look-and-feel setup failed!");
             }
-            Window window = Window.getFrame();
+            PrimaryWindow window = PrimaryWindow.create();
             window.showGUI();
         });
     }

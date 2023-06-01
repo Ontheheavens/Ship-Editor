@@ -1,27 +1,20 @@
 package oth.shipeditor.components.control;
 
-import de.javagl.viewer.InputEventPredicates;
-import de.javagl.viewer.MouseControl;
-import de.javagl.viewer.Predicates;
 import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
 import oth.shipeditor.communication.EventBus;
-import oth.shipeditor.communication.events.viewer.control.ViewerCursorMoved;
-import oth.shipeditor.communication.events.viewer.control.ViewerRotationToggled;
-import oth.shipeditor.communication.events.viewer.control.ViewerZoomChanged;
+import oth.shipeditor.communication.events.viewer.control.*;
 import oth.shipeditor.communication.events.viewer.points.PointDragQueued;
 import oth.shipeditor.communication.events.viewer.points.PointRemoveQueued;
 import oth.shipeditor.communication.events.viewer.points.PointSelectQueued;
 import oth.shipeditor.components.ShipViewerPanel;
 import oth.shipeditor.utility.Utility;
 
-import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseWheelEvent;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Point2D;
-import java.util.function.Predicate;
 
 /**
  * @author Ontheheavens
@@ -29,29 +22,14 @@ import java.util.function.Predicate;
  */
 
 @Log4j2
-public class ShipViewerControls implements MouseControl {
+public final class ShipViewerControls implements ViewerControl {
 
+    private static final double MAXIMUM_ZOOM = 1200.0;
+    private static final double MINIMUM_ZOOM = 0.2;
     private final ShipViewerPanel parentViewer;
 
     @Getter
     private boolean rotationEnabled;
-
-    private final Predicate<MouseEvent> translatePredicate = Predicates.and(
-            InputEventPredicates.buttonDown(3),
-            InputEventPredicates.noModifiers()
-    );
-
-    private final Predicate<MouseEvent> selectPointPredicate = Predicates.and(
-            InputEventPredicates.buttonDown(1),
-            InputEventPredicates.noModifiers()
-    );
-
-    private final Predicate<MouseEvent> removePointPredicate = Predicates.and(
-            InputEventPredicates.buttonDown(3),
-            InputEventPredicates.shiftDown()
-    );
-
-    private final Predicate<MouseEvent> rotatePredicate = InputEventPredicates.controlDown();
 
     /**
      * Previous mouse position
@@ -66,48 +44,62 @@ public class ShipViewerControls implements MouseControl {
     @Getter
     private Point mousePoint = new Point();
 
-    public static final double ZOOMING_SPEED = 0.15;
+    private static final double ZOOMING_SPEED = 0.15;
 
-    public static final double ROTATION_SPEED = 0.4;
+    private static final double ROTATION_SPEED = 0.4;
 
     private final BoundEditingControl boundControl;
 
     @Getter
     private double zoomLevel = 1;
 
-    public ShipViewerControls(ShipViewerPanel parent) {
+    /**
+     * @param parent Viewer which is manipulated via this instance of controls class.
+     */
+    private ShipViewerControls(ShipViewerPanel parent) {
         this.parentViewer = parent;
-        this.setRotationEnabled(false);
-        this.boundControl = new BoundEditingControl(this);
+        this.rotationEnabled = false;
+        this.boundControl = new BoundEditingControl();
         this.initListeners();
+    }
+
+    /**
+     * @param parent Viewer which is manipulated via this instance of controls class.
+     * @return instance of controls via factory method.
+     */
+    public static ShipViewerControls create(ShipViewerPanel parent) {
+        return new ShipViewerControls(parent);
     }
 
     private void initListeners() {
         EventBus.subscribe(event -> {
-            if (event instanceof ViewerRotationToggled checked) {
-                setRotationEnabled(checked.isSelected());
+            if (event instanceof ViewerTransformsReset) {
+                this.setZoomLevel(1);
             }
         });
-    }
-
-    private void setRotationEnabled(boolean enabled) {
-        this.rotationEnabled = enabled;
+        EventBus.subscribe(event -> {
+            if (event instanceof ViewerRotationToggled checked) {
+                this.rotationEnabled = checked.isSelected();
+            }
+        });
     }
 
     @Override
     public void mouseClicked(MouseEvent e) {}
 
     @Override
-    public void mousePressed(MouseEvent event) {
-        pressPoint.setLocation(event.getPoint());
-        if (!parentViewer.isSpriteLoaded()) {
+    public void mousePressed(MouseEvent e) {
+        Point point = e.getPoint();
+        this.pressPoint.setLocation(point);
+        if (!this.parentViewer.isSpriteLoaded()) {
             return;
         }
-        this.boundControl.tryBoundCreation(event, parentViewer.getScreenToWorld());
-        if (removePointPredicate.test(event)) {
+        AffineTransform screenToWorld = this.parentViewer.getScreenToWorld();
+        this.boundControl.tryBoundCreation(e, screenToWorld);
+        if (ControlPredicates.removePointPredicate.test(e)) {
             EventBus.publish(new PointRemoveQueued());
         }
-        if (selectPointPredicate.test(event)) {
+        if (ControlPredicates.selectPointPredicate.test(e)) {
             EventBus.publish(new PointSelectQueued(null));
         }
     }
@@ -124,47 +116,58 @@ public class ShipViewerControls implements MouseControl {
 
     @Override
     public void mouseDragged(MouseEvent e) {
-        if (translatePredicate.test(e)) {
-            int dx = e.getX() - previousPoint.x;
-            int dy = e.getY() - previousPoint.y;
-            parentViewer.translate(dx, dy);
+        int x = e.getX();
+        int y = e.getY();
+        if (ControlPredicates.translatePredicate.test(e)) {
+            int dx = x - this.previousPoint.x;
+            int dy = y - this.previousPoint.y;
+            this.parentViewer.translate(dx, dy);
+            EventBus.publish(new ViewerTransformChanged());
         }
-        if (selectPointPredicate.test(e)) {
-            EventBus.publish(
-                    new PointDragQueued(parentViewer.getScreenToWorld(), getAdjustedCursor()));
+        if (ControlPredicates.selectPointPredicate.test(e)) {
+            AffineTransform screenToWorld = this.parentViewer.getScreenToWorld();
+            Point2D adjustedCursor = this.getAdjustedCursor();
+            EventBus.publish(new PointDragQueued(screenToWorld, adjustedCursor));
         }
-        previousPoint.setLocation(e.getX(), e.getY());
+        this.previousPoint.setLocation(x, y);
         this.refreshCursorPosition(e);
     }
 
     @Override
     public void mouseMoved(MouseEvent e) {
-        if (rotatePredicate.test(e) && rotationEnabled) {
-            int dy = e.getY() - previousPoint.y;
-            parentViewer.rotate(
-                    pressPoint.x, pressPoint.y,
-                    Math.toRadians(dy)* ROTATION_SPEED);
+        int x = e.getX();
+        int y = e.getY();
+        if (ControlPredicates.rotatePredicate.test(e) && this.rotationEnabled) {
+            int dy = y - this.previousPoint.y;
+            double toRadians = Math.toRadians(dy);
+            this.parentViewer.rotate(
+                    this.pressPoint.x, this.pressPoint.y,
+                    toRadians * ROTATION_SPEED);
         }
-        previousPoint.setLocation(e.getX(), e.getY());
-        parentViewer.repaint();
+        this.previousPoint.setLocation(x, y);
+        this.parentViewer.repaint();
         this.refreshCursorPosition(e);
     }
 
     @Override
     public void mouseWheelMoved(MouseWheelEvent e) {
+        int wheelRotation = e.getWheelRotation();
         // Calculate the zoom factor - sign of wheel rotation argument determines the direction.
-        double d = Math.pow(1 + ZOOMING_SPEED, -e.getWheelRotation()) - 1;
+        double d = Math.pow(1 + ZOOMING_SPEED, -wheelRotation) - 1;
         double factor = 1.0 + d;
-        double max = 1200;
-        double min = 0.2;
-        if (zoomLevel * factor >= max) {
-            this.setZoomAtLimit(e.getX(), e.getY(), max);
-        } else if (zoomLevel * factor <= min) {
-            this.setZoomAtLimit(e.getX(), e.getY(), min);
+        double max = MAXIMUM_ZOOM;
+        double min = MINIMUM_ZOOM;
+        int x = e.getX();
+        int y = e.getY();
+        if (this.zoomLevel * factor >= max) {
+            this.setZoomAtLimit(x, y, max);
+        } else if (this.zoomLevel * factor <= min) {
+            this.setZoomAtLimit(x, y, min);
         } else {
-            parentViewer.zoom(e.getX(), e.getY(), factor, factor);
-            this.setZoomLevel(zoomLevel * factor);
+            this.parentViewer.zoom(x, y, factor, factor);
+            this.setZoomLevel(this.zoomLevel * factor);
         }
+        this.refreshCursorPosition(e);
     }
 
     private void setZoomAtLimit(int x, int y, double limit) {
@@ -173,17 +176,17 @@ public class ShipViewerControls implements MouseControl {
         this.setZoomLevel(limit);
     }
 
-    public void setZoomLevel(double zoomLevel) {
+    private void setZoomLevel(double zoomLevel) {
         this.zoomLevel = zoomLevel;
-        SwingUtilities.invokeLater(() ->
-                EventBus.publish(new ViewerZoomChanged(zoomLevel)));
+        EventBus.publish(new ViewerZoomChanged(zoomLevel));
     }
 
     public Point2D getAdjustedCursor() {
-        Point2D anchor = parentViewer.getWorldToScreen().transform(new Point(0, 0), null);
-        Point mouse = this.getMousePoint();
+        AffineTransform worldToScreen = parentViewer.getWorldToScreen();
+        Point2D anchor = worldToScreen.transform(new Point(0, 0), null);
+        Point mouse = this.mousePoint;
         // Calculate cursor position relative to anchor.
-        double scale = this.getZoomLevel();
+        double scale = this.zoomLevel;
         double cursorRelX = (mouse.x - anchor.getX()) / scale;
         double cursorRelY = (mouse.y - anchor.getY()) / scale;
         // Align cursor position to nearest 0.5 scaled pixel.
@@ -196,11 +199,12 @@ public class ShipViewerControls implements MouseControl {
     }
 
     private void refreshCursorPosition(MouseEvent event) {
-        mousePoint = event.getPoint();
-        AffineTransform screenToWorld = parentViewer.getScreenToWorld();
-        Point2D adjusted = getAdjustedCursor();
+        this.mousePoint = event.getPoint();
+        AffineTransform screenToWorld = this.parentViewer.getScreenToWorld();
+        Point2D adjusted = this.getAdjustedCursor();
+        this.boundControl.setAdjustedCursor(adjusted);
         Point2D corrected = Utility.correctAdjustedCursor(adjusted, screenToWorld);
-        EventBus.publish(new ViewerCursorMoved(mousePoint, adjusted, corrected));
+        EventBus.publish(new ViewerCursorMoved(this.mousePoint, adjusted, corrected));
     }
 
 }

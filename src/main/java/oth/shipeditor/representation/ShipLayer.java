@@ -26,6 +26,12 @@ public class ShipLayer {
     @Getter @Setter
     private BufferedImage shipSprite;
 
+    @Getter @Setter
+    private String spriteFileName = "";
+
+    @Getter @Setter
+    private String hullFileName = "";
+
     public ShipLayer(BufferedImage sprite) {
         this(sprite, null);
     }

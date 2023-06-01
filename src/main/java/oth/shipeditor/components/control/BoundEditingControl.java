@@ -2,6 +2,8 @@ package oth.shipeditor.components.control;
 
 import de.javagl.viewer.InputEventPredicates;
 import de.javagl.viewer.Predicates;
+import lombok.Getter;
+import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
 import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.viewer.points.BoundCreationQueued;
@@ -17,9 +19,10 @@ import java.util.function.Predicate;
  * @since 08.05.2023
  */
 @Log4j2
-public class BoundEditingControl {
+class BoundEditingControl {
 
-    private final ShipViewerControls parentControls;
+    @Getter @Setter
+    private Point2D adjustedCursor;
 
     // TODO: unify hotkeys.
 
@@ -33,17 +36,13 @@ public class BoundEditingControl {
             InputEventPredicates.controlDown()
     );
 
-    protected BoundEditingControl(ShipViewerControls parent) {
-        this.parentControls = parent;
-    }
-
-    protected void tryBoundCreation(MouseEvent event, AffineTransform screenToWorld) {
-        boolean append = appendPointPredicate.test(event);
-        boolean insert = insertPointPredicate.test(event);
-        if (!append && !insert) return;
-        Point2D screenPoint = parentControls.getAdjustedCursor();
+    void tryBoundCreation(MouseEvent event, AffineTransform screenToWorld) {
+        boolean appendFalse = !this.appendPointPredicate.test(event);
+        boolean insertFalse = !this.insertPointPredicate.test(event);
+        if (appendFalse && insertFalse) return;
+        Point2D screenPoint = this.adjustedCursor;
         Point2D rounded = Utility.correctAdjustedCursor(screenPoint, screenToWorld);
-        EventBus.publish(new BoundCreationQueued(rounded, !append));
+        EventBus.publish(new BoundCreationQueued(rounded, appendFalse));
     }
 
 }

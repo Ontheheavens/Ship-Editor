@@ -1,6 +1,7 @@
 package oth.shipeditor.components.painters;
 
 import de.javagl.viewer.Painter;
+import lombok.extern.log4j.Log4j2;
 import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.viewer.control.ViewerCursorMoved;
 import oth.shipeditor.communication.events.viewer.control.ViewerGuidesToggled;
@@ -17,7 +18,8 @@ import java.util.Optional;
  * @author Ontheheavens
  * @since 29.05.2023
  */
-public class GuidesPainter implements Painter {
+@Log4j2
+public final class GuidesPainter implements Painter {
 
     private Point2D cursor;
 
@@ -31,23 +33,20 @@ public class GuidesPainter implements Painter {
 
     private final ShipViewerPanel parent;
 
-    public GuidesPainter(ShipViewerPanel parent) {
-        this.parent = parent;
+    public GuidesPainter(ShipViewerPanel viewer) {
+        this.parent = viewer;
         this.delegateWorldToScreen = new AffineTransform();
         this.cursor = new Point2D.Double(0, 0);
         this.initCursorListener();
-//        BufferedImage shipSprite = parent.getSelectedLayer().getShipSprite();
-//        this.guidesPaint = this.createGuidesPainter(shipSprite);
-//        this.bordersPaint = this.createBordersPainter(shipSprite);
-//        this.centerPaint = this.createSpriteCenterPainter(shipSprite);
         this.listenForToggling();
     }
 
-    public void listenForToggling() {
+    private void listenForToggling() {
         EventBus.subscribe(event -> {
             if (event instanceof ViewerGuidesToggled checked) {
-                if (parent.getSelectedLayer() == null) return;
-                BufferedImage shipSprite = parent.getSelectedLayer().getShipSprite();
+                LayerPainter selectedLayer = parent.getSelectedLayer();
+                if (selectedLayer == null) return;
+                BufferedImage shipSprite = selectedLayer.getShipSprite();
                 this.guidesPaint = checked.guidesEnabled() ? createGuidesPainter(shipSprite) : null;
                 this.bordersPaint = checked.bordersEnabled() ? createBordersPainter(shipSprite) : null;
                 this.centerPaint = checked.centerEnabled() ? createSpriteCenterPainter(shipSprite) : null;
@@ -58,17 +57,17 @@ public class GuidesPainter implements Painter {
     private void initCursorListener() {
         EventBus.subscribe(event -> {
             if (event instanceof ViewerCursorMoved checked) {
-                cursor = checked.adjusted();
+                this.cursor = checked.adjusted();
             }
         });
     }
 
     @Override
     public void paint(Graphics2D g, AffineTransform worldToScreen, double w, double h) {
-        delegateWorldToScreen.setTransform(worldToScreen);
-        Optional.ofNullable(guidesPaint).ifPresent(p -> p.paint(g, delegateWorldToScreen, w, h));
-        Optional.ofNullable(bordersPaint).ifPresent(p -> p.paint(g, worldToScreen, w, h));
-        Optional.ofNullable(centerPaint).ifPresent(p -> p.paint(g, worldToScreen, w, h));
+        this.delegateWorldToScreen.setTransform(worldToScreen);
+        Optional.ofNullable(this.guidesPaint).ifPresent(p -> p.paint(g, this.delegateWorldToScreen, w, h));
+        Optional.ofNullable(this.bordersPaint).ifPresent(p -> p.paint(g, worldToScreen, w, h));
+        Optional.ofNullable(this.centerPaint).ifPresent(p -> p.paint(g, worldToScreen, w, h));
     }
 
     /**
@@ -84,8 +83,8 @@ public class GuidesPainter implements Painter {
     private Painter createGuidesPainter(BufferedImage shipSprite) {
         return (g, worldToScreen, w, h) -> {
             Point2D mousePoint = this.cursor;
-            AffineTransform screenToWorld = parent.getScreenToWorld();
-            Point2D transformedMouse = screenToWorld.transform(mousePoint, mousePoint);
+            AffineTransform screenToWorld = this.parent.getScreenToWorld();
+            Point2D transformedMouse = screenToWorld.transform(mousePoint, null);
             double x = transformedMouse.getX();
             double y = transformedMouse.getY();
 

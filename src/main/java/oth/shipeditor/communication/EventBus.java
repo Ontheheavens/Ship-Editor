@@ -21,6 +21,10 @@ public class EventBus {
         this.subscribers = new HashSet<>();
     }
 
+    public static EventBus get() {
+        return bus;
+    }
+
     public static BusEventListener subscribe(BusEventListener listener) {
         bus.subscribers.add(listener);
         return listener;

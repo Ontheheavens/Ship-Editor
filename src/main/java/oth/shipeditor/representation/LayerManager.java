@@ -3,9 +3,7 @@ package oth.shipeditor.representation;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
-import oth.shipeditor.communication.BusEventListener;
 import oth.shipeditor.communication.EventBus;
-import oth.shipeditor.communication.events.BusEvent;
 import oth.shipeditor.communication.events.files.HullFileOpened;
 import oth.shipeditor.communication.events.files.SpriteOpened;
 import oth.shipeditor.communication.events.viewer.layers.ShipLayerCreated;
@@ -36,26 +34,20 @@ public class LayerManager {
     }
 
     private void initOpenSpriteListener() {
-        EventBus.subscribe(new BusEventListener() {
-            @Override
-            public void handleEvent(BusEvent event) {
-                if (event instanceof SpriteOpened checked) {
-                    BufferedImage sprite = checked.sprite();
-                    if (activeLayer != null) {
-                        activeLayer.setShipSprite(sprite);
-                        EventBus.publish(new ShipLayerUpdated(activeLayer));
-                    } else {
-                        ShipLayer newLayer = new ShipLayer(sprite);
-                        activeLayer = newLayer;
-                        layers.add(newLayer);
-                        EventBus.publish(new ShipLayerCreated(newLayer));
-                    }
+        EventBus.subscribe(event -> {
+            if (event instanceof SpriteOpened checked) {
+                BufferedImage sprite = checked.sprite();
+                if (activeLayer != null) {
+                    activeLayer.setShipSprite(sprite);
+                    activeLayer.setSpriteFileName(checked.filename());
+                    EventBus.publish(new ShipLayerUpdated(activeLayer));
+                } else {
+                    ShipLayer newLayer = new ShipLayer(sprite);
+                    newLayer.setSpriteFileName(checked.filename());
+                    activeLayer = newLayer;
+                    layers.add(newLayer);
+                    EventBus.publish(new ShipLayerCreated(newLayer));
                 }
-            }
-
-            @Override
-            public String toString() {
-                return "OpenSpriteListener" + this.hashCode();
             }
         });
     }
@@ -74,9 +66,11 @@ public class LayerManager {
                         data = new ShipData(hull);
                         activeLayer.setShipData(data);
                     }
+                    activeLayer.setHullFileName(checked.hullFileName());
                     EventBus.publish(new ShipLayerUpdated(activeLayer));
                 } else {
                     ShipLayer newLayer = new ShipLayer(new ShipData(hull));
+                    newLayer.setHullFileName(checked.hullFileName());
                     activeLayer = newLayer;
                     layers.add(newLayer);
                     EventBus.publish(new ShipLayerCreated(newLayer));

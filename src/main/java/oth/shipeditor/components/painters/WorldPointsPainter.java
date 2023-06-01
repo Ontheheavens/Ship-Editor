@@ -1,9 +1,10 @@
 package oth.shipeditor.components.painters;
 
-import de.javagl.viewer.Painter;
 import lombok.extern.log4j.Log4j2;
+import oth.shipeditor.components.entities.BaseWorldPoint;
 import oth.shipeditor.components.entities.WorldPoint;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -12,16 +13,31 @@ import java.util.List;
  * @since 30.04.2023
  */
 @Log4j2
-public class WorldPointsPainter extends AbstractPointPainter implements Painter {
+public final class WorldPointsPainter extends AbstractPointPainter {
 
-    @Override
-    protected List<? extends WorldPoint> getPointsIndex() {
-        return pointsIndex;
+    private WorldPointsPainter() {
+    }
+
+    /**
+     * @return instance of the painter from factory.
+     */
+    public static WorldPointsPainter create() {
+        return new WorldPointsPainter();
     }
 
     @Override
-    protected WorldPoint getTypeReference() {
-        return new WorldPoint();
+    protected List<BaseWorldPoint> getPointsIndex() {
+        int size = this.pointsIndex.size();
+        List<BaseWorldPoint> allPoints = new ArrayList<>(size);
+        for (WorldPoint retrieved : this.pointsIndex) {
+            allPoints.add((BaseWorldPoint) retrieved);
+        }
+        return allPoints;
+    }
+
+    @Override
+    protected BaseWorldPoint getTypeReference() {
+        return new BaseWorldPoint();
     }
 
 }

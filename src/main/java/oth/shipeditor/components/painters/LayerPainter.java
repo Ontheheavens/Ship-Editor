@@ -5,12 +5,12 @@ import lombok.Getter;
 import lombok.Setter;
 import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.viewer.layers.ShipLayerUpdated;
-import oth.shipeditor.components.ShipViewerPanel;
+import oth.shipeditor.components.ShipViewable;
 import oth.shipeditor.components.entities.BoundPoint;
 import oth.shipeditor.components.entities.ShipCenterPoint;
-import oth.shipeditor.components.entities.WorldPoint;
 import oth.shipeditor.representation.ShipLayer;
 import oth.shipeditor.representation.data.Hull;
+import oth.shipeditor.representation.data.ShipData;
 
 import java.awt.*;
 import java.awt.geom.AffineTransform;
@@ -28,18 +28,17 @@ public class LayerPainter implements Painter {
 
     private final ShipLayer parentLayer;
 
-    @Getter @Setter
-    private Point2D translatedCenter;
+    private ShipCenterPoint centerPoint;
 
     @Getter
     private BufferedImage shipSprite;
 
-    private final ShipViewerPanel viewer;
+    private final ShipViewable viewer;
 
     private boolean initialized = false;
 
-    public LayerPainter(ShipLayer layer, ShipViewerPanel viewer) {
-        this.viewer = viewer;
+    public LayerPainter(ShipLayer layer, ShipViewable viewable) {
+        this.viewer = viewable;
         this.parentLayer = layer;
         this.shipSprite = layer.getShipSprite();
         this.initListeners();
@@ -48,15 +47,23 @@ public class LayerPainter implements Painter {
     private void initListeners() {
         EventBus.subscribe(event -> {
             if (event instanceof ShipLayerUpdated checked) {
-                if (checked.updated() != LayerPainter.this.parentLayer) return;
-                if (parentLayer.getShipSprite() != null) {
-                    LayerPainter.this.shipSprite = parentLayer.getShipSprite();
+                if (checked.updated() != this.parentLayer) return;
+                if (this.parentLayer.getShipSprite() != null) {
+                    this.shipSprite = this.parentLayer.getShipSprite();
                 }
-                if (parentLayer.getShipData() != null && !initialized) {
-                    LayerPainter.this.initialize();
+                if (this.parentLayer.getShipData() != null && !this.initialized) {
+                    this.initialize();
                 }
             }
         });
+    }
+
+    public ShipCenterPoint getShipCenter() {
+        return this.centerPoint;
+    }
+
+    public Point2D getCenterAnchor() {
+        return new Point2D.Double( anchorOffset.getX(), shipSprite.getHeight());
     }
 
     public Point getSpriteCenter() {
@@ -74,29 +81,35 @@ public class LayerPainter implements Painter {
         g.setTransform(oldAT);
     }
 
-    public void initialize() {
-        Hull hull = parentLayer.getShipData().getHull();
-        Point2D anchor = viewer.getShipCenterAnchor();
-        translatedCenter = new Point2D.Double(hull.getCenter().x - anchor.getX(),
-                -hull.getCenter().y + anchor.getY());
-
-        WorldPoint shipCenter = createShipCenterPoint(translatedCenter);
-        viewer.getPointsPainter().addPoint(shipCenter);
+    private void initialize() {
+        ShipData shipData = this.parentLayer.getShipData();
+        Hull hull = shipData.getHull();
+        LayerPainter selectedLayer = this.viewer.getSelectedLayer();
+        Point2D anchor = selectedLayer.getCenterAnchor();
+        Point2D.Double hullCenter = hull.getCenter();
+        double anchorX = anchor.getX();
+        double anchorY = anchor.getY();
+        Point2D.Double translatedCenter = new Point2D.Double(hullCenter.x - anchorX,
+                -hullCenter.y + anchorY);
+        this.centerPoint = createShipCenterPoint(translatedCenter);
+        WorldPointsPainter miscPointsPainter = this.viewer.getMiscPointsPainter();
+        miscPointsPainter.addPoint(this.centerPoint);
         for (Point2D.Double bound : hull.getBounds()) {
-            BoundPoint boundPoint = this.createTranslatedBound(bound, translatedCenter);
-            viewer.getBoundsPainter().addPoint(boundPoint);
+            BoundPoint boundPoint = LayerPainter.createTranslatedBound(bound, translatedCenter);
+            BoundPointsPainter boundsPainter = this.viewer.getBoundsPainter();
+            boundsPainter.addPoint(boundPoint);
         }
-        initialized = true;
-        viewer.repaint();
+        this.initialized = true;
+        this.viewer.repaintView();
     }
 
-    private BoundPoint createTranslatedBound(Point2D bound, Point2D translatedCenter) {
+    private static BoundPoint createTranslatedBound(Point2D bound, Point2D translatedCenter) {
         double translatedX = bound.getY() + translatedCenter.getX();
         double translatedY = -bound.getX() + translatedCenter.getY();
         return new BoundPoint(new Point2D.Double(translatedX, translatedY));
     }
 
-    private ShipCenterPoint createShipCenterPoint(Point2D translatedCenter) {
+    private static ShipCenterPoint createShipCenterPoint(Point2D translatedCenter) {
         return new ShipCenterPoint(translatedCenter);
     }
 

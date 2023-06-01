@@ -10,7 +10,7 @@ import java.awt.geom.Point2D;
  * @author Ontheheavens
  * @since 01.05.2023
  */
-public abstract class FeaturePoint extends WorldPoint {
+public abstract class FeaturePoint extends BaseWorldPoint {
 
     private final Painter composed;
 

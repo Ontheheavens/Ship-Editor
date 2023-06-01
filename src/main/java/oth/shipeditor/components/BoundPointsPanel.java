@@ -8,6 +8,8 @@ import org.kordamp.ikonli.swing.FontIcon;
 import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.components.BoundPointPanelRepaintQueued;
 import oth.shipeditor.communication.events.viewer.control.ViewerRotationToggled;
+import oth.shipeditor.communication.events.viewer.control.ViewerTransformChanged;
+import oth.shipeditor.communication.events.viewer.control.ViewerZoomChanged;
 import oth.shipeditor.communication.events.viewer.points.BoundCreationModeChanged;
 import oth.shipeditor.communication.events.viewer.points.BoundInsertedConfirmed;
 import oth.shipeditor.communication.events.viewer.points.PointAddConfirmed;
@@ -60,14 +62,16 @@ public class BoundPointsPanel extends JPanel implements PointsDisplay<BoundPoint
         this.initPointListener();
     }
 
-    public void setMode(InteractionMode mode) {
+    private void setMode(InteractionMode mode) {
         this.mode = mode;
         EventBus.publish(new BoundCreationModeChanged(mode));
     }
 
     private void initPointListener() {
         EventBus.subscribe(event -> {
-            if (event instanceof BoundPointPanelRepaintQueued) {
+            if (event instanceof BoundPointPanelRepaintQueued ||
+                event instanceof ViewerZoomChanged ||
+                event instanceof ViewerTransformChanged) {
                 this.repaint();
             }
         });

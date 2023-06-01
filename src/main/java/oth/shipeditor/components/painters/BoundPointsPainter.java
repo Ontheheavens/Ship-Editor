@@ -54,14 +54,15 @@ public class BoundPointsPainter extends AbstractPointPainter implements Painter 
 
     @Override
     protected List<BoundPoint> getPointsIndex() {
-        List<BoundPoint> allPoints = new ArrayList<>();
-        for (WorldPoint retrieved : pointsIndex) {
+        int size = this.pointsIndex.size();
+        List<BoundPoint> allPoints = new ArrayList<>(size);
+        for (WorldPoint retrieved : this.pointsIndex) {
             allPoints.add((BoundPoint) retrieved);
         }
         return allPoints;
     }
 
-    private void queueViewerRepaint() {
+    private static void queueViewerRepaint() {
         EventBus.publish(new ViewerRepaintQueued());
     }
 

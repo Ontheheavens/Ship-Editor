@@ -6,7 +6,6 @@ import org.kordamp.ikonli.Ikon;
 import org.kordamp.ikonli.fluentui.FluentUiRegularAL;
 import org.kordamp.ikonli.fluentui.FluentUiRegularMZ;
 import org.kordamp.ikonli.swing.FontIcon;
-import oth.shipeditor.Window;
 import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.viewer.ViewerBackgroundChanged;
 import oth.shipeditor.communication.events.viewer.control.ViewerRotationToggled;
@@ -21,9 +20,7 @@ import java.awt.event.ActionListener;
  * @since 29.04.2023
  */
 @Log4j2
-public class PrimaryMenuBar extends JMenuBar {
-
-    private final Window parent;
+public final class PrimaryMenuBar extends JMenuBar {
 
     @Getter
     private FileMenu fileMenu;
@@ -31,8 +28,7 @@ public class PrimaryMenuBar extends JMenuBar {
     @Getter
     private JMenuItem toggleRotate;
 
-    public PrimaryMenuBar(Window parent) {
-        this.parent = parent;
+    public PrimaryMenuBar() {
         this.add(createFileMenu());
         this.add(createViewMenu());
     }
@@ -48,7 +44,7 @@ public class PrimaryMenuBar extends JMenuBar {
 
         JMenuItem changeBackground = this.createMenuOption("Change background color",  FluentUiRegularAL.COLOR_BACKGROUND_20,
                 l -> SwingUtilities.invokeLater(() ->  {
-                    Color chosen = JColorChooser.showDialog(parent, "Choose Background", Color.GRAY);
+                    Color chosen = JColorChooser.showDialog(null, "Choose Background", Color.GRAY);
                     EventBus.publish(new ViewerBackgroundChanged(chosen));
                 }));
         viewMenu.add(changeBackground);
