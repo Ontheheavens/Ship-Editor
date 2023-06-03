@@ -3,4 +3,4 @@
  * @author Ontheheavens
  * @since 01.06.2023
  */
-package oth.shipeditor.components.control;
+package oth.shipeditor.components.viewer.control;

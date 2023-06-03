@@ -1,6 +1,6 @@
 package oth.shipeditor.communication.events.files;
 
-import oth.shipeditor.representation.data.Hull;
+import oth.shipeditor.representation.Hull;
 
 /**
  * @author Ontheheavens

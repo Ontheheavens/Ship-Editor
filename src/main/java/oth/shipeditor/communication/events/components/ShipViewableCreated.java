@@ -1,6 +1,6 @@
 package oth.shipeditor.communication.events.components;
 
-import oth.shipeditor.components.ShipViewable;
+import oth.shipeditor.components.viewer.ShipViewable;
 
 /**
  * @author Ontheheavens

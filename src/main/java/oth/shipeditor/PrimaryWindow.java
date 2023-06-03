@@ -5,21 +5,16 @@ import lombok.extern.log4j.Log4j2;
 import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.components.ShipViewableCreated;
 import oth.shipeditor.communication.events.components.WindowRepaintQueued;
-import oth.shipeditor.communication.events.viewer.layers.ShipLayerCreated;
-import oth.shipeditor.communication.events.viewer.layers.ShipLayerUpdated;
-import oth.shipeditor.components.*;
-import oth.shipeditor.menubar.Files;
+import oth.shipeditor.components.BoundPointsPanel;
+import oth.shipeditor.components.ShipLayersPanel;
+import oth.shipeditor.components.ViewerStatusPanel;
+import oth.shipeditor.components.viewer.ShipViewable;
+import oth.shipeditor.components.viewer.ShipViewerPanel;
+import oth.shipeditor.components.viewer.layers.LayerManager;
 import oth.shipeditor.menubar.PrimaryMenuBar;
-import oth.shipeditor.representation.LayerManager;
-import oth.shipeditor.representation.ShipLayer;
 
 import javax.swing.*;
 import java.awt.*;
-import java.io.File;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.net.URL;
-import java.util.Objects;
 
 /**
  * @author Ontheheavens
@@ -88,6 +83,8 @@ public final class PrimaryWindow extends JFrame {
         this.loadEditingPanes();
         this.dispatchLoaderEvents();
 
+        PrimaryWindow.configureTooltips();
+
         this.pack();
     }
 
@@ -95,24 +92,11 @@ public final class PrimaryWindow extends JFrame {
         return new PrimaryWindow();
     }
 
-    // TODO: this is all wrong, replace later.
-    private void initLoaderListeners() {
-        EventBus.subscribe(event -> {
-            if (event instanceof ShipLayerCreated checked) {
-                ShipLayer newLayer = checked.newLayer();
-                if (newLayer.getShipSprite() != null) {
-                    shipView.loadLayer(newLayer);
-                }
-            }
-        });
-        EventBus.subscribe(event -> {
-            if (event instanceof ShipLayerUpdated checked) {
-                if (shipView == null) return;
-                if (checked.updated().getShipData() != null && instrumentPane == null) {
-//                    loadEditingPanes();
-                }
-            }
-        });
+    private static void configureTooltips() {
+        ToolTipManager.sharedInstance().setInitialDelay(0);
+    }
+
+    private void initListeners() {
         EventBus.subscribe(event -> {
             if (event instanceof WindowRepaintQueued) {
                 refreshContent();
@@ -123,12 +107,12 @@ public final class PrimaryWindow extends JFrame {
     private void loadLayerHandling() {
         this.layerManager = new LayerManager();
         this.layerManager.initListeners();
-        this.initLoaderListeners();
+        this.initListeners();
         this.northPane = new JPanel();
-        this.northPane.setLayout(new FlowLayout(FlowLayout.LEADING, 0, 0));
+        this.northPane.setLayout(new BorderLayout());
         this.northPane.setBorder(null);
         this.layersPanel = new ShipLayersPanel(layerManager);
-        this.northPane.add(layersPanel);
+        this.northPane.add(layersPanel, BorderLayout.CENTER);
         Container contentPane = this.getContentPane();
         contentPane.add(northPane, BorderLayout.PAGE_START);
     }
@@ -171,30 +155,8 @@ public final class PrimaryWindow extends JFrame {
         EventBus.publish(new ShipViewableCreated(shipView));
     }
 
-    private void testFiles() {
-        Class<? extends PrimaryWindow> windowClass = getClass();
-        ClassLoader classLoader = windowClass.getClassLoader();
-        URL spritePath = Objects.requireNonNull(classLoader.getResource("legion_xiv.png"));
-        File sprite;
-        try {
-            sprite = new File(spritePath.toURI());
-            Files.loadSprite(sprite);
-        } catch (URISyntaxException e) {
-            e.printStackTrace();
-        }
-        URL dataPath = Objects.requireNonNull(classLoader.getResource("legion.ship"));;
-        try {
-            URI url = dataPath.toURI();
-            File hullFile = new File(url);
-            Files.loadHullFile(hullFile);
-        } catch (URISyntaxException e) {
-            e.printStackTrace();
-        }
-    }
-
     void showGUI() {
         this.setVisible(true);
-        this.testFiles();
     }
 
 }

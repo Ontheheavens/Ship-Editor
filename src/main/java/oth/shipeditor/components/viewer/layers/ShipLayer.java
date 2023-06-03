@@ -1,8 +1,8 @@
-package oth.shipeditor.representation;
+package oth.shipeditor.components.viewer.layers;
 
 import lombok.Getter;
 import lombok.Setter;
-import oth.shipeditor.representation.data.ShipData;
+import oth.shipeditor.representation.ShipData;
 
 import java.awt.image.BufferedImage;
 
@@ -20,6 +20,8 @@ public class ShipLayer {
     @Getter @Setter
     private ShipData shipData;
 
+    private LayerPainter painter;
+
     /**
      * Loaded instance of PNG ship sprite.
      */
@@ -31,6 +33,10 @@ public class ShipLayer {
 
     @Getter @Setter
     private String hullFileName = "";
+
+    public ShipLayer() {
+        this(null, null);
+    }
 
     public ShipLayer(BufferedImage sprite) {
         this(sprite, null);

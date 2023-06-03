@@ -1,4 +1,4 @@
-package oth.shipeditor.components.painters;
+package oth.shipeditor.components.viewer.painters;
 
 import de.javagl.viewer.Painter;
 import lombok.Getter;
@@ -8,8 +8,8 @@ import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.components.BoundPointPanelRepaintQueued;
 import oth.shipeditor.communication.events.viewer.ViewerRepaintQueued;
 import oth.shipeditor.communication.events.viewer.points.*;
-import oth.shipeditor.components.entities.BaseWorldPoint;
-import oth.shipeditor.components.entities.WorldPoint;
+import oth.shipeditor.components.viewer.entities.BaseWorldPoint;
+import oth.shipeditor.components.viewer.entities.WorldPoint;
 
 import java.awt.*;
 import java.awt.geom.AffineTransform;
@@ -24,13 +24,11 @@ import java.util.List;
 @Log4j2
 public abstract class AbstractPointPainter implements Painter {
 
-    final List<WorldPoint> pointsIndex;
-
     @Getter
     protected final List<Painter> delegates;
 
     @Getter @Setter
-    private WorldPoint selected = null;
+    private WorldPoint selected;
 
     @Getter @Setter
     private boolean interactionEnabled;
@@ -40,9 +38,8 @@ public abstract class AbstractPointPainter implements Painter {
      */
     private final AffineTransform delegateWorldToScreen;
 
-    AbstractPointPainter() {
+    protected AbstractPointPainter() {
         this.delegates = new ArrayList<>();
-        this.pointsIndex = new ArrayList<>();
         this.delegateWorldToScreen = new AffineTransform();
         this.initChangeListeners();
     }
@@ -69,7 +66,7 @@ public abstract class AbstractPointPainter implements Painter {
                     EventBus.publish(new PointSelectedConfirmed(this.selected));
                     EventBus.publish(new ViewerRepaintQueued());
                 } else {
-                    if (this.mousedOverPoint()) {
+                    if (this.isMousedOverPoint()) {
                         if (this.selected != null) {
                             this.selected.setSelected(false);
                         }
@@ -89,7 +86,8 @@ public abstract class AbstractPointPainter implements Painter {
         EventBus.subscribe(event -> {
             if (event instanceof PointDragQueued checked) {
                 if (selected == null) return;
-                Point2D translated = checked.screenToWorld().transform(checked.adjustedCursor(), null);
+                AffineTransform screenToWorld = checked.screenToWorld();
+                Point2D translated = screenToWorld.transform(checked.adjustedCursor(), null);
                 double x = translated.getX();
                 double y = translated.getY();
                 double roundedX = Math.round(x * 2) / 2.0;
@@ -103,16 +101,22 @@ public abstract class AbstractPointPainter implements Painter {
 
     protected abstract List<? extends BaseWorldPoint> getPointsIndex();
 
+    protected abstract void addPointToIndex(BaseWorldPoint point);
+
+    protected abstract void removePointFromIndex(BaseWorldPoint point);
+
     protected abstract BaseWorldPoint getTypeReference();
 
-    protected boolean isPointEligible(WorldPoint point) {
+    private boolean isPointEligible(WorldPoint point) {
         if (point != null) {
-            return getTypeReference().getClass().isAssignableFrom(point.getClass());
+            BaseWorldPoint typeReference = getTypeReference();
+            Class<? extends BaseWorldPoint> typeReferenceClass = typeReference.getClass();
+            return typeReferenceClass.isAssignableFrom(point.getClass());
         }
         return true;
     }
 
-    private boolean mousedOverPoint() {
+    private boolean isMousedOverPoint() {
         return this.getMousedOver() != null;
     }
 
@@ -126,23 +130,23 @@ public abstract class AbstractPointPainter implements Painter {
         return mousedOver;
     }
 
-    void addPoint(BaseWorldPoint point) {
-        this.pointsIndex.add(point);
+    public void addPoint(BaseWorldPoint point) {
+        this.addPointToIndex(point);
         EventBus.publish(new PointAddConfirmed(point));
         Painter painter = point.getPainter();
         this.delegates.add(painter);
     }
 
     private void removePoint(BaseWorldPoint point) {
-        pointsIndex.remove(point);
+        this.removePointFromIndex(point);
         EventBus.publish(new PointRemovedConfirmed(point));
         Painter painter = point.getPainter();
         this.delegates.remove(painter);
     }
 
-    boolean pointAtCoordsExists(Point2D point2D) {
+    boolean hasPointAtCoords(Point2D point2D) {
         boolean pointDoesExist = false;
-        for (WorldPoint point : this.pointsIndex) {
+        for (WorldPoint point : this.getPointsIndex()) {
             Point2D coords = point.getPosition();
             if (point2D.equals(coords)) {
                 pointDoesExist = true;

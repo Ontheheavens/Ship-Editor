@@ -1,7 +1,7 @@
 package oth.shipeditor.communication.events.viewer.points;
 
 import lombok.extern.log4j.Log4j2;
-import oth.shipeditor.components.entities.WorldPoint;
+import oth.shipeditor.components.viewer.entities.WorldPoint;
 
 /**
  * @author Ontheheavens

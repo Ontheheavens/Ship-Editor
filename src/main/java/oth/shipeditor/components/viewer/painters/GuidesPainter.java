@@ -1,17 +1,19 @@
-package oth.shipeditor.components.painters;
+package oth.shipeditor.components.viewer.painters;
 
 import de.javagl.viewer.Painter;
 import lombok.extern.log4j.Log4j2;
 import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.viewer.control.ViewerCursorMoved;
 import oth.shipeditor.communication.events.viewer.control.ViewerGuidesToggled;
-import oth.shipeditor.components.ShipViewerPanel;
+import oth.shipeditor.components.viewer.ShipViewerPanel;
+import oth.shipeditor.components.viewer.layers.LayerPainter;
 
 import java.awt.*;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
+import java.awt.image.RenderedImage;
 import java.util.Optional;
 
 /**
@@ -48,8 +50,8 @@ public final class GuidesPainter implements Painter {
                 if (selectedLayer == null) return;
                 BufferedImage shipSprite = selectedLayer.getShipSprite();
                 this.guidesPaint = checked.guidesEnabled() ? createGuidesPainter(shipSprite) : null;
-                this.bordersPaint = checked.bordersEnabled() ? createBordersPainter(shipSprite) : null;
-                this.centerPaint = checked.centerEnabled() ? createSpriteCenterPainter(shipSprite) : null;
+                this.bordersPaint = checked.bordersEnabled() ? GuidesPainter.createBordersPainter(shipSprite) : null;
+                this.centerPaint = checked.centerEnabled() ? GuidesPainter.createSpriteCenterPainter(shipSprite) : null;
             }
         });
     }
@@ -80,7 +82,7 @@ public final class GuidesPainter implements Painter {
      * Note: considerable size of implementation is necessary due to the Viewer rotating functionality
      * and 0.5 scaled pixel snapping.
      */
-    private Painter createGuidesPainter(BufferedImage shipSprite) {
+    private Painter createGuidesPainter(RenderedImage shipSprite) {
         return (g, worldToScreen, w, h) -> {
             Point2D mousePoint = this.cursor;
             AffineTransform screenToWorld = this.parent.getScreenToWorld();
@@ -96,8 +98,8 @@ public final class GuidesPainter implements Painter {
             double xGuide = Math.round((x - 0.5) * 2) / 2.0;
             double yGuide = Math.round((y - 0.5) * 2) / 2.0;
 
-            Rectangle2D axisX = new Rectangle2D.Double(xLeft + 0.5, yGuide, spriteW, 1);
-            Rectangle2D axisY = new Rectangle2D.Double(xGuide, yTop + 0.5, 1, spriteH);
+            Shape axisX = new Rectangle2D.Double(xLeft + 0.5, yGuide, spriteW, 1);
+            Shape axisY = new Rectangle2D.Double(xGuide, yTop + 0.5, 1, spriteH);
 
             Paint old = g.getPaint();
             Shape guideX = worldToScreen.createTransformedShape(axisX);
@@ -111,24 +113,24 @@ public final class GuidesPainter implements Painter {
         };
     }
 
-    private Painter createBordersPainter(BufferedImage shipSprite) {
+    private static Painter createBordersPainter(RenderedImage shipSprite) {
         return (g, worldToScreen, w, h) -> {
             int width = shipSprite.getWidth();
             int height = shipSprite.getHeight();
-            Rectangle worldBorder = new Rectangle(0, 0, width, height);
+            Shape worldBorder = new Rectangle(0, 0, width, height);
             Shape transformed = worldToScreen.createTransformedShape(worldBorder);
             g.draw(transformed);
         };
     }
 
-    private Painter createSpriteCenterPainter(BufferedImage shipSprite) {
+    private static Painter createSpriteCenterPainter(RenderedImage shipSprite) {
         return (g, worldToScreen, w, h) -> {
             Point spriteCenter = new Point(shipSprite.getWidth() / 2, shipSprite.getHeight() / 2);
             Point2D center = worldToScreen.transform(spriteCenter, null);
             // Draw the two diagonal lines centered on the sprite center.
-            int x = (int) center.getX(), y = (int) center.getY(), l = 5;
-            g.drawLine(x-l, y-l, x+l, y+l);
-            g.drawLine(x-l, y+l, x+l, y-l);
+            int x = (int) center.getX(), y = (int) center.getY(), i = 5;
+            g.drawLine(x-i, y-i, x+i, y+i);
+            g.drawLine(x-i, y+i, x+i, y-i);
         };
     }
 

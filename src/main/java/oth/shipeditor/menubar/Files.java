@@ -5,7 +5,7 @@ import lombok.extern.log4j.Log4j2;
 import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.files.HullFileOpened;
 import oth.shipeditor.communication.events.files.SpriteOpened;
-import oth.shipeditor.representation.data.Hull;
+import oth.shipeditor.representation.Hull;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
@@ -19,7 +19,7 @@ import java.io.IOException;
  * @since 09.05.2023
  */
 @Log4j2
-public class Files {
+public final class Files {
 
     private static File lastDirectory = null;
 
@@ -28,7 +28,7 @@ public class Files {
     /**
      * @return lambda that opens PNG file chooser.
      */
-    public static Runnable createOpenSpriteAction() {
+    static Runnable createOpenSpriteAction() {
         return () -> {
             JFileChooser spriteChooser = new JFileChooser("C:\\Games\\Ship Editor\\src\\main\\resources");
             if (lastDirectory != null) {
@@ -43,7 +43,7 @@ public class Files {
         };
     }
 
-    public static void tryOpenSprite(int returnVal, JFileChooser spriteChooser) {
+    private static void tryOpenSprite(int returnVal, JFileChooser spriteChooser) {
         if (returnVal == JFileChooser.APPROVE_OPTION) {
             File file = spriteChooser.getSelectedFile();
             Files.loadSprite(file);
@@ -62,7 +62,7 @@ public class Files {
         log.info("Opening: " + file.getName() + ".");
     }
 
-    public static Runnable createOpenHullFileAction() {
+    static Runnable createOpenHullFileAction() {
         return () -> {
             JFileChooser shipDataChooser = new JFileChooser("C:\\Games\\Ship Editor\\src\\main\\resources");
             if (lastDirectory != null) {
@@ -77,7 +77,7 @@ public class Files {
         };
     }
 
-    public static void tryOpenHullFile(int returnVal, JFileChooser shipDataChooser) {
+    private static void tryOpenHullFile(int returnVal, JFileChooser shipDataChooser) {
         if (returnVal == JFileChooser.APPROVE_OPTION) {
             File file = shipDataChooser.getSelectedFile();
             Files.loadHullFile(file);
@@ -91,8 +91,9 @@ public class Files {
             ObjectMapper objectMapper = new ObjectMapper();
             Hull hull = objectMapper.readValue(file, Hull.class);
             EventBus.publish(new HullFileOpened(hull, file.getName()));
-            log.info("Opening: " + file.getName() + ".");
+            log.info("Opening: {}.", file.getName());
         } catch (IOException e) {
+            log.error("Hull file loading failed!");
             e.printStackTrace();
         }
 

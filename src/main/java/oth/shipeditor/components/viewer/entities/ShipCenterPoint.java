@@ -1,4 +1,4 @@
-package oth.shipeditor.components.entities;
+package oth.shipeditor.components.viewer.entities;
 
 import de.javagl.viewer.Painter;
 

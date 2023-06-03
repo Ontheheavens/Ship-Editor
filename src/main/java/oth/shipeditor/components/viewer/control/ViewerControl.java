@@ -1,4 +1,4 @@
-package oth.shipeditor.components.control;
+package oth.shipeditor.components.viewer.control;
 
 import de.javagl.viewer.MouseControl;
 

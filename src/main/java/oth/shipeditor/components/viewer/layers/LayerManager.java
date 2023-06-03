@@ -1,4 +1,4 @@
-package oth.shipeditor.representation;
+package oth.shipeditor.components.viewer.layers;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -6,10 +6,11 @@ import lombok.extern.log4j.Log4j2;
 import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.files.HullFileOpened;
 import oth.shipeditor.communication.events.files.SpriteOpened;
+import oth.shipeditor.communication.events.viewer.layers.LayerCreationQueued;
 import oth.shipeditor.communication.events.viewer.layers.ShipLayerCreated;
 import oth.shipeditor.communication.events.viewer.layers.ShipLayerUpdated;
-import oth.shipeditor.representation.data.Hull;
-import oth.shipeditor.representation.data.ShipData;
+import oth.shipeditor.representation.Hull;
+import oth.shipeditor.representation.ShipData;
 
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
@@ -29,8 +30,20 @@ public class LayerManager {
     private ShipLayer activeLayer;
 
     public void initListeners() {
+        this.initLayerListening();
         this.initOpenSpriteListener();
         this.initOpenHullListener();
+    }
+
+    private void initLayerListening() {
+        EventBus.subscribe(event -> {
+            if (event instanceof LayerCreationQueued) {
+                ShipLayer newLayer = new ShipLayer();
+                activeLayer = newLayer;
+                layers.add(newLayer);
+                EventBus.publish(new ShipLayerCreated(newLayer));
+            }
+        });
     }
 
     private void initOpenSpriteListener() {

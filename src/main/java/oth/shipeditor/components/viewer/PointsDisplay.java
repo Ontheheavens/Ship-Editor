@@ -1,6 +1,6 @@
-package oth.shipeditor.components;
+package oth.shipeditor.components.viewer;
 
-import oth.shipeditor.components.entities.BaseWorldPoint;
+import oth.shipeditor.components.viewer.entities.BaseWorldPoint;
 
 /**
  * @author Ontheheavens

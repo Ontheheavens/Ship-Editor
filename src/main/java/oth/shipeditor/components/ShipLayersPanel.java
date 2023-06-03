@@ -8,9 +8,9 @@ import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.components.WindowRepaintQueued;
 import oth.shipeditor.communication.events.viewer.layers.ShipLayerCreated;
 import oth.shipeditor.communication.events.viewer.layers.ShipLayerUpdated;
-import oth.shipeditor.representation.LayerManager;
-import oth.shipeditor.representation.ShipLayer;
-import oth.shipeditor.representation.data.ShipData;
+import oth.shipeditor.components.viewer.layers.LayerManager;
+import oth.shipeditor.components.viewer.layers.ShipLayer;
+import oth.shipeditor.representation.ShipData;
 
 import javax.swing.*;
 import java.awt.*;
@@ -23,7 +23,7 @@ import java.util.Map;
  * @since 01.06.2023
  */
 @Log4j2
-public class ShipLayersPanel extends JTabbedPane {
+public final class ShipLayersPanel extends JTabbedPane {
 
     private LayerManager layerManager;
 
@@ -33,6 +33,7 @@ public class ShipLayersPanel extends JTabbedPane {
         this.layerManager = manager;
         this.tabIndex = new HashMap<>();
         this.initLayerListeners();
+        this.setTabLayoutPolicy(JTabbedPane.SCROLL_TAB_LAYOUT);
     }
 
     private void initLayerListeners() {

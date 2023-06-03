@@ -14,7 +14,8 @@ import oth.shipeditor.communication.events.viewer.points.BoundCreationModeChange
 import oth.shipeditor.communication.events.viewer.points.BoundInsertedConfirmed;
 import oth.shipeditor.communication.events.viewer.points.PointAddConfirmed;
 import oth.shipeditor.communication.events.viewer.points.PointRemovedConfirmed;
-import oth.shipeditor.components.entities.BoundPoint;
+import oth.shipeditor.components.viewer.PointsDisplay;
+import oth.shipeditor.components.viewer.entities.BoundPoint;
 
 import javax.swing.*;
 import javax.swing.border.Border;

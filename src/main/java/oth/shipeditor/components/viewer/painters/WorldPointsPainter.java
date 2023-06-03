@@ -1,8 +1,8 @@
-package oth.shipeditor.components.painters;
+package oth.shipeditor.components.viewer.painters;
 
+import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
-import oth.shipeditor.components.entities.BaseWorldPoint;
-import oth.shipeditor.components.entities.WorldPoint;
+import oth.shipeditor.components.viewer.entities.BaseWorldPoint;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -15,7 +15,11 @@ import java.util.List;
 @Log4j2
 public final class WorldPointsPainter extends AbstractPointPainter {
 
+    @Getter
+    private final List<BaseWorldPoint> worldPoints;
+
     private WorldPointsPainter() {
+        this.worldPoints = new ArrayList<>();
     }
 
     /**
@@ -27,12 +31,17 @@ public final class WorldPointsPainter extends AbstractPointPainter {
 
     @Override
     protected List<BaseWorldPoint> getPointsIndex() {
-        int size = this.pointsIndex.size();
-        List<BaseWorldPoint> allPoints = new ArrayList<>(size);
-        for (WorldPoint retrieved : this.pointsIndex) {
-            allPoints.add((BaseWorldPoint) retrieved);
-        }
-        return allPoints;
+        return worldPoints;
+    }
+
+    @Override
+    protected void addPointToIndex(BaseWorldPoint point) {
+        worldPoints.add(point);
+    }
+
+    @Override
+    protected void removePointFromIndex(BaseWorldPoint point) {
+        worldPoints.remove(point);
     }
 
     @Override

@@ -8,10 +8,11 @@ import oth.shipeditor.communication.events.viewer.ViewerRepaintQueued;
 import oth.shipeditor.communication.events.viewer.points.PointSelectQueued;
 import oth.shipeditor.communication.events.viewer.points.PointSelectedConfirmed;
 import oth.shipeditor.communication.events.viewer.status.CoordsModeChanged;
-import oth.shipeditor.components.entities.BoundPoint;
-import oth.shipeditor.components.entities.ShipCenterPoint;
-import oth.shipeditor.components.entities.WorldPoint;
-import oth.shipeditor.components.painters.LayerPainter;
+import oth.shipeditor.components.viewer.ShipViewable;
+import oth.shipeditor.components.viewer.entities.BoundPoint;
+import oth.shipeditor.components.viewer.entities.ShipCenterPoint;
+import oth.shipeditor.components.viewer.entities.WorldPoint;
+import oth.shipeditor.components.viewer.layers.LayerPainter;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;

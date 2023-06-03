@@ -1,4 +1,4 @@
-package oth.shipeditor.components;
+package oth.shipeditor.components.viewer;
 
 import de.javagl.viewer.Viewer;
 import lombok.Getter;
@@ -9,14 +9,16 @@ import oth.shipeditor.communication.events.viewer.ViewerBackgroundChanged;
 import oth.shipeditor.communication.events.viewer.ViewerRepaintQueued;
 import oth.shipeditor.communication.events.viewer.control.ViewerGuidesToggled;
 import oth.shipeditor.communication.events.viewer.control.ViewerTransformsReset;
+import oth.shipeditor.communication.events.viewer.layers.PainterAdditionQueued;
+import oth.shipeditor.communication.events.viewer.layers.ShipLayerCreated;
 import oth.shipeditor.communication.events.viewer.layers.ShipLayerLoadConfirmed;
-import oth.shipeditor.components.control.ShipViewerControls;
-import oth.shipeditor.components.control.ViewerControl;
-import oth.shipeditor.components.painters.BoundPointsPainter;
-import oth.shipeditor.components.painters.GuidesPainter;
-import oth.shipeditor.components.painters.LayerPainter;
-import oth.shipeditor.components.painters.WorldPointsPainter;
-import oth.shipeditor.representation.ShipLayer;
+import oth.shipeditor.communication.events.viewer.layers.ShipLayerUpdated;
+import oth.shipeditor.components.viewer.control.ShipViewerControls;
+import oth.shipeditor.components.viewer.control.ViewerControl;
+import oth.shipeditor.components.viewer.layers.LayerPainter;
+import oth.shipeditor.components.viewer.layers.ShipLayer;
+import oth.shipeditor.components.viewer.painters.GuidesPainter;
+import oth.shipeditor.components.viewer.painters.WorldPointsPainter;
 
 import java.awt.*;
 import java.awt.geom.AffineTransform;
@@ -34,7 +36,7 @@ public final class ShipViewerPanel extends Viewer implements ShipViewable {
     private static final Dimension panelSize = new Dimension(240, 120);
 
     @Getter
-    private boolean spriteLoaded;
+    private boolean layerLoaded;
 
     @Getter
     private final List<LayerPainter> layerPainters;
@@ -45,9 +47,7 @@ public final class ShipViewerPanel extends Viewer implements ShipViewable {
     @Getter
     private final WorldPointsPainter miscPointsPainter;
 
-    @Getter
-    private final BoundPointsPainter boundsPainter;
-
+    // TODO: add coordinate axes painter.
     @Getter
     private final GuidesPainter guidesPainter;
 
@@ -56,16 +56,12 @@ public final class ShipViewerPanel extends Viewer implements ShipViewable {
 
     public ShipViewerPanel() {
         this.setMinimumSize(panelSize);
-//        this.addComponentListener(new ResizeListener());
         this.setBackground(Color.GRAY);
 
         this.layerPainters = new ArrayList<>();
 
         this.miscPointsPainter = WorldPointsPainter.create();
         this.addPainter(this.miscPointsPainter, 3);
-
-        this.boundsPainter = new BoundPointsPainter(this);
-        this.addPainter(this.boundsPainter, 4);
 
         this.guidesPainter = new GuidesPainter(this);
         this.addPainter(this.guidesPainter, 4);
@@ -95,6 +91,28 @@ public final class ShipViewerPanel extends Viewer implements ShipViewable {
                 this.repaint();
             }
         });
+        EventBus.subscribe(event -> {
+            if (event instanceof ShipLayerCreated checked) {
+                ShipLayer newLayer = checked.newLayer();
+                if (newLayer.getShipSprite() != null) {
+                    this.loadLayer(newLayer);
+                }
+            }
+        });
+        // TODO: all of these layer mechanisms are super bad, need to be streamlined and compacted later.
+        EventBus.subscribe(event -> {
+            if (event instanceof ShipLayerUpdated checked) {
+                ShipLayer newLayer = checked.updated();
+                if (newLayer.getShipSprite() != null) {
+                    this.loadLayer(newLayer);
+                }
+            }
+        });
+        EventBus.subscribe(event -> {
+            if (event instanceof PainterAdditionQueued checked) {
+                this.addPainter(checked.toAdd(), checked.ordering());
+            }
+        });
     }
 
     @Override
@@ -108,14 +126,14 @@ public final class ShipViewerPanel extends Viewer implements ShipViewable {
     }
 
     @Override
-    public void loadLayer(ShipLayer newLayer) {
-        LayerPainter newPainter = new LayerPainter(newLayer, this);
+    public void loadLayer(ShipLayer layer) {
+        LayerPainter newPainter = new LayerPainter(layer, this);
         this.layerPainters.add(newPainter);
         this.addPainter(newPainter, 2);
         this.selectedLayer = newPainter;
-        this.spriteLoaded = true;
+        this.layerLoaded = true;
         this.centerViewpoint();
-        EventBus.publish(new ShipLayerLoadConfirmed(newLayer));
+        EventBus.publish(new ShipLayerLoadConfirmed(layer));
         ShipViewerPanel.toggleGuides(true, true, true);
     }
 
@@ -137,8 +155,8 @@ public final class ShipViewerPanel extends Viewer implements ShipViewable {
         Point spriteCenter = this.selectedLayer.getSpriteCenter();
         Point2D centerScreen = worldToScreen.transform(spriteCenter, null);
         // Calculate the delta values to center the sprite.
-        double dx = (this.getWidth() / 2f) - centerScreen.getX();
-        double dy = (this.getHeight() / 2f) - centerScreen.getY();
+        double dx = (this.getWidth() / 2.0f) - centerScreen.getX();
+        double dy = (this.getHeight() / 2.0f) - centerScreen.getY();
         this.translate(dx, dy);
         this.repaint();
     }

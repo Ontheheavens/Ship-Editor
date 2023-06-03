@@ -2,7 +2,10 @@ package oth.shipeditor.menubar;
 
 import lombok.extern.log4j.Log4j2;
 import org.kordamp.ikonli.fluentui.FluentUiRegularAL;
+import org.kordamp.ikonli.fluentui.FluentUiRegularMZ;
 import org.kordamp.ikonli.swing.FontIcon;
+import oth.shipeditor.communication.EventBus;
+import oth.shipeditor.communication.events.viewer.layers.LayerCreationQueued;
 
 import javax.swing.*;
 
@@ -23,6 +26,13 @@ public class FileMenu extends JMenu {
     public void initialize() {
         openSubmenu = this.createOpenSubmenu();
         this.add(openSubmenu);
+        JMenuItem createLayer = new JMenuItem("New layer");
+        createLayer.setIcon(FontIcon.of(FluentUiRegularMZ.ROCKET_16, 16));
+        createLayer.addActionListener(event -> SwingUtilities.invokeLater(
+                        () -> EventBus.publish(new LayerCreationQueued())
+                )
+        );
+        this.add(createLayer);
     }
 
     public JMenu createOpenSubmenu() {
@@ -31,13 +41,13 @@ public class FileMenu extends JMenu {
 
         JMenuItem openSprite = new JMenuItem("Open sprite");
         openSprite.setIcon(FontIcon.of(FluentUiRegularAL.IMAGE_20, 16));
-        openSprite.addActionListener(l -> SwingUtilities.invokeLater(Files.createOpenSpriteAction())
+        openSprite.addActionListener(event -> SwingUtilities.invokeLater(Files.createOpenSpriteAction())
         );
         newSubmenu.add(openSprite);
 
         JMenuItem openShipData = new JMenuItem("Open ship file");
         openShipData.setIcon(FontIcon.of(FluentUiRegularAL.CLIPBOARD_TEXT_20, 16));
-        openShipData.addActionListener(l -> SwingUtilities.invokeLater(Files.createOpenHullFileAction()));
+        openShipData.addActionListener(event -> SwingUtilities.invokeLater(Files.createOpenHullFileAction()));
         newSubmenu.add(openShipData);
 
         return newSubmenu;

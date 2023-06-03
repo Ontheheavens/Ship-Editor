@@ -1,4 +1,4 @@
-package oth.shipeditor.components.control;
+package oth.shipeditor.components.viewer.control;
 
 import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
@@ -7,7 +7,7 @@ import oth.shipeditor.communication.events.viewer.control.*;
 import oth.shipeditor.communication.events.viewer.points.PointDragQueued;
 import oth.shipeditor.communication.events.viewer.points.PointRemoveQueued;
 import oth.shipeditor.communication.events.viewer.points.PointSelectQueued;
-import oth.shipeditor.components.ShipViewerPanel;
+import oth.shipeditor.components.viewer.ShipViewerPanel;
 import oth.shipeditor.utility.Utility;
 
 import java.awt.*;
@@ -91,7 +91,7 @@ public final class ShipViewerControls implements ViewerControl {
     public void mousePressed(MouseEvent e) {
         Point point = e.getPoint();
         this.pressPoint.setLocation(point);
-        if (!this.parentViewer.isSpriteLoaded()) {
+        if (!this.parentViewer.isLayerLoaded()) {
             return;
         }
         AffineTransform screenToWorld = this.parentViewer.getScreenToWorld();
@@ -103,7 +103,6 @@ public final class ShipViewerControls implements ViewerControl {
             EventBus.publish(new PointSelectQueued(null));
         }
     }
-
 
     @Override
     public void mouseReleased(MouseEvent e) {}
@@ -176,9 +175,9 @@ public final class ShipViewerControls implements ViewerControl {
         this.setZoomLevel(limit);
     }
 
-    private void setZoomLevel(double zoomLevel) {
-        this.zoomLevel = zoomLevel;
-        EventBus.publish(new ViewerZoomChanged(zoomLevel));
+    private void setZoomLevel(double level) {
+        this.zoomLevel = level;
+        EventBus.publish(new ViewerZoomChanged(level));
     }
 
     public Point2D getAdjustedCursor() {

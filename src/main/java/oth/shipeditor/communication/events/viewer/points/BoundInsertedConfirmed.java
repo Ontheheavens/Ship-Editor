@@ -1,6 +1,6 @@
 package oth.shipeditor.communication.events.viewer.points;
 
-import oth.shipeditor.components.entities.BoundPoint;
+import oth.shipeditor.components.viewer.entities.BoundPoint;
 
 /**
  * @author Ontheheavens

@@ -14,15 +14,17 @@
     requires com.fasterxml.jackson.databind;
 
     exports oth.shipeditor.representation;
-    exports oth.shipeditor.representation.data;
     exports oth.shipeditor.parsing;
     exports oth.shipeditor.components;
-    exports oth.shipeditor.components.painters;
-    exports oth.shipeditor.components.entities;
+    exports oth.shipeditor.components.viewer.painters;
+    exports oth.shipeditor.components.viewer.entities;
 
-    opens oth.shipeditor.representation.data;
     opens oth.shipeditor.parsing;
     opens oth.shipeditor.components;
-    exports oth.shipeditor.components.control;
-    opens oth.shipeditor.components.control;
+    exports oth.shipeditor.components.viewer.control;
+    opens oth.shipeditor.components.viewer.control;
+    exports oth.shipeditor.components.viewer.layers;
+    opens oth.shipeditor.representation;
+    exports oth.shipeditor.components.viewer;
+    opens oth.shipeditor.components.viewer;
 }

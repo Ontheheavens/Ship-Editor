@@ -1,6 +1,6 @@
 package oth.shipeditor.communication.events.viewer.layers;
 
-import oth.shipeditor.representation.ShipLayer;
+import oth.shipeditor.components.viewer.layers.ShipLayer;
 
 /**
  * @author Ontheheavens

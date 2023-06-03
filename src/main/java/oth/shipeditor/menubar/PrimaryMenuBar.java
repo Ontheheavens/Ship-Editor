@@ -42,23 +42,26 @@ public final class PrimaryMenuBar extends JMenuBar {
     private JMenu createViewMenu() {
         JMenu viewMenu = new JMenu("View");
 
-        JMenuItem changeBackground = this.createMenuOption("Change background color",  FluentUiRegularAL.COLOR_BACKGROUND_20,
-                l -> SwingUtilities.invokeLater(() ->  {
+        JMenuItem changeBackground = this.createMenuOption("Change background color",
+                FluentUiRegularAL.COLOR_BACKGROUND_20,
+                event -> {
                     Color chosen = JColorChooser.showDialog(null, "Choose Background", Color.GRAY);
                     EventBus.publish(new ViewerBackgroundChanged(chosen));
-                }));
+                });
         viewMenu.add(changeBackground);
 
         JMenuItem resetTransform = this.createMenuOption("Reset view transforms",
                 FluentUiRegularMZ.PICTURE_IN_PICTURE_20,
-                l -> SwingUtilities.invokeLater(() ->
-                        EventBus.publish(new ViewerTransformsReset())));
+                event ->
+                        EventBus.publish(new ViewerTransformsReset())
+        );
         viewMenu.add(resetTransform);
 
         toggleRotate = new JCheckBoxMenuItem("Toggle view rotation");
         toggleRotate.setIcon(FontIcon.of(FluentUiRegularAL.ARROW_ROTATE_CLOCKWISE_20, 16));
-        toggleRotate.addActionListener(l -> SwingUtilities.invokeLater(() ->
-                EventBus.publish(new ViewerRotationToggled(toggleRotate.isSelected(), true))));
+        toggleRotate.addActionListener(event ->
+                EventBus.publish(new ViewerRotationToggled(toggleRotate.isSelected(), true))
+        );
         EventBus.subscribe(event -> {
             if (event instanceof ViewerRotationToggled checked) {
                 toggleRotate.setSelected(checked.isSelected());
