@@ -1,12 +1,12 @@
 package oth.shipeditor.components.viewer.layers;
 
 import lombok.Getter;
-import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
 import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.files.HullFileOpened;
 import oth.shipeditor.communication.events.files.SpriteOpened;
 import oth.shipeditor.communication.events.viewer.layers.LayerCreationQueued;
+import oth.shipeditor.communication.events.viewer.layers.LayerWasSelected;
 import oth.shipeditor.communication.events.viewer.layers.ShipLayerCreated;
 import oth.shipeditor.communication.events.viewer.layers.ShipLayerUpdated;
 import oth.shipeditor.representation.Hull;
@@ -26,7 +26,7 @@ public class LayerManager {
     @Getter
     private final List<ShipLayer> layers = new ArrayList<>();
 
-    @Getter @Setter
+    @Getter
     private ShipLayer activeLayer;
 
     public void initListeners() {
@@ -35,11 +35,16 @@ public class LayerManager {
         this.initOpenHullListener();
     }
 
+    public void setActiveLayer(ShipLayer newlySelected) {
+        ShipLayer old = this.activeLayer;
+        this.activeLayer = newlySelected;
+        EventBus.publish(new LayerWasSelected(old, newlySelected));
+    }
+
     private void initLayerListening() {
         EventBus.subscribe(event -> {
             if (event instanceof LayerCreationQueued) {
                 ShipLayer newLayer = new ShipLayer();
-                activeLayer = newLayer;
                 layers.add(newLayer);
                 EventBus.publish(new ShipLayerCreated(newLayer));
             }
@@ -53,7 +58,7 @@ public class LayerManager {
                 if (activeLayer != null) {
                     activeLayer.setShipSprite(sprite);
                     activeLayer.setSpriteFileName(checked.filename());
-                    EventBus.publish(new ShipLayerUpdated(activeLayer));
+                    EventBus.publish(new ShipLayerUpdated(activeLayer, true));
                 } else {
                     ShipLayer newLayer = new ShipLayer(sprite);
                     newLayer.setSpriteFileName(checked.filename());
@@ -64,8 +69,6 @@ public class LayerManager {
             }
         });
     }
-
-    // TODO: implement layer tab and multiple layer support
 
     private void initOpenHullListener() {
         EventBus.subscribe(event -> {
@@ -80,7 +83,7 @@ public class LayerManager {
                         activeLayer.setShipData(data);
                     }
                     activeLayer.setHullFileName(checked.hullFileName());
-                    EventBus.publish(new ShipLayerUpdated(activeLayer));
+                    EventBus.publish(new ShipLayerUpdated(activeLayer, false));
                 } else {
                     ShipLayer newLayer = new ShipLayer(new ShipData(hull));
                     newLayer.setHullFileName(checked.hullFileName());

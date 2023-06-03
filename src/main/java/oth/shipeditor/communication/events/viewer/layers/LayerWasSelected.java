@@ -4,8 +4,8 @@ import oth.shipeditor.components.viewer.layers.ShipLayer;
 
 /**
  * @author Ontheheavens
- * @since 29.05.2023
+ * @since 03.06.2023
  */
-public record ShipLayerUpdated(ShipLayer updated, boolean spriteChanged) implements LayerEvent {
+public record LayerWasSelected(ShipLayer old, ShipLayer selected) implements LayerEvent {
 
 }

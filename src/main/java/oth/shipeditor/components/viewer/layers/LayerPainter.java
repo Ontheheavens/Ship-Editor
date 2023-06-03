@@ -5,7 +5,7 @@ import lombok.Getter;
 import lombok.Setter;
 import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.viewer.ViewerRepaintQueued;
-import oth.shipeditor.communication.events.viewer.layers.PainterAdditionQueued;
+import oth.shipeditor.communication.events.viewer.layers.LayerPaintersInitialized;
 import oth.shipeditor.communication.events.viewer.layers.ShipLayerUpdated;
 import oth.shipeditor.components.viewer.ShipViewerPanel;
 import oth.shipeditor.components.viewer.entities.BaseWorldPoint;
@@ -24,6 +24,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
+ * Distinct from parent ship layer instance: present class has to do with direct visual representation.
+ * Painter instance is not concerned with loading and file interactions, and leaves that to other classes.
  * @author Ontheheavens
  * @since 29.05.2023
  */
@@ -31,8 +33,14 @@ public class LayerPainter implements Painter {
 
     @Getter
     private final BoundPointsPainter boundsPainter;
-
+    @Getter
     private final AbstractPointPainter hullPointsPainter;
+
+    /**
+     * Convenience collection for bulk manipulation of layer painters.
+     */
+    @Getter
+    private List<Painter> allPainters;
 
     @Getter @Setter
     private Point2D anchorOffset = new Point2D.Double(0, 0);
@@ -47,11 +55,14 @@ public class LayerPainter implements Painter {
     public LayerPainter(ShipLayer parentLayer, ShipViewerPanel viewerPanel) {
         this.hullPointsPainter = this.createHullPointsPainter();
         this.boundsPainter = new BoundPointsPainter(viewerPanel);
+        this.allPainters = new ArrayList<>();
+        allPainters.add(hullPointsPainter);
+        allPainters.add(boundsPainter);
         this.shipSprite = parentLayer.getShipSprite();
-        this.initListeners(parentLayer);
+        this.initPainterListeners(parentLayer);
     }
 
-    private void initListeners(ShipLayer parentLayer) {
+    private void initPainterListeners(ShipLayer parentLayer) {
         EventBus.subscribe(event -> {
             if (event instanceof ShipLayerUpdated checked) {
                 if (checked.updated() != parentLayer) return;
@@ -107,8 +118,7 @@ public class LayerPainter implements Painter {
             boundsPainter.addPoint(boundPoint);
         }
         this.uninitialized = false;
-        EventBus.publish(new PainterAdditionQueued(hullPointsPainter, 4));
-        EventBus.publish(new PainterAdditionQueued(boundsPainter, 4));
+        EventBus.publish(new LayerPaintersInitialized(this, 4));
         EventBus.publish(new ViewerRepaintQueued());
     }
 
@@ -121,7 +131,6 @@ public class LayerPainter implements Painter {
     private static ShipCenterPoint createShipCenterPoint(Point2D translatedCenter) {
         return new ShipCenterPoint(translatedCenter);
     }
-
 
     @SuppressWarnings("InnerClassMayBeStatic")
     private class HullPointsPainter extends AbstractPointPainter {
@@ -144,6 +153,12 @@ public class LayerPainter implements Painter {
         @Override
         protected BaseWorldPoint getTypeReference() {
             return new BaseWorldPoint();
+        }
+
+        @Override
+        public String toString() {
+            Class<? extends HullPointsPainter> identity = this.getClass();
+            return identity.getSimpleName() + " @" + this.hashCode();
         }
     }
 

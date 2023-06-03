@@ -87,6 +87,9 @@ final class BoundList extends JList<BoundPoint> {
                 return result;
             }
             LayerPainter selectedLayer = BoundList.this.associatedViewer.getSelectedLayer();
+            if (selectedLayer == null) {
+                return result;
+            }
             double positionX = position.getX();
             double positionY = position.getY();
             switch (associatedMode) {

@@ -10,7 +10,6 @@ import oth.shipeditor.components.ShipLayersPanel;
 import oth.shipeditor.components.ViewerStatusPanel;
 import oth.shipeditor.components.viewer.ShipViewable;
 import oth.shipeditor.components.viewer.ShipViewerPanel;
-import oth.shipeditor.components.viewer.layers.LayerManager;
 import oth.shipeditor.menubar.PrimaryMenuBar;
 
 import javax.swing.*;
@@ -62,7 +61,7 @@ public final class PrimaryWindow extends JFrame {
     @Getter
     private ViewerStatusPanel statusPanel;
 
-    private LayerManager layerManager;
+
 
     private PrimaryWindow() {
         log.info("Creating window.");
@@ -77,9 +76,9 @@ public final class PrimaryWindow extends JFrame {
         primaryMenu = new PrimaryMenuBar();
         this.setJMenuBar(primaryMenu);
 
+        this.loadShipView();
         this.loadLayerHandling();
 
-        this.loadShipView();
         this.loadEditingPanes();
         this.dispatchLoaderEvents();
 
@@ -105,13 +104,15 @@ public final class PrimaryWindow extends JFrame {
     }
 
     private void loadLayerHandling() {
-        this.layerManager = new LayerManager();
-        this.layerManager.initListeners();
         this.initListeners();
         this.northPane = new JPanel();
         this.northPane.setLayout(new BorderLayout());
         this.northPane.setBorder(null);
-        this.layersPanel = new ShipLayersPanel(layerManager);
+        if (shipView == null) {
+            // We want to fail fast here, just to be safe and find out quick.
+            throw new IllegalStateException("Ship view was null at the time of layer panel initialization!");
+        }
+        this.layersPanel = new ShipLayersPanel(shipView.getLayerManager());
         this.northPane.add(layersPanel, BorderLayout.CENTER);
         Container contentPane = this.getContentPane();
         contentPane.add(northPane, BorderLayout.PAGE_START);

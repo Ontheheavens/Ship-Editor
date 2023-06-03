@@ -25,6 +25,11 @@ import java.util.Map;
 @Log4j2
 public final class ShipLayersPanel extends JTabbedPane {
 
+
+    /**
+     * Expected to be the same instance that is originally created and assigned in viewer;
+     * Reference in this class is present for both conceptual and convenience purposes.
+     */
     private LayerManager layerManager;
 
     private Map<ShipLayer, LayerTab> tabIndex;
@@ -34,6 +39,11 @@ public final class ShipLayersPanel extends JTabbedPane {
         this.tabIndex = new HashMap<>();
         this.initLayerListeners();
         this.setTabLayoutPolicy(JTabbedPane.SCROLL_TAB_LAYOUT);
+        this.addChangeListener(event -> {
+            ShipLayer newlySelected = getLayerByTab((LayerTab) getSelectedComponent());
+            log.info("Layer panel change!");
+            layerManager.setActiveLayer(newlySelected);
+        });
     }
 
     private void initLayerListeners() {
@@ -41,7 +51,8 @@ public final class ShipLayersPanel extends JTabbedPane {
             if (event instanceof ShipLayerCreated checked) {
                 Icon tabIcon = FontIcon.of(FluentUiRegularMZ.ROCKET_20, 20);
                 ShipLayer layer = checked.newLayer();
-                tabIndex.put(layer,new LayerTab(layer));
+                LayerTab created = new LayerTab(layer);
+                tabIndex.put(layer, created);
                 String tooltip = "<html>" + "Line One" +"<br>" + "Line 2" + "</html>";
                 this.addTab("Layer #" + getTabCount(), tabIcon, tabIndex.get(layer), tooltip);
                 EventBus.publish(new WindowRepaintQueued());
@@ -92,6 +103,18 @@ public final class ShipLayersPanel extends JTabbedPane {
             this.hullFileName.setText(fileName);
         }
 
+    }
+
+    private ShipLayer getLayerByTab(LayerTab value) {
+        ShipLayer result;
+        for (Map.Entry<ShipLayer, LayerTab> entry : tabIndex.entrySet()) {
+            LayerTab entryValue = entry.getValue();
+            if (entryValue.equals(value)) {
+                result = entry.getKey();
+                return result;
+            }
+        }
+        throw new IllegalArgumentException("Attempted to retrieve layer by dangling tab value!");
     }
 
 

@@ -1,6 +1,7 @@
 package oth.shipeditor.components.viewer;
 
 import oth.shipeditor.components.viewer.control.ViewerControl;
+import oth.shipeditor.components.viewer.layers.LayerManager;
 import oth.shipeditor.components.viewer.layers.LayerPainter;
 import oth.shipeditor.components.viewer.layers.ShipLayer;
 
@@ -13,8 +14,6 @@ import java.awt.geom.AffineTransform;
  */
 public interface ShipViewable {
 
-    void repaintView();
-
     void loadLayer(ShipLayer layer);
 
     Point getPanelLocation();
@@ -24,5 +23,7 @@ public interface ShipViewable {
     ViewerControl getControls();
 
     AffineTransform getTransformWorldToScreen();
+
+    LayerManager getLayerManager();
 
 }

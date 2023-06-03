@@ -112,20 +112,20 @@ public class BoundPointsPanel extends JPanel implements PointsDisplay<BoundPoint
     private void initModeButtonListeners() {
         selectModeButton.addItemListener(ev -> {
             if (ev.getStateChange() == ItemEvent.SELECTED) {
-                BoundPointsPanel.this.setMode(InteractionMode.SELECT);
+                this.setMode(InteractionMode.SELECT);
                 EventBus.publish(new ViewerRotationToggled(true, true));
             }
         });
         createModeButton.addItemListener(ev -> {
             if (ev.getStateChange() == ItemEvent.SELECTED) {
-                BoundPointsPanel.this.setMode(InteractionMode.CREATE);
+                this.setMode(InteractionMode.CREATE);
                 EventBus.publish(new ViewerRotationToggled(false, false));
             }
         });
         EventBus.subscribe(event -> {
             if (event instanceof ViewerRotationToggled checked) {
                 if (checked.isSelected()) {
-                    BoundPointsPanel.this.setMode(InteractionMode.SELECT);
+                    this.setMode(InteractionMode.SELECT);
                     selectModeButton.setSelected(true);
                 }
 

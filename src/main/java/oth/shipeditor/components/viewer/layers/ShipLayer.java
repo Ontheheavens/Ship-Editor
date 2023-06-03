@@ -20,8 +20,6 @@ public class ShipLayer {
     @Getter @Setter
     private ShipData shipData;
 
-    private LayerPainter painter;
-
     /**
      * Loaded instance of PNG ship sprite.
      */
@@ -33,6 +31,9 @@ public class ShipLayer {
 
     @Getter @Setter
     private String hullFileName = "";
+
+    @Getter @Setter
+    private LayerPainter painter;
 
     public ShipLayer() {
         this(null, null);
