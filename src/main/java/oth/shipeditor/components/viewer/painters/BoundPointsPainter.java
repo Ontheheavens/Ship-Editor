@@ -252,10 +252,4 @@ public final class BoundPointsPainter extends AbstractPointPainter {
         }
     }
 
-    @Override
-    public String toString() {
-        Class<? extends BoundPointsPainter> identity = this.getClass();
-        return identity.getSimpleName() + " @" + this.hashCode();
-    }
-
 }

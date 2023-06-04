@@ -12,6 +12,7 @@
     requires com.fasterxml.jackson.core;
     requires com.fasterxml.jackson.annotation;
     requires com.fasterxml.jackson.databind;
+    requires com.formdev.flatlaf;
 
     exports oth.shipeditor.representation;
     exports oth.shipeditor.parsing;
@@ -27,4 +28,6 @@
     opens oth.shipeditor.representation;
     exports oth.shipeditor.components.viewer;
     opens oth.shipeditor.components.viewer;
+    exports oth.shipeditor.components.layering;
+    opens oth.shipeditor.components.layering;
 }

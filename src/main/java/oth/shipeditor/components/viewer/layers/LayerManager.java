@@ -5,10 +5,7 @@ import lombok.extern.log4j.Log4j2;
 import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.files.HullFileOpened;
 import oth.shipeditor.communication.events.files.SpriteOpened;
-import oth.shipeditor.communication.events.viewer.layers.LayerCreationQueued;
-import oth.shipeditor.communication.events.viewer.layers.LayerWasSelected;
-import oth.shipeditor.communication.events.viewer.layers.ShipLayerCreated;
-import oth.shipeditor.communication.events.viewer.layers.ShipLayerUpdated;
+import oth.shipeditor.communication.events.viewer.layers.*;
 import oth.shipeditor.representation.Hull;
 import oth.shipeditor.representation.ShipData;
 
@@ -47,6 +44,16 @@ public class LayerManager {
                 ShipLayer newLayer = new ShipLayer();
                 layers.add(newLayer);
                 EventBus.publish(new ShipLayerCreated(newLayer));
+            }
+        });
+        EventBus.subscribe(event -> {
+            if (event instanceof SelectedLayerRemovalQueued) {
+                ShipLayer selected = this.activeLayer;
+                if (!layers.isEmpty()) {
+                    this.setActiveLayer(layers.get(layers.indexOf(selected) - 1));
+                }
+                layers.remove(selected);
+                EventBus.publish(new ShipLayerRemovalConfirmed(selected));
             }
         });
     }

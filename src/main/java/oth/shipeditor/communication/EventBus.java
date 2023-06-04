@@ -11,7 +11,7 @@ import java.util.Set;
  * @since 09.05.2023
  */
 @Log4j2
-public class EventBus {
+public final class EventBus {
 
     private static final EventBus bus = new EventBus();
 
@@ -21,21 +21,22 @@ public class EventBus {
         this.subscribers = new HashSet<>();
     }
 
-    public static EventBus get() {
-        return bus;
-    }
-
     public static BusEventListener subscribe(BusEventListener listener) {
         bus.subscribers.add(listener);
         return listener;
     }
 
+    /**
+     * Unused right now but might prove useful later.
+     * @param listener instance that needs to be removed from Event Bus pool of event receivers.
+     */
+    @SuppressWarnings("unused")
     public static void unsubscribe(BusEventListener listener) {
         bus.subscribers.remove(listener);
     }
 
     public static void publish(BusEvent event) {
-        Set<BusEventListener> receivers = new HashSet<>(bus.subscribers);
+        Iterable<BusEventListener> receivers = new HashSet<>(bus.subscribers);
         for (BusEventListener receiver : receivers) {
             receiver.handleEvent(event);
         }

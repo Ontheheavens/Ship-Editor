@@ -27,7 +27,9 @@ import java.awt.event.ItemEvent;
  * @since 30.04.2023
  */
 @Log4j2
-public class BoundPointsPanel extends JPanel implements PointsDisplay<BoundPoint> {
+public final class BoundPointsPanel extends JPanel implements PointsDisplay<BoundPoint> {
+
+    // TODO: update panel to reflect layer switching functionality.
 
     @Getter
     private final BoundList boundPointContainer;
@@ -55,7 +57,7 @@ public class BoundPointsPanel extends JPanel implements PointsDisplay<BoundPoint
         this.createModeButtons(modePanel);
         this.initModeButtonListeners();
 
-        this.add(modePanel, BorderLayout.NORTH);
+        this.add(modePanel, BorderLayout.PAGE_START);
         Border line = BorderFactory.createLineBorder(Color.DARK_GRAY);
         this.setBorder(line);
         this.setMode(InteractionMode.DISABLED);
@@ -63,9 +65,9 @@ public class BoundPointsPanel extends JPanel implements PointsDisplay<BoundPoint
         this.initPointListener();
     }
 
-    private void setMode(InteractionMode mode) {
-        this.mode = mode;
-        EventBus.publish(new BoundCreationModeChanged(mode));
+    private void setMode(InteractionMode newMode) {
+        this.mode = newMode;
+        EventBus.publish(new BoundCreationModeChanged(newMode));
     }
 
     private void initPointListener() {

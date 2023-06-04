@@ -9,7 +9,7 @@ import java.awt.geom.Point2D;
  * @author Ontheheavens
  * @since 01.05.2023
  */
-public class Utility {
+public final class Utility {
 
     /**
      * Private constructor prevents instantiation of utility class.

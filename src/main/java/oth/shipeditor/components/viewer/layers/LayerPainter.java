@@ -40,7 +40,7 @@ public class LayerPainter implements Painter {
      * Convenience collection for bulk manipulation of layer painters.
      */
     @Getter
-    private List<Painter> allPainters;
+    private final List<Painter> allPainters;
 
     @Getter @Setter
     private Point2D anchorOffset = new Point2D.Double(0, 0);
@@ -153,12 +153,6 @@ public class LayerPainter implements Painter {
         @Override
         protected BaseWorldPoint getTypeReference() {
             return new BaseWorldPoint();
-        }
-
-        @Override
-        public String toString() {
-            Class<? extends HullPointsPainter> identity = this.getClass();
-            return identity.getSimpleName() + " @" + this.hashCode();
         }
     }
 

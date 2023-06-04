@@ -1,22 +1,24 @@
-package oth.shipeditor.components;
+package oth.shipeditor.components.layering;
 
 import lombok.Getter;
+import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
 import org.kordamp.ikonli.fluentui.FluentUiRegularMZ;
 import org.kordamp.ikonli.swing.FontIcon;
 import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.components.WindowRepaintQueued;
 import oth.shipeditor.communication.events.viewer.layers.ShipLayerCreated;
+import oth.shipeditor.communication.events.viewer.layers.ShipLayerRemovalConfirmed;
 import oth.shipeditor.communication.events.viewer.layers.ShipLayerUpdated;
 import oth.shipeditor.components.viewer.layers.LayerManager;
 import oth.shipeditor.components.viewer.layers.ShipLayer;
 import oth.shipeditor.representation.ShipData;
 
 import javax.swing.*;
-import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * @author Ontheheavens
@@ -25,14 +27,15 @@ import java.util.Map;
 @Log4j2
 public final class ShipLayersPanel extends JTabbedPane {
 
+    // TODO: Consider implementing custom JTabbedPane UI in the future to allow for custom panel compositions.
 
     /**
      * Expected to be the same instance that is originally created and assigned in viewer;
      * Reference in this class is present for both conceptual and convenience purposes.
      */
-    private LayerManager layerManager;
+    private final LayerManager layerManager;
 
-    private Map<ShipLayer, LayerTab> tabIndex;
+    private final Map<ShipLayer, LayerTab> tabIndex;
 
     public ShipLayersPanel(LayerManager manager) {
         this.layerManager = manager;
@@ -53,7 +56,7 @@ public final class ShipLayersPanel extends JTabbedPane {
                 ShipLayer layer = checked.newLayer();
                 LayerTab created = new LayerTab(layer);
                 tabIndex.put(layer, created);
-                String tooltip = "<html>" + "Line One" +"<br>" + "Line 2" + "</html>";
+                String tooltip = created.getTabTooltip();
                 this.addTab("Layer #" + getTabCount(), tabIcon, tabIndex.get(layer), tooltip);
                 EventBus.publish(new WindowRepaintQueued());
             }
@@ -67,40 +70,57 @@ public final class ShipLayersPanel extends JTabbedPane {
                 ShipLayer associatedLayer = updated.getAssociatedLayer();
                 if (sprite != null) {
                     updated.setSpriteFileName(associatedLayer.getSpriteFileName());
-
+                    this.setToolTipTextAt(indexOfComponent(updated), updated.getTabTooltip());
                 }
                 if (hullFile != null) {
                     updated.setHullFileName(associatedLayer.getHullFileName());
+                    this.setToolTipTextAt(indexOfComponent(updated), updated.getTabTooltip());
                 }
+            }
+        });
+        EventBus.subscribe(event -> {
+            if (event instanceof ShipLayerRemovalConfirmed checked) {
+                ShipLayer layer = checked.removed();
+                this.removeTabAt(indexOfComponent(tabIndex.get(layer)));
+                tabIndex.remove(layer);
+                EventBus.publish(new WindowRepaintQueued());
             }
         });
     }
 
-    private final class LayerTab extends JPanel {
+    /**
+     * Empty marker component, only serves to track tabs and their layers.
+     */
+    private static final class LayerTab extends JPanel {
 
         @Getter
         private final ShipLayer associatedLayer;
 
-        private final JLabel spriteFileName;
+        @Getter @Setter
+        private String spriteFileName;
 
-        private final JLabel hullFileName;
+        @Getter @Setter
+        private String hullFileName;
 
         private LayerTab(ShipLayer layer) {
             this.associatedLayer = layer;
-            this.spriteFileName = new JLabel(layer.getSpriteFileName());
-            this.hullFileName = new JLabel(layer.getHullFileName());
-            this.spriteFileName.setHorizontalAlignment(SwingConstants.CENTER);
-            this.setLayout(new FlowLayout());
-            this.add(spriteFileName);
-            this.add(hullFileName);
+            this.spriteFileName = layer.getSpriteFileName();
+            this.hullFileName = layer.getHullFileName();
         }
 
-        void setSpriteFileName(String fileName) {
-            this.spriteFileName.setText(fileName);
-        }
-
-        void setHullFileName(String fileName) {
-            this.hullFileName.setText(fileName);
+        private String getTabTooltip() {
+            String notLoaded = "Not loaded";
+            String sprite = spriteFileName;
+            if (Objects.equals(sprite, "")) {
+                sprite = notLoaded;
+            }
+            String spriteNameLine = "Sprite file: " + sprite;
+            String hull = hullFileName;
+            if (Objects.equals(hull, "")) {
+                hull = notLoaded;
+            }
+            String hullNameLine = "Hull file: " + hull;
+            return "<html>" + spriteNameLine + "<br>" + hullNameLine + "</html>";
         }
 
     }
@@ -116,7 +136,5 @@ public final class ShipLayersPanel extends JTabbedPane {
         }
         throw new IllegalArgumentException("Attempted to retrieve layer by dangling tab value!");
     }
-
-
 
 }

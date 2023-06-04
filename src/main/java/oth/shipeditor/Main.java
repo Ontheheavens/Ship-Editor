@@ -1,5 +1,6 @@
 package oth.shipeditor;
 
+import com.formdev.flatlaf.FlatIntelliJLaf;
 import oth.shipeditor.menubar.Files;
 
 import javax.swing.*;
@@ -19,12 +20,7 @@ public final class Main {
 
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> {
-            try {
-                UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-            } catch (ReflectiveOperationException | UnsupportedLookAndFeelException ex) {
-                ex.printStackTrace();
-                throw new RuntimeException("Look-and-feel setup failed!");
-            }
+            FlatIntelliJLaf.setup();
             PrimaryWindow window = PrimaryWindow.create();
             window.showGUI();
             Main.testFiles(window);

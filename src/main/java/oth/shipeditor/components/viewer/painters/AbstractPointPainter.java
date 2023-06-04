@@ -56,31 +56,7 @@ public abstract class AbstractPointPainter implements Painter {
         });
         EventBus.subscribe(event -> {
             if (event instanceof PointSelectQueued checked && this.isPointEligible(checked.point())) {
-                WorldPoint point = checked.point();
-                if (point != null) {
-                    if (this.selected != null) {
-                        this.selected.setSelected(false);
-                    }
-                    this.selected = point;
-                    this.selected.setSelected(true);
-                    EventBus.publish(new PointSelectedConfirmed(this.selected));
-                    EventBus.publish(new ViewerRepaintQueued());
-                } else {
-                    if (this.isMousedOverPoint()) {
-                        if (this.selected != null) {
-                            this.selected.setSelected(false);
-                        }
-                        this.selected = this.getMousedOver();
-                        this.selected.setSelected(true);
-                        EventBus.publish(new PointSelectedConfirmed(this.selected));
-                        EventBus.publish(new ViewerRepaintQueued());
-                    } else if (this.selected != null) {
-                        this.selected.setSelected(false);
-                        this.selected = null;
-                        EventBus.publish(new PointSelectedConfirmed(null));
-                        EventBus.publish(new ViewerRepaintQueued());
-                    }
-                }
+                this.handlePointSelectionEvent(checked.point());
             }
         });
         EventBus.subscribe(event -> {
@@ -97,6 +73,33 @@ public abstract class AbstractPointPainter implements Painter {
                 EventBus.publish(new BoundPointPanelRepaintQueued());
             }
         });
+    }
+
+    private void handlePointSelectionEvent(WorldPoint point) {
+        if (point != null) {
+            if (this.selected != null) {
+                this.selected.setSelected(false);
+            }
+            this.selected = point;
+            this.selected.setSelected(true);
+            EventBus.publish(new PointSelectedConfirmed(this.selected));
+            EventBus.publish(new ViewerRepaintQueued());
+        } else {
+            if (this.isMousedOverPoint()) {
+                if (this.selected != null) {
+                    this.selected.setSelected(false);
+                }
+                this.selected = this.getMousedOver();
+                this.selected.setSelected(true);
+                EventBus.publish(new PointSelectedConfirmed(this.selected));
+                EventBus.publish(new ViewerRepaintQueued());
+            } else if (this.selected != null) {
+                this.selected.setSelected(false);
+                this.selected = null;
+                EventBus.publish(new PointSelectedConfirmed(null));
+                EventBus.publish(new ViewerRepaintQueued());
+            }
+        }
     }
 
     protected abstract List<? extends BaseWorldPoint> getPointsIndex();
@@ -166,6 +169,12 @@ public abstract class AbstractPointPainter implements Painter {
                 delegate.paint(g, this.delegateWorldToScreen, w, h);
             }
         }
+    }
+
+    @Override
+    public String toString() {
+        Class<? extends AbstractPointPainter> identity = this.getClass();
+        return identity.getSimpleName() + " @" + this.hashCode();
     }
 
 }

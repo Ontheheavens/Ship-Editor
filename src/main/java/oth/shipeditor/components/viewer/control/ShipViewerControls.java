@@ -91,9 +91,6 @@ public final class ShipViewerControls implements ViewerControl {
     public void mousePressed(MouseEvent e) {
         Point point = e.getPoint();
         this.pressPoint.setLocation(point);
-        if (!this.parentViewer.isLayerLoaded()) {
-            return;
-        }
         AffineTransform screenToWorld = this.parentViewer.getScreenToWorld();
         this.boundControl.tryBoundCreation(e, screenToWorld);
         if (ControlPredicates.removePointPredicate.test(e)) {

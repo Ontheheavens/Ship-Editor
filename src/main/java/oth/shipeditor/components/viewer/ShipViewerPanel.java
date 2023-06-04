@@ -33,9 +33,6 @@ public final class ShipViewerPanel extends Viewer implements ShipViewable {
     private static final Dimension panelSize = new Dimension(240, 120);
 
     @Getter
-    private boolean layerLoaded;
-
-    @Getter
     private final LayerManager layerManager;
 
     @Getter
@@ -64,10 +61,11 @@ public final class ShipViewerPanel extends Viewer implements ShipViewable {
         this.controls = ShipViewerControls.create(this);
         this.setMouseControl(this.controls);
 
-        this.initListeners();
+        this.initViewerStateListeners();
+        this.initLayerListening();
     }
 
-    private void initListeners() {
+    private void initViewerStateListeners() {
         EventBus.subscribe(event -> {
             if(event instanceof ViewerRepaintQueued) {
                 this.repaint();
@@ -86,6 +84,9 @@ public final class ShipViewerPanel extends Viewer implements ShipViewable {
                 this.repaint();
             }
         });
+    }
+
+    private void initLayerListening() {
         EventBus.subscribe(event -> {
             if (event instanceof ShipLayerCreated checked) {
                 ShipLayer newLayer = checked.newLayer();
@@ -118,6 +119,12 @@ public final class ShipViewerPanel extends Viewer implements ShipViewable {
                 this.repaint();
             }
         });
+        EventBus.subscribe(event -> {
+            if (event instanceof ShipLayerRemovalConfirmed checked) {
+                this.unloadLayer(checked.removed());
+                this.repaint();
+            }
+        });
     }
 
     @Override
@@ -143,9 +150,10 @@ public final class ShipViewerPanel extends Viewer implements ShipViewable {
         if (mainPainter == null) return;
         List<Painter> layerPainters = mainPainter.getAllPainters();
         for (Painter iterated : layerPainters) {
-            log.info("Loading painter:" + iterated);
-            // TODO: check for layer ordering consistency later.
-            this.addPainter(iterated, 4);
+            boolean added = this.addPainter(iterated, 4);
+            if (added) {
+                log.info("Loaded to viewer:{}", iterated);
+            }
         }
     }
 
@@ -154,9 +162,10 @@ public final class ShipViewerPanel extends Viewer implements ShipViewable {
         if (mainPainter == null) return;
         List<Painter> layerPainters = mainPainter.getAllPainters();
         for (Painter iterated : layerPainters) {
-            log.info("Removing painter:" + iterated);
-            // TODO: check for layer ordering consistency later.
-            this.removePainter(iterated, 4);
+            boolean removed = this.removePainter(iterated, 4);
+            if (removed) {
+                log.info("Removed from viewer:{}", iterated);
+            }
         }
     }
 
@@ -169,11 +178,15 @@ public final class ShipViewerPanel extends Viewer implements ShipViewable {
         // Layer might be selected and deselected, in which case children painters are loaded/unloaded.
         // At the same time main sprite painter remains loaded until layer is explicitly removed.
         this.addPainter(newPainter);
-        this.layerLoaded = true;
         this.centerViewpoint();
         EventBus.publish(new ShipLayerLoadConfirmed(layer));
         // TODO: sort out guides toggling/layer switching, add coordinate axes.
         ShipViewerPanel.toggleGuides(true, true, true);
+    }
+
+    private void unloadLayer(ShipLayer layer) {
+        this.removeLayerPainters(layer);
+        this.removePainter(layer.getPainter());
     }
 
     private static void toggleGuides(boolean guidesOn, boolean bordersOn, boolean centerOn) {

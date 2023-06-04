@@ -6,8 +6,8 @@ import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.components.ShipViewableCreated;
 import oth.shipeditor.communication.events.components.WindowRepaintQueued;
 import oth.shipeditor.components.BoundPointsPanel;
-import oth.shipeditor.components.ShipLayersPanel;
 import oth.shipeditor.components.ViewerStatusPanel;
+import oth.shipeditor.components.layering.ShipLayersPanel;
 import oth.shipeditor.components.viewer.ShipViewable;
 import oth.shipeditor.components.viewer.ShipViewerPanel;
 import oth.shipeditor.menubar.PrimaryMenuBar;
@@ -146,7 +146,7 @@ public final class PrimaryWindow extends JFrame {
         JSplitPane splitter = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
         splitter.setLeftComponent((Component) shipView);
         splitter.setRightComponent(instrumentPane);
-        splitter.setResizeWeight(0.95);
+        splitter.setResizeWeight(0.85);
         Container contentPane = this.getContentPane();
         contentPane.add(splitter, BorderLayout.CENTER);
         this.refreshContent();

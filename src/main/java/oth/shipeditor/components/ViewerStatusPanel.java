@@ -32,7 +32,7 @@ import java.awt.image.BufferedImage;
 @Log4j2
 public final class ViewerStatusPanel extends JPanel {
 
-    private static double zoomLevel = 1f;
+    private static double zoomLevel = 1.0f;
 
     @Getter
     private CoordsDisplayMode mode = CoordsDisplayMode.WORLD;
@@ -45,48 +45,28 @@ public final class ViewerStatusPanel extends JPanel {
 
     private final JLabel zoom;
 
-    private final Border normal = this.createLabelBorder(false);
-    private final Border hovered = this.createLabelBorder(true);
+    private final Border normal = ViewerStatusPanel.createLabelBorder(false);
+    private final Border hovered = ViewerStatusPanel.createLabelBorder(true);
 
     public ViewerStatusPanel(ShipViewable viewable) {
         this.viewer = viewable;
         FontIcon dimensionIcon = FontIcon.of(FluentUiRegularMZ.SLIDE_SIZE_24, 20);
-        dimensions = new JLabel("", dimensionIcon, JLabel.TRAILING);
+        dimensions = new JLabel("", dimensionIcon, SwingConstants.TRAILING);
         dimensions.setToolTipText("Width / Height");
         this.add(dimensions);
-        JSeparator separator = new JSeparator(JSeparator.VERTICAL);
+        JSeparator separator = new JSeparator(SwingConstants.VERTICAL);
         separator.setPreferredSize(new Dimension(1, dimensionIcon.getIconHeight()));
         this.add(separator);
         FontIcon mouseIcon = FontIcon.of(FluentUiRegularAL.CURSOR_HOVER_20, 20);
-        cursorCoords = new JLabel("", mouseIcon, JLabel.TRAILING);
+        cursorCoords = new JLabel("", mouseIcon, SwingConstants.TRAILING);
         cursorCoords.setBorder(normal);
         cursorCoords.setToolTipText("Click to change coordinate system");
         JPopupMenu popupMenu = this.createCoordsMenu();
-        cursorCoords.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseEntered(MouseEvent e) {
-                super.mouseEntered(e);
-                cursorCoords.setBorder(hovered);
-            }
-
-            @Override
-            public void mouseExited(MouseEvent e) {
-                super.mouseExited(e);
-                cursorCoords.setBorder(normal);
-            }
-
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                if (SwingUtilities.isLeftMouseButton(e)) {
-                    popupMenu.show(cursorCoords, e.getX(), e.getY());
-                }
-            }
-        });
-
+        cursorCoords.addMouseListener(new MouseoverBorderListener(popupMenu));
         this.add(cursorCoords);
         this.add(Utility.clone(separator));
         FontIcon zoomIcon = FontIcon.of(FluentUiRegularMZ.ZOOM_IN_20, 20);
-        this.zoom = new JLabel("", zoomIcon, JLabel.TRAILING);
+        this.zoom = new JLabel("", zoomIcon, SwingConstants.TRAILING);
         this.zoom.setToolTipText("Sprite Scale");
         this.add(this.zoom);
 
@@ -118,14 +98,14 @@ public final class ViewerStatusPanel extends JPanel {
         });
     }
 
-    private Border createLabelBorder(boolean hover) {
+    private static Border createLabelBorder(boolean hover) {
         Border empty = BorderFactory.createEmptyBorder(0, 4, 0, 4);
         if (hover) {
-            Border hovered = BorderFactory.createLoweredBevelBorder();
-            return BorderFactory.createCompoundBorder(hovered, empty);
+            Border loweredBevelBorder = BorderFactory.createLoweredBevelBorder();
+            return BorderFactory.createCompoundBorder(loweredBevelBorder, empty);
         } else {
-            Border normal = BorderFactory.createRaisedBevelBorder();
-            return BorderFactory.createCompoundBorder(normal, empty);
+            Border raisedBevelBorder = BorderFactory.createRaisedBevelBorder();
+            return BorderFactory.createCompoundBorder(raisedBevelBorder, empty);
         }
     }
 
@@ -175,7 +155,7 @@ public final class ViewerStatusPanel extends JPanel {
         return popupMenu;
     }
 
-    public void setDimensionsLabel(BufferedImage sprite) {
+    private void setDimensionsLabel(BufferedImage sprite) {
         if (sprite != null) {
             dimensions.setText(sprite.getWidth() + " x " + sprite.getHeight());
             log.info("Sprite dimensions loaded.");
@@ -228,6 +208,37 @@ public final class ViewerStatusPanel extends JPanel {
     private void setZoomLabel(double newZoom) {
         int rounded = (int) Math.round(newZoom * 100);
         zoom.setText(rounded + "%");
+    }
+
+    // TODO: bevel border change does not blend in FlatLaf theme, replace it later.
+
+    private class MouseoverBorderListener extends MouseAdapter {
+
+        private final JPopupMenu popupMenu;
+
+        MouseoverBorderListener(JPopupMenu menu) {
+            this.popupMenu = menu;
+        }
+
+        @Override
+        public void mouseEntered(MouseEvent e) {
+            super.mouseEntered(e);
+            cursorCoords.setBorder(hovered);
+        }
+
+        @Override
+        public void mouseExited(MouseEvent e) {
+            super.mouseExited(e);
+            cursorCoords.setBorder(normal);
+        }
+
+        @Override
+        public void mouseClicked(MouseEvent e) {
+            if (SwingUtilities.isLeftMouseButton(e)) {
+                popupMenu.show(cursorCoords, e.getX(), e.getY());
+            }
+        }
+
     }
 
 }

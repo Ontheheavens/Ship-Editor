@@ -5,6 +5,7 @@ import lombok.extern.log4j.Log4j2;
 import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.viewer.control.ViewerCursorMoved;
 import oth.shipeditor.communication.events.viewer.control.ViewerGuidesToggled;
+import oth.shipeditor.communication.events.viewer.layers.LayerWasSelected;
 import oth.shipeditor.components.viewer.ShipViewerPanel;
 import oth.shipeditor.components.viewer.layers.LayerPainter;
 
@@ -22,6 +23,8 @@ import java.util.Optional;
  */
 @Log4j2
 public final class GuidesPainter implements Painter {
+
+    // TODO: This is currently a mess with tangled-up logic; needs to be sorted out soon.
 
     private Point2D cursor;
 
@@ -41,6 +44,16 @@ public final class GuidesPainter implements Painter {
         this.cursor = new Point2D.Double(0, 0);
         this.initCursorListener();
         this.listenForToggling();
+    }
+
+    // TODO: Implement guides switch for layer selection.
+
+    private void listenForLayerChange() {
+        EventBus.subscribe(event -> {
+            if (event instanceof LayerWasSelected checked) {
+
+            }
+        });
     }
 
     private void listenForToggling() {

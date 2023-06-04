@@ -10,6 +10,8 @@ import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.viewer.ViewerBackgroundChanged;
 import oth.shipeditor.communication.events.viewer.control.ViewerRotationToggled;
 import oth.shipeditor.communication.events.viewer.control.ViewerTransformsReset;
+import oth.shipeditor.communication.events.viewer.layers.LayerCreationQueued;
+import oth.shipeditor.communication.events.viewer.layers.SelectedLayerRemovalQueued;
 
 import javax.swing.*;
 import java.awt.*;
@@ -31,6 +33,7 @@ public final class PrimaryMenuBar extends JMenuBar {
     public PrimaryMenuBar() {
         this.add(createFileMenu());
         this.add(createViewMenu());
+        this.add(PrimaryMenuBar.createLayersMenu());
     }
 
     private JMenu createFileMenu() {
@@ -42,7 +45,7 @@ public final class PrimaryMenuBar extends JMenuBar {
     private JMenu createViewMenu() {
         JMenu viewMenu = new JMenu("View");
 
-        JMenuItem changeBackground = this.createMenuOption("Change background color",
+        JMenuItem changeBackground = PrimaryMenuBar.createMenuOption("Change background color",
                 FluentUiRegularAL.COLOR_BACKGROUND_20,
                 event -> {
                     Color chosen = JColorChooser.showDialog(null, "Choose Background", Color.GRAY);
@@ -50,7 +53,7 @@ public final class PrimaryMenuBar extends JMenuBar {
                 });
         viewMenu.add(changeBackground);
 
-        JMenuItem resetTransform = this.createMenuOption("Reset view transforms",
+        JMenuItem resetTransform = PrimaryMenuBar.createMenuOption("Reset view transforms",
                 FluentUiRegularMZ.PICTURE_IN_PICTURE_20,
                 event ->
                         EventBus.publish(new ViewerTransformsReset())
@@ -73,7 +76,28 @@ public final class PrimaryMenuBar extends JMenuBar {
         return viewMenu;
     }
 
-    private JMenuItem createMenuOption(String text, Ikon icon, ActionListener action) {
+    private static JMenu createLayersMenu() {
+        JMenu layersMenu = new JMenu("Layers");
+
+        JMenuItem createLayer = new JMenuItem("Create new layer");
+        createLayer.setIcon(FontIcon.of(FluentUiRegularMZ.ROCKET_16, 16));
+        createLayer.addActionListener(event -> SwingUtilities.invokeLater(
+                        () -> EventBus.publish(new LayerCreationQueued())
+                )
+        );
+        layersMenu.add(createLayer);
+
+        JMenuItem removeLayer = new JMenuItem("Remove selected layer");
+        removeLayer.addActionListener(event -> SwingUtilities.invokeLater(
+                        () -> EventBus.publish(new SelectedLayerRemovalQueued())
+                )
+        );
+        layersMenu.add(removeLayer);
+
+        return layersMenu;
+    }
+
+    private static JMenuItem createMenuOption(String text, Ikon icon, ActionListener action) {
         JMenuItem newOption = new JMenuItem(text);
         newOption.setIcon(FontIcon.of(icon, 16));
         newOption.addActionListener(action);
