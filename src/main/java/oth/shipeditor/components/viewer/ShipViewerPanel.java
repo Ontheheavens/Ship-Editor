@@ -96,7 +96,7 @@ public final class ShipViewerPanel extends Viewer implements ShipViewable {
             }
         });
         EventBus.subscribe(event -> {
-            if (event instanceof ShipLayerUpdated checked) {
+            if (event instanceof ActiveLayerUpdated checked) {
                 ShipLayer newLayer = checked.updated();
                 if (newLayer.getShipSprite() != null && checked.spriteChanged()) {
                     this.loadLayer(newLayer);
@@ -114,8 +114,12 @@ public final class ShipViewerPanel extends Viewer implements ShipViewable {
         });
         EventBus.subscribe(event -> {
             if (event instanceof LayerWasSelected checked) {
-                this.removeLayerPainters(checked.old());
-                this.loadLayerPointPainters(checked.selected());
+                if (checked.old() != null) {
+                    this.removeLayerPainters(checked.old());
+                }
+                if (checked.selected() != null) {
+                    this.loadLayerPointPainters(checked.selected());
+                }
                 this.repaint();
             }
         });

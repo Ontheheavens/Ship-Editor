@@ -5,8 +5,9 @@ import lombok.Getter;
 import lombok.Setter;
 import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.viewer.ViewerRepaintQueued;
+import oth.shipeditor.communication.events.viewer.layers.ActiveLayerUpdated;
 import oth.shipeditor.communication.events.viewer.layers.LayerPaintersInitialized;
-import oth.shipeditor.communication.events.viewer.layers.ShipLayerUpdated;
+import oth.shipeditor.communication.events.viewer.layers.ShipLayerRemovalConfirmed;
 import oth.shipeditor.components.viewer.ShipViewerPanel;
 import oth.shipeditor.components.viewer.entities.BaseWorldPoint;
 import oth.shipeditor.components.viewer.entities.BoundPoint;
@@ -34,7 +35,7 @@ public class LayerPainter implements Painter {
     @Getter
     private final BoundPointsPainter boundsPainter;
     @Getter
-    private final AbstractPointPainter hullPointsPainter;
+    private final HullPointsPainter hullPointsPainter;
 
     /**
      * Convenience collection for bulk manipulation of layer painters.
@@ -47,30 +48,62 @@ public class LayerPainter implements Painter {
 
     private ShipCenterPoint centerPoint;
 
+    /**
+     * Reference to parent layer is needed here for points cleanup.
+     */
+    @Getter
+    private final ShipLayer parentLayer;
+
     @Getter
     private BufferedImage shipSprite;
 
     private boolean uninitialized = true;
 
-    public LayerPainter(ShipLayer parentLayer, ShipViewerPanel viewerPanel) {
+    public LayerPainter(ShipLayer layer, ShipViewerPanel viewerPanel) {
+        this.parentLayer = layer;
         this.hullPointsPainter = this.createHullPointsPainter();
         this.boundsPainter = new BoundPointsPainter(viewerPanel);
         this.allPainters = new ArrayList<>();
         allPainters.add(hullPointsPainter);
         allPainters.add(boundsPainter);
-        this.shipSprite = parentLayer.getShipSprite();
-        this.initPainterListeners(parentLayer);
+        this.shipSprite = layer.getShipSprite();
+        this.initPainterListeners(layer);
+        this.initLayerListeners();
     }
 
-    private void initPainterListeners(ShipLayer parentLayer) {
+    private void initLayerListeners() {
         EventBus.subscribe(event -> {
-            if (event instanceof ShipLayerUpdated checked) {
-                if (checked.updated() != parentLayer) return;
-                if (parentLayer.getShipSprite() != null) {
-                    this.shipSprite = parentLayer.getShipSprite();
+            if (event instanceof ShipLayerRemovalConfirmed checked) {
+                if (checked.removed() != this.parentLayer) return;
+                this.clearBoundPainter();
+                this.clearHullPainter();
+            }
+        });
+    }
+
+    private void clearHullPainter() {
+        Iterable<BaseWorldPoint> hullPoints = new ArrayList<>(this.hullPointsPainter.getPointsIndex());
+        for (BaseWorldPoint point : hullPoints) {
+            this.hullPointsPainter.removePoint(point);
+        }
+    }
+
+    private void clearBoundPainter() {
+        Iterable<BoundPoint> bounds = new ArrayList<>(this.boundsPainter.getBoundPoints());
+        for (BoundPoint point : bounds) {
+            this.boundsPainter.removePoint(point);
+        }
+    }
+
+    private void initPainterListeners(ShipLayer layer) {
+        EventBus.subscribe(event -> {
+            if (event instanceof ActiveLayerUpdated checked) {
+                if (checked.updated() != layer) return;
+                if (layer.getShipSprite() != null) {
+                    this.shipSprite = layer.getShipSprite();
                 }
-                if (parentLayer.getShipData() != null && this.uninitialized) {
-                    this.initialize(parentLayer.getShipData());
+                if (layer.getShipData() != null && this.uninitialized) {
+                    this.initialize(layer.getShipData());
                 }
             }
         });
@@ -99,7 +132,7 @@ public class LayerPainter implements Painter {
         g.setTransform(oldAT);
     }
 
-    private AbstractPointPainter createHullPointsPainter() {
+    private HullPointsPainter createHullPointsPainter() {
         return new HullPointsPainter();
     }
 
@@ -134,6 +167,7 @@ public class LayerPainter implements Painter {
 
     @SuppressWarnings("InnerClassMayBeStatic")
     private class HullPointsPainter extends AbstractPointPainter {
+
         private final List<BaseWorldPoint> points = new ArrayList<>();
         @Override
         protected List<BaseWorldPoint> getPointsIndex() {

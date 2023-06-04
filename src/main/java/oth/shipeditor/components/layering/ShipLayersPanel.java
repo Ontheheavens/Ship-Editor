@@ -7,14 +7,15 @@ import org.kordamp.ikonli.fluentui.FluentUiRegularMZ;
 import org.kordamp.ikonli.swing.FontIcon;
 import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.components.WindowRepaintQueued;
+import oth.shipeditor.communication.events.viewer.layers.ActiveLayerUpdated;
 import oth.shipeditor.communication.events.viewer.layers.ShipLayerCreated;
 import oth.shipeditor.communication.events.viewer.layers.ShipLayerRemovalConfirmed;
-import oth.shipeditor.communication.events.viewer.layers.ShipLayerUpdated;
 import oth.shipeditor.components.viewer.layers.LayerManager;
 import oth.shipeditor.components.viewer.layers.ShipLayer;
 import oth.shipeditor.representation.ShipData;
 
 import javax.swing.*;
+import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.util.HashMap;
 import java.util.Map;
@@ -45,8 +46,13 @@ public final class ShipLayersPanel extends JTabbedPane {
         this.addChangeListener(event -> {
             ShipLayer newlySelected = getLayerByTab((LayerTab) getSelectedComponent());
             log.info("Layer panel change!");
-            layerManager.setActiveLayer(newlySelected);
+            // If the change results from the last layer being removed and the newly selected layer is null,
+            // call to set active layer is unnecessary as this case is handled directly by layer manager.
+            if (newlySelected != null) {
+                layerManager.setActiveLayer(newlySelected);
+            }
         });
+        this.setBorder(BorderFactory.createMatteBorder(1, 0, 0, 0, Color.LIGHT_GRAY));
     }
 
     private void initLayerListeners() {
@@ -62,7 +68,7 @@ public final class ShipLayersPanel extends JTabbedPane {
             }
         });
         EventBus.subscribe(event -> {
-            if (event instanceof ShipLayerUpdated checked) {
+            if (event instanceof ActiveLayerUpdated checked) {
                 ShipLayer eventLayer = checked.updated();
                 LayerTab updated = tabIndex.get(eventLayer);
                 BufferedImage sprite = eventLayer.getShipSprite();
@@ -106,6 +112,7 @@ public final class ShipLayersPanel extends JTabbedPane {
             this.associatedLayer = layer;
             this.spriteFileName = layer.getSpriteFileName();
             this.hullFileName = layer.getHullFileName();
+            this.setLayout(new BorderLayout());
         }
 
         private String getTabTooltip() {
@@ -134,7 +141,7 @@ public final class ShipLayersPanel extends JTabbedPane {
                 return result;
             }
         }
-        throw new IllegalArgumentException("Attempted to retrieve layer by dangling tab value!");
+        return null;
     }
 
 }

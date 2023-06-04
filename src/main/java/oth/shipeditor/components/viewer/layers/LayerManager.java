@@ -49,8 +49,10 @@ public class LayerManager {
         EventBus.subscribe(event -> {
             if (event instanceof SelectedLayerRemovalQueued) {
                 ShipLayer selected = this.activeLayer;
-                if (!layers.isEmpty()) {
+                if (layers.size() >= 2) {
                     this.setActiveLayer(layers.get(layers.indexOf(selected) - 1));
+                } else {
+                    this.setActiveLayer(null);
                 }
                 layers.remove(selected);
                 EventBus.publish(new ShipLayerRemovalConfirmed(selected));
@@ -65,7 +67,7 @@ public class LayerManager {
                 if (activeLayer != null) {
                     activeLayer.setShipSprite(sprite);
                     activeLayer.setSpriteFileName(checked.filename());
-                    EventBus.publish(new ShipLayerUpdated(activeLayer, true));
+                    EventBus.publish(new ActiveLayerUpdated(activeLayer, true));
                 } else {
                     ShipLayer newLayer = new ShipLayer(sprite);
                     newLayer.setSpriteFileName(checked.filename());
@@ -90,7 +92,7 @@ public class LayerManager {
                         activeLayer.setShipData(data);
                     }
                     activeLayer.setHullFileName(checked.hullFileName());
-                    EventBus.publish(new ShipLayerUpdated(activeLayer, false));
+                    EventBus.publish(new ActiveLayerUpdated(activeLayer, false));
                 } else {
                     ShipLayer newLayer = new ShipLayer(new ShipData(hull));
                     newLayer.setHullFileName(checked.hullFileName());

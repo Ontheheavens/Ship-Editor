@@ -46,7 +46,7 @@ public final class GuidesPainter implements Painter {
         this.listenForToggling();
     }
 
-    // TODO: Implement guides switch for layer selection.
+    // TODO: Implement guides switch for layer selection. Remember that checked.selected() can be null now.
 
     private void listenForLayerChange() {
         EventBus.subscribe(event -> {

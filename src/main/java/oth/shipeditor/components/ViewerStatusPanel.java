@@ -8,7 +8,8 @@ import org.kordamp.ikonli.swing.FontIcon;
 import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.viewer.control.ViewerCursorMoved;
 import oth.shipeditor.communication.events.viewer.control.ViewerZoomChanged;
-import oth.shipeditor.communication.events.viewer.layers.ShipLayerLoadConfirmed;
+import oth.shipeditor.communication.events.viewer.layers.ActiveLayerUpdated;
+import oth.shipeditor.communication.events.viewer.layers.LayerWasSelected;
 import oth.shipeditor.communication.events.viewer.status.CoordsModeChanged;
 import oth.shipeditor.components.viewer.ShipViewable;
 import oth.shipeditor.components.viewer.control.ViewerControl;
@@ -52,7 +53,7 @@ public final class ViewerStatusPanel extends JPanel {
         this.viewer = viewable;
         FontIcon dimensionIcon = FontIcon.of(FluentUiRegularMZ.SLIDE_SIZE_24, 20);
         dimensions = new JLabel("", dimensionIcon, SwingConstants.TRAILING);
-        dimensions.setToolTipText("Width / Height");
+        dimensions.setToolTipText("Width / height of active layer");
         this.add(dimensions);
         JSeparator separator = new JSeparator(SwingConstants.VERTICAL);
         separator.setPreferredSize(new Dimension(1, dimensionIcon.getIconHeight()));
@@ -67,7 +68,7 @@ public final class ViewerStatusPanel extends JPanel {
         this.add(Utility.clone(separator));
         FontIcon zoomIcon = FontIcon.of(FluentUiRegularMZ.ZOOM_IN_20, 20);
         this.zoom = new JLabel("", zoomIcon, SwingConstants.TRAILING);
-        this.zoom.setToolTipText("Sprite Scale");
+        this.zoom.setToolTipText("Zoom level");
         this.add(this.zoom);
 
         this.initListeners();
@@ -90,10 +91,22 @@ public final class ViewerStatusPanel extends JPanel {
             }
         });
         EventBus.subscribe(event -> {
-            if (event instanceof ShipLayerLoadConfirmed checked) {
-                ShipLayer layer = checked.layer();
+            if (event instanceof ActiveLayerUpdated checked) {
+                if (!checked.spriteChanged()) return;
+                ShipLayer layer = checked.updated();
                 BufferedImage shipSprite = layer.getShipSprite();
                 this.setDimensionsLabel(shipSprite);
+            }
+        });
+        EventBus.subscribe(event -> {
+            if (event instanceof LayerWasSelected checked) {
+                ShipLayer layer = checked.selected();
+                if (layer != null) {
+                    BufferedImage shipSprite = layer.getShipSprite();
+                    this.setDimensionsLabel(shipSprite);
+                } else {
+                    this.setDimensionsLabel(null);
+                }
             }
         });
     }

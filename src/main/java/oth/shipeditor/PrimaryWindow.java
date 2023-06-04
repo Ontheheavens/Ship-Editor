@@ -66,12 +66,13 @@ public final class PrimaryWindow extends JFrame {
     private PrimaryWindow() {
         log.info("Creating window.");
         this.setTitle("Ship Editor");
-        this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        this.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         this.setMinimumSize(new Dimension(800, 600));
 
         // This centers the frame.
         this.setLocationRelativeTo(null);
-        this.getContentPane().setLayout(new BorderLayout());
+        Container contentPane = this.getContentPane();
+        contentPane.setLayout(new BorderLayout());
 
         primaryMenu = new PrimaryMenuBar();
         this.setJMenuBar(primaryMenu);

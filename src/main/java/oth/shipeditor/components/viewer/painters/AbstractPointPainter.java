@@ -140,7 +140,7 @@ public abstract class AbstractPointPainter implements Painter {
         this.delegates.add(painter);
     }
 
-    private void removePoint(BaseWorldPoint point) {
+    public void removePoint(BaseWorldPoint point) {
         this.removePointFromIndex(point);
         EventBus.publish(new PointRemovedConfirmed(point));
         Painter painter = point.getPainter();
