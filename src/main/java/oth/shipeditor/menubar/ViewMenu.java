@@ -44,7 +44,7 @@ class ViewMenu extends JMenu {
                     EventBus.publish(new ViewerBackgroundChanged(chosen));
                 });
         this.add(changeBackground);
-        JMenuItem resetTransform = PrimaryMenuBar.createMenuOption("Reset view transforms",
+        JMenuItem resetTransform = PrimaryMenuBar.createMenuOption("Center on selected layer",
                 FluentUiRegularMZ.PICTURE_IN_PICTURE_20,
                 event ->
                         EventBus.publish(new ViewerTransformsReset())

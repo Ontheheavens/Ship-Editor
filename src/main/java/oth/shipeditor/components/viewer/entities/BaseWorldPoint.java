@@ -28,10 +28,10 @@ public class BaseWorldPoint implements WorldPoint{
     private final Painter painter;
 
     @Getter
-    private boolean cursorInBounds = false;
+    private boolean cursorInBounds;
 
     @Getter @Setter
-    private boolean selected = false;
+    private boolean selected;
 
     static {
         EventBus.subscribe(event -> {

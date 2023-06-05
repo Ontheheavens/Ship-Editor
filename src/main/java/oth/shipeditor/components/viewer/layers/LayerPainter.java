@@ -2,9 +2,10 @@ package oth.shipeditor.components.viewer.layers;
 
 import de.javagl.viewer.Painter;
 import lombok.Getter;
-import lombok.Setter;
+import lombok.extern.log4j.Log4j2;
 import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.viewer.ViewerRepaintQueued;
+import oth.shipeditor.communication.events.viewer.control.LayerAnchorDragged;
 import oth.shipeditor.communication.events.viewer.layers.ActiveLayerUpdated;
 import oth.shipeditor.communication.events.viewer.layers.LayerPaintersInitialized;
 import oth.shipeditor.communication.events.viewer.layers.ShipLayerRemovalConfirmed;
@@ -12,6 +13,7 @@ import oth.shipeditor.components.viewer.ShipViewerPanel;
 import oth.shipeditor.components.viewer.entities.BaseWorldPoint;
 import oth.shipeditor.components.viewer.entities.BoundPoint;
 import oth.shipeditor.components.viewer.entities.ShipCenterPoint;
+import oth.shipeditor.components.viewer.entities.WorldPoint;
 import oth.shipeditor.components.viewer.painters.AbstractPointPainter;
 import oth.shipeditor.components.viewer.painters.BoundPointsPainter;
 import oth.shipeditor.representation.Hull;
@@ -30,6 +32,7 @@ import java.util.List;
  * @author Ontheheavens
  * @since 29.05.2023
  */
+@Log4j2
 public class LayerPainter implements Painter {
 
     @Getter
@@ -43,7 +46,7 @@ public class LayerPainter implements Painter {
     @Getter
     private final List<Painter> allPainters;
 
-    @Getter @Setter
+    @Getter
     private Point2D anchorOffset = new Point2D.Double(0, 0);
 
     private ShipCenterPoint centerPoint;
@@ -79,6 +82,17 @@ public class LayerPainter implements Painter {
                 this.clearHullPainter();
             }
         });
+        EventBus.subscribe(event -> {
+            if (event instanceof LayerAnchorDragged checked && checked.selected() == this) {
+                AffineTransform screenToWorld = checked.screenToWorld();
+                Point2D difference = checked.difference();
+                Point2D wP = screenToWorld.transform(difference, null);
+                double roundedX = Math.round(wP.getX() * 2) / 2.0;
+                double roundedY = Math.round(wP.getY() * 2) / 2.0;
+                Point2D corrected = new Point2D.Double(roundedX, roundedY);
+                updateAnchorOffset(corrected);
+            }
+        });
     }
 
     private void clearHullPainter() {
@@ -109,16 +123,36 @@ public class LayerPainter implements Painter {
         });
     }
 
+    private void updateAnchorOffset(Point2D updated) {
+        Point2D oldOffset = this.anchorOffset;
+        Point2D difference = new Point2D.Double(oldOffset.getX() - updated.getX(),
+                oldOffset.getY() - updated.getY());
+        for (BoundPoint point : boundsPainter.getBoundPoints()) {
+            LayerPainter.offsetPointPosition(point, difference);
+        }
+        for (BaseWorldPoint point : hullPointsPainter.getPointsIndex()) {
+            LayerPainter.offsetPointPosition(point, difference);
+        }
+        this.anchorOffset = updated;
+    }
+
+    private static void offsetPointPosition(WorldPoint point, Point2D offset) {
+        Point2D oldBoundPosition = point.getPosition();
+        point.setPosition(oldBoundPosition.getX() - offset.getX(),
+                oldBoundPosition.getY() - offset.getY());
+    }
+
     public ShipCenterPoint getShipCenter() {
         return this.centerPoint;
     }
 
     public Point2D getCenterAnchor() {
-        return new Point2D.Double( anchorOffset.getX(), shipSprite.getHeight());
+        return new Point2D.Double( anchorOffset.getX(), anchorOffset.getY() + shipSprite.getHeight());
     }
 
-    public Point getSpriteCenter() {
-        return new Point(shipSprite.getWidth() / 2, shipSprite.getHeight() / 2);
+    public Point2D getSpriteCenter() {
+        return new Point2D.Double((anchorOffset.getX() + shipSprite.getWidth() / 2.0f),
+                (anchorOffset.getY() + shipSprite.getHeight() / 2.0f));
     }
 
     @Override
@@ -139,11 +173,14 @@ public class LayerPainter implements Painter {
     private void initialize(ShipData shipData) {
         Hull hull = shipData.getHull();
         Point2D anchor = this.getCenterAnchor();
+        log.info(anchor);
         Point2D.Double hullCenter = hull.getCenter();
+        log.info(hullCenter);
         double anchorX = anchor.getX();
         double anchorY = anchor.getY();
-        Point2D.Double translatedCenter = new Point2D.Double(hullCenter.x - anchorX,
+        Point2D.Double translatedCenter = new Point2D.Double(hullCenter.x + anchorX,
                 -hullCenter.y + anchorY);
+        log.info(translatedCenter);
         this.centerPoint = LayerPainter.createShipCenterPoint(translatedCenter);
         hullPointsPainter.addPoint(this.centerPoint);
         for (Point2D.Double bound : hull.getBounds()) {
@@ -156,7 +193,7 @@ public class LayerPainter implements Painter {
     }
 
     private static BoundPoint createTranslatedBound(Point2D bound, Point2D translatedCenter) {
-        double translatedX = bound.getY() + translatedCenter.getX();
+        double translatedX = -bound.getY() + translatedCenter.getX();
         double translatedY = -bound.getX() + translatedCenter.getY();
         return new BoundPoint(new Point2D.Double(translatedX, translatedY));
     }

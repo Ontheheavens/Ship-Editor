@@ -102,7 +102,7 @@ public final class GuidesPainter implements Painter {
 
             double spriteW = shipSprite.getWidth();
             double spriteH = shipSprite.getHeight();
-            Point2D anchor = new Point(0, 0);
+            Point2D anchor = layer.getAnchorOffset();
             double xLeft = Math.round((anchor.getX() - 0.5) * 2) / 2.0;
             double yTop = Math.round((anchor.getY() - 0.5) * 2) / 2.0;
             double xGuide = Math.round((x - 0.5) * 2) / 2.0;
@@ -130,9 +130,12 @@ public final class GuidesPainter implements Painter {
             RenderedImage shipSprite = layer.getShipSprite();
             int width = shipSprite.getWidth();
             int height = shipSprite.getHeight();
-            Shape worldBorder = new Rectangle(0, 0, width, height);
-            Shape transformed = worldToScreen.createTransformedShape(worldBorder);
+            Point2D layerAnchor = layer.getAnchorOffset();
+            Shape spriteBorder = new Rectangle((int) layerAnchor.getX(), (int) layerAnchor.getY(), width, height);
+            Shape transformed = worldToScreen.createTransformedShape(spriteBorder);
             g.draw(transformed);
+            // TODO: remove later, this is for testing purposes.
+            GuidesPainter.drawCrossPoint(g, worldToScreen.transform(layerAnchor, null), 4);
         };
     }
 
@@ -141,13 +144,19 @@ public final class GuidesPainter implements Painter {
             LayerPainter layer = parent.getSelectedLayer();
             if (layer == null || layer.getShipSprite() == null) return;
             RenderedImage shipSprite = layer.getShipSprite();
-            Point spriteCenter = new Point(shipSprite.getWidth() / 2, shipSprite.getHeight() / 2);
+            Point2D anchor = layer.getAnchorOffset();
+            Point spriteCenter = new Point((int) (anchor.getX() + (shipSprite.getWidth() / 2)),
+                    (int) (anchor.getY() + (shipSprite.getHeight() / 2)));
             Point2D center = worldToScreen.transform(spriteCenter, null);
             // Draw the two diagonal lines centered on the sprite center.
-            int x = (int) center.getX(), y = (int) center.getY(), i = 5;
-            g.drawLine(x-i, y-i, x+i, y+i);
-            g.drawLine(x-i, y+i, x+i, y-i);
+            GuidesPainter.drawCrossPoint(g, center, 5);
         };
+    }
+
+    private static void drawCrossPoint(Graphics2D g, Point2D position, int lineSize) {
+        int x = (int) position.getX(), y = (int) position.getY();
+        g.drawLine(x- lineSize, y- lineSize, x+ lineSize, y+ lineSize);
+        g.drawLine(x- lineSize, y+ lineSize, x+ lineSize, y- lineSize);
     }
 
     private static Painter createAxesPainter() {

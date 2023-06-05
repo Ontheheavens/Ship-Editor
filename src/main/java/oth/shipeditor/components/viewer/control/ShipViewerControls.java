@@ -8,9 +8,11 @@ import oth.shipeditor.communication.events.viewer.points.PointDragQueued;
 import oth.shipeditor.communication.events.viewer.points.PointRemoveQueued;
 import oth.shipeditor.communication.events.viewer.points.PointSelectQueued;
 import oth.shipeditor.components.viewer.ShipViewerPanel;
+import oth.shipeditor.components.viewer.layers.LayerPainter;
 import oth.shipeditor.utility.Utility;
 
 import java.awt.*;
+import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseWheelEvent;
 import java.awt.geom.AffineTransform;
@@ -41,6 +43,13 @@ public final class ShipViewerControls implements ViewerControl {
      */
     private final Point pressPoint = new Point();
 
+    /**
+     * Used for layer dragging functionality.
+     */
+    private final Point layerDragPoint = new Point();
+
+    private final int layerDragHotkey = KeyEvent.VK_ALT;
+
     @Getter
     private Point mousePoint = new Point();
 
@@ -61,6 +70,7 @@ public final class ShipViewerControls implements ViewerControl {
         this.rotationEnabled = false;
         this.boundControl = new BoundEditingControl();
         this.initListeners();
+        this.initLayerCursorListener();
     }
 
     /**
@@ -84,6 +94,27 @@ public final class ShipViewerControls implements ViewerControl {
         });
     }
 
+    private void initLayerCursorListener() {
+        KeyboardFocusManager.getCurrentKeyboardFocusManager().addKeyEventDispatcher(ke -> {
+            int keyCode = ke.getKeyCode();
+            boolean isLayerDragHotkey = keyCode == layerDragHotkey;
+            switch (ke.getID()) {
+                case KeyEvent.KEY_PRESSED:
+                    if (isLayerDragHotkey) {
+                        this.parentViewer.setCursor(new Cursor(Cursor.MOVE_CURSOR));
+                    }
+                    break;
+                case KeyEvent.KEY_RELEASED:
+                    if (isLayerDragHotkey) {
+                        this.parentViewer.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+                    }
+                    break;
+            }
+            this.parentViewer.repaint();
+            return false;
+        });
+    }
+
     @Override
     public void mouseClicked(MouseEvent e) {}
 
@@ -91,6 +122,16 @@ public final class ShipViewerControls implements ViewerControl {
     public void mousePressed(MouseEvent e) {
         Point point = e.getPoint();
         this.pressPoint.setLocation(point);
+        // This layer dragging subroutine took a long time to figure out; careful here in the future.
+        // Should any difficulties arise, employ logging liberally.
+        if (this.parentViewer.getSelectedLayer() != null) {
+            LayerPainter selected = this.parentViewer.getSelectedLayer();
+            AffineTransform worldToScreen = this.parentViewer.getTransformWorldToScreen();
+            Point2D anchor = selected.getAnchorOffset();
+            // Layer anchor needs to be transformed because all mouse events are evaluated in screen coordinates.
+            Point2D transformed = worldToScreen.transform(anchor, null);
+            this.layerDragPoint.setLocation(e.getX() - transformed.getX(), e.getY() - transformed.getY());
+        }
         AffineTransform screenToWorld = this.parentViewer.getScreenToWorld();
         this.boundControl.tryBoundCreation(e, screenToWorld);
         if (ControlPredicates.removePointPredicate.test(e)) {
@@ -124,6 +165,15 @@ public final class ShipViewerControls implements ViewerControl {
             AffineTransform screenToWorld = this.parentViewer.getScreenToWorld();
             Point2D adjustedCursor = this.getAdjustedCursor();
             EventBus.publish(new PointDragQueued(screenToWorld, adjustedCursor));
+        }
+        if (ControlPredicates.layerMovePredicate.test(e)) {
+            int dx = x - this.layerDragPoint.x;
+            int dy = y - this.layerDragPoint.y;
+            AffineTransform screenToWorld = this.parentViewer.getScreenToWorld();
+            LayerPainter selected = this.parentViewer.getSelectedLayer();
+            Point2D snappedDifference = this.snapPointToGrid(new Point2D.Double(dx, dy), 1.0f);
+            EventBus.publish(new LayerAnchorDragged(screenToWorld,
+                    selected, snappedDifference));
         }
         this.previousPoint.setLocation(x, y);
         this.refreshCursorPosition(e);
@@ -178,20 +228,31 @@ public final class ShipViewerControls implements ViewerControl {
     }
 
     public Point2D getAdjustedCursor() {
+        Point mouse = new Point(this.mousePoint);
+        return this.snapPointToGrid(mouse, 2.0f);
+    }
+
+    /**
+     * @param input Point that will be snapped to grid.
+     * @param snappingDivisor value that will determine the size of snapping grid.
+     * E.g. value of 2.0f means position snapping to 0.5 scaled pixel, while 1.0f will snap to the whole pixel.
+     * @return Snapped point instance.
+     */
+    private Point2D snapPointToGrid(Point2D input, float snappingDivisor) {
         AffineTransform worldToScreen = parentViewer.getWorldToScreen();
         Point2D anchor = worldToScreen.transform(new Point(0, 0), null);
-        Point mouse = this.mousePoint;
         // Calculate cursor position relative to anchor.
         double scale = this.zoomLevel;
-        double cursorRelX = (mouse.x - anchor.getX()) / scale;
-        double cursorRelY = (mouse.y - anchor.getY()) / scale;
+        double cursorRelX = (input.getX() - anchor.getX()) / scale;
+        double cursorRelY = (input.getY() - anchor.getY()) / scale;
         // Align cursor position to nearest 0.5 scaled pixel.
-        double alignedCursorRelX = Math.round(cursorRelX * 2) / 2f;
-        double alignedCursorRelY = Math.round(cursorRelY * 2) / 2f;
+        double alignedCursorRelX = Math.round(cursorRelX * snappingDivisor) / snappingDivisor;
+        double alignedCursorRelY = Math.round(cursorRelY * snappingDivisor) / snappingDivisor;
         // Calculate cursor position in scaled pixels.
         double cursorX = (anchor.getX() + alignedCursorRelX * scale);
         double cursorY = (anchor.getY() + alignedCursorRelY * scale);
-        return new Point2D.Double(cursorX, cursorY);
+        input.setLocation(cursorX, cursorY);
+        return input;
     }
 
     private void refreshCursorPosition(MouseEvent event) {

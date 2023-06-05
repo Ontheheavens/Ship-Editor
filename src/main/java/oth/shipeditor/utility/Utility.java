@@ -17,7 +17,7 @@ public final class Utility {
     private Utility() {}
 
     public static void drawBorderedLine(Graphics2D canvas, Point2D start, Point2D finish, Color inner) {
-        Utility.drawBorderedLine(canvas, start, finish, inner, Color.BLACK, 2f, 3f);
+        Utility.drawBorderedLine(canvas, start, finish, inner, Color.BLACK, 2.0f, 3.0f);
     }
 
     public static void drawBorderedLine(Graphics2D canvas, Point2D start, Point2D finish,

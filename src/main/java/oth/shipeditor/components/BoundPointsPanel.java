@@ -34,8 +34,6 @@ import java.util.ArrayList;
 @Log4j2
 public final class BoundPointsPanel extends JPanel implements PointsDisplay<BoundPoint> {
 
-    // TODO: update panel to reflect layer switching functionality.
-
     @Getter
     private final BoundList boundPointContainer;
 

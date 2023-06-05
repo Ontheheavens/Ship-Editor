@@ -198,7 +198,7 @@ public final class ShipViewerPanel extends Viewer implements ShipViewable {
         AffineTransform worldToScreen = this.getWorldToScreen();
         // Get the center of the sprite in screen coordinates.
         LayerPainter activeLayerPainter = activeLayer.getPainter();
-        Point spriteCenter = activeLayerPainter.getSpriteCenter();
+        Point2D spriteCenter = activeLayerPainter.getSpriteCenter();
         Point2D centerScreen = worldToScreen.transform(spriteCenter, null);
         // Calculate the delta values to center the sprite.
         double dx = (this.getWidth() / 2.0f) - centerScreen.getX();

@@ -200,14 +200,16 @@ public final class ViewerStatusPanel extends JPanel {
                 Point2D center = selectedLayer.getCenterAnchor();
                 cursor = ViewerStatusPanel.adjustCursorCoordinates(adjustedCursor, center);
             }
+            // This case uses different coordinate system alignment to be consistent with game files.
+            // Otherwise, user might be confused as shown point coordinates won't match with those in file.
             case SHIP_CENTER -> {
                 if (selectedLayer == null || selectedLayer.getShipCenter() == null) break;
                 ShipCenterPoint shipCenter = selectedLayer.getShipCenter();
                 Point2D center = shipCenter.getPosition();
-                cursor = ViewerStatusPanel.adjustCursorCoordinates(adjustedCursor, center);
+                Point2D adjusted = ViewerStatusPanel.adjustCursorCoordinates(adjustedCursor, center);
+                cursor = new Point2D.Double(-adjusted.getY(), -adjusted.getX());
             }
         }
-
         cursorCoords.setText(cursor.getX() + "," + cursor.getY());
     }
 

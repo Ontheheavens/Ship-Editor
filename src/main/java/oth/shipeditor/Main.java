@@ -28,9 +28,13 @@ public final class Main {
     }
 
     private static void testFiles(PrimaryWindow window) {
+        String legionSprite = "";
+        String crigSprite = "salvage_rig.png";
+        String legionHull = "legion.ship";
+        String crigHull = "constructionrig.ship";
         Class<? extends PrimaryWindow> windowClass = window.getClass();
         ClassLoader classLoader = windowClass.getClassLoader();
-        URL spritePath = Objects.requireNonNull(classLoader.getResource("legion_xiv.png"));
+        URL spritePath = Objects.requireNonNull(classLoader.getResource(crigSprite));
         File sprite;
         try {
             sprite = new File(spritePath.toURI());
@@ -38,7 +42,7 @@ public final class Main {
         } catch (URISyntaxException e) {
             e.printStackTrace();
         }
-        URL dataPath = Objects.requireNonNull(classLoader.getResource("legion.ship"));;
+        URL dataPath = Objects.requireNonNull(classLoader.getResource(crigHull));;
         try {
             URI url = dataPath.toURI();
             File hullFile = new File(url);

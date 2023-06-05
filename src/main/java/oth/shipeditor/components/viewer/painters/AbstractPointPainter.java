@@ -24,6 +24,8 @@ import java.util.List;
 @Log4j2
 public abstract class AbstractPointPainter implements Painter {
 
+    // TODO: Implement mirror mode.
+
     @Getter
     protected final List<Painter> delegates;
 

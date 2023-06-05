@@ -90,6 +90,8 @@ public final class BoundPointsPainter extends AbstractPointPainter {
     private void initHotkeys() {
         KeyboardFocusManager.getCurrentKeyboardFocusManager().addKeyEventDispatcher(ke -> {
             int keyCode = ke.getKeyCode();
+            // Remember, single equals is assignments, while double is boolean evaluation.
+            // First we evaluate whether the passed keycode is one of our hotkeys, then assign the result to field.
             boolean isAppendHotkey = keyCode == appendBoundHotkey;
             boolean isInsertHotkey = keyCode == insertBoundHotkey;
             switch (ke.getID()) {
