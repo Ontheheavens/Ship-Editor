@@ -10,17 +10,22 @@ import oth.shipeditor.communication.events.components.BoundPointPanelRepaintQueu
 import oth.shipeditor.communication.events.viewer.control.ViewerRotationToggled;
 import oth.shipeditor.communication.events.viewer.control.ViewerTransformChanged;
 import oth.shipeditor.communication.events.viewer.control.ViewerZoomChanged;
+import oth.shipeditor.communication.events.viewer.layers.LayerWasSelected;
 import oth.shipeditor.communication.events.viewer.points.BoundCreationModeChanged;
 import oth.shipeditor.communication.events.viewer.points.BoundInsertedConfirmed;
 import oth.shipeditor.communication.events.viewer.points.PointAddConfirmed;
 import oth.shipeditor.communication.events.viewer.points.PointRemovedConfirmed;
 import oth.shipeditor.components.viewer.PointsDisplay;
 import oth.shipeditor.components.viewer.entities.BoundPoint;
+import oth.shipeditor.components.viewer.layers.LayerPainter;
+import oth.shipeditor.components.viewer.layers.ShipLayer;
+import oth.shipeditor.components.viewer.painters.BoundPointsPainter;
 
 import javax.swing.*;
 import javax.swing.border.Border;
 import java.awt.*;
 import java.awt.event.ItemEvent;
+import java.util.ArrayList;
 
 /**
  * @author Ontheheavens
@@ -63,6 +68,7 @@ public final class BoundPointsPanel extends JPanel implements PointsDisplay<Boun
         this.setMode(InteractionMode.DISABLED);
 
         this.initPointListener();
+        this.initLayerListeners();
     }
 
     private void setMode(InteractionMode newMode) {
@@ -93,6 +99,31 @@ public final class BoundPointsPanel extends JPanel implements PointsDisplay<Boun
         EventBus.subscribe(event -> {
             if (event instanceof PointRemovedConfirmed checked && checked.point() instanceof BoundPoint point) {
                 model.removeElement(point);
+            }
+        });
+    }
+
+    private void initLayerListeners() {
+        EventBus.subscribe(event -> {
+            if (event instanceof LayerWasSelected checked) {
+                ShipLayer old = checked.old();
+                if (old != null && old.getPainter() != null) {
+                    LayerPainter oldLayerPainter = old.getPainter();
+                    BoundPointsPainter oldBoundsPainter = oldLayerPainter.getBoundsPainter();
+                    Iterable<BoundPoint> oldBounds = new ArrayList<>(oldBoundsPainter.getBoundPoints());
+                    for (BoundPoint bound : oldBounds) {
+                        model.removeElement(bound);
+                    }
+                }
+                ShipLayer selected = checked.selected();
+                if (selected != null && selected.getPainter() != null) {
+                    LayerPainter selectedLayerPainter = selected.getPainter();
+                    BoundPointsPainter newBoundsPainter = selectedLayerPainter.getBoundsPainter();
+                    Iterable<BoundPoint> newBounds = new ArrayList<>(newBoundsPainter.getBoundPoints());
+                    for (BoundPoint bound : newBounds) {
+                        model.addElement(bound);
+                    }
+                }
             }
         });
     }

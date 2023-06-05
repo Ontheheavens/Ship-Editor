@@ -1,26 +1,15 @@
 package oth.shipeditor.menubar;
 
-import lombok.Getter;
-import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
 import org.kordamp.ikonli.Ikon;
-import org.kordamp.ikonli.fluentui.FluentUiRegularAL;
 import org.kordamp.ikonli.fluentui.FluentUiRegularMZ;
 import org.kordamp.ikonli.swing.FontIcon;
 import oth.shipeditor.communication.EventBus;
-import oth.shipeditor.communication.events.viewer.ViewerBackgroundChanged;
-import oth.shipeditor.communication.events.viewer.control.ViewerRotationToggled;
-import oth.shipeditor.communication.events.viewer.control.ViewerTransformsReset;
 import oth.shipeditor.communication.events.viewer.layers.LayerCreationQueued;
 import oth.shipeditor.communication.events.viewer.layers.SelectedLayerRemovalQueued;
 
 import javax.swing.*;
-import javax.swing.colorchooser.AbstractColorChooserPanel;
-import java.awt.*;
-import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.ComponentAdapter;
-import java.awt.event.ComponentEvent;
 
 /**
  * @author Ontheheavens
@@ -29,57 +18,25 @@ import java.awt.event.ComponentEvent;
 @Log4j2
 public final class PrimaryMenuBar extends JMenuBar {
 
-    @Getter
-    private FileMenu fileMenu;
-
-    @Getter
-    private JMenuItem toggleRotate;
-
     public PrimaryMenuBar() {
-        this.add(createFileMenu());
-        this.add(createViewMenu());
+        this.add(PrimaryMenuBar.createFileMenu());
+        this.add(PrimaryMenuBar.createViewMenu());
         this.add(PrimaryMenuBar.createLayersMenu());
     }
 
-    private JMenu createFileMenu() {
-        fileMenu = new FileMenu();
+    private static JMenu createFileMenu() {
+        FileMenu fileMenu = new FileMenu();
         fileMenu.initialize();
         return fileMenu;
     }
 
-    private JMenu createViewMenu() {
-        JMenu viewMenu = new JMenu("View");
-
-        JMenuItem changeBackground = PrimaryMenuBar.createMenuOption("Change background color",
-                FluentUiRegularAL.COLOR_BACKGROUND_20,
-                event -> {
-                    Color chosen = PrimaryMenuBar.showColorChooser();
-                    EventBus.publish(new ViewerBackgroundChanged(chosen));
-                });
-        viewMenu.add(changeBackground);
-
-        JMenuItem resetTransform = PrimaryMenuBar.createMenuOption("Reset view transforms",
-                FluentUiRegularMZ.PICTURE_IN_PICTURE_20,
-                event ->
-                        EventBus.publish(new ViewerTransformsReset())
-        );
-        viewMenu.add(resetTransform);
-
-        toggleRotate = new JCheckBoxMenuItem("Toggle view rotation");
-        toggleRotate.setIcon(FontIcon.of(FluentUiRegularAL.ARROW_ROTATE_CLOCKWISE_20, 16));
-        toggleRotate.addActionListener(event ->
-                EventBus.publish(new ViewerRotationToggled(toggleRotate.isSelected(), true))
-        );
-        EventBus.subscribe(event -> {
-            if (event instanceof ViewerRotationToggled checked) {
-                toggleRotate.setSelected(checked.isSelected());
-                toggleRotate.setEnabled(checked.isEnabled());
-            }
-        });
-        viewMenu.add(toggleRotate);
-
+    private static JMenu createViewMenu() {
+        ViewMenu viewMenu = new ViewMenu();
+        viewMenu.initialize();
         return viewMenu;
     }
+
+
 
     private static JMenu createLayersMenu() {
         JMenu layersMenu = new JMenu("Layers");
@@ -102,54 +59,12 @@ public final class PrimaryMenuBar extends JMenuBar {
         return layersMenu;
     }
 
-    private static JMenuItem createMenuOption(String text, Ikon icon, ActionListener action) {
+    @SuppressWarnings("StaticMethodOnlyUsedInOneClass")
+    static JMenuItem createMenuOption(String text, Ikon icon, ActionListener action) {
         JMenuItem newOption = new JMenuItem(text);
         newOption.setIcon(FontIcon.of(icon, 16));
         newOption.addActionListener(action);
         return newOption;
-    }
-
-    /**
-     * This method is employed to get rid of some chooser panels and tweak cancel behaviour.
-     * @return Color instance that was selected in chooser dialogue.
-     */
-    private static Color showColorChooser() {
-        Color initial = Color.GRAY;
-        JColorChooser chooser = new JColorChooser(initial);
-        AbstractColorChooserPanel[] chooserPanels = chooser.getChooserPanels();
-        for (AbstractColorChooserPanel chooserPanel : chooserPanels) {
-            Class<? extends AbstractColorChooserPanel> panelClass = chooserPanel.getClass();
-            String clsName = panelClass.getName();
-            if ("javax.swing.colorchooser.DefaultSwatchChooserPanel".equals(clsName)) {
-                chooser.removeChooserPanel(chooserPanel);
-            }
-        }
-        for (AbstractColorChooserPanel ccPanel : chooserPanels) {
-            ccPanel.setColorTransparencySelectionEnabled(true);
-        }
-        final class ColorListener implements ActionListener {
-            private final JColorChooser chooser;
-            @Getter @Setter
-            private Color color;
-            private ColorListener(JColorChooser colorChooser) {
-                this.chooser = colorChooser;
-            }
-            public void actionPerformed(ActionEvent e) {
-                color = chooser.getColor();
-            }
-        }
-        ColorListener colorTracker = new ColorListener(chooser);
-        class DisposeChooserOnClose extends ComponentAdapter {
-            public void componentHidden(ComponentEvent e) {
-                Window window = (Window) e.getComponent();
-                window.dispose();
-            }
-        }
-        JDialog dialog = JColorChooser.createDialog(null, "Choose Background",
-                true, chooser, colorTracker, e -> colorTracker.setColor(initial));
-        dialog.addComponentListener(new DisposeChooserOnClose());
-        dialog.setVisible(true);
-        return colorTracker.getColor();
     }
 
 }

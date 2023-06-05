@@ -38,7 +38,6 @@ public final class ShipViewerPanel extends Viewer implements ShipViewable {
     @Getter
     private final WorldPointsPainter miscPointsPainter;
 
-    // TODO: add coordinate axes painter.
     @Getter
     private final GuidesPainter guidesPainter;
 
@@ -56,6 +55,8 @@ public final class ShipViewerPanel extends Viewer implements ShipViewable {
         this.addPainter(this.miscPointsPainter, 3);
 
         this.guidesPainter = new GuidesPainter(this);
+        EventBus.publish(new ViewerGuidesToggled(true,
+                true, true, true));
         this.addPainter(this.guidesPainter, 4);
 
         this.controls = ShipViewerControls.create(this);
@@ -184,17 +185,11 @@ public final class ShipViewerPanel extends Viewer implements ShipViewable {
         this.addPainter(newPainter);
         this.centerViewpoint();
         EventBus.publish(new ShipLayerLoadConfirmed(layer));
-        // TODO: sort out guides toggling/layer switching, add coordinate axes.
-        ShipViewerPanel.toggleGuides(true, true, true);
     }
 
     private void unloadLayer(ShipLayer layer) {
         this.removeLayerPainters(layer);
         this.removePainter(layer.getPainter());
-    }
-
-    private static void toggleGuides(boolean guidesOn, boolean bordersOn, boolean centerOn) {
-        EventBus.publish(new ViewerGuidesToggled(guidesOn, bordersOn, centerOn));
     }
 
     private void centerViewpoint() {

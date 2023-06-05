@@ -1,19 +1,22 @@
 package oth.shipeditor.components.viewer.painters;
 
+import de.javagl.geom.AffineTransforms;
+import de.javagl.geom.Lines;
+import de.javagl.geom.Rectangles;
 import de.javagl.viewer.Painter;
 import lombok.extern.log4j.Log4j2;
 import oth.shipeditor.communication.EventBus;
+import oth.shipeditor.communication.events.viewer.ViewerRepaintQueued;
 import oth.shipeditor.communication.events.viewer.control.ViewerCursorMoved;
 import oth.shipeditor.communication.events.viewer.control.ViewerGuidesToggled;
-import oth.shipeditor.communication.events.viewer.layers.LayerWasSelected;
 import oth.shipeditor.components.viewer.ShipViewerPanel;
 import oth.shipeditor.components.viewer.layers.LayerPainter;
 
 import java.awt.*;
 import java.awt.geom.AffineTransform;
+import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
-import java.awt.image.BufferedImage;
 import java.awt.image.RenderedImage;
 import java.util.Optional;
 
@@ -24,8 +27,6 @@ import java.util.Optional;
 @Log4j2
 public final class GuidesPainter implements Painter {
 
-    // TODO: This is currently a mess with tangled-up logic; needs to be sorted out soon.
-
     private Point2D cursor;
 
     private Painter guidesPaint;
@@ -33,6 +34,8 @@ public final class GuidesPainter implements Painter {
     private Painter bordersPaint;
 
     private Painter centerPaint;
+
+    private Painter axesPaint;
 
     private final AffineTransform delegateWorldToScreen;
 
@@ -46,25 +49,14 @@ public final class GuidesPainter implements Painter {
         this.listenForToggling();
     }
 
-    // TODO: Implement guides switch for layer selection. Remember that checked.selected() can be null now.
-
-    private void listenForLayerChange() {
-        EventBus.subscribe(event -> {
-            if (event instanceof LayerWasSelected checked) {
-
-            }
-        });
-    }
-
     private void listenForToggling() {
         EventBus.subscribe(event -> {
             if (event instanceof ViewerGuidesToggled checked) {
-                LayerPainter selectedLayer = parent.getSelectedLayer();
-                if (selectedLayer == null) return;
-                BufferedImage shipSprite = selectedLayer.getShipSprite();
-                this.guidesPaint = checked.guidesEnabled() ? createGuidesPainter(shipSprite) : null;
-                this.bordersPaint = checked.bordersEnabled() ? GuidesPainter.createBordersPainter(shipSprite) : null;
-                this.centerPaint = checked.centerEnabled() ? GuidesPainter.createSpriteCenterPainter(shipSprite) : null;
+                this.guidesPaint = checked.guidesEnabled() ? createGuidesPainter() : null;
+                this.bordersPaint = checked.bordersEnabled() ? createBordersPainter() : null;
+                this.centerPaint = checked.centerEnabled() ? createSpriteCenterPainter() : null;
+                this.axesPaint = checked.axesEnabled() ? GuidesPainter.createAxesPainter() : null;
+                EventBus.publish(new ViewerRepaintQueued());
             }
         });
     }
@@ -80,9 +72,10 @@ public final class GuidesPainter implements Painter {
     @Override
     public void paint(Graphics2D g, AffineTransform worldToScreen, double w, double h) {
         this.delegateWorldToScreen.setTransform(worldToScreen);
-        Optional.ofNullable(this.guidesPaint).ifPresent(p -> p.paint(g, this.delegateWorldToScreen, w, h));
-        Optional.ofNullable(this.bordersPaint).ifPresent(p -> p.paint(g, worldToScreen, w, h));
-        Optional.ofNullable(this.centerPaint).ifPresent(p -> p.paint(g, worldToScreen, w, h));
+        Optional.ofNullable(this.axesPaint).ifPresent(p -> p.paint(g, delegateWorldToScreen, w, h));
+        Optional.ofNullable(this.guidesPaint).ifPresent(p -> p.paint(g, delegateWorldToScreen, w, h));
+        Optional.ofNullable(this.bordersPaint).ifPresent(p -> p.paint(g, delegateWorldToScreen, w, h));
+        Optional.ofNullable(this.centerPaint).ifPresent(p -> p.paint(g, delegateWorldToScreen, w, h));
     }
 
     /**
@@ -95,8 +88,12 @@ public final class GuidesPainter implements Painter {
      * Note: considerable size of implementation is necessary due to the Viewer rotating functionality
      * and 0.5 scaled pixel snapping.
      */
-    private Painter createGuidesPainter(RenderedImage shipSprite) {
+    private Painter createGuidesPainter() {
         return (g, worldToScreen, w, h) -> {
+            LayerPainter layer = parent.getSelectedLayer();
+            if (layer == null || layer.getShipSprite() == null) return;
+            RenderedImage shipSprite = layer.getShipSprite();
+
             Point2D mousePoint = this.cursor;
             AffineTransform screenToWorld = this.parent.getScreenToWorld();
             Point2D transformedMouse = screenToWorld.transform(mousePoint, null);
@@ -126,8 +123,11 @@ public final class GuidesPainter implements Painter {
         };
     }
 
-    private static Painter createBordersPainter(RenderedImage shipSprite) {
+    private Painter createBordersPainter() {
         return (g, worldToScreen, w, h) -> {
+            LayerPainter layer = parent.getSelectedLayer();
+            if (layer == null || layer.getShipSprite() == null) return;
+            RenderedImage shipSprite = layer.getShipSprite();
             int width = shipSprite.getWidth();
             int height = shipSprite.getHeight();
             Shape worldBorder = new Rectangle(0, 0, width, height);
@@ -136,14 +136,43 @@ public final class GuidesPainter implements Painter {
         };
     }
 
-    private static Painter createSpriteCenterPainter(RenderedImage shipSprite) {
+    private Painter createSpriteCenterPainter() {
         return (g, worldToScreen, w, h) -> {
+            LayerPainter layer = parent.getSelectedLayer();
+            if (layer == null || layer.getShipSprite() == null) return;
+            RenderedImage shipSprite = layer.getShipSprite();
             Point spriteCenter = new Point(shipSprite.getWidth() / 2, shipSprite.getHeight() / 2);
             Point2D center = worldToScreen.transform(spriteCenter, null);
             // Draw the two diagonal lines centered on the sprite center.
             int x = (int) center.getX(), y = (int) center.getY(), i = 5;
             g.drawLine(x-i, y-i, x+i, y+i);
             g.drawLine(x-i, y+i, x+i, y-i);
+        };
+    }
+
+    private static Painter createAxesPainter() {
+        return (g, worldToScreen, w, h) -> {
+            AffineTransform worldToScreenCopy = new AffineTransform(worldToScreen);
+
+            Rectangle2D worldBounds = new Rectangle2D.Double();
+            Rectangle2D screenBounds = new Rectangle2D.Double(0, 0, w, h);
+            AffineTransform screenToWorld = AffineTransforms.invert(worldToScreenCopy, null);
+            Rectangles.computeBounds(screenToWorld, screenBounds, worldBounds);
+
+            Paint old = g.getPaint();
+            g.setPaint(Color.DARK_GRAY);
+
+            Line2D.Double axisLineX = new Line2D.Double(worldBounds.getMinX(), 0, worldBounds.getMaxX(), 0);
+            Line2D.Double transformedX = new Line2D.Double();
+            Lines.transform(worldToScreenCopy, axisLineX, transformedX);
+            g.draw(transformedX);
+
+            Line2D.Double axisLineY = new Line2D.Double(0, worldBounds.getMinY(), 0, worldBounds.getMaxY());
+            Line2D.Double transformedY = new Line2D.Double();
+            Lines.transform(worldToScreenCopy, axisLineY, transformedY);
+            g.draw(transformedY);
+
+            g.setPaint(old);
         };
     }
 

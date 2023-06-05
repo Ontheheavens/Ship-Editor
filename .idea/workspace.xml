@@ -4,19 +4,16 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="15e1ddae-a5d1-4957-9383-c162c5526ac0" name="Changes" comment="04.06.23 - some work on layer selection and removal.">
-      <change afterPath="$PROJECT_DIR$/src/main/java/oth/shipeditor/communication/events/viewer/layers/package-info.java" afterDir="false" />
+    <list default="true" id="15e1ddae-a5d1-4957-9383-c162c5526ac0" name="Changes" comment="04.06.23 - tweaks to background choosing, more layer work.">
+      <change afterPath="$PROJECT_DIR$/src/main/java/oth/shipeditor/communication/events/viewer/control/package-info.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/oth/shipeditor/menubar/ViewMenu.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/oth/shipeditor/Main.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/oth/shipeditor/Main.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/oth/shipeditor/PrimaryWindow.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/oth/shipeditor/PrimaryWindow.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/oth/shipeditor/communication/events/viewer/layers/ShipLayerUpdated.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/oth/shipeditor/communication/events/viewer/layers/ActiveLayerUpdated.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/oth/shipeditor/components/ViewerStatusPanel.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/oth/shipeditor/components/ViewerStatusPanel.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/oth/shipeditor/components/layering/ShipLayersPanel.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/oth/shipeditor/components/layering/ShipLayersPanel.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/module-info.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/module-info.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/oth/shipeditor/communication/events/viewer/control/ViewerGuidesToggled.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/oth/shipeditor/communication/events/viewer/control/ViewerGuidesToggled.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/oth/shipeditor/components/BoundPointsPanel.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/oth/shipeditor/components/BoundPointsPanel.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/oth/shipeditor/components/viewer/ShipViewerPanel.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/oth/shipeditor/components/viewer/ShipViewerPanel.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/oth/shipeditor/components/viewer/layers/LayerManager.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/oth/shipeditor/components/viewer/layers/LayerManager.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/oth/shipeditor/components/viewer/layers/LayerPainter.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/oth/shipeditor/components/viewer/layers/LayerPainter.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/oth/shipeditor/components/viewer/painters/AbstractPointPainter.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/oth/shipeditor/components/viewer/painters/AbstractPointPainter.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/oth/shipeditor/components/viewer/painters/GuidesPainter.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/oth/shipeditor/components/viewer/painters/GuidesPainter.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/oth/shipeditor/menubar/FileMenu.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/oth/shipeditor/menubar/FileMenu.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/oth/shipeditor/menubar/PrimaryMenuBar.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/oth/shipeditor/menubar/PrimaryMenuBar.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -31,8 +28,8 @@
         <option value="Tag Library Descriptor" />
         <option value="module-info" />
         <option value="Interface" />
-        <option value="Class" />
         <option value="Record" />
+        <option value="Class" />
         <option value="package-info" />
       </list>
     </option>
@@ -254,7 +251,8 @@
       <workItem from="1685851150990" duration="4722000" />
       <workItem from="1685855934752" duration="1019000" />
       <workItem from="1685856980998" duration="4770000" />
-      <workItem from="1685882554500" duration="13625000" />
+      <workItem from="1685882554500" duration="14426000" />
+      <workItem from="1685932798670" duration="10058000" />
     </task>
     <task id="LOCAL-00001" summary="26.04.23 - working prototype, coordinat. design flaw">
       <created>1682499355313</created>
@@ -459,7 +457,14 @@
       <option name="project" value="LOCAL" />
       <updated>1685890715035</updated>
     </task>
-    <option name="localTasksCounter" value="30" />
+    <task id="LOCAL-00030" summary="04.06.23 - tweaks to background choosing, more layer work.">
+      <created>1685900754669</created>
+      <option name="number" value="00030" />
+      <option name="presentableId" value="LOCAL-00030" />
+      <option name="project" value="LOCAL" />
+      <updated>1685900754669</updated>
+    </task>
+    <option name="localTasksCounter" value="31" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -480,7 +485,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="01.05.23 - ViewerPointPanel functionality." />
     <MESSAGE value="01.05.23 - added status panel." />
     <MESSAGE value="01.05.23 - status functionality and bounds polish." />
     <MESSAGE value="02.05.23 - status functionality and bounds polish." />
@@ -505,7 +509,8 @@
     <MESSAGE value="03.06.23 - more groundwork for multiple layers." />
     <MESSAGE value="03.06.23 - some logging and layer switching work." />
     <MESSAGE value="04.06.23 - some work on layer selection and removal." />
-    <option name="LAST_COMMIT_MESSAGE" value="04.06.23 - some work on layer selection and removal." />
+    <MESSAGE value="04.06.23 - tweaks to background choosing, more layer work." />
+    <option name="LAST_COMMIT_MESSAGE" value="04.06.23 - tweaks to background choosing, more layer work." />
     <option name="OPTIMIZE_IMPORTS_BEFORE_PROJECT_COMMIT" value="true" />
   </component>
   <component name="XDebuggerManager">

@@ -13,6 +13,7 @@
     requires com.fasterxml.jackson.annotation;
     requires com.fasterxml.jackson.databind;
     requires com.formdev.flatlaf;
+    requires geom;
 
     exports oth.shipeditor.representation;
     exports oth.shipeditor.parsing;

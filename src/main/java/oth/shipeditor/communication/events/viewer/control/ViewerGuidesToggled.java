@@ -7,13 +7,10 @@ import oth.shipeditor.communication.events.viewer.ViewerEvent;
  * @since 29.05.2023
  */
 public record ViewerGuidesToggled(
-
         boolean guidesEnabled,
-
         boolean bordersEnabled,
-
-        boolean centerEnabled
-
+        boolean centerEnabled,
+        boolean axesEnabled
     ) implements ViewerEvent {
 
 }

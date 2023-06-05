@@ -10,22 +10,20 @@ import javax.swing.*;
  * @author Ontheheavens
  * @since 08.05.2023
  */
-@SuppressWarnings("FieldCanBeLocal")
+
 @Log4j2
-public class FileMenu extends JMenu {
+class FileMenu extends JMenu {
 
-    private JMenu openSubmenu;
-
-    public FileMenu() {
+    FileMenu() {
         super("File");
     }
 
-    public void initialize() {
-        openSubmenu = this.createOpenSubmenu();
+    void initialize() {
+        JMenu openSubmenu = FileMenu.createOpenSubmenu();
         this.add(openSubmenu);
     }
 
-    public JMenu createOpenSubmenu() {
+    private static JMenu createOpenSubmenu() {
         JMenu newSubmenu = new JMenu("Open");
         newSubmenu.setIcon(FontIcon.of(FluentUiRegularAL.FOLDER_OPEN_20, 16));
 
