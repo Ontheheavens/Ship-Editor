@@ -14,6 +14,8 @@ import java.awt.geom.Point2D;
  */
 public class Hull {
 
+    // TODO: implement reading, editing process and writing for all of these fields.
+
     @JsonProperty("hullName")
     String hullName;
 

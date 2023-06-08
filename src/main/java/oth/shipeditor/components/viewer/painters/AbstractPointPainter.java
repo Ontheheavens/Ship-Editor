@@ -161,16 +161,19 @@ public abstract class AbstractPointPainter implements Painter {
         return pointDoesExist;
     }
 
+    protected void paintDelegates(Graphics2D g, AffineTransform worldToScreen, double w, double h) {
+        this.delegates.forEach(painter -> {
+            if (painter != null) {
+                AffineTransform transform = this.delegateWorldToScreen;
+                transform.setTransform(worldToScreen);
+                painter.paint(g, transform, w, h);
+            }
+        });
+    }
+
     @Override
     public void paint(Graphics2D g, AffineTransform worldToScreen, double w, double h) {
-        for (Painter delegate : this.delegates)
-        {
-            if (delegate != null)
-            {
-                this.delegateWorldToScreen.setTransform(worldToScreen);
-                delegate.paint(g, this.delegateWorldToScreen, w, h);
-            }
-        }
+        paintDelegates(g, worldToScreen, w, h);
     }
 
     @Override

@@ -4,6 +4,7 @@ import de.javagl.geom.AffineTransforms;
 import de.javagl.geom.Lines;
 import de.javagl.geom.Rectangles;
 import de.javagl.viewer.Painter;
+import de.javagl.viewer.painters.LabelPainter;
 import lombok.extern.log4j.Log4j2;
 import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.viewer.ViewerRepaintQueued;
@@ -12,6 +13,7 @@ import oth.shipeditor.communication.events.viewer.control.ViewerGuidesToggled;
 import oth.shipeditor.components.viewer.ShipViewerPanel;
 import oth.shipeditor.components.viewer.layers.LayerPainter;
 
+import javax.swing.*;
 import java.awt.*;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Line2D;
@@ -134,29 +136,29 @@ public final class GuidesPainter implements Painter {
             Shape spriteBorder = new Rectangle((int) layerAnchor.getX(), (int) layerAnchor.getY(), width, height);
             Shape transformed = worldToScreen.createTransformedShape(spriteBorder);
             g.draw(transformed);
-            // TODO: remove later, this is for testing purposes.
-            GuidesPainter.drawCrossPoint(g, worldToScreen.transform(layerAnchor, null), 4);
         };
     }
 
     private Painter createSpriteCenterPainter() {
-        return (g, worldToScreen, w, h) -> {
-            LayerPainter layer = parent.getSelectedLayer();
-            if (layer == null || layer.getShipSprite() == null) return;
-            RenderedImage shipSprite = layer.getShipSprite();
-            Point2D anchor = layer.getAnchorOffset();
-            Point spriteCenter = new Point((int) (anchor.getX() + (shipSprite.getWidth() / 2)),
-                    (int) (anchor.getY() + (shipSprite.getHeight() / 2)));
-            Point2D center = worldToScreen.transform(spriteCenter, null);
-            // Draw the two diagonal lines centered on the sprite center.
-            GuidesPainter.drawCrossPoint(g, center, 5);
-        };
+        return new SpriteCenterPainter();
     }
 
     private static void drawCrossPoint(Graphics2D g, Point2D position, int lineSize) {
         int x = (int) position.getX(), y = (int) position.getY();
-        g.drawLine(x- lineSize, y- lineSize, x+ lineSize, y+ lineSize);
-        g.drawLine(x- lineSize, y+ lineSize, x+ lineSize, y- lineSize);
+        int size = lineSize * 2;
+        int thickness = lineSize / 2;
+
+        Paint old = g.getPaint();
+        g.setPaint(Color.DARK_GRAY);
+
+        int horizontalX = x - size / 2;
+        int horizontalY = y - thickness / 2;
+        g.fillRect(horizontalX, horizontalY, size, thickness);
+        int verticalX = x - thickness / 2;
+        int verticalY = y - size / 2;
+        g.fillRect(verticalX, verticalY, thickness, size);
+
+        g.setPaint(old);
     }
 
     private static Painter createAxesPainter() {
@@ -183,6 +185,37 @@ public final class GuidesPainter implements Painter {
 
             g.setPaint(old);
         };
+    }
+
+    private class SpriteCenterPainter implements Painter {
+
+        final LabelPainter label = SpriteCenterPainter.createCenterLabelPainter();
+
+        private static LabelPainter createCenterLabelPainter() {
+            LabelPainter painter = new LabelPainter();
+            MenuContainer fontExample = new JLabel();
+            Font font = fontExample.getFont().deriveFont(0.25f);
+            painter.setFont(font);
+            painter.setLabelAnchor(-0.05f, 0.55f);
+            return painter;
+        }
+
+        @Override
+        public void paint(Graphics2D g, AffineTransform worldToScreen, double w, double h) {
+            LayerPainter layer = parent.getSelectedLayer();
+            if (layer == null || layer.getShipSprite() == null) return;
+            RenderedImage shipSprite = layer.getShipSprite();
+            Point2D anchor = layer.getAnchorOffset();
+            Point spriteCenter = new Point((int) (anchor.getX() + (shipSprite.getWidth() / 2)),
+                    (int) (anchor.getY() + (shipSprite.getHeight() / 2)));
+            Point2D center = worldToScreen.transform(spriteCenter, null);
+            label.setLabelLocation(spriteCenter.getX(), spriteCenter.getY());
+            // Draw the two diagonal lines centered on the sprite center.
+            GuidesPainter.drawCrossPoint(g, center, 5);
+            String spriteCenterCoords = "Sprite Center (" + spriteCenter.getX() + ", " + spriteCenter.getY() + ")";
+            label.paint(g, worldToScreen, w, h, spriteCenterCoords);
+        }
+
     }
 
 }

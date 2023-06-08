@@ -7,7 +7,7 @@ import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.viewer.ViewerRepaintQueued;
 import oth.shipeditor.communication.events.viewer.control.LayerAnchorDragged;
 import oth.shipeditor.communication.events.viewer.layers.ActiveLayerUpdated;
-import oth.shipeditor.communication.events.viewer.layers.LayerPaintersInitialized;
+import oth.shipeditor.communication.events.viewer.layers.LayerShipDataInitialized;
 import oth.shipeditor.communication.events.viewer.layers.ShipLayerRemovalConfirmed;
 import oth.shipeditor.components.viewer.ShipViewerPanel;
 import oth.shipeditor.components.viewer.entities.BaseWorldPoint;
@@ -51,6 +51,9 @@ public class LayerPainter implements Painter {
 
     private ShipCenterPoint centerPoint;
 
+    @Getter
+    private float spriteOpacity = 1.0f;
+
     /**
      * Reference to parent layer is needed here for points cleanup.
      */
@@ -91,6 +94,7 @@ public class LayerPainter implements Painter {
                 double roundedY = Math.round(wP.getY() * 2) / 2.0;
                 Point2D corrected = new Point2D.Double(roundedX, roundedY);
                 updateAnchorOffset(corrected);
+                EventBus.publish(new ViewerRepaintQueued());
             }
         });
     }
@@ -116,8 +120,11 @@ public class LayerPainter implements Painter {
                 if (layer.getShipSprite() != null) {
                     this.shipSprite = layer.getShipSprite();
                 }
+                // TODO: handle the case where ship data loads onto existing ship data.
                 if (layer.getShipData() != null && this.uninitialized) {
-                    this.initialize(layer.getShipData());
+                    this.initializeShipData(layer.getShipData());
+                } else if (layer.getShipData() != null) {
+
                 }
             }
         });
@@ -161,26 +168,35 @@ public class LayerPainter implements Painter {
         g.transform(worldToScreen);
         int width = shipSprite.getWidth();
         int height = shipSprite.getHeight();
+        int rule = AlphaComposite.SRC_OVER;
+        float alpha = this.spriteOpacity;
+        Composite old = g.getComposite();
+        Composite opacity = AlphaComposite.getInstance(rule, alpha) ;
+        g.setComposite(opacity);
         g.drawImage(shipSprite, (int) anchorOffset.getX(),
                 (int) anchorOffset.getY(), width, height, null);
+        g.setComposite(old);
         g.setTransform(oldAT);
+    }
+
+    public void setSpriteOpacity(float opacity) {
+        if (opacity < 0.0f) {
+            this.spriteOpacity = 0.0f;
+        } else this.spriteOpacity = Math.min(opacity, 1.0f);
     }
 
     private HullPointsPainter createHullPointsPainter() {
         return new HullPointsPainter();
     }
 
-    private void initialize(ShipData shipData) {
+    private void initializeShipData(ShipData shipData) {
         Hull hull = shipData.getHull();
         Point2D anchor = this.getCenterAnchor();
-        log.info(anchor);
         Point2D.Double hullCenter = hull.getCenter();
-        log.info(hullCenter);
         double anchorX = anchor.getX();
         double anchorY = anchor.getY();
         Point2D.Double translatedCenter = new Point2D.Double(hullCenter.x + anchorX,
                 -hullCenter.y + anchorY);
-        log.info(translatedCenter);
         this.centerPoint = LayerPainter.createShipCenterPoint(translatedCenter);
         hullPointsPainter.addPoint(this.centerPoint);
         for (Point2D.Double bound : hull.getBounds()) {
@@ -188,7 +204,7 @@ public class LayerPainter implements Painter {
             boundsPainter.addPoint(boundPoint);
         }
         this.uninitialized = false;
-        EventBus.publish(new LayerPaintersInitialized(this, 4));
+        EventBus.publish(new LayerShipDataInitialized(this, 4));
         EventBus.publish(new ViewerRepaintQueued());
     }
 

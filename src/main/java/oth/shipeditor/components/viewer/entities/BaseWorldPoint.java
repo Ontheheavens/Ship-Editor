@@ -11,6 +11,7 @@ import java.awt.*;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Ellipse2D;
 import java.awt.geom.Point2D;
+import java.awt.geom.RectangularShape;
 
 /**
  * @author Ontheheavens
@@ -45,42 +46,71 @@ public class BaseWorldPoint implements WorldPoint{
         this(new Point2D.Double());
     }
 
-    public BaseWorldPoint(Point2D position) {
-        this.position = position;
+    BaseWorldPoint(Point2D pointPosition) {
+        this.position = pointPosition;
         this.painter = this.getPointPainter();
     }
 
-    public Painter getPointPainter() {
-        return new Painter() {
-            final Point2D point = position;
-            @Override
-            public void paint(Graphics2D g, AffineTransform worldToScreen, double w, double h) {
-                Paint old = g.getPaint();
-                Ellipse2D dot = new Ellipse2D.Double(point.getX() - 0.25, point.getY() - 0.25, 0.5, 0.5);
-                Shape result = worldToScreen.createTransformedShape(dot);
-
-                Point2D dest = worldToScreen.transform(point, null);
-                double destX = dest.getX();
-                double destY = dest.getY();
-                Ellipse2D outer = new Ellipse2D.Double((int) destX - 6, (int) destY - 6, 12, 12);
-
-                BaseWorldPoint.this.cursorInBounds = outer.contains(viewerCursor) || result.contains(viewerCursor);
-                if (BaseWorldPoint.this.selected) {
-                    g.setPaint(new Color(0xBFFF0000, true));
-                } else if (BaseWorldPoint.this.cursorInBounds) {
-                    g.setPaint(new Color(0xBFFFFFFF, true));
-                } else {
-                    g.setPaint(new Color(0xBF000000, true));
-                }
-                g.fill(result);
-
-                int x = (int) outer.getX();
-                int y = (int) outer.getY();
-                int width = (int) outer.getWidth();
-                int height = (int) outer.getHeight();
-                g.drawOval(x, y, width, height);
-                g.setPaint(old);
+    protected boolean checkIsHovered(Shape[] paintParts) {
+        for (Shape part: paintParts) {
+            if (part.contains(viewerCursor)) {
+                return true;
             }
+        }
+        return false;
+    }
+
+    protected Shape createWorldConstantPaintPart(AffineTransform worldToScreen) {
+        float radius = 0.25f;
+        Shape dot = new Ellipse2D.Double(position.getX() - radius, position.getY() - radius,
+                2 * radius, 2 * radius);
+        return worldToScreen.createTransformedShape(dot);
+    }
+
+    protected RectangularShape createScreenConstantPaintPart(AffineTransform worldToScreen) {
+        Point2D point = new Point2D.Double(position.getX(), position.getY());
+        Point2D dest = worldToScreen.transform(point, null);
+        float radius = 6.0f;
+        double destX = dest.getX();
+        double destY = dest.getY();
+        return new Ellipse2D.Double((int) destX - radius, (int) destY - radius,
+                radius * 2, radius * 2);
+    }
+
+    protected Color createHoverColor() {
+        return new Color(0xBFFFFFFF, true);
+    }
+
+    protected Color createSelectColor() {
+        return new Color(0xBFFF0000, true);
+    }
+
+    protected Color createBaseColor() {
+        return new Color(0xBF000000, true);
+    }
+
+    public Painter getPointPainter() {
+        return (g, worldToScreen, w, h) -> {
+            Paint old = g.getPaint();
+            Shape inner = createWorldConstantPaintPart(worldToScreen);
+            RectangularShape outer = createScreenConstantPaintPart(worldToScreen);
+
+            this.cursorInBounds = checkIsHovered(new Shape[]{inner, outer});
+            if (this.selected) {
+                g.setPaint(createSelectColor());
+            } else if (this.cursorInBounds) {
+                g.setPaint(createHoverColor());
+            } else {
+                g.setPaint(createBaseColor());
+            }
+            g.fill(inner);
+
+            int x = (int) outer.getX();
+            int y = (int) outer.getY();
+            int width = (int) outer.getWidth();
+            int height = (int) outer.getHeight();
+            g.drawOval(x, y, width, height);
+            g.setPaint(old);
         };
     }
 

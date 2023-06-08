@@ -20,7 +20,7 @@ public final class Utility {
         Utility.drawBorderedLine(canvas, start, finish, inner, Color.BLACK, 2.0f, 3.0f);
     }
 
-    public static void drawBorderedLine(Graphics2D canvas, Point2D start, Point2D finish,
+    private static void drawBorderedLine(Graphics2D canvas, Point2D start, Point2D finish,
                                          Color innerColor, Color outerColor, float innerWidth, float outerWidth) {
         Stroke originalStroke = canvas.getStroke();
         canvas.setColor(outerColor);

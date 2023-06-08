@@ -113,7 +113,7 @@ final class BoundList extends JList<BoundPoint> {
                     Point2D center = selectedLayer.getCenterAnchor();
                     double centerX = center.getX();
                     double centerY = center.getY();
-                    result = new Point2D.Double(positionX - centerX, -(-positionY + centerY));
+                    result = new Point2D.Double(positionX - centerX, (-positionY + centerY));
                 }
                 // This case uses different coordinate system alignment to be consistent with game files.
                 // Otherwise, user might be confused as shown point coordinates won't match with those in file.

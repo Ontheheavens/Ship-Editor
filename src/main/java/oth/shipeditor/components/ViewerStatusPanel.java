@@ -1,5 +1,6 @@
 package oth.shipeditor.components;
 
+import com.formdev.flatlaf.ui.FlatRoundBorder;
 import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
 import org.kordamp.ikonli.fluentui.FluentUiRegularAL;
@@ -46,9 +47,6 @@ public final class ViewerStatusPanel extends JPanel {
 
     private final JLabel zoom;
 
-    private final Border normal = ViewerStatusPanel.createLabelBorder(false);
-    private final Border hovered = ViewerStatusPanel.createLabelBorder(true);
-
     public ViewerStatusPanel(ShipViewable viewable) {
         this.viewer = viewable;
         FontIcon dimensionIcon = FontIcon.of(FluentUiRegularMZ.SLIDE_SIZE_24, 20);
@@ -60,7 +58,7 @@ public final class ViewerStatusPanel extends JPanel {
         this.add(separator);
         FontIcon mouseIcon = FontIcon.of(FluentUiRegularAL.CURSOR_HOVER_20, 20);
         cursorCoords = new JLabel("", mouseIcon, SwingConstants.TRAILING);
-        cursorCoords.setBorder(normal);
+        cursorCoords.setBorder(ViewerStatusPanel.createLabelBorder());
         cursorCoords.setToolTipText("Click to change coordinate system");
         JPopupMenu popupMenu = this.createCoordsMenu();
         cursorCoords.addMouseListener(new MouseoverBorderListener(popupMenu));
@@ -70,6 +68,8 @@ public final class ViewerStatusPanel extends JPanel {
         this.zoom = new JLabel("", zoomIcon, SwingConstants.TRAILING);
         this.zoom.setToolTipText("Zoom level");
         this.add(this.zoom);
+
+        this.setBorder(BorderFactory.createMatteBorder(1, 0, 0, 0, Color.LIGHT_GRAY));
 
         this.initListeners();
         this.setDimensionsLabel(null);
@@ -111,15 +111,10 @@ public final class ViewerStatusPanel extends JPanel {
         });
     }
 
-    private static Border createLabelBorder(boolean hover) {
-        Border empty = BorderFactory.createEmptyBorder(0, 4, 0, 4);
-        if (hover) {
-            Border loweredBevelBorder = BorderFactory.createLoweredBevelBorder();
-            return BorderFactory.createCompoundBorder(loweredBevelBorder, empty);
-        } else {
-            Border raisedBevelBorder = BorderFactory.createRaisedBevelBorder();
-            return BorderFactory.createCompoundBorder(raisedBevelBorder, empty);
-        }
+    private static Border createLabelBorder() {
+        Border empty = BorderFactory.createEmptyBorder(2, 6, 2, 7);
+        Border lineBorder = new FlatRoundBorder();
+        return BorderFactory.createCompoundBorder(lineBorder, empty);
     }
 
     private JRadioButtonMenuItem createCoordsOption(String text, ButtonGroup group,
@@ -199,6 +194,10 @@ public final class ViewerStatusPanel extends JPanel {
                 if (selectedLayer == null) break;
                 Point2D center = selectedLayer.getCenterAnchor();
                 cursor = ViewerStatusPanel.adjustCursorCoordinates(adjustedCursor, center);
+                cursor = new Point2D.Double(cursor.getX(), -cursor.getY());
+                if (cursor.getY() == -0.0) {
+                    cursor.setLocation(cursor.getX(), 0);
+                }
             }
             // This case uses different coordinate system alignment to be consistent with game files.
             // Otherwise, user might be confused as shown point coordinates won't match with those in file.
@@ -208,6 +207,12 @@ public final class ViewerStatusPanel extends JPanel {
                 Point2D center = shipCenter.getPosition();
                 Point2D adjusted = ViewerStatusPanel.adjustCursorCoordinates(adjustedCursor, center);
                 cursor = new Point2D.Double(-adjusted.getY(), -adjusted.getX());
+                if (cursor.getX() == -0.0) {
+                    cursor.setLocation(0, cursor.getY());
+                }
+                if (cursor.getY() == -0.0) {
+                    cursor.setLocation(cursor.getX(), 0);
+                }
             }
         }
         cursorCoords.setText(cursor.getX() + "," + cursor.getY());
@@ -225,8 +230,6 @@ public final class ViewerStatusPanel extends JPanel {
         zoom.setText(rounded + "%");
     }
 
-    // TODO: bevel border change does not blend in FlatLaf theme, replace it later.
-
     private class MouseoverBorderListener extends MouseAdapter {
 
         private final JPopupMenu popupMenu;
@@ -235,16 +238,21 @@ public final class ViewerStatusPanel extends JPanel {
             this.popupMenu = menu;
         }
 
+        // Not entirely satisfied with the mismatch between background coloring bounds and border bounds;
+        // However, this is good enough for the time being.
+
         @Override
         public void mouseEntered(MouseEvent e) {
             super.mouseEntered(e);
-            cursorCoords.setBorder(hovered);
+            cursorCoords.setBackground(Color.LIGHT_GRAY);
+            cursorCoords.setOpaque(true);
         }
 
         @Override
         public void mouseExited(MouseEvent e) {
             super.mouseExited(e);
-            cursorCoords.setBorder(normal);
+            cursorCoords.setBackground(Color.WHITE);
+            cursorCoords.setOpaque(false);
         }
 
         @Override

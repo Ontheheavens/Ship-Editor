@@ -6,6 +6,7 @@ import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.components.ShipViewableCreated;
 import oth.shipeditor.communication.events.components.WindowRepaintQueued;
 import oth.shipeditor.components.BoundPointsPanel;
+import oth.shipeditor.components.HullPointsPanel;
 import oth.shipeditor.components.ViewerStatusPanel;
 import oth.shipeditor.components.layering.ShipLayersPanel;
 import oth.shipeditor.components.viewer.ShipViewable;
@@ -41,7 +42,9 @@ public final class PrimaryWindow extends JFrame {
      * Panel for data representation of ship bounds.
      */
     @Getter
-    private BoundPointsPanel pointsPanel;
+    private BoundPointsPanel boundsPanel;
+
+    private HullPointsPanel centerPointsPanel;
 
     /**
      * Parent pane for layers panel and others.
@@ -139,15 +142,16 @@ public final class PrimaryWindow extends JFrame {
 
     private void loadEditingPanes() {
         this.instrumentPane = new JTabbedPane();
-        this.instrumentPane.setTabPlacement(JTabbedPane.LEFT);
-        pointsPanel = new BoundPointsPanel();
-        instrumentPane.addTab("B",pointsPanel);
-        instrumentPane.addTab("E",new JPanel());
+        this.instrumentPane.setTabPlacement(SwingConstants.LEFT);
+        centerPointsPanel = new HullPointsPanel();
+        instrumentPane.addTab("Centers",centerPointsPanel);
+        boundsPanel = new BoundPointsPanel();
+        instrumentPane.addTab("Bounds", boundsPanel);
 
         JSplitPane splitter = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
         splitter.setLeftComponent((Component) shipView);
         splitter.setRightComponent(instrumentPane);
-        splitter.setResizeWeight(0.85);
+        splitter.setResizeWeight(0.90);
         Container contentPane = this.getContentPane();
         contentPane.add(splitter, BorderLayout.CENTER);
         this.refreshContent();

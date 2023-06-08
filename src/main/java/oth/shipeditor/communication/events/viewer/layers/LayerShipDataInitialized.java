@@ -6,6 +6,6 @@ import oth.shipeditor.components.viewer.layers.LayerPainter;
  * @author Ontheheavens
  * @since 03.06.2023
  */
-public record LayerPaintersInitialized(LayerPainter source, int ordering) implements LayerEvent {
+public record LayerShipDataInitialized(LayerPainter source, int ordering) implements LayerEvent {
 
 }

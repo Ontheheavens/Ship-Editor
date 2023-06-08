@@ -22,7 +22,6 @@ import oth.shipeditor.components.viewer.layers.ShipLayer;
 import oth.shipeditor.components.viewer.painters.BoundPointsPainter;
 
 import javax.swing.*;
-import javax.swing.border.Border;
 import java.awt.*;
 import java.awt.event.ItemEvent;
 import java.util.ArrayList;
@@ -55,14 +54,11 @@ public final class BoundPointsPanel extends JPanel implements PointsDisplay<Boun
         scrollableContainer.setPreferredSize(listSize);
         this.add(scrollableContainer, BorderLayout.CENTER);
         JPanel modePanel = new JPanel();
-        modePanel.setBorder(BorderFactory.createEtchedBorder());
 
         this.createModeButtons(modePanel);
         this.initModeButtonListeners();
 
         this.add(modePanel, BorderLayout.PAGE_START);
-        Border line = BorderFactory.createLineBorder(Color.DARK_GRAY);
-        this.setBorder(line);
         this.setMode(InteractionMode.DISABLED);
 
         this.initPointListener();

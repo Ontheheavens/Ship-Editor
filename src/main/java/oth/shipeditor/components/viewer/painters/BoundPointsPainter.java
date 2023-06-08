@@ -210,7 +210,6 @@ public final class BoundPointsPainter extends AbstractPointPainter {
 
     @Override
     public void paint(Graphics2D g, AffineTransform worldToScreen, double w, double h) {
-        super.paint(g, worldToScreen, w, h);
         List<BoundPoint> bPoints = this.boundPoints;
         if (bPoints.isEmpty()) return;
         Stroke origStroke = g.getStroke();
@@ -231,6 +230,7 @@ public final class BoundPointsPainter extends AbstractPointPainter {
         }
         g.setStroke(origStroke);
         g.setPaint(origPaint);
+        super.paintDelegates(g, worldToScreen, w, h);
     }
 
     private void paintCreationGuidelines(Graphics2D g, AffineTransform worldToScreen,

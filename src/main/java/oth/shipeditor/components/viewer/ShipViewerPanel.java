@@ -105,7 +105,7 @@ public final class ShipViewerPanel extends Viewer implements ShipViewable {
             }
         });
         EventBus.subscribe(event -> {
-            if (event instanceof LayerPaintersInitialized checked) {
+            if (event instanceof LayerShipDataInitialized checked) {
                 LayerPainter source = checked.source();
                 ShipLayer activeLayer = this.layerManager.getActiveLayer();
                 if (source != activeLayer.getPainter()) return;
@@ -182,6 +182,7 @@ public final class ShipViewerPanel extends Viewer implements ShipViewable {
         // Main sprite painter and said painter children point painters are distinct conceptually.
         // Layer might be selected and deselected, in which case children painters are loaded/unloaded.
         // At the same time main sprite painter remains loaded until layer is explicitly removed.
+        // TODO: consider the ordering of added layers later.
         this.addPainter(newPainter);
         this.centerViewpoint();
         EventBus.publish(new ShipLayerLoadConfirmed(layer));

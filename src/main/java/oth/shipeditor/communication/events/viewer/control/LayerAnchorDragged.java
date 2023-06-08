@@ -12,5 +12,4 @@ import java.awt.geom.Point2D;
  */
 public record LayerAnchorDragged(AffineTransform screenToWorld, LayerPainter selected,
                                  Point2D difference) implements ViewerEvent {
-
 }
