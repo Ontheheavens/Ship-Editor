@@ -11,6 +11,8 @@ import oth.shipeditor.communication.events.viewer.ViewerRepaintQueued;
 import oth.shipeditor.communication.events.viewer.control.ViewerCursorMoved;
 import oth.shipeditor.communication.events.viewer.control.ViewerGuidesToggled;
 import oth.shipeditor.components.viewer.ShipViewerPanel;
+import oth.shipeditor.components.viewer.entities.BaseWorldPoint;
+import oth.shipeditor.components.viewer.entities.WorldPoint;
 import oth.shipeditor.components.viewer.layers.LayerPainter;
 
 import javax.swing.*;
@@ -208,11 +210,13 @@ public final class GuidesPainter implements Painter {
             Point2D anchor = layer.getAnchorOffset();
             Point spriteCenter = new Point((int) (anchor.getX() + (shipSprite.getWidth() / 2)),
                     (int) (anchor.getY() + (shipSprite.getHeight() / 2)));
+            WorldPoint pointInput = new BaseWorldPoint(spriteCenter);
+            Point2D toDisplay = BaseWorldPoint.getCoordinatesForDisplay(pointInput);
             Point2D center = worldToScreen.transform(spriteCenter, null);
             label.setLabelLocation(spriteCenter.getX(), spriteCenter.getY());
             // Draw the two diagonal lines centered on the sprite center.
             GuidesPainter.drawCrossPoint(g, center, 5);
-            String spriteCenterCoords = "Sprite Center (" + spriteCenter.getX() + ", " + spriteCenter.getY() + ")";
+            String spriteCenterCoords = "Sprite Center (" + toDisplay.getX() + ", " + toDisplay.getY() + ")";
             label.paint(g, worldToScreen, w, h, spriteCenterCoords);
         }
 

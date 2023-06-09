@@ -1,4 +1,4 @@
-package oth.shipeditor.components;
+package oth.shipeditor.components.instrument;
 
 import lombok.Getter;
 import lombok.extern.log4j.Log4j2;

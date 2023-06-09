@@ -7,13 +7,13 @@ import org.kordamp.ikonli.fluentui.FluentUiRegularAL;
 import org.kordamp.ikonli.fluentui.FluentUiRegularMZ;
 import org.kordamp.ikonli.swing.FontIcon;
 import oth.shipeditor.communication.EventBus;
+import oth.shipeditor.communication.events.viewer.ViewerRepaintQueued;
 import oth.shipeditor.communication.events.viewer.control.ViewerCursorMoved;
 import oth.shipeditor.communication.events.viewer.control.ViewerZoomChanged;
 import oth.shipeditor.communication.events.viewer.layers.ActiveLayerUpdated;
 import oth.shipeditor.communication.events.viewer.layers.LayerWasSelected;
 import oth.shipeditor.communication.events.viewer.status.CoordsModeChanged;
 import oth.shipeditor.components.viewer.ShipViewable;
-import oth.shipeditor.components.viewer.control.ViewerControl;
 import oth.shipeditor.components.viewer.entities.ShipCenterPoint;
 import oth.shipeditor.components.viewer.layers.LayerPainter;
 import oth.shipeditor.components.viewer.layers.ShipLayer;
@@ -124,6 +124,7 @@ public final class ViewerStatusPanel extends JPanel {
             this.mode = displayMode;
             menuItem.setSelected(true);
             EventBus.publish(new CoordsModeChanged(displayMode));
+            EventBus.publish(new ViewerRepaintQueued());
         });
         group.add(menuItem);
         menuItem.setSelected(selected);
@@ -139,11 +140,6 @@ public final class ViewerStatusPanel extends JPanel {
                 axes + "start of coordinate system (World 0,0)",
                 group, CoordsDisplayMode.WORLD, true);
         popupMenu.add(world);
-
-        JRadioButtonMenuItem screen = createCoordsOption(
-                axes + "top left corner of viewer panel (Screen 0,0)",
-                group, CoordsDisplayMode.SCREEN, false);
-        popupMenu.add(screen);
 
         JRadioButtonMenuItem sprite = createCoordsOption(
                 axes + "selected sprite center (Sprite 0,0)",
@@ -177,14 +173,6 @@ public final class ViewerStatusPanel extends JPanel {
         Point2D cursor = adjustedCursor;
         LayerPainter selectedLayer = this.viewer.getSelectedLayer();
         switch (mode) {
-            case SCREEN -> {
-                Point2D viewerLoc = this.viewer.getPanelLocation();
-                ViewerControl controls = this.viewer.getControls();
-                Point2D mouse = controls.getMousePoint();
-                double roundedX = Math.round((mouse.getX() - viewerLoc.getX()) * 2) / 2.0;
-                double roundedY = Math.round((mouse.getY() - viewerLoc.getY()) * 2) / 2.0;
-                cursor = new Point2D.Double(roundedX, roundedY);
-            }
             case SPRITE_CENTER -> {
                 if (selectedLayer == null) break;
                 Point2D center = selectedLayer.getSpriteCenter();

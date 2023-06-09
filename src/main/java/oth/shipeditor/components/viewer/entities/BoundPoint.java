@@ -36,12 +36,10 @@ public class BoundPoint extends FeaturePoint{
     //  For this bound point class will need a reference to bounds painter so it'll be able to loop between point list.
 
     private void paintCoordsLabel(Graphics2D g, AffineTransform worldToScreen, double w, double h) {
-
-        // TODO: implement coordinate system switches.
-
         Point2D coordsPoint = getPosition();
+        Point2D toDisplay = BaseWorldPoint.getCoordinatesForDisplay(this);
         coordsLabel.setLabelLocation(coordsPoint.getX(), coordsPoint.getY());
-        String coords = "Bound (" + coordsPoint.getX() + ", " + coordsPoint.getY() + ")";
+        String coords = "Bound (" + toDisplay.getX() + ", " + toDisplay.getY() + ")";
         coordsLabel.paint(g, worldToScreen, w, h,coords);
     }
 

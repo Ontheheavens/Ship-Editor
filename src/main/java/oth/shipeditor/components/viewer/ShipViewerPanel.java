@@ -12,6 +12,7 @@ import oth.shipeditor.communication.events.viewer.control.ViewerTransformsReset;
 import oth.shipeditor.communication.events.viewer.layers.*;
 import oth.shipeditor.components.viewer.control.ShipViewerControls;
 import oth.shipeditor.components.viewer.control.ViewerControl;
+import oth.shipeditor.components.viewer.entities.BaseWorldPoint;
 import oth.shipeditor.components.viewer.layers.LayerManager;
 import oth.shipeditor.components.viewer.layers.LayerPainter;
 import oth.shipeditor.components.viewer.layers.ShipLayer;
@@ -47,6 +48,9 @@ public final class ShipViewerPanel extends Viewer implements ShipViewable {
     public ShipViewerPanel() {
         this.setMinimumSize(panelSize);
         this.setBackground(Color.GRAY);
+
+        // Required for early initializing of base coordinate systems functionality.
+        BaseWorldPoint.initStaticListening();
 
         this.layerManager = new LayerManager();
         this.layerManager.initListeners();
@@ -109,7 +113,7 @@ public final class ShipViewerPanel extends Viewer implements ShipViewable {
                 LayerPainter source = checked.source();
                 ShipLayer activeLayer = this.layerManager.getActiveLayer();
                 if (source != activeLayer.getPainter()) return;
-                this.addPainter(source.getHullPointsPainter(), checked.ordering());
+                this.addPainter(source.getCenterPointsPainter(), checked.ordering());
                 this.addPainter(source.getBoundsPainter(), checked.ordering());
             }
         });

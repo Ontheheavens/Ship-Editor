@@ -5,7 +5,13 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
 import oth.shipeditor.communication.EventBus;
+import oth.shipeditor.communication.events.components.BoundPointPanelRepaintQueued;
 import oth.shipeditor.communication.events.viewer.control.ViewerCursorMoved;
+import oth.shipeditor.communication.events.viewer.layers.LayerWasSelected;
+import oth.shipeditor.communication.events.viewer.status.CoordsModeChanged;
+import oth.shipeditor.components.CoordsDisplayMode;
+import oth.shipeditor.components.viewer.layers.LayerPainter;
+import oth.shipeditor.components.viewer.layers.ShipLayer;
 
 import java.awt.*;
 import java.awt.geom.AffineTransform;
@@ -22,6 +28,13 @@ public class BaseWorldPoint implements WorldPoint{
 
     private static Point2D viewerCursor = new Point2D.Double();
 
+    private static CoordsDisplayMode coordsMode = CoordsDisplayMode.WORLD;
+
+    /**
+     * All points need a static reference to layer in order to streamline multiple coordinate systems functionality.
+     */
+    private static LayerPainter selectedLayer = null;
+
     @Getter
     private final Point2D position;
 
@@ -34,10 +47,25 @@ public class BaseWorldPoint implements WorldPoint{
     @Getter @Setter
     private boolean selected;
 
-    static {
+    /**
+     * Note: this method needs to be called as soon as possible when initializing the viewer.
+     */
+    public static void initStaticListening() {
+        EventBus.subscribe(event -> {
+            if (event instanceof LayerWasSelected checked) {
+                ShipLayer shipLayer = checked.selected();
+                selectedLayer = shipLayer.getPainter();
+            }
+        });
         EventBus.subscribe(event -> {
             if (event instanceof ViewerCursorMoved checked) {
                 viewerCursor = checked.rawCursor();
+            }
+        });
+        EventBus.subscribe(event -> {
+            if (event instanceof CoordsModeChanged checked) {
+                coordsMode = checked.newMode();
+                EventBus.publish(new BoundPointPanelRepaintQueued());
             }
         });
     }
@@ -46,12 +74,12 @@ public class BaseWorldPoint implements WorldPoint{
         this(new Point2D.Double());
     }
 
-    BaseWorldPoint(Point2D pointPosition) {
+    public BaseWorldPoint(Point2D pointPosition) {
         this.position = pointPosition;
         this.painter = this.getPointPainter();
     }
 
-    protected boolean checkIsHovered(Shape[] paintParts) {
+    protected static boolean checkIsHovered(Shape[] paintParts) {
         for (Shape part: paintParts) {
             if (part.contains(viewerCursor)) {
                 return true;
@@ -116,6 +144,43 @@ public class BaseWorldPoint implements WorldPoint{
 
     public void setPosition(double x, double y) {
         this.position.setLocation(x, y);
+    }
+
+    public static Point2D getCoordinatesForDisplay(WorldPoint input) {
+        Point2D position = input.getPosition();
+        Point2D result = position;
+        LayerPainter layer = BaseWorldPoint.selectedLayer;
+
+        if (layer == null) {
+            return result;
+        }
+        double positionX = position.getX();
+        double positionY = position.getY();
+        switch (coordsMode) {
+            case WORLD -> {}
+            case SPRITE_CENTER -> {
+                Point2D center = layer.getSpriteCenter();
+                double centerX = center.getX();
+                double centerY = center.getY();
+                result = new Point2D.Double(positionX - centerX, positionY - centerY);
+            }
+            case SHIPCENTER_ANCHOR -> {
+                Point2D center = layer.getCenterAnchor();
+                double centerX = center.getX();
+                double centerY = center.getY();
+                result = new Point2D.Double(positionX - centerX, (-positionY + centerY));
+            }
+            // This case uses different coordinate system alignment to be consistent with game files.
+            // Otherwise, user might be confused as shown point coordinates won't match with those in file.
+            case SHIP_CENTER -> {
+                BaseWorldPoint shipCenter = layer.getShipCenter();
+                Point2D center = shipCenter.position;
+                double centerX = center.getX();
+                double centerY = center.getY();
+                result = new Point2D.Double(-(positionY - centerY), -(positionX - centerX));
+            }
+        }
+        return result;
     }
 
 }

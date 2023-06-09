@@ -30,6 +30,10 @@ import java.util.List;
 @Log4j2
 public final class BoundPointsPainter extends AbstractPointPainter {
 
+    // TODO: implement always-show-points checkbox toggle and separate interaction access check.
+    //  Should be unable to interact with bounds unless bound tab is active.
+
+
     @Getter
     private final List<BoundPoint> boundPoints;
 

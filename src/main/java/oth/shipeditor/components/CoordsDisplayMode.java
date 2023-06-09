@@ -5,5 +5,5 @@ package oth.shipeditor.components;
  * @since 01.06.2023
  */
 public enum CoordsDisplayMode {
-    WORLD, SCREEN, SPRITE_CENTER, SHIPCENTER_ANCHOR, SHIP_CENTER
+    WORLD, SPRITE_CENTER, SHIPCENTER_ANCHOR, SHIP_CENTER
 }

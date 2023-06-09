@@ -5,9 +5,8 @@ import lombok.extern.log4j.Log4j2;
 import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.components.ShipViewableCreated;
 import oth.shipeditor.communication.events.components.WindowRepaintQueued;
-import oth.shipeditor.components.BoundPointsPanel;
-import oth.shipeditor.components.HullPointsPanel;
 import oth.shipeditor.components.ViewerStatusPanel;
+import oth.shipeditor.components.instrument.InstrumentTabsPane;
 import oth.shipeditor.components.layering.ShipLayersPanel;
 import oth.shipeditor.components.viewer.ShipViewable;
 import oth.shipeditor.components.viewer.ShipViewerPanel;
@@ -24,6 +23,8 @@ import java.awt.*;
 @Log4j2
 public final class PrimaryWindow extends JFrame {
 
+    // TODO: There needs to be a switch for the active panel, probably implemented as enum.
+
     @Getter
     private final PrimaryMenuBar primaryMenu;
 
@@ -36,15 +37,7 @@ public final class PrimaryWindow extends JFrame {
     /**
      * Parent pane for ship data editing tabs.
      */
-    private JTabbedPane instrumentPane;
-
-    /**
-     * Panel for data representation of ship bounds.
-     */
-    @Getter
-    private BoundPointsPanel boundsPanel;
-
-    private HullPointsPanel centerPointsPanel;
+    private InstrumentTabsPane instrumentPane;
 
     /**
      * Parent pane for layers panel and others.
@@ -63,8 +56,6 @@ public final class PrimaryWindow extends JFrame {
      */
     @Getter
     private ViewerStatusPanel statusPanel;
-
-
 
     private PrimaryWindow() {
         log.info("Creating window.");
@@ -141,13 +132,7 @@ public final class PrimaryWindow extends JFrame {
     }
 
     private void loadEditingPanes() {
-        this.instrumentPane = new JTabbedPane();
-        this.instrumentPane.setTabPlacement(SwingConstants.LEFT);
-        centerPointsPanel = new HullPointsPanel();
-        instrumentPane.addTab("Centers",centerPointsPanel);
-        boundsPanel = new BoundPointsPanel();
-        instrumentPane.addTab("Bounds", boundsPanel);
-
+        this.instrumentPane = new InstrumentTabsPane();
         JSplitPane splitter = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
         splitter.setLeftComponent((Component) shipView);
         splitter.setRightComponent(instrumentPane);

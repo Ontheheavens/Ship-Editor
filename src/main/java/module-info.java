@@ -31,4 +31,6 @@
     opens oth.shipeditor.components.viewer;
     exports oth.shipeditor.components.layering;
     opens oth.shipeditor.components.layering;
+    exports oth.shipeditor.components.instrument;
+    opens oth.shipeditor.components.instrument;
 }

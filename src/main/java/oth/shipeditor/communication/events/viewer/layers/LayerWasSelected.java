@@ -7,5 +7,4 @@ import oth.shipeditor.components.viewer.layers.ShipLayer;
  * @since 03.06.2023
  */
 public record LayerWasSelected(ShipLayer old, ShipLayer selected) implements LayerEvent {
-
 }

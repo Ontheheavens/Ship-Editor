@@ -12,8 +12,8 @@ public class ShipData {
     @Getter @Setter
     private Hull hull;
 
-    public ShipData(Hull hull) {
-        this.hull = hull;
+    public ShipData(Hull openedHull) {
+        this.hull = openedHull;
     }
 
 }

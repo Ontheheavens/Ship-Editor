@@ -14,8 +14,8 @@ import oth.shipeditor.components.viewer.entities.BaseWorldPoint;
 import oth.shipeditor.components.viewer.entities.BoundPoint;
 import oth.shipeditor.components.viewer.entities.ShipCenterPoint;
 import oth.shipeditor.components.viewer.entities.WorldPoint;
-import oth.shipeditor.components.viewer.painters.AbstractPointPainter;
 import oth.shipeditor.components.viewer.painters.BoundPointsPainter;
+import oth.shipeditor.components.viewer.painters.CenterPointsPainter;
 import oth.shipeditor.representation.Hull;
 import oth.shipeditor.representation.ShipData;
 
@@ -38,7 +38,7 @@ public class LayerPainter implements Painter {
     @Getter
     private final BoundPointsPainter boundsPainter;
     @Getter
-    private final HullPointsPainter hullPointsPainter;
+    private final CenterPointsPainter centerPointsPainter;
 
     /**
      * Convenience collection for bulk manipulation of layer painters.
@@ -67,10 +67,10 @@ public class LayerPainter implements Painter {
 
     public LayerPainter(ShipLayer layer, ShipViewerPanel viewerPanel) {
         this.parentLayer = layer;
-        this.hullPointsPainter = this.createHullPointsPainter();
+        this.centerPointsPainter = new CenterPointsPainter();
         this.boundsPainter = new BoundPointsPainter(viewerPanel);
         this.allPainters = new ArrayList<>();
-        allPainters.add(hullPointsPainter);
+        allPainters.add(centerPointsPainter);
         allPainters.add(boundsPainter);
         this.shipSprite = layer.getShipSprite();
         this.initPainterListeners(layer);
@@ -100,9 +100,9 @@ public class LayerPainter implements Painter {
     }
 
     private void clearHullPainter() {
-        Iterable<BaseWorldPoint> hullPoints = new ArrayList<>(this.hullPointsPainter.getPointsIndex());
+        Iterable<BaseWorldPoint> hullPoints = new ArrayList<>(centerPointsPainter.getPointsIndex());
         for (BaseWorldPoint point : hullPoints) {
-            this.hullPointsPainter.removePoint(point);
+            this.centerPointsPainter.removePoint(point);
         }
     }
 
@@ -137,7 +137,7 @@ public class LayerPainter implements Painter {
         for (BoundPoint point : boundsPainter.getBoundPoints()) {
             LayerPainter.offsetPointPosition(point, difference);
         }
-        for (BaseWorldPoint point : hullPointsPainter.getPointsIndex()) {
+        for (BaseWorldPoint point : centerPointsPainter.getPointsIndex()) {
             LayerPainter.offsetPointPosition(point, difference);
         }
         this.anchorOffset = updated;
@@ -185,10 +185,6 @@ public class LayerPainter implements Painter {
         } else this.spriteOpacity = Math.min(opacity, 1.0f);
     }
 
-    private HullPointsPainter createHullPointsPainter() {
-        return new HullPointsPainter();
-    }
-
     private void initializeShipData(ShipData shipData) {
         Hull hull = shipData.getHull();
         Point2D anchor = this.getCenterAnchor();
@@ -198,7 +194,7 @@ public class LayerPainter implements Painter {
         Point2D.Double translatedCenter = new Point2D.Double(hullCenter.x + anchorX,
                 -hullCenter.y + anchorY);
         this.centerPoint = LayerPainter.createShipCenterPoint(translatedCenter);
-        hullPointsPainter.addPoint(this.centerPoint);
+        centerPointsPainter.addPoint(this.centerPoint);
         for (Point2D.Double bound : hull.getBounds()) {
             BoundPoint boundPoint = LayerPainter.createTranslatedBound(bound, translatedCenter);
             boundsPainter.addPoint(boundPoint);
@@ -216,31 +212,6 @@ public class LayerPainter implements Painter {
 
     private static ShipCenterPoint createShipCenterPoint(Point2D translatedCenter) {
         return new ShipCenterPoint(translatedCenter);
-    }
-
-    @SuppressWarnings("InnerClassMayBeStatic")
-    private class HullPointsPainter extends AbstractPointPainter {
-
-        private final List<BaseWorldPoint> points = new ArrayList<>();
-        @Override
-        protected List<BaseWorldPoint> getPointsIndex() {
-            return points;
-        }
-
-        @Override
-        protected void addPointToIndex(BaseWorldPoint point) {
-            points.add(point);
-        }
-
-        @Override
-        protected void removePointFromIndex(BaseWorldPoint point) {
-            points.remove(point);
-        }
-
-        @Override
-        protected BaseWorldPoint getTypeReference() {
-            return new BaseWorldPoint();
-        }
     }
 
 }
