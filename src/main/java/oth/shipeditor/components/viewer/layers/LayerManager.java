@@ -5,6 +5,7 @@ import lombok.extern.log4j.Log4j2;
 import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.files.HullFileOpened;
 import oth.shipeditor.communication.events.files.SpriteOpened;
+import oth.shipeditor.communication.events.viewer.ViewerRepaintQueued;
 import oth.shipeditor.communication.events.viewer.layers.*;
 import oth.shipeditor.representation.Hull;
 import oth.shipeditor.representation.ShipData;
@@ -56,6 +57,15 @@ public class LayerManager {
                 }
                 layers.remove(selected);
                 EventBus.publish(new ShipLayerRemovalConfirmed(selected));
+            }
+        });
+        // Unsure if opacity listening belongs here conceptually, but it's not a big deal.
+        EventBus.subscribe(event -> {
+            if (event instanceof LayerOpacityChangeQueued checked) {
+                LayerPainter painter = activeLayer.getPainter();
+                if (painter == null) return;
+                painter.setSpriteOpacity(checked.changedValue());
+                EventBus.publish(new ViewerRepaintQueued());
             }
         });
     }

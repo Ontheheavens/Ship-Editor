@@ -23,6 +23,7 @@ public final class EventBus {
 
     public static BusEventListener subscribe(BusEventListener listener) {
         bus.subscribers.add(listener);
+        log.info(bus.subscribers.size());
         return listener;
     }
 

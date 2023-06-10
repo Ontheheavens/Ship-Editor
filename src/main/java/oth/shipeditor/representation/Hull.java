@@ -73,4 +73,5 @@ public class Hull {
     @JsonProperty("bounds")
     @JsonDeserialize(using = Point2DArrayParser.class)
     Point2D.Double[] bounds;
+
 }

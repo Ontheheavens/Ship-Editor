@@ -19,7 +19,7 @@ final class ControlPredicates {
 
     static final Predicate<MouseEvent> layerMovePredicate = Predicates.and(
             InputEventPredicates.buttonDown(1),
-            InputEventPredicates.altDown()
+            InputEventPredicates.shiftDown()
     );
 
     static final Predicate<MouseEvent> selectPointPredicate = Predicates.and(

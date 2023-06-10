@@ -24,7 +24,10 @@ import java.awt.geom.RectangularShape;
  * @since 30.04.2023
  */
 @Log4j2
-public class BaseWorldPoint implements WorldPoint{
+public class BaseWorldPoint implements WorldPoint {
+
+    // TODO: Introduce some form of visual indication of whether the points are interactable or not.
+    //  Likely this needs to be based on whether the respective instrument pane is opened.
 
     private static Point2D viewerCursor = new Point2D.Double();
 

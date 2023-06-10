@@ -48,7 +48,7 @@ public final class ShipViewerControls implements ViewerControl {
      */
     private final Point layerDragPoint = new Point();
 
-    private final int layerDragHotkey = KeyEvent.VK_ALT;
+    private final int layerDragHotkey = KeyEvent.VK_SHIFT;
 
     @Getter
     private Point mousePoint = new Point();
