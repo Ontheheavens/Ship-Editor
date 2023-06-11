@@ -8,7 +8,7 @@ import oth.shipeditor.communication.events.viewer.ViewerRepaintQueued;
 import oth.shipeditor.communication.events.viewer.points.BoundCreationModeChanged;
 import oth.shipeditor.communication.events.viewer.points.BoundCreationQueued;
 import oth.shipeditor.communication.events.viewer.points.BoundInsertedConfirmed;
-import oth.shipeditor.components.viewer.PointsDisplay;
+import oth.shipeditor.components.viewer.InteractionMode;
 import oth.shipeditor.components.viewer.ShipViewerPanel;
 import oth.shipeditor.components.viewer.control.ViewerControl;
 import oth.shipeditor.components.viewer.entities.BaseWorldPoint;
@@ -40,7 +40,7 @@ public final class BoundPointsPainter extends AbstractPointPainter {
     private boolean appendBoundHotkeyPressed;
     private boolean insertBoundHotkeyPressed;
 
-    private PointsDisplay.InteractionMode coupledModeState;
+    private InteractionMode coupledModeState;
 
     private final ShipViewerPanel viewerPanel;
 
@@ -119,7 +119,7 @@ public final class BoundPointsPainter extends AbstractPointPainter {
         EventBus.subscribe(event -> {
             if (event instanceof BoundCreationModeChanged checked) {
                 coupledModeState = checked.newMode();
-                setInteractionEnabled(checked.newMode() == PointsDisplay.InteractionMode.SELECT);
+                setInteractionEnabled(checked.newMode() == InteractionMode.SELECT);
             }
         });
     }
@@ -127,7 +127,7 @@ public final class BoundPointsPainter extends AbstractPointPainter {
     private void initCreationListener() {
         EventBus.subscribe(event -> {
             if (event instanceof BoundCreationQueued checked) {
-                if (coupledModeState != PointsDisplay.InteractionMode.CREATE) return;
+                if (coupledModeState != InteractionMode.CREATE) return;
                 if (!hasPointAtCoords(checked.position())) {
                     createBound(checked);
                 }
@@ -229,7 +229,7 @@ public final class BoundPointsPainter extends AbstractPointPainter {
         BoundPoint anotherBoundPoint = bPoints.get(0);
         Point2D first = worldToScreen.transform(anotherBoundPoint.getPosition(), null);
         Utility.drawBorderedLine(g, prev, first, Color.DARK_GRAY);
-        if (coupledModeState == PointsDisplay.InteractionMode.CREATE) {
+        if (coupledModeState == InteractionMode.CREATE) {
             this.paintCreationGuidelines(g, worldToScreen, prev, first);
         }
         g.setStroke(origStroke);

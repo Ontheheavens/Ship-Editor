@@ -62,6 +62,7 @@ public class LayerManager {
         // Unsure if opacity listening belongs here conceptually, but it's not a big deal.
         EventBus.subscribe(event -> {
             if (event instanceof LayerOpacityChangeQueued checked) {
+                if (activeLayer == null) return;
                 LayerPainter painter = activeLayer.getPainter();
                 if (painter == null) return;
                 painter.setSpriteOpacity(checked.changedValue());

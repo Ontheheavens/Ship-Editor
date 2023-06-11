@@ -1,11 +1,11 @@
 package oth.shipeditor.communication.events.viewer.points;
 
-import oth.shipeditor.components.viewer.PointsDisplay;
+import oth.shipeditor.components.viewer.InteractionMode;
 
 /**
  * @author Ontheheavens
  * @since 29.05.2023
  */
-public record BoundCreationModeChanged(PointsDisplay.InteractionMode newMode) implements PointEvent {
+public record BoundCreationModeChanged(InteractionMode newMode) implements PointEvent {
 
 }

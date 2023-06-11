@@ -56,6 +56,7 @@ public class BaseWorldPoint implements WorldPoint {
     public static void initStaticListening() {
         EventBus.subscribe(event -> {
             if (event instanceof LayerWasSelected checked) {
+                if (checked.selected() == null) return;
                 ShipLayer shipLayer = checked.selected();
                 selectedLayer = shipLayer.getPainter();
             }

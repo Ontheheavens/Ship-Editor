@@ -23,7 +23,7 @@ public final class Main {
             FlatIntelliJLaf.setup();
             PrimaryWindow window = PrimaryWindow.create();
             window.showGUI();
-            Main.testFiles(window);
+//            Main.testFiles(window);
         });
     }
 
