@@ -2,6 +2,9 @@ package oth.shipeditor.components.viewer.entities;
 
 import de.javagl.viewer.Painter;
 import de.javagl.viewer.painters.LabelPainter;
+import oth.shipeditor.communication.EventBus;
+import oth.shipeditor.communication.events.viewer.points.InstrumentModeChanged;
+import oth.shipeditor.components.viewer.InstrumentMode;
 
 import javax.swing.*;
 import java.awt.*;
@@ -16,9 +19,24 @@ public class BoundPoint extends FeaturePoint{
 
     private final LabelPainter coordsLabel;
 
+    private static boolean interactionPermitted;
+
+    public static void initModeListening() {
+        EventBus.subscribe(event -> {
+            if (event instanceof InstrumentModeChanged checked) {
+                interactionPermitted = (checked.newMode() == InstrumentMode.BOUNDS);
+            }
+        });
+    }
+
     public BoundPoint(Point2D position) {
         super(position);
         coordsLabel = createCoordsLabelPainter();
+    }
+
+    @Override
+    protected boolean isInteractable() {
+        return interactionPermitted;
     }
 
     private LabelPainter createCoordsLabelPainter() {

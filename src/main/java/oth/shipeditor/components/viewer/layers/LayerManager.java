@@ -33,6 +33,14 @@ public class LayerManager {
         this.initOpenHullListener();
     }
 
+    public void activateNextLayer() {
+        ShipLayer old = this.activeLayer;
+        int nextIndex = layers.indexOf(old) + 1;
+        if (nextIndex > layers.size() - 1) return;
+        ShipLayer next = layers.get(nextIndex);
+        this.setActiveLayer(next);
+    }
+
     public void setActiveLayer(ShipLayer newlySelected) {
         ShipLayer old = this.activeLayer;
         this.activeLayer = newlySelected;

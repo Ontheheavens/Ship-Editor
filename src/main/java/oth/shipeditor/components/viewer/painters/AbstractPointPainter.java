@@ -58,11 +58,13 @@ public abstract class AbstractPointPainter implements Painter {
         });
         EventBus.subscribe(event -> {
             if (event instanceof PointSelectQueued checked && this.isPointEligible(checked.point())) {
+                if (!this.interactionEnabled) return;
                 this.handlePointSelectionEvent(checked.point());
             }
         });
         EventBus.subscribe(event -> {
             if (event instanceof PointDragQueued checked) {
+                if (!this.interactionEnabled) return;
                 if (selected == null) return;
                 AffineTransform screenToWorld = checked.screenToWorld();
                 Point2D translated = screenToWorld.transform(checked.adjustedCursor(), null);

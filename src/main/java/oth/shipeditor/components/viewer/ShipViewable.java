@@ -5,7 +5,6 @@ import oth.shipeditor.components.viewer.layers.LayerManager;
 import oth.shipeditor.components.viewer.layers.LayerPainter;
 import oth.shipeditor.components.viewer.layers.ShipLayer;
 
-import java.awt.*;
 import java.awt.geom.AffineTransform;
 
 /**
@@ -16,7 +15,7 @@ public interface ShipViewable {
 
     void loadLayer(ShipLayer layer);
 
-    Point getPanelLocation();
+    void centerViewpoint();
 
     LayerPainter getSelectedLayer();
 

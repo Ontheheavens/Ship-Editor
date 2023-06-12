@@ -39,15 +39,14 @@ final class LayerPropertiesPanel extends JPanel {
         opacityLabel.setText("Sprite opacity: " + opacity + "%");
     }
 
-    // TODO: Layer instruments should probably be their own tab.
-
     private JPanel createLayerPanel() {
         JPanel layerSettingsPanel = new JPanel();
+        layerSettingsPanel.setLayout(new BoxLayout(layerSettingsPanel, BoxLayout.Y_AXIS));
         layerSettingsPanel.setBorder(BorderFactory.createTitledBorder("Properties"));
         opacitySlider = new JSlider(SwingConstants.HORIZONTAL,
                 0, 100, 100);
+        opacitySlider.setAlignmentX(0.0f);
         opacitySlider.setEnabled(false);
-        // TODO: Make slider panel more beautiful.
         opacitySlider.addChangeListener(e -> {
             JSlider source = (JSlider)e.getSource();
             int opacity = source.getValue();
@@ -84,9 +83,13 @@ final class LayerPropertiesPanel extends JPanel {
         opacitySlider.setPaintTicks(true);
         opacitySlider.setPaintLabels(true);
         opacityLabel = new JLabel();
+        opacityLabel.setAlignmentX(0.0f);
+        opacityLabel.setBorder(BorderFactory.createEmptyBorder(0, 6, 0, 0));
         this.updateOpacityLabel(100);
+
         layerSettingsPanel.add(opacityLabel);
         layerSettingsPanel.add(opacitySlider);
+
         return layerSettingsPanel;
     }
 

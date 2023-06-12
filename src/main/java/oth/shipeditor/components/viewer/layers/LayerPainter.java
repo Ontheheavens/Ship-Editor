@@ -24,7 +24,9 @@ import java.awt.geom.AffineTransform;
 import java.awt.geom.Point2D;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Stream;
 
 /**
  * Distinct from parent ship layer instance: present class has to do with direct visual representation.
@@ -130,7 +132,7 @@ public class LayerPainter implements Painter {
         });
     }
 
-    private void updateAnchorOffset(Point2D updated) {
+    public void updateAnchorOffset(Point2D updated) {
         Point2D oldOffset = this.anchorOffset;
         Point2D difference = new Point2D.Double(oldOffset.getX() - updated.getX(),
                 oldOffset.getY() - updated.getY());
@@ -195,10 +197,11 @@ public class LayerPainter implements Painter {
                 -hullCenter.y + anchorY);
         this.centerPoint = LayerPainter.createShipCenterPoint(translatedCenter);
         centerPointsPainter.addPoint(this.centerPoint);
-        for (Point2D.Double bound : hull.getBounds()) {
+        Stream<Point2D> boundStream = Arrays.stream(hull.getBounds());
+        boundStream.forEach(bound -> {
             BoundPoint boundPoint = LayerPainter.createTranslatedBound(bound, translatedCenter);
             boundsPainter.addPoint(boundPoint);
-        }
+        });
         this.uninitialized = false;
         EventBus.publish(new LayerShipDataInitialized(this, 4));
         EventBus.publish(new ViewerRepaintQueued());

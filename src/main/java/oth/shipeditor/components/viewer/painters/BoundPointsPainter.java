@@ -5,10 +5,10 @@ import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
 import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.viewer.ViewerRepaintQueued;
-import oth.shipeditor.communication.events.viewer.points.BoundCreationModeChanged;
 import oth.shipeditor.communication.events.viewer.points.BoundCreationQueued;
 import oth.shipeditor.communication.events.viewer.points.BoundInsertedConfirmed;
-import oth.shipeditor.components.viewer.InteractionMode;
+import oth.shipeditor.communication.events.viewer.points.InstrumentModeChanged;
+import oth.shipeditor.components.viewer.InstrumentMode;
 import oth.shipeditor.components.viewer.ShipViewerPanel;
 import oth.shipeditor.components.viewer.control.ViewerControl;
 import oth.shipeditor.components.viewer.entities.BaseWorldPoint;
@@ -39,8 +39,6 @@ public final class BoundPointsPainter extends AbstractPointPainter {
 
     private boolean appendBoundHotkeyPressed;
     private boolean insertBoundHotkeyPressed;
-
-    private InteractionMode coupledModeState;
 
     private final ShipViewerPanel viewerPanel;
 
@@ -117,9 +115,8 @@ public final class BoundPointsPainter extends AbstractPointPainter {
 
     private void initModeListener() {
         EventBus.subscribe(event -> {
-            if (event instanceof BoundCreationModeChanged checked) {
-                coupledModeState = checked.newMode();
-                setInteractionEnabled(checked.newMode() == InteractionMode.SELECT);
+            if (event instanceof InstrumentModeChanged checked) {
+                setInteractionEnabled(checked.newMode() == InstrumentMode.BOUNDS);
             }
         });
     }
@@ -127,7 +124,7 @@ public final class BoundPointsPainter extends AbstractPointPainter {
     private void initCreationListener() {
         EventBus.subscribe(event -> {
             if (event instanceof BoundCreationQueued checked) {
-                if (coupledModeState != InteractionMode.CREATE) return;
+                if (!isInteractionEnabled()) return;
                 if (!hasPointAtCoords(checked.position())) {
                     createBound(checked);
                 }
@@ -229,7 +226,8 @@ public final class BoundPointsPainter extends AbstractPointPainter {
         BoundPoint anotherBoundPoint = bPoints.get(0);
         Point2D first = worldToScreen.transform(anotherBoundPoint.getPosition(), null);
         Utility.drawBorderedLine(g, prev, first, Color.DARK_GRAY);
-        if (coupledModeState == InteractionMode.CREATE) {
+        boolean hotkeyPressed = appendBoundHotkeyPressed || insertBoundHotkeyPressed;
+        if (isInteractionEnabled() && hotkeyPressed) {
             this.paintCreationGuidelines(g, worldToScreen, prev, first);
         }
         g.setStroke(origStroke);

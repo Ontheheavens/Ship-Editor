@@ -23,9 +23,13 @@ public final class EventBus {
 
     public static BusEventListener subscribe(BusEventListener listener) {
         bus.subscribers.add(listener);
-        log.info(bus.subscribers.size());
+        log.info("Added listener, bus size: {}", bus.subscribers.size());
         return listener;
     }
+
+    // TODO: Right now listener are not getting removed from bus at all.
+    //  Since the number of listeners is comparatively small so far, this is not a problem yet.
+    //  If situation arises where the event bus bloat proves an issue, we will need to refactor our whole listener system.
 
     /**
      * Unused right now but might prove useful later.

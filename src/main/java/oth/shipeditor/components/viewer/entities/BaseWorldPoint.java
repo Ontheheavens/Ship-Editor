@@ -121,6 +121,10 @@ public class BaseWorldPoint implements WorldPoint {
         return new Color(0xBF000000, true);
     }
 
+    protected boolean isInteractable() {
+        return true;
+    }
+
     public Painter getPointPainter() {
         return (g, worldToScreen, w, h) -> {
             Paint old = g.getPaint();
@@ -128,9 +132,9 @@ public class BaseWorldPoint implements WorldPoint {
             RectangularShape outer = createScreenConstantPaintPart(worldToScreen);
 
             this.cursorInBounds = checkIsHovered(new Shape[]{inner, outer});
-            if (this.selected) {
+            if (this.selected && isInteractable()) {
                 g.setPaint(createSelectColor());
-            } else if (this.cursorInBounds) {
+            } else if (this.cursorInBounds && isInteractable()) {
                 g.setPaint(createHoverColor());
             } else {
                 g.setPaint(createBaseColor());

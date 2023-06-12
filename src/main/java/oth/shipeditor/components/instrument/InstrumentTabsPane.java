@@ -2,8 +2,14 @@ package oth.shipeditor.components.instrument;
 
 import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
+import oth.shipeditor.communication.EventBus;
+import oth.shipeditor.communication.events.viewer.ViewerRepaintQueued;
+import oth.shipeditor.communication.events.viewer.points.InstrumentModeChanged;
+import oth.shipeditor.components.viewer.InstrumentMode;
 
 import javax.swing.*;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * @author Ontheheavens
@@ -22,23 +28,44 @@ public final class InstrumentTabsPane extends JTabbedPane {
      * Panel for data representation of ship bounds.
      */
     @Getter
-    private final BoundPointsPanel boundsPanel;
+    private BoundPointsPanel boundsPanel;
 
-    private final HullPointsPanel centerPointsPanel;
+    private HullPointsPanel centerPointsPanel;
 
-    private final LayerPropertiesPanel layerPanel;
+    private LayerPropertiesPanel layerPanel;
+
+    private Map<JPanel, InstrumentMode> panelMode;
 
     public InstrumentTabsPane() {
+        panelMode = new HashMap<>();
+        this.initListeners();
+        this.setTabPlacement(SwingConstants.LEFT);
+        this.createTabs();
+    }
+
+    private void initListeners() {
         this.addChangeListener(event -> {
             activePanel = (JPanel) getSelectedComponent();
+            this.dispatchModeChange(activePanel);
         });
-        this.setTabPlacement(SwingConstants.LEFT);
+    }
+
+    private void createTabs() {
         layerPanel = new LayerPropertiesPanel();
+        panelMode.put(layerPanel, InstrumentMode.LAYER);
         this.addTab("Layer",layerPanel);
         centerPointsPanel = new HullPointsPanel();
+        panelMode.put(centerPointsPanel, InstrumentMode.CENTERS);
         this.addTab("Centers",centerPointsPanel);
         boundsPanel = new BoundPointsPanel();
+        panelMode.put(boundsPanel, InstrumentMode.BOUNDS);
         this.addTab("Bounds", boundsPanel);
+    }
+
+    private void dispatchModeChange(JPanel active) {
+        InstrumentMode selected = panelMode.get(active);
+        EventBus.publish(new InstrumentModeChanged(selected));
+        EventBus.publish(new ViewerRepaintQueued());
     }
 
 }

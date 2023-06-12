@@ -8,6 +8,7 @@ import org.kordamp.ikonli.swing.FontIcon;
 import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.components.WindowRepaintQueued;
 import oth.shipeditor.communication.events.viewer.layers.ActiveLayerUpdated;
+import oth.shipeditor.communication.events.viewer.layers.LayerWasSelected;
 import oth.shipeditor.communication.events.viewer.layers.ShipLayerCreated;
 import oth.shipeditor.communication.events.viewer.layers.ShipLayerRemovalConfirmed;
 import oth.shipeditor.components.viewer.layers.LayerManager;
@@ -90,6 +91,14 @@ public final class ShipLayersPanel extends JTabbedPane {
                 this.removeTabAt(indexOfComponent(tabIndex.get(layer)));
                 tabIndex.remove(layer);
                 EventBus.publish(new WindowRepaintQueued());
+            }
+        });
+        EventBus.subscribe(event -> {
+            if (event instanceof LayerWasSelected checked) {
+                ShipLayer newlySelected = checked.selected();
+                ShipLayer selectedTabLayer = getLayerByTab((LayerTab) getSelectedComponent());
+                if (newlySelected == selectedTabLayer) return;
+                this.setSelectedIndex(indexOfComponent(tabIndex.get(newlySelected)));
             }
         });
     }
