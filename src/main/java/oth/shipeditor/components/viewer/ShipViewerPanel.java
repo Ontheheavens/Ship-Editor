@@ -13,7 +13,6 @@ import oth.shipeditor.communication.events.viewer.layers.*;
 import oth.shipeditor.components.viewer.control.ShipViewerControls;
 import oth.shipeditor.components.viewer.control.ViewerControl;
 import oth.shipeditor.components.viewer.entities.BaseWorldPoint;
-import oth.shipeditor.components.viewer.entities.BoundPoint;
 import oth.shipeditor.components.viewer.layers.LayerManager;
 import oth.shipeditor.components.viewer.layers.LayerPainter;
 import oth.shipeditor.components.viewer.layers.ShipLayer;
@@ -52,8 +51,6 @@ public final class ShipViewerPanel extends Viewer implements ShipViewable {
 
         // Required for early initializing of base coordinate systems functionality.
         BaseWorldPoint.initStaticListening();
-        // Really not the most elegant solution, got to stop using this...
-        BoundPoint.initModeListening();
 
         this.layerManager = new LayerManager();
         this.layerManager.initListeners();
@@ -68,7 +65,6 @@ public final class ShipViewerPanel extends Viewer implements ShipViewable {
 
         this.controls = ShipViewerControls.create(this);
         this.setMouseControl(this.controls);
-
         this.initViewerStateListeners();
         this.initLayerListening();
     }

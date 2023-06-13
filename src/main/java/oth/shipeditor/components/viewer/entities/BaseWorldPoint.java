@@ -8,8 +8,10 @@ import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.components.BoundPointPanelRepaintQueued;
 import oth.shipeditor.communication.events.viewer.control.ViewerCursorMoved;
 import oth.shipeditor.communication.events.viewer.layers.LayerWasSelected;
+import oth.shipeditor.communication.events.viewer.points.InstrumentModeChanged;
 import oth.shipeditor.communication.events.viewer.status.CoordsModeChanged;
 import oth.shipeditor.components.CoordsDisplayMode;
+import oth.shipeditor.components.viewer.InstrumentMode;
 import oth.shipeditor.components.viewer.layers.LayerPainter;
 import oth.shipeditor.components.viewer.layers.ShipLayer;
 
@@ -36,7 +38,10 @@ public class BaseWorldPoint implements WorldPoint {
     /**
      * All points need a static reference to layer in order to streamline multiple coordinate systems functionality.
      */
-    private static LayerPainter selectedLayer = null;
+    private static LayerPainter selectedLayer;
+
+    @Getter
+    private static InstrumentMode instrumentationMode;
 
     @Getter
     private final Point2D position;
@@ -72,6 +77,15 @@ public class BaseWorldPoint implements WorldPoint {
                 EventBus.publish(new BoundPointPanelRepaintQueued());
             }
         });
+        EventBus.subscribe(event -> {
+            if (event instanceof InstrumentModeChanged checked) {
+                instrumentationMode = checked.newMode();
+            }
+        });
+    }
+
+    public InstrumentMode getAssociatedMode() {
+        return InstrumentMode.LAYER;
     }
 
     public BaseWorldPoint() {
@@ -122,7 +136,7 @@ public class BaseWorldPoint implements WorldPoint {
     }
 
     protected boolean isInteractable() {
-        return true;
+        return instrumentationMode == getAssociatedMode();
     }
 
     public Painter getPointPainter() {

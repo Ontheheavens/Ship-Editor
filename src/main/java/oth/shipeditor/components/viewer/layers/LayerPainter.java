@@ -70,7 +70,7 @@ public class LayerPainter implements Painter {
     public LayerPainter(ShipLayer layer, ShipViewerPanel viewerPanel) {
         this.parentLayer = layer;
         this.centerPointsPainter = new CenterPointsPainter();
-        this.boundsPainter = new BoundPointsPainter(viewerPanel);
+        this.boundsPainter = new BoundPointsPainter(viewerPanel, layer);
         this.allPainters = new ArrayList<>();
         allPainters.add(centerPointsPainter);
         allPainters.add(boundsPainter);

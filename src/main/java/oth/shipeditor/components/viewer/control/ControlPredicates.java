@@ -27,11 +27,6 @@ final class ControlPredicates {
             InputEventPredicates.noModifiers()
     );
 
-    static final Predicate<MouseEvent> removePointPredicate = Predicates.and(
-            InputEventPredicates.buttonDown(3),
-            InputEventPredicates.shiftDown()
-    );
-
     static final Predicate<MouseEvent> rotatePredicate = InputEventPredicates.controlDown();
 
     private ControlPredicates() {

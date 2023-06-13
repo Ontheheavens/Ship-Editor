@@ -1,6 +1,7 @@
 package oth.shipeditor.components.viewer.entities;
 
 import de.javagl.viewer.Painter;
+import oth.shipeditor.components.viewer.InstrumentMode;
 
 import java.awt.geom.Point2D;
 
@@ -12,6 +13,11 @@ public class ShipCenterPoint extends FeaturePoint{
 
     public ShipCenterPoint(Point2D position) {
         super(position);
+    }
+
+    @Override
+    public InstrumentMode getAssociatedMode() {
+        return InstrumentMode.CENTERS;
     }
 
     @Override

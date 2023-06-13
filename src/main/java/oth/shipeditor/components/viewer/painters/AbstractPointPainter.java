@@ -32,7 +32,7 @@ public abstract class AbstractPointPainter implements Painter {
     @Getter @Setter
     private WorldPoint selected;
 
-    @Getter @Setter
+    @Setter
     private boolean interactionEnabled;
 
     /**
@@ -40,31 +40,38 @@ public abstract class AbstractPointPainter implements Painter {
      */
     private final AffineTransform delegateWorldToScreen;
 
-    protected AbstractPointPainter() {
+    AbstractPointPainter() {
         this.delegates = new ArrayList<>();
         this.delegateWorldToScreen = new AffineTransform();
         this.initChangeListeners();
     }
 
+    public boolean isInteractionEnabled() {
+        return interactionEnabled;
+    }
+
     private void initChangeListeners() {
         EventBus.subscribe(event -> {
-            if (event instanceof PointRemoveQueued && this.interactionEnabled) {
+            if (event instanceof PointRemoveQueued && this.isInteractionEnabled()) {
                 BaseWorldPoint toRemove = this.getMousedOver();
                 if (toRemove != null) {
                     this.removePoint(toRemove);
+                    EventBus.publish(new ViewerRepaintQueued());
+                } else if (selected != null) {
+                    this.removePoint((BaseWorldPoint) selected);
                     EventBus.publish(new ViewerRepaintQueued());
                 }
             }
         });
         EventBus.subscribe(event -> {
             if (event instanceof PointSelectQueued checked && this.isPointEligible(checked.point())) {
-                if (!this.interactionEnabled) return;
+                if (!this.isInteractionEnabled()) return;
                 this.handlePointSelectionEvent(checked.point());
             }
         });
         EventBus.subscribe(event -> {
             if (event instanceof PointDragQueued checked) {
-                if (!this.interactionEnabled) return;
+                if (!this.isInteractionEnabled()) return;
                 if (selected == null) return;
                 AffineTransform screenToWorld = checked.screenToWorld();
                 Point2D translated = screenToWorld.transform(checked.adjustedCursor(), null);
@@ -96,11 +103,6 @@ public abstract class AbstractPointPainter implements Painter {
                 this.selected = this.getMousedOver();
                 this.selected.setSelected(true);
                 EventBus.publish(new PointSelectedConfirmed(this.selected));
-                EventBus.publish(new ViewerRepaintQueued());
-            } else if (this.selected != null) {
-                this.selected.setSelected(false);
-                this.selected = null;
-                EventBus.publish(new PointSelectedConfirmed(null));
                 EventBus.publish(new ViewerRepaintQueued());
             }
         }
@@ -163,7 +165,7 @@ public abstract class AbstractPointPainter implements Painter {
         return pointDoesExist;
     }
 
-    protected void paintDelegates(Graphics2D g, AffineTransform worldToScreen, double w, double h) {
+    void paintDelegates(Graphics2D g, AffineTransform worldToScreen, double w, double h) {
         this.delegates.forEach(painter -> {
             if (painter != null) {
                 AffineTransform transform = this.delegateWorldToScreen;

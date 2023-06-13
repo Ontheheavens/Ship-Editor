@@ -4,6 +4,7 @@ import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
 import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.viewer.control.*;
+import oth.shipeditor.communication.events.viewer.points.BoundCreationQueued;
 import oth.shipeditor.communication.events.viewer.points.PointDragQueued;
 import oth.shipeditor.communication.events.viewer.points.PointRemoveQueued;
 import oth.shipeditor.communication.events.viewer.points.PointSelectQueued;
@@ -11,7 +12,9 @@ import oth.shipeditor.components.viewer.ShipViewerPanel;
 import oth.shipeditor.components.viewer.layers.LayerPainter;
 import oth.shipeditor.utility.Utility;
 
+import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseWheelEvent;
@@ -57,8 +60,6 @@ public final class ShipViewerControls implements ViewerControl {
 
     private static final double ROTATION_SPEED = 0.4;
 
-    private final BoundEditingControl boundControl;
-
     @Getter
     private double zoomLevel = 1;
 
@@ -68,9 +69,22 @@ public final class ShipViewerControls implements ViewerControl {
     private ShipViewerControls(ShipViewerPanel parent) {
         this.parentViewer = parent;
         this.rotationEnabled = false;
-        this.boundControl = new BoundEditingControl();
         this.initListeners();
         this.initLayerCursorListener();
+        this.initKeyBinding();
+    }
+
+    private void initKeyBinding() {
+        InputMap inputMap = parentViewer.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW);
+        String deleteKey = "Delete";
+        inputMap.put(KeyStroke.getKeyStroke((char)KeyEvent.VK_DELETE), deleteKey );
+        ActionMap actionMap = parentViewer.getActionMap();
+        actionMap.put(deleteKey, new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                EventBus.publish(new PointRemoveQueued());
+            }
+        });
     }
 
     /**
@@ -132,14 +146,20 @@ public final class ShipViewerControls implements ViewerControl {
             Point2D transformed = worldToScreen.transform(anchor, null);
             this.layerDragPoint.setLocation(e.getX() - transformed.getX(), e.getY() - transformed.getY());
         }
-        AffineTransform screenToWorld = this.parentViewer.getScreenToWorld();
-        this.boundControl.tryBoundCreation(e, screenToWorld);
-        if (ControlPredicates.removePointPredicate.test(e)) {
-            EventBus.publish(new PointRemoveQueued());
-        }
+        this.tryBoundCreation();
         if (ControlPredicates.selectPointPredicate.test(e)) {
             EventBus.publish(new PointSelectQueued(null));
         }
+    }
+
+    /**
+     * Respective hotkey checks are being done in points painter itself.
+     */
+    private void tryBoundCreation() {
+        Point2D screenPoint = this.getAdjustedCursor();
+        AffineTransform screenToWorld = this.parentViewer.getScreenToWorld();
+        Point2D rounded = Utility.correctAdjustedCursor(screenPoint, screenToWorld);
+        EventBus.publish(new BoundCreationQueued(rounded));
     }
 
     @Override
@@ -259,7 +279,6 @@ public final class ShipViewerControls implements ViewerControl {
         this.mousePoint = event.getPoint();
         AffineTransform screenToWorld = this.parentViewer.getScreenToWorld();
         Point2D adjusted = this.getAdjustedCursor();
-        this.boundControl.setAdjustedCursor(adjusted);
         Point2D corrected = Utility.correctAdjustedCursor(adjusted, screenToWorld);
         EventBus.publish(new ViewerCursorMoved(this.mousePoint, adjusted, corrected));
     }

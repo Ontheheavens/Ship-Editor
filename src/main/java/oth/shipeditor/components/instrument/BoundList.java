@@ -21,9 +21,15 @@ import java.awt.geom.Point2D;
 @Log4j2
 final class BoundList extends JList<BoundPoint> {
 
+    private boolean propagationBlock = false;
+
     BoundList(ListModel<BoundPoint> model) {
         super(model);
         this.addListSelectionListener(e -> {
+            if (propagationBlock) {
+                propagationBlock = false;
+                return;
+            };
             int index = this.getSelectedIndex();
             if (index != -1) {
                 ListModel<BoundPoint> listModel = this.getModel();
@@ -41,6 +47,7 @@ final class BoundList extends JList<BoundPoint> {
     private void initListeners() {
         EventBus.subscribe(event -> {
             if (event instanceof PointSelectedConfirmed checked && checked.point() instanceof BoundPoint) {
+                propagationBlock = true;
                 this.setSelectedValue(checked.point(), true);
             }
         });

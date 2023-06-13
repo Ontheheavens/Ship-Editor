@@ -13,6 +13,8 @@ import oth.shipeditor.components.viewer.ShipViewerPanel;
 import oth.shipeditor.components.viewer.control.ViewerControl;
 import oth.shipeditor.components.viewer.entities.BaseWorldPoint;
 import oth.shipeditor.components.viewer.entities.BoundPoint;
+import oth.shipeditor.components.viewer.layers.LayerManager;
+import oth.shipeditor.components.viewer.layers.ShipLayer;
 import oth.shipeditor.utility.Utility;
 
 import java.awt.*;
@@ -33,7 +35,6 @@ public final class BoundPointsPainter extends AbstractPointPainter {
     // TODO: implement always-show-points checkbox toggle and separate interaction access check.
     //  Should be unable to interact with bounds unless bound tab is active.
 
-
     @Getter
     private final List<BoundPoint> boundPoints;
 
@@ -42,16 +43,26 @@ public final class BoundPointsPainter extends AbstractPointPainter {
 
     private final ShipViewerPanel viewerPanel;
 
-    private final int appendBoundHotkey = KeyEvent.VK_SHIFT;
-    private final int insertBoundHotkey = KeyEvent.VK_CONTROL;
+    private final ShipLayer parentLayer;
 
-    public BoundPointsPainter(ShipViewerPanel viewer) {
+    private final int appendBoundHotkey = KeyEvent.VK_Z;
+    private final int insertBoundHotkey = KeyEvent.VK_X;
+
+    public BoundPointsPainter(ShipViewerPanel viewer, ShipLayer associatedLayer) {
         this.viewerPanel = viewer;
+        this.parentLayer = associatedLayer;
         this.boundPoints = new ArrayList<>();
         this.initHotkeys();
         this.initModeListener();
         this.initCreationListener();
         this.setInteractionEnabled(false);
+    }
+
+    @Override
+    public boolean isInteractionEnabled() {
+        LayerManager layerManager = viewerPanel.getLayerManager();
+        boolean layerActive = (layerManager.getActiveLayer() == this.parentLayer);
+        return super.isInteractionEnabled() && layerActive;
     }
 
     @Override
@@ -76,10 +87,7 @@ public final class BoundPointsPainter extends AbstractPointPainter {
     @Override
     protected void removePointFromIndex(BaseWorldPoint point) {
         if (point instanceof BoundPoint checked) {
-            boolean wasNotPresent = !boundPoints.remove(checked);
-            if (wasNotPresent) {
-                throw new IllegalArgumentException("Attempted to remove point from BoundPointsPainter that wasn't there!");
-            }
+            boundPoints.remove(checked);
         } else {
             throw new IllegalArgumentException("Attempted to remove incompatible point from BoundPointsPainter!");
         }
@@ -94,8 +102,8 @@ public final class BoundPointsPainter extends AbstractPointPainter {
             int keyCode = ke.getKeyCode();
             // Remember, single equals is assignments, while double is boolean evaluation.
             // First we evaluate whether the passed keycode is one of our hotkeys, then assign the result to field.
-            boolean isAppendHotkey = keyCode == appendBoundHotkey;
-            boolean isInsertHotkey = keyCode == insertBoundHotkey;
+            boolean isAppendHotkey = (keyCode == appendBoundHotkey);
+            boolean isInsertHotkey = (keyCode == insertBoundHotkey);
             switch (ke.getID()) {
                 case KeyEvent.KEY_PRESSED:
                     if (isAppendHotkey || isInsertHotkey) {
@@ -134,7 +142,7 @@ public final class BoundPointsPainter extends AbstractPointPainter {
 
     private void createBound(BoundCreationQueued event) {
         Point2D position = event.position();
-        if (event.toInsert()) {
+        if (insertBoundHotkeyPressed) {
             List<BoundPoint> boundPointList = boundPoints;
             if (boundPointList.size() >= 2) {
                 List<BoundPoint> twoClosest = findClosestBoundPoints(position);
@@ -148,7 +156,7 @@ public final class BoundPointsPainter extends AbstractPointPainter {
                 insertPoint(wrapped, preceding);
                 BoundPointsPainter.queueViewerRepaint();
             }
-        } else {
+        } else if (appendBoundHotkeyPressed) {
             BoundPoint wrapped = new BoundPoint(position);
             addPoint(wrapped);
             BoundPointsPainter.queueViewerRepaint();
