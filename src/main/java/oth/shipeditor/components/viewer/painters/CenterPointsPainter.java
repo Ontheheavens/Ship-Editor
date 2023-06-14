@@ -3,6 +3,7 @@ package oth.shipeditor.components.viewer.painters;
 import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
 import oth.shipeditor.communication.EventBus;
+import oth.shipeditor.communication.events.components.CentersPanelRepaintQueued;
 import oth.shipeditor.communication.events.viewer.ViewerRepaintQueued;
 import oth.shipeditor.communication.events.viewer.points.InstrumentModeChanged;
 import oth.shipeditor.communication.events.viewer.points.RadiusDragQueued;
@@ -54,8 +55,10 @@ public class CenterPointsPainter extends AbstractPointPainter {
                 if (!collisionRadiusHotkeyPressed) return;
                 Point2D centerPointPosition = this.centerPoint.getPosition();
                 float radius = (float) centerPointPosition.distance(checked.location());
-                this.centerPoint.setCollisionRadius(radius);
+                float rounded = Math.round(radius * 2) / 2.0f;
+                this.centerPoint.setCollisionRadius(rounded);
                 EventBus.publish(new ViewerRepaintQueued());
+                EventBus.publish(new CentersPanelRepaintQueued());
             }
         });
     }

@@ -3,9 +3,7 @@ package oth.shipeditor.components.instrument;
 import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
 import oth.shipeditor.communication.EventBus;
-import oth.shipeditor.communication.events.components.BoundPointPanelRepaintQueued;
-import oth.shipeditor.communication.events.viewer.control.ViewerTransformChanged;
-import oth.shipeditor.communication.events.viewer.control.ViewerZoomChanged;
+import oth.shipeditor.communication.events.components.BoundsPanelRepaintQueued;
 import oth.shipeditor.communication.events.viewer.layers.LayerWasSelected;
 import oth.shipeditor.communication.events.viewer.points.BoundInsertedConfirmed;
 import oth.shipeditor.communication.events.viewer.points.PointAddConfirmed;
@@ -47,9 +45,7 @@ public final class BoundPointsPanel extends JPanel {
 
     private void initPointListener() {
         EventBus.subscribe(event -> {
-            if (event instanceof BoundPointPanelRepaintQueued ||
-                event instanceof ViewerZoomChanged ||
-                event instanceof ViewerTransformChanged) {
+            if (event instanceof BoundsPanelRepaintQueued) {
                 this.repaint();
             }
         });

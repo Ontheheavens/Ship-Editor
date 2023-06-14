@@ -5,7 +5,8 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
 import oth.shipeditor.communication.EventBus;
-import oth.shipeditor.communication.events.components.BoundPointPanelRepaintQueued;
+import oth.shipeditor.communication.events.components.BoundsPanelRepaintQueued;
+import oth.shipeditor.communication.events.components.CentersPanelRepaintQueued;
 import oth.shipeditor.communication.events.viewer.ViewerRepaintQueued;
 import oth.shipeditor.communication.events.viewer.points.*;
 import oth.shipeditor.components.viewer.entities.BaseWorldPoint;
@@ -84,7 +85,8 @@ public abstract class AbstractPointPainter implements Painter {
                 double roundedY = Math.round(y * 2) / 2.0;
                 selected.setPosition(roundedX, roundedY);
                 EventBus.publish(new ViewerRepaintQueued());
-                EventBus.publish(new BoundPointPanelRepaintQueued());
+                EventBus.publish(new BoundsPanelRepaintQueued());
+                EventBus.publish(new CentersPanelRepaintQueued());
             }
         });
     }

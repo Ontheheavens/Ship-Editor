@@ -5,7 +5,8 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
 import oth.shipeditor.communication.EventBus;
-import oth.shipeditor.communication.events.components.BoundPointPanelRepaintQueued;
+import oth.shipeditor.communication.events.components.BoundsPanelRepaintQueued;
+import oth.shipeditor.communication.events.components.CentersPanelRepaintQueued;
 import oth.shipeditor.communication.events.viewer.control.ViewerCursorMoved;
 import oth.shipeditor.communication.events.viewer.layers.LayerWasSelected;
 import oth.shipeditor.communication.events.viewer.points.InstrumentModeChanged;
@@ -74,7 +75,8 @@ public class BaseWorldPoint implements WorldPoint {
         EventBus.subscribe(event -> {
             if (event instanceof CoordsModeChanged checked) {
                 coordsMode = checked.newMode();
-                EventBus.publish(new BoundPointPanelRepaintQueued());
+                EventBus.publish(new BoundsPanelRepaintQueued());
+                EventBus.publish(new CentersPanelRepaintQueued());
             }
         });
         EventBus.subscribe(event -> {

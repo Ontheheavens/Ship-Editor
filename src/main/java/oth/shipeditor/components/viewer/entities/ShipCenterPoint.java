@@ -36,9 +36,9 @@ public class ShipCenterPoint extends FeaturePoint{
         return (g, worldToScreen, w, h) -> {
             this.paintCollisionCircle(g, worldToScreen);
             Point2D center = worldToScreen.transform(getPosition(), null);
-            int x = (int) center.getX(), y = (int) center.getY(), l = 15;
-            g.drawLine(x - l, y - l, x + l, y + l);
-            g.drawLine(x - l, y + l, x + l, y - l);
+            int x = (int) center.getX(), y = (int) center.getY(), radius = 15;
+            g.drawLine(x - radius, y - radius, x + radius, y + radius);
+            g.drawLine(x - radius, y + radius, x + radius, y - radius);
         };
     }
 

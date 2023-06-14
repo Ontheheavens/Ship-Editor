@@ -66,6 +66,7 @@ public final class LayerPainter implements Painter {
     @Getter
     private BufferedImage shipSprite;
 
+    @Getter
     private boolean uninitialized = true;
 
     public LayerPainter(ShipLayer layer, ShipViewerPanel viewerPanel) {
@@ -209,6 +210,7 @@ public final class LayerPainter implements Painter {
             boundsPainter.addPoint(boundPoint);
         });
         this.uninitialized = false;
+        log.info("{} data initialized!", this);
         EventBus.publish(new LayerShipDataInitialized(this, 4));
         EventBus.publish(new ViewerRepaintQueued());
     }
@@ -217,6 +219,11 @@ public final class LayerPainter implements Painter {
         double translatedX = -bound.getY() + translatedCenter.getX();
         double translatedY = -bound.getX() + translatedCenter.getY();
         return new BoundPoint(new Point2D.Double(translatedX, translatedY));
+    }
+
+    @Override
+    public String toString() {
+        return "Layer Painter #" + this.hashCode();
     }
 
 }
