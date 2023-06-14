@@ -13,8 +13,7 @@ import oth.shipeditor.components.viewer.ShipViewerPanel;
 import oth.shipeditor.components.viewer.control.ViewerControl;
 import oth.shipeditor.components.viewer.entities.BaseWorldPoint;
 import oth.shipeditor.components.viewer.entities.BoundPoint;
-import oth.shipeditor.components.viewer.layers.LayerManager;
-import oth.shipeditor.components.viewer.layers.ShipLayer;
+import oth.shipeditor.components.viewer.layers.LayerPainter;
 import oth.shipeditor.utility.Utility;
 
 import java.awt.*;
@@ -43,12 +42,12 @@ public final class BoundPointsPainter extends AbstractPointPainter {
 
     private final ShipViewerPanel viewerPanel;
 
-    private final ShipLayer parentLayer;
+    private final LayerPainter parentLayer;
 
     private final int appendBoundHotkey = KeyEvent.VK_Z;
     private final int insertBoundHotkey = KeyEvent.VK_X;
 
-    public BoundPointsPainter(ShipViewerPanel viewer, ShipLayer associatedLayer) {
+    public BoundPointsPainter(ShipViewerPanel viewer, LayerPainter associatedLayer) {
         this.viewerPanel = viewer;
         this.parentLayer = associatedLayer;
         this.boundPoints = new ArrayList<>();
@@ -60,9 +59,7 @@ public final class BoundPointsPainter extends AbstractPointPainter {
 
     @Override
     public boolean isInteractionEnabled() {
-        LayerManager layerManager = viewerPanel.getLayerManager();
-        boolean layerActive = (layerManager.getActiveLayer() == this.parentLayer);
-        return super.isInteractionEnabled() && layerActive;
+        return super.isInteractionEnabled() && this.parentLayer.isLayerActive();
     }
 
     @Override
@@ -219,6 +216,7 @@ public final class BoundPointsPainter extends AbstractPointPainter {
 
     @Override
     public void paint(Graphics2D g, AffineTransform worldToScreen, double w, double h) {
+        if (!isShown()) return;
         List<BoundPoint> bPoints = this.boundPoints;
         if (bPoints.isEmpty()) return;
         Stroke origStroke = g.getStroke();

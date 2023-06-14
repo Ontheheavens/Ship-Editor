@@ -52,6 +52,7 @@ class ViewMenu extends JMenu {
         this.add(resetTransform);
         toggleRotate = new JCheckBoxMenuItem("Toggle view rotation");
         toggleRotate.setIcon(FontIcon.of(FluentUiRegularAL.ARROW_ROTATE_CLOCKWISE_20, 16));
+        toggleRotate.setSelected(true);
         toggleRotate.addActionListener(event ->
                 EventBus.publish(new ViewerRotationToggled(toggleRotate.isSelected(), true))
         );

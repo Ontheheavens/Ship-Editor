@@ -4,10 +4,7 @@ import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
 import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.viewer.control.*;
-import oth.shipeditor.communication.events.viewer.points.BoundCreationQueued;
-import oth.shipeditor.communication.events.viewer.points.PointDragQueued;
-import oth.shipeditor.communication.events.viewer.points.PointRemoveQueued;
-import oth.shipeditor.communication.events.viewer.points.PointSelectQueued;
+import oth.shipeditor.communication.events.viewer.points.*;
 import oth.shipeditor.components.viewer.ShipViewerPanel;
 import oth.shipeditor.components.viewer.layers.LayerPainter;
 import oth.shipeditor.utility.Utility;
@@ -58,7 +55,7 @@ public final class ShipViewerControls implements ViewerControl {
 
     private static final double ZOOMING_SPEED = 0.15;
 
-    private static final double ROTATION_SPEED = 0.4;
+    private static final double ROTATION_SPEED = 6.0;
 
     @Getter
     private double zoomLevel = 1;
@@ -68,7 +65,7 @@ public final class ShipViewerControls implements ViewerControl {
      */
     private ShipViewerControls(ShipViewerPanel parent) {
         this.parentViewer = parent;
-        this.rotationEnabled = false;
+        this.rotationEnabled = true;
         this.initListeners();
         this.initLayerCursorListener();
         this.initKeyBinding();
@@ -180,13 +177,11 @@ public final class ShipViewerControls implements ViewerControl {
             int dy = y - this.previousPoint.y;
             this.parentViewer.translate(dx, dy);
             EventBus.publish(new ViewerTransformChanged());
-        }
-        if (ControlPredicates.selectPointPredicate.test(e)) {
+        } else if (ControlPredicates.selectPointPredicate.test(e)) {
             AffineTransform screenToWorld = this.parentViewer.getScreenToWorld();
             Point2D adjustedCursor = this.getAdjustedCursor();
             EventBus.publish(new PointDragQueued(screenToWorld, adjustedCursor));
-        }
-        if (ControlPredicates.layerMovePredicate.test(e)) {
+        } else if (ControlPredicates.layerMovePredicate.test(e)) {
             int dx = x - this.layerDragPoint.x;
             int dy = y - this.layerDragPoint.y;
             AffineTransform screenToWorld = this.parentViewer.getScreenToWorld();
@@ -199,17 +194,17 @@ public final class ShipViewerControls implements ViewerControl {
         this.refreshCursorPosition(e);
     }
 
+    private void tryRadiusDrag() {
+        AffineTransform screenToWorld = this.parentViewer.getScreenToWorld();
+        Point2D transformed = screenToWorld.transform(this.getAdjustedCursor(), null);
+        EventBus.publish(new RadiusDragQueued(transformed));
+    }
+
     @Override
     public void mouseMoved(MouseEvent e) {
         int x = e.getX();
         int y = e.getY();
-        if (ControlPredicates.rotatePredicate.test(e) && this.rotationEnabled) {
-            int dy = y - this.previousPoint.y;
-            double toRadians = Math.toRadians(dy);
-            this.parentViewer.rotate(
-                    this.pressPoint.x, this.pressPoint.y,
-                    toRadians * ROTATION_SPEED);
-        }
+        this.tryRadiusDrag();
         this.previousPoint.setLocation(x, y);
         this.parentViewer.repaint();
         this.refreshCursorPosition(e);
@@ -218,20 +213,27 @@ public final class ShipViewerControls implements ViewerControl {
     @Override
     public void mouseWheelMoved(MouseWheelEvent e) {
         int wheelRotation = e.getWheelRotation();
-        // Calculate the zoom factor - sign of wheel rotation argument determines the direction.
-        double d = Math.pow(1 + ZOOMING_SPEED, -wheelRotation) - 1;
-        double factor = 1.0 + d;
-        double max = MAXIMUM_ZOOM;
-        double min = MINIMUM_ZOOM;
-        int x = e.getX();
-        int y = e.getY();
-        if (this.zoomLevel * factor >= max) {
-            this.setZoomAtLimit(x, y, max);
-        } else if (this.zoomLevel * factor <= min) {
-            this.setZoomAtLimit(x, y, min);
+        if (ControlPredicates.rotatePredicate.test(e) && this.rotationEnabled) {
+            double toRadians = Math.toRadians(wheelRotation);
+            Point2D midpoint = parentViewer.getViewerMidpoint();
+            this.parentViewer.rotate(midpoint.getX(), midpoint.getY(),
+                    toRadians * ROTATION_SPEED);
         } else {
-            this.parentViewer.zoom(x, y, factor, factor);
-            this.setZoomLevel(this.zoomLevel * factor);
+            // Calculate the zoom factor - sign of wheel rotation argument determines the direction.
+            double d = Math.pow(1 + ZOOMING_SPEED, -wheelRotation) - 1;
+            double factor = 1.0 + d;
+            double max = MAXIMUM_ZOOM;
+            double min = MINIMUM_ZOOM;
+            int x = e.getX();
+            int y = e.getY();
+            if (this.zoomLevel * factor >= max) {
+                this.setZoomAtLimit(x, y, max);
+            } else if (this.zoomLevel * factor <= min) {
+                this.setZoomAtLimit(x, y, min);
+            } else {
+                this.parentViewer.zoom(x, y, factor, factor);
+                this.setZoomLevel(this.zoomLevel * factor);
+            }
         }
         this.refreshCursorPosition(e);
     }

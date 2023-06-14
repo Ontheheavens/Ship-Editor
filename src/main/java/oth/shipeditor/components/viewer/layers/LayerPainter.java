@@ -14,6 +14,7 @@ import oth.shipeditor.components.viewer.entities.BaseWorldPoint;
 import oth.shipeditor.components.viewer.entities.BoundPoint;
 import oth.shipeditor.components.viewer.entities.ShipCenterPoint;
 import oth.shipeditor.components.viewer.entities.WorldPoint;
+import oth.shipeditor.components.viewer.painters.AbstractPointPainter;
 import oth.shipeditor.components.viewer.painters.BoundPointsPainter;
 import oth.shipeditor.components.viewer.painters.CenterPointsPainter;
 import oth.shipeditor.representation.Hull;
@@ -35,7 +36,7 @@ import java.util.stream.Stream;
  * @since 29.05.2023
  */
 @Log4j2
-public class LayerPainter implements Painter {
+public final class LayerPainter implements Painter {
 
     @Getter
     private final BoundPointsPainter boundsPainter;
@@ -46,12 +47,10 @@ public class LayerPainter implements Painter {
      * Convenience collection for bulk manipulation of layer painters.
      */
     @Getter
-    private final List<Painter> allPainters;
+    private final List<AbstractPointPainter> allPainters;
 
     @Getter
     private Point2D anchorOffset = new Point2D.Double(0, 0);
-
-    private ShipCenterPoint centerPoint;
 
     @Getter
     private float spriteOpacity = 1.0f;
@@ -62,6 +61,8 @@ public class LayerPainter implements Painter {
     @Getter
     private final ShipLayer parentLayer;
 
+    private final ShipViewerPanel viewer;
+
     @Getter
     private BufferedImage shipSprite;
 
@@ -69,14 +70,20 @@ public class LayerPainter implements Painter {
 
     public LayerPainter(ShipLayer layer, ShipViewerPanel viewerPanel) {
         this.parentLayer = layer;
-        this.centerPointsPainter = new CenterPointsPainter();
-        this.boundsPainter = new BoundPointsPainter(viewerPanel, layer);
+        this.viewer = viewerPanel;
+        this.centerPointsPainter = new CenterPointsPainter(this);
+        this.boundsPainter = new BoundPointsPainter(viewerPanel, this);
         this.allPainters = new ArrayList<>();
         allPainters.add(centerPointsPainter);
         allPainters.add(boundsPainter);
         this.shipSprite = layer.getShipSprite();
         this.initPainterListeners(layer);
         this.initLayerListeners();
+    }
+
+    public boolean isLayerActive() {
+        LayerManager layerManager = viewer.getLayerManager();
+        return (layerManager.getActiveLayer() == this.parentLayer);
     }
 
     private void initLayerListeners() {
@@ -152,7 +159,7 @@ public class LayerPainter implements Painter {
     }
 
     public ShipCenterPoint getShipCenter() {
-        return this.centerPoint;
+        return this.centerPointsPainter.getCenterPoint();
     }
 
     public Point2D getCenterAnchor() {
@@ -195,8 +202,7 @@ public class LayerPainter implements Painter {
         double anchorY = anchor.getY();
         Point2D.Double translatedCenter = new Point2D.Double(hullCenter.x + anchorX,
                 -hullCenter.y + anchorY);
-        this.centerPoint = LayerPainter.createShipCenterPoint(translatedCenter);
-        centerPointsPainter.addPoint(this.centerPoint);
+        this.centerPointsPainter.initCenterPoint(translatedCenter, hull);
         Stream<Point2D> boundStream = Arrays.stream(hull.getBounds());
         boundStream.forEach(bound -> {
             BoundPoint boundPoint = LayerPainter.createTranslatedBound(bound, translatedCenter);
@@ -211,10 +217,6 @@ public class LayerPainter implements Painter {
         double translatedX = -bound.getY() + translatedCenter.getX();
         double translatedY = -bound.getX() + translatedCenter.getY();
         return new BoundPoint(new Point2D.Double(translatedX, translatedY));
-    }
-
-    private static ShipCenterPoint createShipCenterPoint(Point2D translatedCenter) {
-        return new ShipCenterPoint(translatedCenter);
     }
 
 }

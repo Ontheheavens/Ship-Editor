@@ -1,6 +1,5 @@
 package oth.shipeditor.components.viewer;
 
-import de.javagl.viewer.Painter;
 import de.javagl.viewer.Viewer;
 import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
@@ -16,6 +15,7 @@ import oth.shipeditor.components.viewer.entities.BaseWorldPoint;
 import oth.shipeditor.components.viewer.layers.LayerManager;
 import oth.shipeditor.components.viewer.layers.LayerPainter;
 import oth.shipeditor.components.viewer.layers.ShipLayer;
+import oth.shipeditor.components.viewer.painters.AbstractPointPainter;
 import oth.shipeditor.components.viewer.painters.GuidesPainter;
 import oth.shipeditor.components.viewer.painters.WorldPointsPainter;
 
@@ -119,10 +119,10 @@ public final class ShipViewerPanel extends Viewer implements ShipViewable {
         EventBus.subscribe(event -> {
             if (event instanceof LayerWasSelected checked) {
                 if (checked.old() != null) {
-                    this.removeLayerPainters(checked.old());
+                    ShipViewerPanel.removeLayerPainters(checked.old());
                 }
                 if (checked.selected() != null) {
-                    this.loadLayerPointPainters(checked.selected());
+                    ShipViewerPanel.loadLayerPointPainters(checked.selected());
                 }
                 this.repaint();
             }
@@ -153,27 +153,23 @@ public final class ShipViewerPanel extends Viewer implements ShipViewable {
         return activeLayer.getPainter();
     }
 
-    private void loadLayerPointPainters(ShipLayer layer) {
+    private static void loadLayerPointPainters(ShipLayer layer) {
         LayerPainter mainPainter = layer.getPainter();
         if (mainPainter == null) return;
-        List<Painter> layerPainters = mainPainter.getAllPainters();
-        for (Painter iterated : layerPainters) {
-            boolean added = this.addPainter(iterated, 4);
-            if (added) {
-                log.info("Loaded to viewer:{}", iterated);
-            }
+        List<AbstractPointPainter> layerPainters = mainPainter.getAllPainters();
+        for (AbstractPointPainter iterated : layerPainters) {
+            iterated.setShown(true);
+            log.info("Shown to viewer:{}", iterated);
         }
     }
 
-    private void removeLayerPainters(ShipLayer layer) {
+    private static void removeLayerPainters(ShipLayer layer) {
         LayerPainter mainPainter = layer.getPainter();
         if (mainPainter == null) return;
-        List<Painter> layerPainters = mainPainter.getAllPainters();
-        for (Painter iterated : layerPainters) {
-            boolean removed = this.removePainter(iterated, 4);
-            if (removed) {
-                log.info("Removed from viewer:{}", iterated);
-            }
+        List<AbstractPointPainter> layerPainters = mainPainter.getAllPainters();
+        for (AbstractPointPainter iterated : layerPainters) {
+            iterated.setShown(false);
+            log.info("Hidden from viewer:{}", iterated);
         }
     }
 
@@ -192,7 +188,7 @@ public final class ShipViewerPanel extends Viewer implements ShipViewable {
     }
 
     private void unloadLayer(ShipLayer layer) {
-        this.removeLayerPainters(layer);
+        ShipViewerPanel.removeLayerPainters(layer);
         this.removePainter(layer.getPainter());
     }
 
@@ -205,10 +201,17 @@ public final class ShipViewerPanel extends Viewer implements ShipViewable {
         Point2D spriteCenter = activeLayerPainter.getSpriteCenter();
         Point2D centerScreen = worldToScreen.transform(spriteCenter, null);
         // Calculate the delta values to center the sprite.
-        double dx = (this.getWidth() / 2.0f) - centerScreen.getX();
-        double dy = (this.getHeight() / 2.0f) - centerScreen.getY();
+        Point2D midpoint = this.getViewerMidpoint();
+        double dx = midpoint.getX() - centerScreen.getX();
+        double dy = midpoint.getY() - centerScreen.getY();
         this.translate(dx, dy);
         this.repaint();
+    }
+
+    public Point2D getViewerMidpoint() {
+        double x = (this.getWidth() / 2.0f);
+        double y = (this.getHeight() / 2.0f);
+        return new Point2D.Double(x, y);
     }
 
 }

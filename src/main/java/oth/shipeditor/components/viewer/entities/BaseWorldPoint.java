@@ -145,7 +145,7 @@ public class BaseWorldPoint implements WorldPoint {
             Shape inner = createWorldConstantPaintPart(worldToScreen);
             RectangularShape outer = createScreenConstantPaintPart(worldToScreen);
 
-            this.cursorInBounds = checkIsHovered(new Shape[]{inner, outer});
+            this.cursorInBounds = BaseWorldPoint.checkIsHovered(new Shape[]{inner, outer});
             if (this.selected && isInteractable()) {
                 g.setPaint(createSelectColor());
             } else if (this.cursorInBounds && isInteractable()) {

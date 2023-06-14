@@ -10,7 +10,6 @@ import oth.shipeditor.communication.events.viewer.layers.LayerWasSelected;
 import oth.shipeditor.communication.events.viewer.points.BoundInsertedConfirmed;
 import oth.shipeditor.communication.events.viewer.points.PointAddConfirmed;
 import oth.shipeditor.communication.events.viewer.points.PointRemovedConfirmed;
-import oth.shipeditor.components.viewer.InstrumentMode;
 import oth.shipeditor.components.viewer.entities.BoundPoint;
 import oth.shipeditor.components.viewer.layers.LayerPainter;
 import oth.shipeditor.components.viewer.layers.ShipLayer;
@@ -30,15 +29,8 @@ public final class BoundPointsPanel extends JPanel {
     @Getter
     private final BoundList boundPointContainer;
 
-    // TODO: Get rid of interaction modes. Their function is to be performed by check of selected tab.
-    @Getter
-    private InstrumentMode mode;
 
     private final DefaultListModel<BoundPoint> model = new DefaultListModel<>();
-    @Getter
-    private JToggleButton selectModeButton;
-    @Getter
-    private JToggleButton createModeButton;
 
     public BoundPointsPanel() {
         this.setLayout(new BorderLayout());

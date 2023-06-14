@@ -32,6 +32,9 @@ public abstract class AbstractPointPainter implements Painter {
     @Getter @Setter
     private WorldPoint selected;
 
+    @Getter @Setter
+    private boolean shown = true;
+
     @Setter
     private boolean interactionEnabled;
 
@@ -177,6 +180,7 @@ public abstract class AbstractPointPainter implements Painter {
 
     @Override
     public void paint(Graphics2D g, AffineTransform worldToScreen, double w, double h) {
+        if (!shown) return;
         paintDelegates(g, worldToScreen, w, h);
     }
 

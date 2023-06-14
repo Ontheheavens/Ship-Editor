@@ -42,6 +42,7 @@ public class Hull {
     @JsonDeserialize(using = Point2DParser.class)
     Point2D.Double center;
 
+    @Getter
     @JsonProperty("collisionRadius")
     private double collisionRadius;
 
