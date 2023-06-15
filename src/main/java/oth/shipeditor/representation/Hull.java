@@ -7,6 +7,7 @@ import oth.shipeditor.parsing.Point2DArrayParser;
 import oth.shipeditor.parsing.Point2DParser;
 
 import java.awt.geom.Point2D;
+import java.util.Map;
 
 /**
  * @author Ontheheavens
@@ -61,6 +62,12 @@ public class Hull {
 
     @JsonProperty("builtInMods")
     private String[] builtInMods;
+
+    @JsonProperty("builtInWeapons")
+    private Map<String, String> builtInWeapons;
+
+    @JsonProperty("builtInWings")
+    private String[] builtInWings;
 
     @JsonProperty("weaponSlots")
     private WeaponSlot[] weaponSlots;

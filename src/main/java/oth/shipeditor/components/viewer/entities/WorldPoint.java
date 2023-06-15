@@ -36,6 +36,8 @@ public interface WorldPoint {
      */
     void setSelected(boolean selected);
 
+    Point2D getCoordinatesForDisplay();
+
 
 
 }

@@ -43,7 +43,7 @@ public class BoundPoint extends FeaturePoint{
 
     private void paintCoordsLabel(Graphics2D g, AffineTransform worldToScreen, double w, double h) {
         Point2D coordsPoint = getPosition();
-        Point2D toDisplay = BaseWorldPoint.getCoordinatesForDisplay(this);
+        Point2D toDisplay = this.getCoordinatesForDisplay();
         coordsLabel.setLabelLocation(coordsPoint.getX(), coordsPoint.getY());
         String coords = "Bound (" + toDisplay.getX() + ", " + toDisplay.getY() + ")";
         coordsLabel.paint(g, worldToScreen, w, h,coords);

@@ -5,7 +5,6 @@ import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.viewer.ViewerRepaintQueued;
 import oth.shipeditor.communication.events.viewer.points.PointSelectQueued;
 import oth.shipeditor.communication.events.viewer.points.PointSelectedConfirmed;
-import oth.shipeditor.components.viewer.entities.BaseWorldPoint;
 import oth.shipeditor.components.viewer.entities.BoundPoint;
 import oth.shipeditor.components.viewer.entities.WorldPoint;
 
@@ -59,7 +58,7 @@ final class BoundList extends JList<BoundPoint> {
                                                       boolean isSelected, boolean cellHasFocus) {
             super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
             WorldPoint checked = (WorldPoint) value;
-            Point2D position = BaseWorldPoint.getCoordinatesForDisplay(checked);
+            Point2D position = checked.getCoordinatesForDisplay();
             String displayText = "Bound #" + index + ": (X:" + position.getX() + ",Y:" + position.getY() + ")";
             setText(displayText);
             return this;

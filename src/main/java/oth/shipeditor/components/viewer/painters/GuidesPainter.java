@@ -211,7 +211,7 @@ public final class GuidesPainter implements Painter {
             Point spriteCenter = new Point((int) (anchor.getX() + (shipSprite.getWidth() / 2)),
                     (int) (anchor.getY() + (shipSprite.getHeight() / 2)));
             WorldPoint pointInput = new BaseWorldPoint(spriteCenter);
-            Point2D toDisplay = BaseWorldPoint.getCoordinatesForDisplay(pointInput);
+            Point2D toDisplay = pointInput.getCoordinatesForDisplay();
             Point2D center = worldToScreen.transform(spriteCenter, null);
             label.setLabelLocation(spriteCenter.getX(), spriteCenter.getY());
             // Draw the two diagonal lines centered on the sprite center.

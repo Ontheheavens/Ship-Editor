@@ -8,6 +8,7 @@ import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.components.BoundsPanelRepaintQueued;
 import oth.shipeditor.communication.events.components.CentersPanelRepaintQueued;
 import oth.shipeditor.communication.events.viewer.control.ViewerCursorMoved;
+import oth.shipeditor.communication.events.viewer.layers.LayerShipDataInitialized;
 import oth.shipeditor.communication.events.viewer.layers.LayerWasSelected;
 import oth.shipeditor.communication.events.viewer.points.InstrumentModeChanged;
 import oth.shipeditor.communication.events.viewer.status.CoordsModeChanged;
@@ -60,6 +61,12 @@ public class BaseWorldPoint implements WorldPoint {
      * Note: this method needs to be called as soon as possible when initializing the viewer.
      */
     public static void initStaticListening() {
+        EventBus.subscribe(event -> {
+            if (event instanceof LayerShipDataInitialized checked) {
+                selectedLayer = checked.source();
+
+            }
+        });
         EventBus.subscribe(event -> {
             if (event instanceof LayerWasSelected checked) {
                 if (checked.selected() == null) return;
@@ -170,11 +177,10 @@ public class BaseWorldPoint implements WorldPoint {
         this.position.setLocation(x, y);
     }
 
-    public static Point2D getCoordinatesForDisplay(WorldPoint input) {
-        Point2D position = input.getPosition();
+    public Point2D getCoordinatesForDisplay() {
+        Point2D position = this.getPosition();
         Point2D result = position;
         LayerPainter layer = BaseWorldPoint.selectedLayer;
-
         if (layer == null) {
             return result;
         }
@@ -203,6 +209,12 @@ public class BaseWorldPoint implements WorldPoint {
                 double centerY = center.getY();
                 result = new Point2D.Double(-(positionY - centerY), -(positionX - centerX));
             }
+        }
+        if (result.getX() == -0.0) {
+            result.setLocation(0, result.getY());
+        }
+        if (result.getY() == -0.0) {
+            result.setLocation(result.getX(), 0);
         }
         return result;
     }

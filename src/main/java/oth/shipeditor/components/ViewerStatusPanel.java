@@ -47,6 +47,8 @@ public final class ViewerStatusPanel extends JPanel {
 
     private final JLabel zoom;
 
+    private Point2D cursorPoint;
+
     public ViewerStatusPanel(ShipViewable viewable) {
         this.viewer = viewable;
         FontIcon dimensionIcon = FontIcon.of(FluentUiRegularMZ.SLIDE_SIZE_24, 20);
@@ -74,7 +76,8 @@ public final class ViewerStatusPanel extends JPanel {
         this.initListeners();
         this.setDimensionsLabel(null);
         this.setZoomLabel(zoomLevel);
-        this.setCursorCoordsLabel(new Point2D.Double());
+        this.cursorPoint = new Point2D.Double();
+        this.updateCursorCoordsLabel();
     }
 
     private void initListeners() {
@@ -87,7 +90,8 @@ public final class ViewerStatusPanel extends JPanel {
         EventBus.subscribe(event -> {
             if (event instanceof ViewerCursorMoved checked) {
                 Point2D corrected = checked.adjustedAndCorrected();
-                this.setCursorCoordsLabel(corrected);
+                this.cursorPoint = corrected;
+                this.updateCursorCoordsLabel();
             }
         });
         EventBus.subscribe(event -> {
@@ -123,6 +127,7 @@ public final class ViewerStatusPanel extends JPanel {
         menuItem.addActionListener(e -> {
             this.mode = displayMode;
             menuItem.setSelected(true);
+            this.updateCursorCoordsLabel();
             EventBus.publish(new CoordsModeChanged(displayMode));
             EventBus.publish(new ViewerRepaintQueued());
         });
@@ -169,19 +174,19 @@ public final class ViewerStatusPanel extends JPanel {
 
     }
 
-    private void setCursorCoordsLabel(Point2D adjustedCursor) {
-        Point2D cursor = adjustedCursor;
+    private void updateCursorCoordsLabel() {
+        Point2D cursor = this.cursorPoint;
         LayerPainter selectedLayer = this.viewer.getSelectedLayer();
         switch (mode) {
             case SPRITE_CENTER -> {
                 if (selectedLayer == null) break;
                 Point2D center = selectedLayer.getSpriteCenter();
-                cursor = ViewerStatusPanel.adjustCursorCoordinates(adjustedCursor, center);
+                cursor = ViewerStatusPanel.adjustCursorCoordinates(this.cursorPoint, center);
             }
             case SHIPCENTER_ANCHOR -> {
                 if (selectedLayer == null) break;
                 Point2D center = selectedLayer.getCenterAnchor();
-                cursor = ViewerStatusPanel.adjustCursorCoordinates(adjustedCursor, center);
+                cursor = ViewerStatusPanel.adjustCursorCoordinates(this.cursorPoint, center);
                 cursor = new Point2D.Double(cursor.getX(), -cursor.getY());
                 if (cursor.getY() == -0.0) {
                     cursor.setLocation(cursor.getX(), 0);
@@ -193,7 +198,7 @@ public final class ViewerStatusPanel extends JPanel {
                 if (selectedLayer == null || selectedLayer.getShipCenter() == null) break;
                 ShipCenterPoint shipCenter = selectedLayer.getShipCenter();
                 Point2D center = shipCenter.getPosition();
-                Point2D adjusted = ViewerStatusPanel.adjustCursorCoordinates(adjustedCursor, center);
+                Point2D adjusted = ViewerStatusPanel.adjustCursorCoordinates(this.cursorPoint, center);
                 cursor = new Point2D.Double(-adjusted.getY(), -adjusted.getX());
                 if (cursor.getX() == -0.0) {
                     cursor.setLocation(0, cursor.getY());

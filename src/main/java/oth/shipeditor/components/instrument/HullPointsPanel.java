@@ -80,13 +80,12 @@ final class HullPointsPanel extends JPanel {
     }
 
     private void updateLabels() {
-        log.info("Centers panel updated!");
         String centerPosition = "Center not initialized";
         String collisionValue = "Collision not initialized";
         if (this.centersPainter != null) {
             ShipCenterPoint center = this.centersPainter.getCenterPoint();
             if (center != null) {
-                Point2D position = center.getPosition();
+                Point2D position = center.getCoordinatesForDisplay();
                 centerPosition = position.toString();
                 collisionValue = String.valueOf(center.getCollisionRadius());
             }
@@ -100,8 +99,6 @@ final class HullPointsPanel extends JPanel {
 
         centerCoords = new JLabel();
         collisionRadius = new JLabel();
-
-        updateLabels();
 
         hullCenterPanel.add(centerCoords);
         hullCenterPanel.add(collisionRadius);

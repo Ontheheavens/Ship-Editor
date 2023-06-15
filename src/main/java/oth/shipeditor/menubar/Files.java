@@ -1,5 +1,6 @@
 package oth.shipeditor.menubar;
 
+import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.log4j.Log4j2;
 import oth.shipeditor.communication.EventBus;
@@ -89,6 +90,8 @@ public final class Files {
     public static void loadHullFile(File file) {
         try {
             ObjectMapper objectMapper = new ObjectMapper();
+            objectMapper.configure(JsonParser.Feature.ALLOW_TRAILING_COMMA, true);
+            objectMapper.configure(JsonParser.Feature.ALLOW_YAML_COMMENTS, true);
             Hull hull = objectMapper.readValue(file, Hull.class);
             EventBus.publish(new HullFileOpened(hull, file.getName()));
             log.info("Opening: {}.", file.getName());
@@ -96,7 +99,6 @@ public final class Files {
             log.error("Hull file loading failed!");
             e.printStackTrace();
         }
-
     }
 
 }

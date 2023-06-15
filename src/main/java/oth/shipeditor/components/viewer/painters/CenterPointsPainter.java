@@ -48,6 +48,7 @@ public class CenterPointsPainter extends AbstractPointPainter {
         EventBus.subscribe(event -> {
             if (event instanceof InstrumentModeChanged checked) {
                 this.setInteractionEnabled(checked.newMode() == InstrumentMode.CENTERS);
+                EventBus.publish(new CentersPanelRepaintQueued());
             }
         });
         EventBus.subscribe(event -> {

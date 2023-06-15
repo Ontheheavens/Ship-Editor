@@ -210,10 +210,12 @@ public final class LayerPainter implements Painter {
             boundsPainter.addPoint(boundPoint);
         });
         this.uninitialized = false;
-        log.info("{} data initialized!", this);
+        log.info("{} initialized!", this);
         EventBus.publish(new LayerShipDataInitialized(this, 4));
         EventBus.publish(new ViewerRepaintQueued());
     }
+
+    // TODO: streamline translation methods. Probably make separate initializing class?
 
     private static BoundPoint createTranslatedBound(Point2D bound, Point2D translatedCenter) {
         double translatedX = -bound.getY() + translatedCenter.getX();
