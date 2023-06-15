@@ -1,17 +1,20 @@
 package oth.shipeditor.components.viewer.painters;
 
 import de.javagl.viewer.Painter;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
 import oth.shipeditor.communication.EventBus;
-import oth.shipeditor.communication.events.components.BoundsPanelRepaintQueued;
-import oth.shipeditor.communication.events.components.CentersPanelRepaintQueued;
+import oth.shipeditor.communication.events.Events;
 import oth.shipeditor.communication.events.viewer.ViewerRepaintQueued;
 import oth.shipeditor.communication.events.viewer.points.*;
 import oth.shipeditor.components.viewer.entities.BaseWorldPoint;
 import oth.shipeditor.components.viewer.entities.WorldPoint;
+import oth.shipeditor.undo.UndoOverseer;
+import oth.shipeditor.undo.ViewerEdit;
 
+import javax.swing.undo.UndoableEdit;
 import java.awt.*;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Point2D;
@@ -83,10 +86,12 @@ public abstract class AbstractPointPainter implements Painter {
                 double y = translated.getY();
                 double roundedX = Math.round(x * 2) / 2.0;
                 double roundedY = Math.round(y * 2) / 2.0;
-                selected.setPosition(roundedX, roundedY);
-                EventBus.publish(new ViewerRepaintQueued());
-                EventBus.publish(new BoundsPanelRepaintQueued());
-                EventBus.publish(new CentersPanelRepaintQueued());
+                Point2D changedPosition = new Point2D.Double(roundedX, roundedY);
+                UndoableEdit edit = new PointDragEdit(selected, selected.getPosition(),
+                        changedPosition, UndoOverseer.getLastEdit() instanceof PointDragEdit);
+                selected.setPosition(changedPosition);
+                UndoOverseer.post(edit);
+                Events.repaintView();
             }
         });
     }
@@ -190,6 +195,30 @@ public abstract class AbstractPointPainter implements Painter {
     public String toString() {
         Class<? extends AbstractPointPainter> identity = this.getClass();
         return identity.getSimpleName() + " @" + this.hashCode();
+    }
+
+    @AllArgsConstructor
+    private static final class PointDragEdit extends ViewerEdit {
+        WorldPoint point;
+        Point2D oldPosition;
+        Point2D newPosition;
+        boolean subsequent;
+
+        @Override
+        public boolean isSignificant() {
+            return !subsequent;
+        }
+
+        @Override
+        public void undoImpl() {
+            point.setPosition(oldPosition);
+        }
+
+        @Override
+        public void redoImpl() {
+            point.setPosition(newPosition);
+        }
+
     }
 
 }

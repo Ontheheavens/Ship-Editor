@@ -177,6 +177,10 @@ public class BaseWorldPoint implements WorldPoint {
         this.position.setLocation(x, y);
     }
 
+    public void setPosition(Point2D input) {
+        this.position.setLocation(input.getX(), input.getY());
+    }
+
     public Point2D getCoordinatesForDisplay() {
         Point2D position = this.getPosition();
         Point2D result = position;

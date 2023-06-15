@@ -63,6 +63,7 @@ public final class PrimaryWindow extends JFrame {
         this.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         this.setMinimumSize(new Dimension(800, 600));
 
+        this.initListeners();
         // This centers the frame.
         this.setLocationRelativeTo(null);
         Container contentPane = this.getContentPane();
@@ -99,7 +100,6 @@ public final class PrimaryWindow extends JFrame {
     }
 
     private void loadLayerHandling() {
-        this.initListeners();
         this.northPane = new JPanel();
         this.northPane.setLayout(new BorderLayout());
         this.northPane.setBorder(null);

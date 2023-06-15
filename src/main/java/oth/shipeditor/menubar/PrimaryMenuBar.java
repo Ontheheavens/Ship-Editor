@@ -7,6 +7,7 @@ import org.kordamp.ikonli.swing.FontIcon;
 import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.viewer.layers.LayerCreationQueued;
 import oth.shipeditor.communication.events.viewer.layers.SelectedLayerRemovalQueued;
+import oth.shipeditor.undo.UndoOverseer;
 
 import javax.swing.*;
 import java.awt.event.ActionListener;
@@ -20,6 +21,7 @@ public final class PrimaryMenuBar extends JMenuBar {
 
     public PrimaryMenuBar() {
         this.add(PrimaryMenuBar.createFileMenu());
+        this.add(PrimaryMenuBar.createEditMenu());
         this.add(PrimaryMenuBar.createViewMenu());
         this.add(PrimaryMenuBar.createLayersMenu());
     }
@@ -36,7 +38,13 @@ public final class PrimaryMenuBar extends JMenuBar {
         return viewMenu;
     }
 
-
+    private static JMenu createEditMenu() {
+        JMenu editMenu = new JMenu("Edit");
+        JMenuItem undo = new JMenuItem("Undo");
+        undo.addActionListener(e -> UndoOverseer.undoEdit());
+        editMenu.add(undo);
+        return editMenu;
+    }
 
     private static JMenu createLayersMenu() {
         JMenu layersMenu = new JMenu("Layers");

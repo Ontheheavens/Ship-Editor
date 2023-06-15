@@ -68,8 +68,10 @@ final class HullPointsPanel extends JPanel {
                 if (selected != null && selected.getPainter() != null) {
                     LayerPainter selectedLayerPainter = selected.getPainter();
                     this.centersPainter = selectedLayerPainter.getCenterPointsPainter();
-                    this.refresh();
+                } else {
+                    this.centersPainter = null;
                 }
+                this.refresh();
             }
         });
     }

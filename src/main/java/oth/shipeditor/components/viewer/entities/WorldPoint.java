@@ -21,6 +21,8 @@ public interface WorldPoint {
      */
     void setPosition(double x, double y);
 
+    void setPosition(Point2D input);
+
     /**
      * @return Painter instance responsible for graphical representation of this point in Viewer.
      */
