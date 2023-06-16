@@ -17,6 +17,11 @@ public final class UndoOverseer {
 
     private static final UndoOverseer seer = new UndoOverseer();
 
+    private UndoOverseer() {
+        undoAction.setEnabled(false);
+        redoAction.setEnabled(false);
+    }
+
     /**
      * Isn't meant to have protective checks; the input vehicles need to be disabled if there is no edits in stack.
      */
@@ -98,9 +103,8 @@ public final class UndoOverseer {
     public static void post(Edit edit) {
         Deque<Edit> stack = seer.getUndoStack();
         stack.addFirst(edit);
+        seer.redoStack.clear();
         seer.updateActionState();
     }
-
-
 
 }

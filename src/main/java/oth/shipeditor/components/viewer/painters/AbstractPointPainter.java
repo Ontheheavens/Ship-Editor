@@ -99,12 +99,10 @@ public abstract class AbstractPointPainter implements Painter {
         Point2D wrappedOld = new Point2D.Double(position.getX(), position.getY());
         Point2D wrappedNew = new Point2D.Double(changedPosition.getX(), changedPosition.getY());
         PointDragEdit edit = new PointDragEdit(selected, wrappedOld, wrappedNew);
-        log.info("ISFINISHED: " + edit.isFinished());
         Edit previousEdit = UndoOverseer.getNextUndoable();
         if (previousEdit instanceof PointDragEdit checked && !checked.isFinished()) {
             edit.setFinished(true);
             checked.add(edit);
-            log.info(checked.getSubEdits().size());
         } else {
             EventBus.subscribe(new BusEventListener() {
                 @Override
@@ -112,7 +110,6 @@ public abstract class AbstractPointPainter implements Painter {
                     if (event instanceof ViewerMouseReleased && !edit.isFinished()) {
                         edit.setFinished(true);
                         EventBus.unsubscribe(this);
-                        log.info("ISFINISHED: " + edit.isFinished());
                     }
                 }
             });
@@ -251,8 +248,6 @@ public abstract class AbstractPointPainter implements Painter {
         public void redo() {
             point.setPosition(newPosition);
             redoSubEdits();
-            log.info("REDO old: " + oldPosition);
-            log.info("REDO new: " + point.getPosition());
             EventBus.publish(new ViewerRepaintQueued());
         }
 

@@ -4,11 +4,8 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="15e1ddae-a5d1-4957-9383-c162c5526ac0" name="Changes" comment="16.06.23 - Undo example for point drag.">
-      <change afterPath="$PROJECT_DIR$/src/main/java/oth/shipeditor/undo/AbstractEdit.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/oth/shipeditor/undo/Edit.java" afterDir="false" />
+    <list default="true" id="15e1ddae-a5d1-4957-9383-c162c5526ac0" name="Changes" comment="16.06.23 - Undo overseer rewrite, should be good to go.">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/oth/shipeditor/communication/EventBus.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/oth/shipeditor/communication/EventBus.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/oth/shipeditor/components/viewer/painters/AbstractPointPainter.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/oth/shipeditor/components/viewer/painters/AbstractPointPainter.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/oth/shipeditor/menubar/PrimaryMenuBar.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/oth/shipeditor/menubar/PrimaryMenuBar.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/oth/shipeditor/undo/UndoOverseer.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/oth/shipeditor/undo/UndoOverseer.java" afterDir="false" />
@@ -253,7 +250,7 @@
       <workItem from="1686713728482" duration="17088000" />
       <workItem from="1686738791124" duration="9962000" />
       <workItem from="1686800780613" duration="24086000" />
-      <workItem from="1686888867787" duration="24609000" />
+      <workItem from="1686888867787" duration="27111000" />
     </task>
     <task id="LOCAL-00001" summary="26.04.23 - working prototype, coordinat. design flaw">
       <created>1682499355313</created>
@@ -556,7 +553,14 @@
       <option name="project" value="LOCAL" />
       <updated>1686898007039</updated>
     </task>
-    <option name="localTasksCounter" value="44" />
+    <task id="LOCAL-00044" summary="16.06.23 - Undo overseer rewrite, should be good to go.">
+      <created>1686923572346</created>
+      <option name="number" value="00044" />
+      <option name="presentableId" value="LOCAL-00044" />
+      <option name="project" value="LOCAL" />
+      <updated>1686923572346</updated>
+    </task>
+    <option name="localTasksCounter" value="45" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -577,7 +581,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="08.05.23 - architecture refactor with PropertyChangeListeners, module-info file." />
     <MESSAGE value="08.05.23 - serious refactors." />
     <MESSAGE value="029.05.23 - complete refactor to EventBus." />
     <MESSAGE value="29.05.23 - complete refactor to EventBus." />
@@ -602,7 +605,8 @@
     <MESSAGE value="15.06.23 - some groundwork for undo/redo" />
     <MESSAGE value="16.06.23 - undo example for point drag" />
     <MESSAGE value="16.06.23 - Undo example for point drag." />
-    <option name="LAST_COMMIT_MESSAGE" value="16.06.23 - Undo example for point drag." />
+    <MESSAGE value="16.06.23 - Undo overseer rewrite, should be good to go." />
+    <option name="LAST_COMMIT_MESSAGE" value="16.06.23 - Undo overseer rewrite, should be good to go." />
     <option name="OPTIMIZE_IMPORTS_BEFORE_PROJECT_COMMIT" value="true" />
   </component>
   <component name="XDebuggerManager">

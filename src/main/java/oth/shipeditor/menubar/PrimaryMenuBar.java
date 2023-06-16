@@ -2,6 +2,7 @@ package oth.shipeditor.menubar;
 
 import lombok.extern.log4j.Log4j2;
 import org.kordamp.ikonli.Ikon;
+import org.kordamp.ikonli.fluentui.FluentUiRegularAL;
 import org.kordamp.ikonli.fluentui.FluentUiRegularMZ;
 import org.kordamp.ikonli.swing.FontIcon;
 import oth.shipeditor.communication.EventBus;
@@ -10,6 +11,7 @@ import oth.shipeditor.communication.events.viewer.layers.SelectedLayerRemovalQue
 import oth.shipeditor.undo.UndoOverseer;
 
 import javax.swing.*;
+import java.awt.*;
 import java.awt.event.ActionListener;
 
 /**
@@ -43,10 +45,14 @@ public final class PrimaryMenuBar extends JMenuBar {
 
         JMenuItem undo = new JMenuItem("Undo");
         undo.setAction(UndoOverseer.getUndoAction());
+        undo.setIcon(FontIcon.of(FluentUiRegularAL.ARROW_UNDO_20, 16));
+        undo.setDisabledIcon(FontIcon.of(FluentUiRegularAL.ARROW_UNDO_20, 16, Color.GRAY));
         editMenu.add(undo);
 
         JMenuItem redo = new JMenuItem("Redo");
         redo.setAction(UndoOverseer.getRedoAction());
+        redo.setIcon(FontIcon.of(FluentUiRegularAL.ARROW_REDO_20, 16));
+        redo.setDisabledIcon(FontIcon.of(FluentUiRegularAL.ARROW_REDO_20, 16, Color.GRAY));
         editMenu.add(redo);
 
         return editMenu;
