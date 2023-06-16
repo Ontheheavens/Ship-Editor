@@ -21,13 +21,10 @@ public final class UndoOverseer extends UndoManager {
     }
 
     public static void post(UndoableEdit edit) {
-        log.info(edit);
         seer.addEdit(edit);
     }
 
     public static void undoEdit() {
-        log.info("TEST");
-        log.info(seer.canUndo());
         if (seer.canUndo()) {
             seer.undo();
         }

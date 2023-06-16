@@ -4,17 +4,15 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="15e1ddae-a5d1-4957-9383-c162c5526ac0" name="Changes" comment="15.06.23 - deserialization to Hull fields tweak.">
-      <change afterPath="$PROJECT_DIR$/src/main/java/oth/shipeditor/communication/events/Events.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/oth/shipeditor/undo/UndoOverseer.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/oth/shipeditor/undo/ViewerEdit.java" afterDir="false" />
+    <list default="true" id="15e1ddae-a5d1-4957-9383-c162c5526ac0" name="Changes" comment="15.06.23 - some groundwork for undo/redo">
+      <change afterPath="$PROJECT_DIR$/src/main/java/oth/shipeditor/communication/events/viewer/control/ViewerMouseReleased.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/oth/shipeditor/PrimaryWindow.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/oth/shipeditor/PrimaryWindow.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/oth/shipeditor/components/instrument/HullPointsPanel.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/oth/shipeditor/components/instrument/HullPointsPanel.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/oth/shipeditor/components/viewer/entities/BaseWorldPoint.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/oth/shipeditor/components/viewer/entities/BaseWorldPoint.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/oth/shipeditor/components/viewer/entities/WorldPoint.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/oth/shipeditor/components/viewer/entities/WorldPoint.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/oth/shipeditor/communication/EventBus.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/oth/shipeditor/communication/EventBus.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/oth/shipeditor/components/viewer/control/ShipViewerControls.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/oth/shipeditor/components/viewer/control/ShipViewerControls.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/oth/shipeditor/components/viewer/painters/AbstractPointPainter.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/oth/shipeditor/components/viewer/painters/AbstractPointPainter.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/oth/shipeditor/menubar/PrimaryMenuBar.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/oth/shipeditor/menubar/PrimaryMenuBar.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/oth/shipeditor/undo/UndoOverseer.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/oth/shipeditor/undo/UndoOverseer.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/oth/shipeditor/undo/ViewerEdit.java" beforeDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -29,8 +27,8 @@
         <option value="module-info" />
         <option value="Interface" />
         <option value="package-info" />
-        <option value="Record" />
         <option value="Class" />
+        <option value="Record" />
       </list>
     </option>
   </component>
@@ -59,25 +57,25 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "Downloaded.Files.Path.Enabled": "true",
-    "Repository.Attach.Annotations": "false",
-    "Repository.Attach.JavaDocs": "false",
-    "Repository.Attach.Sources": "false",
-    "RunOnceActivity.OpenProjectViewOnStart": "true",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "SHARE_PROJECT_CONFIGURATION_FILES": "true",
-    "WebServerToolWindowFactoryState": "false",
-    "extract.method.default.visibility": "private",
-    "last_opened_file_path": "C:/Games/Starsector/mods/Missing Drones",
-    "project.structure.last.edited": "SDKs",
-    "project.structure.proportion": "0.15",
-    "project.structure.side.proportion": "0.38045976",
-    "run.code.analysis.last.selected.profile": "aStrict",
-    "settings.editor.selected.configurable": "preferences.customizations"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;Downloaded.Files.Path.Enabled&quot;: &quot;true&quot;,
+    &quot;Repository.Attach.Annotations&quot;: &quot;false&quot;,
+    &quot;Repository.Attach.JavaDocs&quot;: &quot;false&quot;,
+    &quot;Repository.Attach.Sources&quot;: &quot;false&quot;,
+    &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;SHARE_PROJECT_CONFIGURATION_FILES&quot;: &quot;true&quot;,
+    &quot;WebServerToolWindowFactoryState&quot;: &quot;false&quot;,
+    &quot;extract.method.default.visibility&quot;: &quot;private&quot;,
+    &quot;last_opened_file_path&quot;: &quot;C:/Games/Starsector/mods/Missing Drones&quot;,
+    &quot;project.structure.last.edited&quot;: &quot;SDKs&quot;,
+    &quot;project.structure.proportion&quot;: &quot;0.15&quot;,
+    &quot;project.structure.side.proportion&quot;: &quot;0.38045976&quot;,
+    &quot;run.code.analysis.last.selected.profile&quot;: &quot;aStrict&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;preferences.customizations&quot;
   }
-}]]></component>
+}</component>
   <component name="RecentsManager">
     <key name="MoveInnerDialog.RECENTS_KEY">
       <recent name="oth.shipeditor.components.viewer" />
@@ -255,7 +253,8 @@
       <workItem from="1686634821107" duration="20913000" />
       <workItem from="1686713728482" duration="17088000" />
       <workItem from="1686738791124" duration="9962000" />
-      <workItem from="1686800780613" duration="21916000" />
+      <workItem from="1686800780613" duration="24086000" />
+      <workItem from="1686888867787" duration="8348000" />
     </task>
     <task id="LOCAL-00001" summary="26.04.23 - working prototype, coordinat. design flaw">
       <created>1682499355313</created>
@@ -544,7 +543,14 @@
       <option name="project" value="LOCAL" />
       <updated>1686815267195</updated>
     </task>
-    <option name="localTasksCounter" value="42" />
+    <task id="LOCAL-00042" summary="15.06.23 - some groundwork for undo/redo">
+      <created>1686847737321</created>
+      <option name="number" value="00042" />
+      <option name="presentableId" value="LOCAL-00042" />
+      <option name="project" value="LOCAL" />
+      <updated>1686847737321</updated>
+    </task>
+    <option name="localTasksCounter" value="43" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -565,7 +571,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="06.05.23 - coordinate systems translations from JSON source." />
     <MESSAGE value="06.05.23 - minor naming refactor" />
     <MESSAGE value="06.05.23 - numerous refactors to increase maintainability." />
     <MESSAGE value="08.05.23 - architecture refactor with PropertyChangeListeners, module-info file." />
@@ -590,7 +595,8 @@
     <MESSAGE value="14.06.23 - collision radius feature and hotkeys work." />
     <MESSAGE value="14.06.23 - working on centers panel and radii functionality." />
     <MESSAGE value="15.06.23 - deserialization to Hull fields tweak." />
-    <option name="LAST_COMMIT_MESSAGE" value="15.06.23 - deserialization to Hull fields tweak." />
+    <MESSAGE value="15.06.23 - some groundwork for undo/redo" />
+    <option name="LAST_COMMIT_MESSAGE" value="15.06.23 - some groundwork for undo/redo" />
     <option name="OPTIMIZE_IMPORTS_BEFORE_PROJECT_COMMIT" value="true" />
   </component>
   <component name="XDebuggerManager">

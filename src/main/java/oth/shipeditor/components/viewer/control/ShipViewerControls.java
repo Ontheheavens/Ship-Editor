@@ -160,7 +160,9 @@ public final class ShipViewerControls implements ViewerControl {
     }
 
     @Override
-    public void mouseReleased(MouseEvent e) {}
+    public void mouseReleased(MouseEvent e) {
+        EventBus.publish(new ViewerMouseReleased());
+    }
 
     @Override
     public void mouseEntered(MouseEvent e) {}

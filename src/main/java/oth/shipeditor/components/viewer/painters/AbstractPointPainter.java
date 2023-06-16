@@ -1,19 +1,22 @@
 package oth.shipeditor.components.viewer.painters;
 
 import de.javagl.viewer.Painter;
-import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
+import oth.shipeditor.communication.BusEventListener;
 import oth.shipeditor.communication.EventBus;
+import oth.shipeditor.communication.events.BusEvent;
 import oth.shipeditor.communication.events.Events;
 import oth.shipeditor.communication.events.viewer.ViewerRepaintQueued;
+import oth.shipeditor.communication.events.viewer.control.ViewerMouseReleased;
 import oth.shipeditor.communication.events.viewer.points.*;
 import oth.shipeditor.components.viewer.entities.BaseWorldPoint;
 import oth.shipeditor.components.viewer.entities.WorldPoint;
 import oth.shipeditor.undo.UndoOverseer;
-import oth.shipeditor.undo.ViewerEdit;
 
+import javax.swing.undo.CompoundEdit;
 import javax.swing.undo.UndoableEdit;
 import java.awt.*;
 import java.awt.geom.AffineTransform;
@@ -87,13 +90,35 @@ public abstract class AbstractPointPainter implements Painter {
                 double roundedX = Math.round(x * 2) / 2.0;
                 double roundedY = Math.round(y * 2) / 2.0;
                 Point2D changedPosition = new Point2D.Double(roundedX, roundedY);
-                UndoableEdit edit = new PointDragEdit(selected, selected.getPosition(),
-                        changedPosition, UndoOverseer.getLastEdit() instanceof PointDragEdit);
-                selected.setPosition(changedPosition);
-                UndoOverseer.post(edit);
-                Events.repaintView();
+                this.postDragEdit(changedPosition);
             }
         });
+    }
+
+    private void postDragEdit(Point2D changedPosition) {
+        Point2D position = selected.getPosition();
+        Point2D wrappedOld = new Point2D.Double(position.getX(), position.getY());
+        Point2D wrappedNew = new Point2D.Double(changedPosition.getX(), changedPosition.getY());
+        PointDragEdit edit = new PointDragEdit(selected, wrappedOld, wrappedNew);
+        UndoableEdit previousEdit = UndoOverseer.getLastEdit();
+        if (previousEdit instanceof PointDragEdit checked && checked.isInProgress()) {
+            edit.end();
+            checked.addEdit(edit);
+        } else {
+            EventBus.subscribe(new BusEventListener() {
+                @Override
+                public void handleEvent(BusEvent event) {
+                    if (event instanceof ViewerMouseReleased && edit.isInProgress()) {
+                        edit.end();
+                        log.info(edit.isSignificant());
+                        EventBus.unsubscribe(this);
+                    }
+                }
+            });
+            UndoOverseer.post(edit);
+        }
+        selected.setPosition(changedPosition);
+        Events.repaintView();
     }
 
     private void handlePointSelectionEvent(WorldPoint point) {
@@ -197,26 +222,29 @@ public abstract class AbstractPointPainter implements Painter {
         return identity.getSimpleName() + " @" + this.hashCode();
     }
 
-    @AllArgsConstructor
-    private static final class PointDragEdit extends ViewerEdit {
-        WorldPoint point;
-        Point2D oldPosition;
-        Point2D newPosition;
-        boolean subsequent;
+    @RequiredArgsConstructor
+    private static final class PointDragEdit extends CompoundEdit {
+        final WorldPoint point;
+        final Point2D oldPosition;
+        final Point2D newPosition;
 
         @Override
         public boolean isSignificant() {
-            return !subsequent;
+            return edits.size() >= 1;
         }
 
         @Override
-        public void undoImpl() {
+        public void undo() {
+            super.undo();
             point.setPosition(oldPosition);
+            EventBus.publish(new ViewerRepaintQueued());
         }
 
         @Override
-        public void redoImpl() {
+        public void redo() {
+            super.redo();
             point.setPosition(newPosition);
+            EventBus.publish(new ViewerRepaintQueued());
         }
 
     }
