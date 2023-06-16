@@ -100,7 +100,7 @@ public final class UndoOverseer {
         return stack.peek();
     }
 
-    public static void post(Edit edit) {
+    static void post(Edit edit) {
         Deque<Edit> stack = seer.getUndoStack();
         stack.addFirst(edit);
         seer.redoStack.clear();

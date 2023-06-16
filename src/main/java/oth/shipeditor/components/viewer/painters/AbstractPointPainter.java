@@ -4,18 +4,12 @@ import de.javagl.viewer.Painter;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
-import oth.shipeditor.communication.BusEventListener;
 import oth.shipeditor.communication.EventBus;
-import oth.shipeditor.communication.events.BusEvent;
-import oth.shipeditor.communication.events.Events;
 import oth.shipeditor.communication.events.viewer.ViewerRepaintQueued;
-import oth.shipeditor.communication.events.viewer.control.ViewerMouseReleased;
 import oth.shipeditor.communication.events.viewer.points.*;
 import oth.shipeditor.components.viewer.entities.BaseWorldPoint;
 import oth.shipeditor.components.viewer.entities.WorldPoint;
-import oth.shipeditor.undo.AbstractEdit;
-import oth.shipeditor.undo.Edit;
-import oth.shipeditor.undo.UndoOverseer;
+import oth.shipeditor.undo.EditDispatcher;
 
 import java.awt.*;
 import java.awt.geom.AffineTransform;
@@ -89,35 +83,11 @@ public abstract class AbstractPointPainter implements Painter {
                 double roundedX = Math.round(x * 2) / 2.0;
                 double roundedY = Math.round(y * 2) / 2.0;
                 Point2D changedPosition = new Point2D.Double(roundedX, roundedY);
-                this.postDragEdit(changedPosition);
+                EditDispatcher.postPointDragEdit(this.selected, changedPosition);
             }
         });
     }
 
-    private void postDragEdit(Point2D changedPosition) {
-        Point2D position = selected.getPosition();
-        Point2D wrappedOld = new Point2D.Double(position.getX(), position.getY());
-        Point2D wrappedNew = new Point2D.Double(changedPosition.getX(), changedPosition.getY());
-        PointDragEdit edit = new PointDragEdit(selected, wrappedOld, wrappedNew);
-        Edit previousEdit = UndoOverseer.getNextUndoable();
-        if (previousEdit instanceof PointDragEdit checked && !checked.isFinished()) {
-            edit.setFinished(true);
-            checked.add(edit);
-        } else {
-            EventBus.subscribe(new BusEventListener() {
-                @Override
-                public void handleEvent(BusEvent event) {
-                    if (event instanceof ViewerMouseReleased && !edit.isFinished()) {
-                        edit.setFinished(true);
-                        EventBus.unsubscribe(this);
-                    }
-                }
-            });
-            UndoOverseer.post(edit);
-        }
-        selected.setPosition(changedPosition);
-        Events.repaintView();
-    }
 
     private void handlePointSelectionEvent(WorldPoint point) {
         if (point != null) {
@@ -218,45 +188,6 @@ public abstract class AbstractPointPainter implements Painter {
     public String toString() {
         Class<? extends AbstractPointPainter> identity = this.getClass();
         return identity.getSimpleName() + " @" + this.hashCode();
-    }
-
-    private static final class PointDragEdit extends AbstractEdit {
-        final WorldPoint point;
-        final Point2D oldPosition;
-        final Point2D newPosition;
-
-        public PointDragEdit(WorldPoint point, Point2D oldPosition, Point2D newPosition) {
-            this.point = point;
-            this.oldPosition = oldPosition;
-            this.newPosition = newPosition;
-            this.setFinished(false);
-        }
-
-        @Override
-        public String getName() {
-            return "Point Drag";
-        }
-
-        @Override
-        public void undo() {
-            undoSubEdits();
-            point.setPosition(oldPosition);
-            EventBus.publish(new ViewerRepaintQueued());
-        }
-
-        @Override
-        public void redo() {
-            point.setPosition(newPosition);
-            redoSubEdits();
-            EventBus.publish(new ViewerRepaintQueued());
-        }
-
-        @Override
-        public String toString() {
-            Class<? extends PointDragEdit> identity = this.getClass();
-            return identity.getSimpleName() + " " + hashCode();
-        }
-
     }
 
 }

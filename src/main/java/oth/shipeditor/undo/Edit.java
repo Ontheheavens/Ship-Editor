@@ -1,6 +1,7 @@
 package oth.shipeditor.undo;
 
 /**
+ * Entity interface for the Undo/Redo functionality; this is essentially Command Pattern.
  * @author Ontheheavens
  * @since 16.06.2023
  */

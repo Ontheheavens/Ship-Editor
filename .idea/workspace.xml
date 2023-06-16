@@ -4,11 +4,14 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="15e1ddae-a5d1-4957-9383-c162c5526ac0" name="Changes" comment="16.06.23 - Undo overseer rewrite, should be good to go.">
+    <list default="true" id="15e1ddae-a5d1-4957-9383-c162c5526ac0" name="Changes" comment="16.06.23 - debug logging cleanup, undo/redo icons.">
+      <change afterPath="$PROJECT_DIR$/src/main/java/oth/shipeditor/undo/EditDispatcher.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/oth/shipeditor/undo/edits/PointDragEdit.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/oth/shipeditor/communication/EventBus.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/oth/shipeditor/communication/EventBus.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/oth/shipeditor/components/viewer/painters/AbstractPointPainter.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/oth/shipeditor/components/viewer/painters/AbstractPointPainter.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/oth/shipeditor/menubar/PrimaryMenuBar.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/oth/shipeditor/menubar/PrimaryMenuBar.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/oth/shipeditor/undo/UndoOverseer.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/oth/shipeditor/undo/UndoOverseer.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/oth/shipeditor/undo/AbstractEdit.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/oth/shipeditor/undo/AbstractEdit.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/oth/shipeditor/undo/Edit.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/oth/shipeditor/undo/Edit.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -22,9 +25,9 @@
         <option value="Tag Library Descriptor" />
         <option value="module-info" />
         <option value="package-info" />
-        <option value="Class" />
         <option value="Interface" />
         <option value="Record" />
+        <option value="Class" />
       </list>
     </option>
   </component>
@@ -64,16 +67,18 @@
     "SHARE_PROJECT_CONFIGURATION_FILES": "true",
     "WebServerToolWindowFactoryState": "false",
     "extract.method.default.visibility": "private",
+    "last_directory_selection": "C:/Games/Ship Editor/src/main/java/oth/shipeditor/undo/edits",
     "last_opened_file_path": "C:/Games/Starsector/mods/Missing Drones",
     "project.structure.last.edited": "SDKs",
     "project.structure.proportion": "0.15",
     "project.structure.side.proportion": "0.38045976",
     "run.code.analysis.last.selected.profile": "aStrict",
-    "settings.editor.selected.configurable": "preferences.pluginManager"
+    "settings.editor.selected.configurable": "Errors"
   }
 }]]></component>
   <component name="RecentsManager">
     <key name="MoveInnerDialog.RECENTS_KEY">
+      <recent name="oth.shipeditor.undo.edits" />
       <recent name="oth.shipeditor.components.viewer" />
       <recent name="oth.shipeditor.components" />
     </key>
@@ -250,7 +255,7 @@
       <workItem from="1686713728482" duration="17088000" />
       <workItem from="1686738791124" duration="9962000" />
       <workItem from="1686800780613" duration="24086000" />
-      <workItem from="1686888867787" duration="27111000" />
+      <workItem from="1686888867787" duration="29199000" />
     </task>
     <task id="LOCAL-00001" summary="26.04.23 - working prototype, coordinat. design flaw">
       <created>1682499355313</created>
@@ -560,7 +565,14 @@
       <option name="project" value="LOCAL" />
       <updated>1686923572346</updated>
     </task>
-    <option name="localTasksCounter" value="45" />
+    <task id="LOCAL-00045" summary="16.06.23 - debug logging cleanup, undo/redo icons.">
+      <created>1686927102121</created>
+      <option name="number" value="00045" />
+      <option name="presentableId" value="LOCAL-00045" />
+      <option name="project" value="LOCAL" />
+      <updated>1686927102121</updated>
+    </task>
+    <option name="localTasksCounter" value="46" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -581,7 +593,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="08.05.23 - serious refactors." />
     <MESSAGE value="029.05.23 - complete refactor to EventBus." />
     <MESSAGE value="29.05.23 - complete refactor to EventBus." />
     <MESSAGE value="30.05.23 - generics issues and refactor results testing." />
@@ -606,7 +617,8 @@
     <MESSAGE value="16.06.23 - undo example for point drag" />
     <MESSAGE value="16.06.23 - Undo example for point drag." />
     <MESSAGE value="16.06.23 - Undo overseer rewrite, should be good to go." />
-    <option name="LAST_COMMIT_MESSAGE" value="16.06.23 - Undo overseer rewrite, should be good to go." />
+    <MESSAGE value="16.06.23 - debug logging cleanup, undo/redo icons." />
+    <option name="LAST_COMMIT_MESSAGE" value="16.06.23 - debug logging cleanup, undo/redo icons." />
     <option name="OPTIMIZE_IMPORTS_BEFORE_PROJECT_COMMIT" value="true" />
   </component>
   <component name="XDebuggerManager">
