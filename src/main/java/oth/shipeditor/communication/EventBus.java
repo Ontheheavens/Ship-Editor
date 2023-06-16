@@ -7,6 +7,10 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
+ * This is a very simple implementation of EventBus-type Observer pattern, meant to decouple different parts of the app.
+ * <p>
+ * Initially implemented in a much more elaborate form with generics and selective dispatch by class metadata.
+ * Yet, excessive complexity here only leads to more issues down the road; best to KISS here.
  * @author Ontheheavens
  * @since 09.05.2023
  */
@@ -30,6 +34,7 @@ public final class EventBus {
     // TODO: Right now listener are not getting removed from bus at all.
     //  Since the number of listeners is comparatively small so far, this is not a problem yet.
     //  If situation arises where the event bus bloat proves an issue, we will need to refactor our whole listener system.
+    //  One of the solutions for that is to swap lambdas for anonymous classes and have unsubscribe event condition.
     public static void unsubscribe(BusEventListener listener) {
         bus.subscribers.remove(listener);
         log.info("Removed listener, bus size: {}", bus.subscribers.size());

@@ -26,11 +26,11 @@ public abstract class AbstractEdit implements Edit {
         subEdits.addFirst(edit);
     }
 
-    public void undoSubEdits() {
+    protected void undoSubEdits() {
         subEdits.forEach(Edit::undo);
     }
 
-    public void redoSubEdits() {
+    protected void redoSubEdits() {
         List<Edit> editsList = new ArrayList<>(subEdits);
         Collections.reverse(editsList);
         editsList.forEach(Edit::redo);
