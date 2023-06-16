@@ -2,7 +2,6 @@ package oth.shipeditor.components.viewer.painters;
 
 import de.javagl.viewer.Painter;
 import lombok.Getter;
-import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
 import oth.shipeditor.communication.BusEventListener;
@@ -14,10 +13,10 @@ import oth.shipeditor.communication.events.viewer.control.ViewerMouseReleased;
 import oth.shipeditor.communication.events.viewer.points.*;
 import oth.shipeditor.components.viewer.entities.BaseWorldPoint;
 import oth.shipeditor.components.viewer.entities.WorldPoint;
+import oth.shipeditor.undo.AbstractEdit;
+import oth.shipeditor.undo.Edit;
 import oth.shipeditor.undo.UndoOverseer;
 
-import javax.swing.undo.CompoundEdit;
-import javax.swing.undo.UndoableEdit;
 import java.awt.*;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Point2D;
@@ -100,18 +99,20 @@ public abstract class AbstractPointPainter implements Painter {
         Point2D wrappedOld = new Point2D.Double(position.getX(), position.getY());
         Point2D wrappedNew = new Point2D.Double(changedPosition.getX(), changedPosition.getY());
         PointDragEdit edit = new PointDragEdit(selected, wrappedOld, wrappedNew);
-        UndoableEdit previousEdit = UndoOverseer.getLastEdit();
-        if (previousEdit instanceof PointDragEdit checked && checked.isInProgress()) {
-            edit.end();
-            checked.addEdit(edit);
+        log.info("ISFINISHED: " + edit.isFinished());
+        Edit previousEdit = UndoOverseer.getNextUndoable();
+        if (previousEdit instanceof PointDragEdit checked && !checked.isFinished()) {
+            edit.setFinished(true);
+            checked.add(edit);
+            log.info(checked.getSubEdits().size());
         } else {
             EventBus.subscribe(new BusEventListener() {
                 @Override
                 public void handleEvent(BusEvent event) {
-                    if (event instanceof ViewerMouseReleased && edit.isInProgress()) {
-                        edit.end();
-                        log.info(edit.isSignificant());
+                    if (event instanceof ViewerMouseReleased && !edit.isFinished()) {
+                        edit.setFinished(true);
                         EventBus.unsubscribe(this);
+                        log.info("ISFINISHED: " + edit.isFinished());
                     }
                 }
             });
@@ -222,29 +223,43 @@ public abstract class AbstractPointPainter implements Painter {
         return identity.getSimpleName() + " @" + this.hashCode();
     }
 
-    @RequiredArgsConstructor
-    private static final class PointDragEdit extends CompoundEdit {
+    private static final class PointDragEdit extends AbstractEdit {
         final WorldPoint point;
         final Point2D oldPosition;
         final Point2D newPosition;
 
+        public PointDragEdit(WorldPoint point, Point2D oldPosition, Point2D newPosition) {
+            this.point = point;
+            this.oldPosition = oldPosition;
+            this.newPosition = newPosition;
+            this.setFinished(false);
+        }
+
         @Override
-        public boolean isSignificant() {
-            return edits.size() >= 1;
+        public String getName() {
+            return "Point Drag";
         }
 
         @Override
         public void undo() {
-            super.undo();
+            undoSubEdits();
             point.setPosition(oldPosition);
             EventBus.publish(new ViewerRepaintQueued());
         }
 
         @Override
         public void redo() {
-            super.redo();
             point.setPosition(newPosition);
+            redoSubEdits();
+            log.info("REDO old: " + oldPosition);
+            log.info("REDO new: " + point.getPosition());
             EventBus.publish(new ViewerRepaintQueued());
+        }
+
+        @Override
+        public String toString() {
+            Class<? extends PointDragEdit> identity = this.getClass();
+            return identity.getSimpleName() + " " + hashCode();
         }
 
     }

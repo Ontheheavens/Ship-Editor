@@ -40,9 +40,15 @@ public final class PrimaryMenuBar extends JMenuBar {
 
     private static JMenu createEditMenu() {
         JMenu editMenu = new JMenu("Edit");
+
         JMenuItem undo = new JMenuItem("Undo");
-        undo.addActionListener(e -> UndoOverseer.undoEdit());
+        undo.setAction(UndoOverseer.getUndoAction());
         editMenu.add(undo);
+
+        JMenuItem redo = new JMenuItem("Redo");
+        redo.setAction(UndoOverseer.getRedoAction());
+        editMenu.add(redo);
+
         return editMenu;
     }
 

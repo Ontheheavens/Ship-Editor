@@ -32,6 +32,7 @@ public final class EventBus {
     //  If situation arises where the event bus bloat proves an issue, we will need to refactor our whole listener system.
     public static void unsubscribe(BusEventListener listener) {
         bus.subscribers.remove(listener);
+        log.info("Removed listener, bus size: {}", bus.subscribers.size());
     }
 
     public static void publish(BusEvent event) {
