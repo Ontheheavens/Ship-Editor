@@ -15,6 +15,7 @@ import oth.shipeditor.components.viewer.control.ViewerControl;
 import oth.shipeditor.components.viewer.entities.BaseWorldPoint;
 import oth.shipeditor.components.viewer.entities.BoundPoint;
 import oth.shipeditor.components.viewer.layers.LayerPainter;
+import oth.shipeditor.undo.EditDispatch;
 import oth.shipeditor.utility.Utility;
 
 import java.awt.*;
@@ -155,17 +156,17 @@ public final class BoundPointsPainter extends AbstractPointPainter {
                 if (getHighestBoundPointIndex(twoClosest) == boundPointList.size() - 1 &&
                         getLowestBoundPointIndex(twoClosest) == 0) index = 0;
                 BoundPoint preceding = boundPointList.get(index);
-                BoundPoint wrapped = new BoundPoint(position);
-                insertPoint(wrapped, preceding);
-                Events.repaintView();
+                BoundPoint wrapped = new BoundPoint(position, this.parentLayer);
+                int precedingIndex = boundPoints.indexOf(preceding);
+                EditDispatch.postPointInserted(this, wrapped, precedingIndex);
             }
         } else if (appendBoundHotkeyPressed) {
-            BoundPoint wrapped = new BoundPoint(position);
-            addPoint(wrapped);
-            Events.repaintView();
+            BoundPoint wrapped = new BoundPoint(position, this.parentLayer);
+            EditDispatch.postPointAdded(this, wrapped);
         }
     }
 
+    @SuppressWarnings("unused")
     public void insertPoint(BoundPoint toInsert, BoundPoint preceding) {
         int precedingIndex = boundPoints.indexOf(preceding);
         this.insertPoint(toInsert, precedingIndex);
@@ -176,7 +177,7 @@ public final class BoundPointsPainter extends AbstractPointPainter {
         EventBus.publish(new BoundInsertedConfirmed(toInsert, precedingIndex));
         List<Painter> painters = getDelegates();
         painters.add(toInsert.getPainter());
-        log.info("Bound inserted to painter: " + toInsert);
+        log.info("Bound inserted to painter: {}", toInsert);
     }
 
     private void setHotkeyState(boolean isAppendHotkey, boolean state) {

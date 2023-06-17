@@ -10,7 +10,9 @@ import oth.shipeditor.communication.events.components.CentersPanelRepaintQueued;
 import oth.shipeditor.communication.events.viewer.control.ViewerCursorMoved;
 import oth.shipeditor.communication.events.viewer.layers.LayerShipDataInitialized;
 import oth.shipeditor.communication.events.viewer.layers.LayerWasSelected;
+import oth.shipeditor.communication.events.viewer.points.AnchorOffsetConfirmed;
 import oth.shipeditor.communication.events.viewer.points.InstrumentModeChanged;
+import oth.shipeditor.communication.events.viewer.points.AnchorOffsetQueued;
 import oth.shipeditor.communication.events.viewer.status.CoordsModeChanged;
 import oth.shipeditor.components.CoordsDisplayMode;
 import oth.shipeditor.components.viewer.InstrumentMode;
@@ -41,6 +43,9 @@ public class BaseWorldPoint implements WorldPoint {
      * All points need a static reference to layer in order to streamline multiple coordinate systems functionality.
      */
     private static LayerPainter selectedLayer;
+
+    @Getter @Setter
+    private LayerPainter parentLayer;
 
     @Getter
     private static InstrumentMode instrumentationMode;
@@ -102,8 +107,29 @@ public class BaseWorldPoint implements WorldPoint {
     }
 
     public BaseWorldPoint(Point2D pointPosition) {
+        this(new Point2D.Double(pointPosition.getX(), pointPosition.getY()), null);
+
+    }
+
+    public BaseWorldPoint(Point2D pointPosition, LayerPainter layer) {
         this.position = new Point2D.Double(pointPosition.getX(), pointPosition.getY());
+        this.parentLayer = layer;
         this.painter = this.getPointPainter();
+        if (layer != null) {
+            this.initLayerListening();
+        }
+    }
+    
+    private void initLayerListening() {
+        EventBus.subscribe(event -> {
+            if (event instanceof AnchorOffsetQueued checked && checked.layer() == this.parentLayer) {
+                Point2D offset = checked.difference();
+                Point2D oldBoundPosition = this.getPosition();
+                this.setPosition(oldBoundPosition.getX() - offset.getX(),
+                        oldBoundPosition.getY() - offset.getY());
+                EventBus.publish(new AnchorOffsetConfirmed(this, offset));
+            }
+        });
     }
 
     protected static boolean checkIsHovered(Shape[] paintParts) {

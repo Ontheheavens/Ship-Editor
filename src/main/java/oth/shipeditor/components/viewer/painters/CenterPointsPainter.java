@@ -91,7 +91,8 @@ public class CenterPointsPainter extends AbstractPointPainter {
     }
 
     public void initCenterPoint(Point2D translatedCenter, Hull hull) {
-        this.centerPoint = new ShipCenterPoint(translatedCenter, (float) hull.getCollisionRadius());
+        this.centerPoint = new ShipCenterPoint(translatedCenter,
+                (float) hull.getCollisionRadius(), this.parentLayer);
         this.addPoint(centerPoint);
     }
 

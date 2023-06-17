@@ -6,15 +6,18 @@ import oth.shipeditor.communication.events.BusEvent;
 import oth.shipeditor.communication.events.Events;
 import oth.shipeditor.communication.events.viewer.control.ViewerMouseReleased;
 import oth.shipeditor.components.viewer.entities.BaseWorldPoint;
+import oth.shipeditor.components.viewer.entities.BoundPoint;
 import oth.shipeditor.components.viewer.entities.WorldPoint;
 import oth.shipeditor.components.viewer.painters.AbstractPointPainter;
+import oth.shipeditor.components.viewer.painters.BoundPointsPainter;
+import oth.shipeditor.undo.edits.PointAdditionEdit;
 import oth.shipeditor.undo.edits.PointDragEdit;
 import oth.shipeditor.undo.edits.PointRemovalEdit;
 
 import java.awt.geom.Point2D;
 
 /**
- * Convenience class meant to free component classes from burden of also implementing all the edit dispatch methods.
+ * Convenience class meant to free viewer classes from burden of also implementing all the edit dispatch methods.
  * @author Ontheheavens
  * @since 16.06.2023
  */
@@ -23,7 +26,21 @@ public final class EditDispatch {
     private EditDispatch() {
     }
 
-    public static void postPointRemovedEdit(AbstractPointPainter pointPainter, BaseWorldPoint point) {
+    public static void postPointInserted(BoundPointsPainter pointPainter, BoundPoint point, int index) {
+        Edit addEdit = new PointAdditionEdit(pointPainter, point, index);
+        UndoOverseer.post(addEdit);
+        pointPainter.insertPoint(point, index);
+        Events.repaintView();
+    }
+
+    public static void postPointAdded(AbstractPointPainter pointPainter, BaseWorldPoint point) {
+        Edit addEdit = new PointAdditionEdit(pointPainter, point);
+        UndoOverseer.post(addEdit);
+        pointPainter.addPoint(point);
+        Events.repaintView();
+    }
+
+    public static void postPointRemoved(AbstractPointPainter pointPainter, BaseWorldPoint point) {
         int index = pointPainter.getIndexOfPoint(point);
         Edit removeEdit = new PointRemovalEdit(pointPainter, point, index);
         UndoOverseer.post(removeEdit);
@@ -31,7 +48,7 @@ public final class EditDispatch {
         Events.repaintView();
     }
 
-    public static void postPointDragEdit(WorldPoint selected, Point2D changedPosition) {
+    public static void postPointDragged(WorldPoint selected, Point2D changedPosition) {
         Point2D position = selected.getPosition();
         Point2D wrappedOld = new Point2D.Double(position.getX(), position.getY());
         Point2D wrappedNew = new Point2D.Double(changedPosition.getX(), changedPosition.getY());

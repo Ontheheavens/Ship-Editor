@@ -4,16 +4,17 @@ import de.javagl.viewer.Painter;
 import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
 import oth.shipeditor.communication.EventBus;
+import oth.shipeditor.communication.events.Events;
 import oth.shipeditor.communication.events.viewer.ViewerRepaintQueued;
 import oth.shipeditor.communication.events.viewer.control.LayerAnchorDragged;
 import oth.shipeditor.communication.events.viewer.layers.ActiveLayerUpdated;
 import oth.shipeditor.communication.events.viewer.layers.LayerShipDataInitialized;
 import oth.shipeditor.communication.events.viewer.layers.ShipLayerRemovalConfirmed;
+import oth.shipeditor.communication.events.viewer.points.AnchorOffsetQueued;
 import oth.shipeditor.components.viewer.ShipViewerPanel;
 import oth.shipeditor.components.viewer.entities.BaseWorldPoint;
 import oth.shipeditor.components.viewer.entities.BoundPoint;
 import oth.shipeditor.components.viewer.entities.ShipCenterPoint;
-import oth.shipeditor.components.viewer.entities.WorldPoint;
 import oth.shipeditor.components.viewer.painters.AbstractPointPainter;
 import oth.shipeditor.components.viewer.painters.BoundPointsPainter;
 import oth.shipeditor.components.viewer.painters.CenterPointsPainter;
@@ -104,7 +105,7 @@ public final class LayerPainter implements Painter {
                 double roundedY = Math.round(wP.getY() * 2) / 2.0;
                 Point2D corrected = new Point2D.Double(roundedX, roundedY);
                 updateAnchorOffset(corrected);
-                EventBus.publish(new ViewerRepaintQueued());
+                Events.repaintView();
             }
         });
     }
@@ -144,19 +145,8 @@ public final class LayerPainter implements Painter {
         Point2D oldOffset = this.anchorOffset;
         Point2D difference = new Point2D.Double(oldOffset.getX() - updated.getX(),
                 oldOffset.getY() - updated.getY());
-        for (BoundPoint point : boundsPainter.getBoundPoints()) {
-            LayerPainter.offsetPointPosition(point, difference);
-        }
-        for (BaseWorldPoint point : centerPointsPainter.getPointsIndex()) {
-            LayerPainter.offsetPointPosition(point, difference);
-        }
+        EventBus.publish(new AnchorOffsetQueued(this, difference));
         this.anchorOffset = updated;
-    }
-
-    private static void offsetPointPosition(WorldPoint point, Point2D offset) {
-        Point2D oldBoundPosition = point.getPosition();
-        point.setPosition(oldBoundPosition.getX() - offset.getX(),
-                oldBoundPosition.getY() - offset.getY());
     }
 
     public ShipCenterPoint getShipCenter() {
@@ -206,7 +196,7 @@ public final class LayerPainter implements Painter {
         this.centerPointsPainter.initCenterPoint(translatedCenter, hull);
         Stream<Point2D> boundStream = Arrays.stream(hull.getBounds());
         boundStream.forEach(bound -> {
-            BoundPoint boundPoint = LayerPainter.createTranslatedBound(bound, translatedCenter);
+            BoundPoint boundPoint = this.createTranslatedBound(bound, translatedCenter);
             boundsPainter.addPoint(boundPoint);
         });
         this.uninitialized = false;
@@ -217,10 +207,10 @@ public final class LayerPainter implements Painter {
 
     // TODO: streamline translation methods. Probably make separate initializing class?
 
-    private static BoundPoint createTranslatedBound(Point2D bound, Point2D translatedCenter) {
+    private BoundPoint createTranslatedBound(Point2D bound, Point2D translatedCenter) {
         double translatedX = -bound.getY() + translatedCenter.getX();
         double translatedY = -bound.getX() + translatedCenter.getY();
-        return new BoundPoint(new Point2D.Double(translatedX, translatedY));
+        return new BoundPoint(new Point2D.Double(translatedX, translatedY), this);
     }
 
     @Override

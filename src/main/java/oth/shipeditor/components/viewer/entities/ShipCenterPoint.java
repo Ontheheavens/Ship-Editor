@@ -4,6 +4,7 @@ import de.javagl.viewer.Painter;
 import lombok.Getter;
 import lombok.Setter;
 import oth.shipeditor.components.viewer.InstrumentMode;
+import oth.shipeditor.components.viewer.layers.LayerPainter;
 
 import java.awt.*;
 import java.awt.geom.AffineTransform;
@@ -21,8 +22,8 @@ public class ShipCenterPoint extends FeaturePoint{
 
     private final Paint collisionCircleColor = new Color(0x33DCDC40, true);
 
-    public ShipCenterPoint(Point2D position, float radius) {
-        super(position);
+    public ShipCenterPoint(Point2D position, float radius, LayerPainter layer) {
+        super(position, layer);
         this.collisionRadius = radius;
     }
 

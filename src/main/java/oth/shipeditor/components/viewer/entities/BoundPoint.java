@@ -3,6 +3,7 @@ package oth.shipeditor.components.viewer.entities;
 import de.javagl.viewer.Painter;
 import de.javagl.viewer.painters.LabelPainter;
 import oth.shipeditor.components.viewer.InstrumentMode;
+import oth.shipeditor.components.viewer.layers.LayerPainter;
 
 import javax.swing.*;
 import java.awt.*;
@@ -18,7 +19,11 @@ public class BoundPoint extends FeaturePoint{
     private final LabelPainter coordsLabel;
 
     public BoundPoint(Point2D position) {
-        super(position);
+        this(position, null);
+    }
+
+    public BoundPoint(Point2D position, LayerPainter layer) {
+        super(position, layer);
         coordsLabel = createCoordsLabelPainter();
     }
 

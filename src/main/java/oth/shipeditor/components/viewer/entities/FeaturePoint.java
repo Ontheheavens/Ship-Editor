@@ -1,6 +1,7 @@
 package oth.shipeditor.components.viewer.entities;
 
 import de.javagl.viewer.Painter;
+import oth.shipeditor.components.viewer.layers.LayerPainter;
 
 import java.awt.*;
 import java.awt.geom.AffineTransform;
@@ -17,7 +18,11 @@ public abstract class FeaturePoint extends BaseWorldPoint {
     private final Painter secondPainter;
 
     FeaturePoint(Point2D pointPosition) {
-        super(pointPosition);
+        this(pointPosition, null);
+    }
+
+    FeaturePoint(Point2D pointPosition, LayerPainter layer) {
+        super(pointPosition, layer);
         this.secondPainter = createSecondaryPainter();
         this.composed = createComposedPainter();
     }

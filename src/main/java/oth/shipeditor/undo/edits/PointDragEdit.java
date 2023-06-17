@@ -1,8 +1,12 @@
 package oth.shipeditor.undo.edits;
 
+import oth.shipeditor.communication.BusEventListener;
 import oth.shipeditor.communication.EventBus;
+import oth.shipeditor.communication.events.BusEvent;
 import oth.shipeditor.communication.events.Events;
 import oth.shipeditor.communication.events.viewer.ViewerRepaintQueued;
+import oth.shipeditor.communication.events.viewer.points.AnchorOffsetConfirmed;
+import oth.shipeditor.communication.events.viewer.points.AnchorOffsetQueued;
 import oth.shipeditor.components.viewer.entities.WorldPoint;
 import oth.shipeditor.undo.AbstractEdit;
 
@@ -23,6 +27,17 @@ public final class PointDragEdit extends AbstractEdit {
         this.oldPosition = oldInput;
         this.newPosition = newInput;
         this.setFinished(false);
+        this.initAnchorOffsetListening();
+    }
+    
+    private void initAnchorOffsetListening() {
+        EventBus.subscribe(event -> {
+            if (event instanceof AnchorOffsetConfirmed checked && checked.point() == this.point) {
+                Point2D offset = checked.difference();
+                oldPosition.setLocation(oldPosition.getX() - offset.getX(), oldPosition.getY() - offset.getY());
+                newPosition.setLocation(newPosition.getX() - offset.getX(), newPosition.getY() - offset.getY());
+            }
+        });
     }
 
     @Override

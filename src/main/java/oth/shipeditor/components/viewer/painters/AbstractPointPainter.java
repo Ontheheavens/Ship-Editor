@@ -58,9 +58,9 @@ public abstract class AbstractPointPainter implements Painter {
             if (event instanceof PointRemoveQueued && this.isInteractionEnabled()) {
                 BaseWorldPoint toRemove = this.getMousedOver();
                 if (toRemove != null) {
-                    EditDispatch.postPointRemovedEdit(this, toRemove);
+                    EditDispatch.postPointRemoved(this, toRemove);
                 } else if (selected != null) {
-                    EditDispatch.postPointRemovedEdit(this, (BaseWorldPoint) selected);
+                    EditDispatch.postPointRemoved(this, (BaseWorldPoint) selected);
                 }
             }
         });
@@ -81,7 +81,7 @@ public abstract class AbstractPointPainter implements Painter {
                 double roundedX = Math.round(x * 2) / 2.0;
                 double roundedY = Math.round(y * 2) / 2.0;
                 Point2D changedPosition = new Point2D.Double(roundedX, roundedY);
-                EditDispatch.postPointDragEdit(this.selected, changedPosition);
+                EditDispatch.postPointDragged(this.selected, changedPosition);
             }
         });
     }
