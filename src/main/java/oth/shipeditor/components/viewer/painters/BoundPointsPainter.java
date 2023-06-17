@@ -4,6 +4,7 @@ import de.javagl.viewer.Painter;
 import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
 import oth.shipeditor.communication.EventBus;
+import oth.shipeditor.communication.events.Events;
 import oth.shipeditor.communication.events.viewer.ViewerRepaintQueued;
 import oth.shipeditor.communication.events.viewer.points.BoundCreationQueued;
 import oth.shipeditor.communication.events.viewer.points.BoundInsertedConfirmed;
@@ -90,8 +91,13 @@ public final class BoundPointsPainter extends AbstractPointPainter {
         }
     }
 
-    private static void queueViewerRepaint() {
-        EventBus.publish(new ViewerRepaintQueued());
+    @Override
+    public int getIndexOfPoint(BaseWorldPoint point) {
+        if (point instanceof BoundPoint checked) {
+            return boundPoints.indexOf(checked);
+        } else {
+            throw new IllegalArgumentException("Attempted to access incompatible point in BoundPointsPainter!");
+        }
     }
 
     private void initHotkeys() {
@@ -113,7 +119,7 @@ public final class BoundPointsPainter extends AbstractPointPainter {
                     }
                     break;
             }
-            BoundPointsPainter.queueViewerRepaint();
+            Events.repaintView();
             return false;
         });
     }
@@ -151,22 +157,26 @@ public final class BoundPointsPainter extends AbstractPointPainter {
                 BoundPoint preceding = boundPointList.get(index);
                 BoundPoint wrapped = new BoundPoint(position);
                 insertPoint(wrapped, preceding);
-                BoundPointsPainter.queueViewerRepaint();
+                Events.repaintView();
             }
         } else if (appendBoundHotkeyPressed) {
             BoundPoint wrapped = new BoundPoint(position);
             addPoint(wrapped);
-            BoundPointsPainter.queueViewerRepaint();
+            Events.repaintView();
         }
     }
 
-    private void insertPoint(BoundPoint toInsert, BoundPoint preceding) {
+    public void insertPoint(BoundPoint toInsert, BoundPoint preceding) {
         int precedingIndex = boundPoints.indexOf(preceding);
+        this.insertPoint(toInsert, precedingIndex);
+    }
+
+    public void insertPoint(BoundPoint toInsert, int precedingIndex) {
         boundPoints.add(precedingIndex, toInsert);
         EventBus.publish(new BoundInsertedConfirmed(toInsert, precedingIndex));
         List<Painter> painters = getDelegates();
         painters.add(toInsert.getPainter());
-        log.info(toInsert);
+        log.info("Bound inserted to painter: " + toInsert);
     }
 
     private void setHotkeyState(boolean isAppendHotkey, boolean state) {

@@ -117,6 +117,11 @@ public class CenterPointsPainter extends AbstractPointPainter {
     }
 
     @Override
+    public int getIndexOfPoint(BaseWorldPoint point) {
+        return points.indexOf(point);
+    }
+
+    @Override
     protected BaseWorldPoint getTypeReference() {
         return new BaseWorldPoint();
     }

@@ -5,8 +5,11 @@ import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.BusEvent;
 import oth.shipeditor.communication.events.Events;
 import oth.shipeditor.communication.events.viewer.control.ViewerMouseReleased;
+import oth.shipeditor.components.viewer.entities.BaseWorldPoint;
 import oth.shipeditor.components.viewer.entities.WorldPoint;
+import oth.shipeditor.components.viewer.painters.AbstractPointPainter;
 import oth.shipeditor.undo.edits.PointDragEdit;
+import oth.shipeditor.undo.edits.PointRemovalEdit;
 
 import java.awt.geom.Point2D;
 
@@ -15,31 +18,39 @@ import java.awt.geom.Point2D;
  * @author Ontheheavens
  * @since 16.06.2023
  */
-public final class EditDispatcher {
+public final class EditDispatch {
 
-    private EditDispatcher() {
+    private EditDispatch() {
+    }
+
+    public static void postPointRemovedEdit(AbstractPointPainter pointPainter, BaseWorldPoint point) {
+        int index = pointPainter.getIndexOfPoint(point);
+        Edit removeEdit = new PointRemovalEdit(pointPainter, point, index);
+        UndoOverseer.post(removeEdit);
+        pointPainter.removePoint(point);
+        Events.repaintView();
     }
 
     public static void postPointDragEdit(WorldPoint selected, Point2D changedPosition) {
         Point2D position = selected.getPosition();
         Point2D wrappedOld = new Point2D.Double(position.getX(), position.getY());
         Point2D wrappedNew = new Point2D.Double(changedPosition.getX(), changedPosition.getY());
-        PointDragEdit edit = new PointDragEdit(selected, wrappedOld, wrappedNew);
+        PointDragEdit dragEdit = new PointDragEdit(selected, wrappedOld, wrappedNew);
         Edit previousEdit = UndoOverseer.getNextUndoable();
         if (previousEdit instanceof PointDragEdit checked && !checked.isFinished()) {
-            edit.setFinished(true);
-            checked.add(edit);
+            dragEdit.setFinished(true);
+            checked.add(dragEdit);
         } else {
             EventBus.subscribe(new BusEventListener() {
                 @Override
                 public void handleEvent(BusEvent event) {
-                    if (event instanceof ViewerMouseReleased && !edit.isFinished()) {
-                        edit.setFinished(true);
+                    if (event instanceof ViewerMouseReleased && !dragEdit.isFinished()) {
+                        dragEdit.setFinished(true);
                         EventBus.unsubscribe(this);
                     }
                 }
             });
-            UndoOverseer.post(edit);
+            UndoOverseer.post(dragEdit);
         }
         selected.setPosition(changedPosition);
         Events.repaintView();

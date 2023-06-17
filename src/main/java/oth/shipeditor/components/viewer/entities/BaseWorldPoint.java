@@ -102,7 +102,7 @@ public class BaseWorldPoint implements WorldPoint {
     }
 
     public BaseWorldPoint(Point2D pointPosition) {
-        this.position = pointPosition;
+        this.position = new Point2D.Double(pointPosition.getX(), pointPosition.getY());
         this.painter = this.getPointPainter();
     }
 

@@ -16,8 +16,8 @@ public abstract class FeaturePoint extends BaseWorldPoint {
 
     private final Painter secondPainter;
 
-    public FeaturePoint(Point2D position) {
-        super(position);
+    FeaturePoint(Point2D pointPosition) {
+        super(pointPosition);
         this.secondPainter = createSecondaryPainter();
         this.composed = createComposedPainter();
     }

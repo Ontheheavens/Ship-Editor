@@ -1,6 +1,7 @@
 package oth.shipeditor.undo.edits;
 
 import oth.shipeditor.communication.EventBus;
+import oth.shipeditor.communication.events.Events;
 import oth.shipeditor.communication.events.viewer.ViewerRepaintQueued;
 import oth.shipeditor.components.viewer.entities.WorldPoint;
 import oth.shipeditor.undo.AbstractEdit;
@@ -33,14 +34,14 @@ public final class PointDragEdit extends AbstractEdit {
     public void undo() {
         undoSubEdits();
         point.setPosition(oldPosition);
-        EventBus.publish(new ViewerRepaintQueued());
+        Events.repaintView();
     }
 
     @Override
     public void redo() {
         point.setPosition(newPosition);
         redoSubEdits();
-        EventBus.publish(new ViewerRepaintQueued());
+        Events.repaintView();
     }
 
     @Override

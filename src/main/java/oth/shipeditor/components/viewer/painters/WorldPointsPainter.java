@@ -45,6 +45,11 @@ public final class WorldPointsPainter extends AbstractPointPainter {
     }
 
     @Override
+    public int getIndexOfPoint(BaseWorldPoint point) {
+        return worldPoints.indexOf(point);
+    }
+
+    @Override
     protected BaseWorldPoint getTypeReference() {
         return new BaseWorldPoint();
     }

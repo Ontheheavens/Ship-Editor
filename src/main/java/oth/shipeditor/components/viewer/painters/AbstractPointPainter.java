@@ -9,7 +9,7 @@ import oth.shipeditor.communication.events.viewer.ViewerRepaintQueued;
 import oth.shipeditor.communication.events.viewer.points.*;
 import oth.shipeditor.components.viewer.entities.BaseWorldPoint;
 import oth.shipeditor.components.viewer.entities.WorldPoint;
-import oth.shipeditor.undo.EditDispatcher;
+import oth.shipeditor.undo.EditDispatch;
 
 import java.awt.*;
 import java.awt.geom.AffineTransform;
@@ -58,11 +58,9 @@ public abstract class AbstractPointPainter implements Painter {
             if (event instanceof PointRemoveQueued && this.isInteractionEnabled()) {
                 BaseWorldPoint toRemove = this.getMousedOver();
                 if (toRemove != null) {
-                    this.removePoint(toRemove);
-                    EventBus.publish(new ViewerRepaintQueued());
+                    EditDispatch.postPointRemovedEdit(this, toRemove);
                 } else if (selected != null) {
-                    this.removePoint((BaseWorldPoint) selected);
-                    EventBus.publish(new ViewerRepaintQueued());
+                    EditDispatch.postPointRemovedEdit(this, (BaseWorldPoint) selected);
                 }
             }
         });
@@ -83,11 +81,10 @@ public abstract class AbstractPointPainter implements Painter {
                 double roundedX = Math.round(x * 2) / 2.0;
                 double roundedY = Math.round(y * 2) / 2.0;
                 Point2D changedPosition = new Point2D.Double(roundedX, roundedY);
-                EditDispatcher.postPointDragEdit(this.selected, changedPosition);
+                EditDispatch.postPointDragEdit(this.selected, changedPosition);
             }
         });
     }
-
 
     private void handlePointSelectionEvent(WorldPoint point) {
         if (point != null) {
@@ -116,6 +113,8 @@ public abstract class AbstractPointPainter implements Painter {
     protected abstract void addPointToIndex(BaseWorldPoint point);
 
     protected abstract void removePointFromIndex(BaseWorldPoint point);
+
+    public abstract int getIndexOfPoint(BaseWorldPoint point);
 
     protected abstract BaseWorldPoint getTypeReference();
 

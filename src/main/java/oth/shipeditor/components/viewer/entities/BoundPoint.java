@@ -85,4 +85,10 @@ public class BoundPoint extends FeaturePoint{
         };
     }
 
+    @Override
+    public String toString() {
+        Class<? extends BoundPoint> identity = this.getClass();
+        return identity.getSimpleName() + " @" + this.hashCode();
+    }
+
 }
