@@ -27,7 +27,8 @@ public final class EventBus {
 
     public static BusEventListener subscribe(BusEventListener listener) {
         bus.subscribers.add(listener);
-        log.info("Added listener, bus size: {}", bus.subscribers.size());
+        log.info("Added listener {}, bus size: {}",
+                EventBus.getListenerName(listener), bus.subscribers.size());
         return listener;
     }
 
@@ -35,9 +36,14 @@ public final class EventBus {
     //  Since the number of listeners is comparatively small so far, this is not a problem yet.
     //  If situation arises where the event bus bloat proves an issue, we will need to refactor our whole listener system.
     //  One of the solutions for that is to swap lambdas for anonymous classes and have unsubscribe event condition.
+
+    // Note: not all event listeners are equally perpetrators in this issue; some are registered and persist
+    // through whole runtime duration, while others are registered en masse in span of seconds. We should deal with the latter,
+    // and leave the former be.
     public static void unsubscribe(BusEventListener listener) {
         bus.subscribers.remove(listener);
-        log.info("Removed listener, bus size: {}", bus.subscribers.size());
+        log.info("Removed listener {}, bus size: {}",
+                EventBus.getListenerName(listener), bus.subscribers.size());
     }
 
     public static void publish(BusEvent event) {
@@ -45,6 +51,14 @@ public final class EventBus {
         for (BusEventListener receiver : receivers) {
             receiver.handleEvent(event);
         }
+    }
+
+    private static String getListenerName(BusEventListener listener) {
+        Class<? extends BusEventListener> identity = listener.getClass();
+        String shortName = identity.getSimpleName();
+        String pattern = "/0x.*";
+        // Apply the pattern and trim the string.
+        return shortName.replaceAll(pattern, "");
     }
 
 }

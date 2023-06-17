@@ -1,6 +1,7 @@
 package oth.shipeditor.components.viewer.entities;
 
 import de.javagl.viewer.Painter;
+import oth.shipeditor.components.viewer.layers.LayerPainter;
 
 import java.awt.geom.Point2D;
 
@@ -32,6 +33,12 @@ public interface WorldPoint {
      * @return whether this point is selected, that is, active for some user input such as moving the point.
      */
     boolean isSelected();
+
+
+    /**
+     * @return layer associated with this point; can be null.
+     */
+    LayerPainter getParentLayer();
 
     /**
      * @param selected whether this point should be selected.

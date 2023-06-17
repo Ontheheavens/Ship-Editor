@@ -2,6 +2,7 @@ package oth.shipeditor.undo;
 
 import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
+import oth.shipeditor.undo.edits.ListeningEdit;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;
@@ -103,8 +104,23 @@ public final class UndoOverseer {
     static void post(Edit edit) {
         Deque<Edit> stack = seer.getUndoStack();
         stack.addFirst(edit);
-        seer.redoStack.clear();
+        UndoOverseer.clearRedoStack();
         seer.updateActionState();
+    }
+
+    private static void clearRedoStack() {
+        UndoOverseer.clearEditListeners(seer.redoStack);
+        seer.redoStack.clear();
+    }
+
+    // TODO: introduce trimming mechanism.
+
+    private static void clearEditListeners(Iterable<Edit> stack) {
+        stack.forEach(edit -> {
+            if (edit instanceof ListeningEdit checked) {
+                checked.unregisterListeners();
+            }
+        });
     }
 
 }
