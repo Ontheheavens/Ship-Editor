@@ -11,7 +11,7 @@ import oth.shipeditor.communication.events.viewer.layers.ActiveLayerUpdated;
 import oth.shipeditor.communication.events.viewer.layers.LayerShipDataInitialized;
 import oth.shipeditor.communication.events.viewer.layers.ShipLayerRemovalConfirmed;
 import oth.shipeditor.communication.events.viewer.points.AnchorOffsetQueued;
-import oth.shipeditor.components.viewer.ShipViewerPanel;
+import oth.shipeditor.components.viewer.PrimaryShipViewer;
 import oth.shipeditor.components.viewer.entities.BaseWorldPoint;
 import oth.shipeditor.components.viewer.entities.BoundPoint;
 import oth.shipeditor.components.viewer.entities.ShipCenterPoint;
@@ -62,7 +62,7 @@ public final class LayerPainter implements Painter {
     @Getter
     private final ShipLayer parentLayer;
 
-    private final ShipViewerPanel viewer;
+    private final PrimaryShipViewer viewer;
 
     @Getter
     private BufferedImage shipSprite;
@@ -70,7 +70,7 @@ public final class LayerPainter implements Painter {
     @Getter
     private boolean uninitialized = true;
 
-    public LayerPainter(ShipLayer layer, ShipViewerPanel viewerPanel) {
+    public LayerPainter(ShipLayer layer, PrimaryShipViewer viewerPanel) {
         this.parentLayer = layer;
         this.viewer = viewerPanel;
         this.centerPointsPainter = new CenterPointsPainter(this);

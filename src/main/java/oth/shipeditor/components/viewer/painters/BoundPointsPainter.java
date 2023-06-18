@@ -5,12 +5,11 @@ import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
 import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.Events;
-import oth.shipeditor.communication.events.viewer.ViewerRepaintQueued;
 import oth.shipeditor.communication.events.viewer.points.BoundCreationQueued;
 import oth.shipeditor.communication.events.viewer.points.BoundInsertedConfirmed;
 import oth.shipeditor.communication.events.viewer.points.InstrumentModeChanged;
 import oth.shipeditor.components.viewer.InstrumentMode;
-import oth.shipeditor.components.viewer.ShipViewerPanel;
+import oth.shipeditor.components.viewer.PrimaryShipViewer;
 import oth.shipeditor.components.viewer.control.ViewerControl;
 import oth.shipeditor.components.viewer.entities.BaseWorldPoint;
 import oth.shipeditor.components.viewer.entities.BoundPoint;
@@ -42,14 +41,14 @@ public final class BoundPointsPainter extends AbstractPointPainter {
     private boolean appendBoundHotkeyPressed;
     private boolean insertBoundHotkeyPressed;
 
-    private final ShipViewerPanel viewerPanel;
+    private final PrimaryShipViewer viewerPanel;
 
     private final LayerPainter parentLayer;
 
     private final int appendBoundHotkey = KeyEvent.VK_Z;
     private final int insertBoundHotkey = KeyEvent.VK_X;
 
-    public BoundPointsPainter(ShipViewerPanel viewer, LayerPainter associatedLayer) {
+    public BoundPointsPainter(PrimaryShipViewer viewer, LayerPainter associatedLayer) {
         this.viewerPanel = viewer;
         this.parentLayer = associatedLayer;
         this.boundPoints = new ArrayList<>();

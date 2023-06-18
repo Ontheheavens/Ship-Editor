@@ -25,11 +25,14 @@ import java.awt.geom.Point2D;
 import java.util.List;
 
 /**
+ * Despite being a bit of a God-class, this one is justified in its coupling as a conceptual root of the whole app.
+ * It is responsible for the foundation of editing workflow - visual display of ships and its point features.
  * @author Ontheheavens
  * @since 29.04.2023
  */
+@SuppressWarnings("OverlyCoupledClass")
 @Log4j2
-public final class ShipViewerPanel extends Viewer implements ShipViewable {
+public final class PrimaryShipViewer extends Viewer implements ShipViewable {
 
     private static final Dimension panelSize = new Dimension(240, 120);
 
@@ -45,7 +48,12 @@ public final class ShipViewerPanel extends Viewer implements ShipViewable {
     @Getter
     private final ViewerControl controls;
 
-    public ShipViewerPanel() {
+    /**
+     * Usage of self as an argument is a suboptimal practice, but in this case it did not prove to be an issue.
+     * However, keep this constructor in mind for future refactors.
+     */
+    @SuppressWarnings("ThisEscapedInObjectConstruction")
+    public PrimaryShipViewer() {
         this.setMinimumSize(panelSize);
         this.setBackground(Color.GRAY);
 
@@ -119,10 +127,10 @@ public final class ShipViewerPanel extends Viewer implements ShipViewable {
         EventBus.subscribe(event -> {
             if (event instanceof LayerWasSelected checked) {
                 if (checked.old() != null) {
-                    ShipViewerPanel.removeLayerPainters(checked.old());
+                    PrimaryShipViewer.hideLayerPainters(checked.old());
                 }
                 if (checked.selected() != null) {
-                    ShipViewerPanel.loadLayerPointPainters(checked.selected());
+                    PrimaryShipViewer.showLayerPainters(checked.selected());
                 }
                 this.repaint();
             }
@@ -153,7 +161,7 @@ public final class ShipViewerPanel extends Viewer implements ShipViewable {
         return activeLayer.getPainter();
     }
 
-    private static void loadLayerPointPainters(ShipLayer layer) {
+    private static void showLayerPainters(ShipLayer layer) {
         LayerPainter mainPainter = layer.getPainter();
         if (mainPainter == null) return;
         List<AbstractPointPainter> layerPainters = mainPainter.getAllPainters();
@@ -163,7 +171,7 @@ public final class ShipViewerPanel extends Viewer implements ShipViewable {
         }
     }
 
-    private static void removeLayerPainters(ShipLayer layer) {
+    private static void hideLayerPainters(ShipLayer layer) {
         LayerPainter mainPainter = layer.getPainter();
         if (mainPainter == null) return;
         List<AbstractPointPainter> layerPainters = mainPainter.getAllPainters();
@@ -188,7 +196,16 @@ public final class ShipViewerPanel extends Viewer implements ShipViewable {
     }
 
     private void unloadLayer(ShipLayer layer) {
-        ShipViewerPanel.removeLayerPainters(layer);
+        LayerPainter mainPainter = layer.getPainter();
+        if (mainPainter != null) {
+            List<AbstractPointPainter> layerPainters = mainPainter.getAllPainters();
+            for (AbstractPointPainter iterated : layerPainters) {
+                boolean removed = this.removePainter(iterated, 4);
+                if (removed) {
+                    log.info("Removed from viewer:{}", iterated);
+                }
+            }
+        }
         this.removePainter(layer.getPainter());
     }
 

@@ -1,7 +1,8 @@
 /**
- * @author Ontheheavens
- * @since 08.05.2023
- */module oth.shipeditor {
+* @author Ontheheavens
+* @since 08.05.2023
+*/module oth.shipeditor {
+
     requires viewer.core;
     requires java.desktop;
     requires lombok;
@@ -33,4 +34,5 @@
     opens oth.shipeditor.components.layering;
     exports oth.shipeditor.components.instrument;
     opens oth.shipeditor.components.instrument;
+
 }

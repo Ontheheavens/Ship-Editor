@@ -73,10 +73,4 @@ public final class PointDragEdit extends AbstractEdit implements ListeningEdit {
         Events.repaintView();
     }
 
-    @Override
-    public String toString() {
-        Class<? extends PointDragEdit> identity = this.getClass();
-        return identity.getSimpleName() + " " + hashCode();
-    }
-
 }

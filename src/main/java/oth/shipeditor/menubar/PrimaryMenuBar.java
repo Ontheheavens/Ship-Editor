@@ -7,7 +7,7 @@ import org.kordamp.ikonli.fluentui.FluentUiRegularMZ;
 import org.kordamp.ikonli.swing.FontIcon;
 import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.viewer.layers.LayerCreationQueued;
-import oth.shipeditor.communication.events.viewer.layers.SelectedLayerRemovalQueued;
+import oth.shipeditor.communication.events.viewer.layers.ActiveLayerRemovalQueued;
 import oth.shipeditor.undo.UndoOverseer;
 
 import javax.swing.*;
@@ -71,7 +71,7 @@ public final class PrimaryMenuBar extends JMenuBar {
 
         JMenuItem removeLayer = new JMenuItem("Remove selected layer");
         removeLayer.addActionListener(event -> SwingUtilities.invokeLater(
-                        () -> EventBus.publish(new SelectedLayerRemovalQueued())
+                        () -> EventBus.publish(new ActiveLayerRemovalQueued())
                 )
         );
         layersMenu.add(removeLayer);

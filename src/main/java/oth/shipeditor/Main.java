@@ -11,6 +11,7 @@ import oth.shipeditor.components.viewer.layers.ShipLayer;
 import oth.shipeditor.menubar.Files;
 
 import javax.swing.*;
+import java.awt.*;
 import java.awt.geom.Point2D;
 import java.io.File;
 import java.net.URI;
@@ -29,11 +30,18 @@ public final class Main {
 
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> {
-            FlatIntelliJLaf.setup();
+            Main.configureLaf();
             PrimaryWindow window = PrimaryWindow.create();
             window.showGUI();
             Main.testFiles(window);
         });
+    }
+
+    private static void configureLaf() {
+        FlatIntelliJLaf.setup();
+        UIManager.put("TabbedPane.showTabSeparators", true);
+        UIManager.put("TabbedPane.tabSeparatorsFullHeight", true);
+        UIManager.put("TabbedPane.selectedBackground", Color.WHITE);
     }
 
     private static void testFiles(PrimaryWindow window) {

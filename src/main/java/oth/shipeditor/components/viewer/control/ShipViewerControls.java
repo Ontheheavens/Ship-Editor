@@ -5,7 +5,7 @@ import lombok.extern.log4j.Log4j2;
 import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.viewer.control.*;
 import oth.shipeditor.communication.events.viewer.points.*;
-import oth.shipeditor.components.viewer.ShipViewerPanel;
+import oth.shipeditor.components.viewer.PrimaryShipViewer;
 import oth.shipeditor.components.viewer.layers.LayerPainter;
 import oth.shipeditor.utility.Utility;
 
@@ -28,7 +28,7 @@ public final class ShipViewerControls implements ViewerControl {
 
     private static final double MAXIMUM_ZOOM = 1200.0;
     private static final double MINIMUM_ZOOM = 0.2;
-    private final ShipViewerPanel parentViewer;
+    private final PrimaryShipViewer parentViewer;
 
     @Getter
     private boolean rotationEnabled;
@@ -63,7 +63,7 @@ public final class ShipViewerControls implements ViewerControl {
     /**
      * @param parent Viewer which is manipulated via this instance of controls class.
      */
-    private ShipViewerControls(ShipViewerPanel parent) {
+    private ShipViewerControls(PrimaryShipViewer parent) {
         this.parentViewer = parent;
         this.rotationEnabled = true;
         this.initListeners();
@@ -88,7 +88,7 @@ public final class ShipViewerControls implements ViewerControl {
      * @param parent Viewer which is manipulated via this instance of controls class.
      * @return instance of controls via factory method.
      */
-    public static ShipViewerControls create(ShipViewerPanel parent) {
+    public static ShipViewerControls create(PrimaryShipViewer parent) {
         return new ShipViewerControls(parent);
     }
 

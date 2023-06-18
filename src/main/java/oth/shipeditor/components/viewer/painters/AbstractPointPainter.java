@@ -57,6 +57,9 @@ public abstract class AbstractPointPainter implements Painter {
         EventBus.subscribe(event -> {
             if (event instanceof PointRemoveQueued && this.isInteractionEnabled()) {
                 BaseWorldPoint toRemove = this.getMousedOver();
+
+                // TODO: This is one of the spots where we will implement mirroring.
+
                 if (toRemove != null) {
                     EditDispatch.postPointRemoved(this, toRemove);
                 } else if (selected != null) {

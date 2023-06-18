@@ -10,7 +10,7 @@ import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.viewer.ViewerRepaintQueued;
 import oth.shipeditor.communication.events.viewer.control.ViewerCursorMoved;
 import oth.shipeditor.communication.events.viewer.control.ViewerGuidesToggled;
-import oth.shipeditor.components.viewer.ShipViewerPanel;
+import oth.shipeditor.components.viewer.PrimaryShipViewer;
 import oth.shipeditor.components.viewer.entities.BaseWorldPoint;
 import oth.shipeditor.components.viewer.entities.WorldPoint;
 import oth.shipeditor.components.viewer.layers.LayerPainter;
@@ -43,9 +43,9 @@ public final class GuidesPainter implements Painter {
 
     private final AffineTransform delegateWorldToScreen;
 
-    private final ShipViewerPanel parent;
+    private final PrimaryShipViewer parent;
 
-    public GuidesPainter(ShipViewerPanel viewer) {
+    public GuidesPainter(PrimaryShipViewer viewer) {
         this.parent = viewer;
         this.delegateWorldToScreen = new AffineTransform();
         this.cursor = new Point2D.Double(0, 0);

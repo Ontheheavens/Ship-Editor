@@ -2,6 +2,7 @@ package oth.shipeditor.undo;
 
 import lombok.Getter;
 import lombok.Setter;
+import oth.shipeditor.undo.edits.PointDragEdit;
 
 import java.util.*;
 
@@ -34,6 +35,12 @@ public abstract class AbstractEdit implements Edit {
         List<Edit> editsList = new ArrayList<>(subEdits);
         Collections.reverse(editsList);
         editsList.forEach(Edit::redo);
+    }
+
+    @Override
+    public String toString() {
+        Class<? extends AbstractEdit> identity = this.getClass();
+        return identity.getSimpleName() + " " + hashCode();
     }
 
 }

@@ -56,15 +56,15 @@ public class LayerManager {
             }
         });
         EventBus.subscribe(event -> {
-            if (event instanceof SelectedLayerRemovalQueued) {
+            if (event instanceof ActiveLayerRemovalQueued) {
                 ShipLayer selected = this.activeLayer;
-                if (layers.size() >= 2) {
-                    this.setActiveLayer(layers.get(layers.indexOf(selected) - 1));
-                } else {
-                    this.setActiveLayer(null);
-                }
-                layers.remove(selected);
-                EventBus.publish(new ShipLayerRemovalConfirmed(selected));
+                publishLayerRemoval(selected);
+            }
+        });
+        EventBus.subscribe(event -> {
+            if (event instanceof LayerRemovalQueued checked) {
+                ShipLayer layer = checked.layer();
+                publishLayerRemoval(layer);
             }
         });
         // Unsure if opacity listening belongs here conceptually, but it's not a big deal.
@@ -77,6 +77,16 @@ public class LayerManager {
                 EventBus.publish(new ViewerRepaintQueued());
             }
         });
+    }
+
+    private void publishLayerRemoval(ShipLayer layer) {
+        if (layers.size() >= 2) {
+            this.setActiveLayer(layers.get(layers.indexOf(layer) - 1));
+        } else {
+            this.setActiveLayer(null);
+        }
+        layers.remove(layer);
+        EventBus.publish(new ShipLayerRemovalConfirmed(layer));
     }
 
     private void initOpenSpriteListener() {

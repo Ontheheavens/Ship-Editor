@@ -7,10 +7,7 @@ import org.kordamp.ikonli.fluentui.FluentUiRegularMZ;
 import org.kordamp.ikonli.swing.FontIcon;
 import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.components.WindowRepaintQueued;
-import oth.shipeditor.communication.events.viewer.layers.ActiveLayerUpdated;
-import oth.shipeditor.communication.events.viewer.layers.LayerWasSelected;
-import oth.shipeditor.communication.events.viewer.layers.ShipLayerCreated;
-import oth.shipeditor.communication.events.viewer.layers.ShipLayerRemovalConfirmed;
+import oth.shipeditor.communication.events.viewer.layers.*;
 import oth.shipeditor.components.viewer.layers.LayerManager;
 import oth.shipeditor.components.viewer.layers.ShipLayer;
 import oth.shipeditor.representation.ShipData;
@@ -21,6 +18,7 @@ import java.awt.image.BufferedImage;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+import java.util.function.IntConsumer;
 
 /**
  * @author Ontheheavens
@@ -28,8 +26,6 @@ import java.util.Objects;
  */
 @Log4j2
 public final class ShipLayersPanel extends JTabbedPane {
-
-    // TODO: Consider implementing custom JTabbedPane UI in the future to allow for custom panel compositions.
 
     /**
      * Expected to be the same instance that is originally created and assigned in viewer;
@@ -42,6 +38,15 @@ public final class ShipLayersPanel extends JTabbedPane {
     public ShipLayersPanel(LayerManager manager) {
         this.layerManager = manager;
         this.tabIndex = new HashMap<>();
+
+        this.putClientProperty("JTabbedPane.tabClosable", true);
+        this.putClientProperty("JTabbedPane.tabCloseToolTipText", "Remove this layer");
+        this.putClientProperty( "JTabbedPane.tabCloseCallback", (IntConsumer) index -> {
+            LayerTab tab = (LayerTab) getComponentAt(index);
+            ShipLayer layer = getLayerByTab(tab);
+            EventBus.publish(new LayerRemovalQueued(layer));
+        });
+
         this.initLayerListeners();
         this.setTabLayoutPolicy(JTabbedPane.SCROLL_TAB_LAYOUT);
         this.addChangeListener(event -> {
@@ -88,9 +93,7 @@ public final class ShipLayersPanel extends JTabbedPane {
         EventBus.subscribe(event -> {
             if (event instanceof ShipLayerRemovalConfirmed checked) {
                 ShipLayer layer = checked.removed();
-                this.removeTabAt(indexOfComponent(tabIndex.get(layer)));
-                tabIndex.remove(layer);
-                EventBus.publish(new WindowRepaintQueued());
+                closeLayer(layer);
             }
         });
         EventBus.subscribe(event -> {
@@ -101,6 +104,12 @@ public final class ShipLayersPanel extends JTabbedPane {
                 this.setSelectedIndex(indexOfComponent(tabIndex.get(newlySelected)));
             }
         });
+    }
+
+    private void closeLayer(ShipLayer layer) {
+        this.removeTabAt(indexOfComponent(tabIndex.get(layer)));
+        tabIndex.remove(layer);
+        EventBus.publish(new WindowRepaintQueued());
     }
 
     /**
@@ -124,6 +133,9 @@ public final class ShipLayersPanel extends JTabbedPane {
             this.setLayout(new BorderLayout());
         }
 
+        /**
+         * @return HTML-formatted string that enables multi-line tooltip setup.
+         */
         private String getTabTooltip() {
             String notLoaded = "Not loaded";
             String sprite = spriteFileName;
