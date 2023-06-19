@@ -3,15 +3,13 @@ package oth.shipeditor;
 import com.formdev.flatlaf.FlatIntelliJLaf;
 import lombok.extern.log4j.Log4j2;
 import oth.shipeditor.communication.EventBus;
-import oth.shipeditor.communication.events.viewer.ViewerBackgroundChanged;
 import oth.shipeditor.communication.events.viewer.layers.LayerCreationQueued;
 import oth.shipeditor.components.viewer.ShipViewable;
 import oth.shipeditor.components.viewer.layers.LayerManager;
 import oth.shipeditor.components.viewer.layers.LayerPainter;
 import oth.shipeditor.components.viewer.layers.ShipLayer;
 import oth.shipeditor.menubar.Files;
-import oth.shipeditor.persistence.Settings;
-import oth.shipeditor.persistence.SettingsManager;
+import oth.shipeditor.persistence.Initializations;
 
 import javax.swing.*;
 import java.awt.*;
@@ -20,7 +18,10 @@ import java.io.File;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Objects;
+import java.util.function.Function;
 
 /**
  * @author Ontheheavens
@@ -50,6 +51,14 @@ public final class Main {
         UIManager.put("SplitPane.background", Color.LIGHT_GRAY);
         UIManager.put("SplitPaneDivider.gripColor", Color.DARK_GRAY);
         UIManager.put("SplitPaneDivider.draggingColor", Color.BLACK);
+
+        UIManager.put("FileChooser.readOnly", true);
+
+        UIManager.put(Initializations.FILE_CHOOSER_SHORTCUTS_FILES_FUNCTION, (Function<File[], File[]>) files -> {
+            ArrayList<File> list = new ArrayList<>( Arrays.asList( files ) );
+            list.removeIf(next -> Initializations.SHELL_FOLDER_0_X_12.equals(next.getPath()));
+            return list.toArray(new File[0]);
+        } );
     }
 
     private static void testFiles(PrimaryWindow window) {
@@ -82,7 +91,7 @@ public final class Main {
         } catch (URISyntaxException e) {
             e.printStackTrace();
         }
-        URL dataPath = Objects.requireNonNull(classLoader.getResource(hullFile));;
+        URL dataPath = Objects.requireNonNull(classLoader.getResource(hullFile));
         try {
             URI url = dataPath.toURI();
             File hull = new File(url);

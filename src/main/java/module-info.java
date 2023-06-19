@@ -16,6 +16,7 @@
     requires com.formdev.flatlaf;
     requires geom;
 
+    exports oth.shipeditor;
     exports oth.shipeditor.representation;
     exports oth.shipeditor.components;
     exports oth.shipeditor.components.viewer.painters;

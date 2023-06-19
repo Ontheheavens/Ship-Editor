@@ -10,7 +10,7 @@ import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
 import oth.shipeditor.PrimaryWindow;
 
-import java.awt.*;
+import javax.swing.*;
 import java.io.File;
 import java.io.IOException;
 import java.io.UncheckedIOException;
@@ -29,50 +29,38 @@ public final class SettingsManager {
 
     private SettingsManager() {}
 
-    private static Settings createDefault() {
+    static Settings createDefault() {
         Settings empty = new Settings();
-        Color gray = Color.GRAY;
-        empty.setBackgroundColor(gray);
+        empty.setBackgroundColor(null);
         return empty;
     }
 
-    public static void initialize() {
+    static ObjectMapper getMapperForSettingsFile() {
+        ObjectMapper mapper = new ObjectMapper();
+        mapper.setDefaultPrettyPrinter(new SettingsFilePrinter());
+        mapper.configure(SerializationFeature.INDENT_OUTPUT, true);
+        return mapper;
+    }
+
+    static File getSettingsPath() {
         Path workingDirectory = Paths.get("").toAbsolutePath();
-        log.info("Current folder: {}", workingDirectory);
         if (!workingDirectory.endsWith(PrimaryWindow.SHIP_EDITOR)) {
             throw new IllegalStateException("Failed to initialize settings: wrong directory!");
         }
         Path settingsPath = workingDirectory.resolve("ship_editor_settings.json");
-        ObjectMapper mapper = new ObjectMapper();
-        Settings loaded;
-        File settingsFile = settingsPath.toFile();
-        try {
-            if (settingsFile.exists()) {
-                log.info("Reading existing settings file..");
-                loaded = mapper.readValue(settingsFile, Settings.class);
-                if (loaded != null) {
-                    log.info("Settings read successful.");
-                }
-            } else {
-                log.info("Settings file not found, creating default...");
-                loaded = SettingsManager.createDefault();
-                mapper.configure(SerializationFeature.INDENT_OUTPUT, true);
-                mapper.setDefaultPrettyPrinter(new SettingsFilePrinter());
-                mapper.writeValue(settingsFile, loaded);
-                if (settingsFile.exists()) {
-                    log.info("Default settings file creation successful.");
-                }
-            }
-        } catch (IOException e) {
-            log.error("Failed to resolve settings file, writing default one.", e);
-            loaded = SettingsManager.createDefault();
-            SettingsManager.writeSettingsToFile(mapper, settingsFile, loaded);
-        }
-        SettingsManager.settings = loaded;
+        return settingsPath.toFile();
     }
 
-    private static void writeSettingsToFile(ObjectMapper mapper, File settingsFile, Settings writable) {
-        mapper.configure(SerializationFeature.INDENT_OUTPUT, true);
+    static void updateFileFromRuntime() {
+        if (SettingsManager.settings == null) return;
+        log.info("Updating settings: getting path and mapper...");
+        ObjectMapper mapper = SettingsManager.getMapperForSettingsFile();
+        File settingsFile = SettingsManager.getSettingsPath();
+        log.info("Updating settings: overwriting JSON file...");
+        SettingsManager.writeSettingsToFile(mapper, settingsFile, SettingsManager.settings);
+    }
+
+    static void writeSettingsToFile(ObjectMapper mapper, File settingsFile, Settings writable) {
         try {
             mapper.writeValue(settingsFile, writable);
         } catch (IOException e) {

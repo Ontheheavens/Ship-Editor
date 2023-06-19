@@ -4,11 +4,10 @@ import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
 import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.components.WindowRepaintQueued;
-import oth.shipeditor.communication.events.viewer.ViewerBackgroundChanged;
 import oth.shipeditor.components.WindowContentPanes;
 import oth.shipeditor.components.viewer.ShipViewable;
 import oth.shipeditor.menubar.PrimaryMenuBar;
-import oth.shipeditor.persistence.Settings;
+import oth.shipeditor.persistence.Initializations;
 import oth.shipeditor.persistence.SettingsManager;
 
 import javax.swing.*;
@@ -33,7 +32,8 @@ public final class PrimaryWindow extends JFrame {
         this.setTitle(SHIP_EDITOR);
         this.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
 
-        SettingsManager.initialize();
+        Initializations.initializeSettingsFile();
+        Initializations.initializeGameFolder();
 
         this.setMinimumSize(new Dimension(800, 600));
 
@@ -81,13 +81,10 @@ public final class PrimaryWindow extends JFrame {
     }
 
     void showGUI() {
-        PrimaryWindow.updateStateFromSettings();
+        Initializations.updateStateFromSettings(this);
         this.setVisible(true);
     }
 
-    private static void updateStateFromSettings() {
-        Settings settings = SettingsManager.getSettings();
-        EventBus.publish(new ViewerBackgroundChanged(settings.getBackgroundColor()));
-    }
+
 
 }

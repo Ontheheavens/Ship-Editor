@@ -10,6 +10,8 @@ import oth.shipeditor.communication.events.viewer.ViewerBackgroundChanged;
 import oth.shipeditor.communication.events.viewer.control.ViewerGuidesToggled;
 import oth.shipeditor.communication.events.viewer.control.ViewerRotationToggled;
 import oth.shipeditor.communication.events.viewer.control.ViewerTransformsReset;
+import oth.shipeditor.persistence.Settings;
+import oth.shipeditor.persistence.SettingsManager;
 
 import javax.swing.*;
 import javax.swing.colorchooser.AbstractColorChooserPanel;
@@ -41,6 +43,8 @@ class ViewMenu extends JMenu {
                 FluentUiRegularAL.COLOR_BACKGROUND_20,
                 event -> {
                     Color chosen = ViewMenu.showColorChooser();
+                    Settings settings = SettingsManager.getSettings();
+                    settings.setBackgroundColor(chosen);
                     EventBus.publish(new ViewerBackgroundChanged(chosen));
                 });
         this.add(changeBackground);
@@ -116,12 +120,11 @@ class ViewMenu extends JMenu {
             }
         }
         for (AbstractColorChooserPanel ccPanel : chooserPanels) {
-            ccPanel.setColorTransparencySelectionEnabled(true);
+            ccPanel.setColorTransparencySelectionEnabled(false);
         }
         final class ColorListener implements ActionListener {
             private final JColorChooser chooser;
-            @Getter
-            @Setter
+            @Getter @Setter
             private Color color;
             private ColorListener(JColorChooser colorChooser) {
                 this.chooser = colorChooser;
