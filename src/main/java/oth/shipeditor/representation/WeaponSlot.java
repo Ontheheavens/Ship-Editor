@@ -2,7 +2,7 @@ package oth.shipeditor.representation;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import oth.shipeditor.parsing.Point2DArrayParser;
+import oth.shipeditor.parsing.deserialize.Point2DArrayDeserializer;
 
 import java.awt.geom.Point2D;
 
@@ -31,7 +31,7 @@ public class WeaponSlot {
     private double angle;
 
     @JsonProperty("locations")
-    @JsonDeserialize(using = Point2DArrayParser.class)
+    @JsonDeserialize(using = Point2DArrayDeserializer.class)
     private Point2D.Double[] locations;
 
 }

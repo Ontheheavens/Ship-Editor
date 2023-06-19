@@ -17,12 +17,10 @@
     requires geom;
 
     exports oth.shipeditor.representation;
-    exports oth.shipeditor.parsing;
     exports oth.shipeditor.components;
     exports oth.shipeditor.components.viewer.painters;
     exports oth.shipeditor.components.viewer.entities;
 
-    opens oth.shipeditor.parsing;
     opens oth.shipeditor.components;
     exports oth.shipeditor.components.viewer.control;
     opens oth.shipeditor.components.viewer.control;
@@ -34,5 +32,11 @@
     opens oth.shipeditor.components.layering;
     exports oth.shipeditor.components.instrument;
     opens oth.shipeditor.components.instrument;
+    exports oth.shipeditor.persistence to com.fasterxml.jackson.databind;
+    opens oth.shipeditor.persistence to com.fasterxml.jackson.databind;
+    exports oth.shipeditor.parsing.deserialize;
+    opens oth.shipeditor.parsing.deserialize;
+    exports oth.shipeditor.parsing.serialize;
+    opens oth.shipeditor.parsing.serialize;
 
 }

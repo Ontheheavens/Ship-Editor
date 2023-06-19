@@ -84,7 +84,6 @@ public class WindowContentPanes {
                 if (secondaryLevel == null) return;
                 if (minimize) {
                     cachedDividerLocation = secondaryLevel.getDividerLocation();
-                    log.info(cachedDividerLocation);
                 }
                 instrumentPaneMinimized = minimize;
                 relocateDivider();
@@ -100,13 +99,12 @@ public class WindowContentPanes {
         if (instrumentPaneMinimized) {
             secondaryLevel.setDividerLocation(secondaryLevel.getWidth() - 70);
             secondaryLevel.setEnabled(false);
-            this.refreshContent();
         } else {
             int maximum = secondaryLevel.getMaximumDividerLocation();
             secondaryLevel.setDividerLocation(Math.min(cachedDividerLocation, maximum));
             secondaryLevel.setEnabled(true);
-            this.refreshContent();
         }
+        this.refreshContent();
     }
 
     public void loadLayerHandling() {
@@ -145,10 +143,11 @@ public class WindowContentPanes {
         primaryLevel = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
 
         this.instrumentPane = new InstrumentTabsPane();
+        instrumentPane.setOpaque(true);
         secondaryLevel = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
         secondaryLevel.setLeftComponent((Component) shipView);
         secondaryLevel.setRightComponent(instrumentPane);
-        secondaryLevel.setResizeWeight(0.8f);
+        secondaryLevel.setResizeWeight(1.0f);
         secondaryLevel.addComponentListener(new ComponentAdapter() {
             @Override
             public void componentResized(ComponentEvent e) {
@@ -163,7 +162,7 @@ public class WindowContentPanes {
 
         primaryLevel.setLeftComponent(dataPanel);
         primaryLevel.setRightComponent(secondaryLevel);
-        primaryLevel.setResizeWeight(0.2f);
+        primaryLevel.setResizeWeight(0.1f);
 
         primaryContentPane.add(primaryLevel, BorderLayout.CENTER);
         this.refreshContent();

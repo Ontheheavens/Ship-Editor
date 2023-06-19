@@ -1,4 +1,4 @@
-package oth.shipeditor.parsing;
+package oth.shipeditor.parsing.deserialize;
 
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.ObjectCodec;
@@ -13,7 +13,7 @@ import java.io.IOException;
  * @author Ontheheavens
  * @since 05.05.2023
  */
-public class Point2DParser extends JsonDeserializer<Point2D.Double> {
+public class Point2DDeserializer extends JsonDeserializer<Point2D.Double> {
 
     @Override
     public Point2D.Double deserialize(JsonParser p, DeserializationContext ctxt) throws IOException {

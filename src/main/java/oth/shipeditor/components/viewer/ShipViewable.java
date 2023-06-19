@@ -5,6 +5,7 @@ import oth.shipeditor.components.viewer.layers.LayerManager;
 import oth.shipeditor.components.viewer.layers.LayerPainter;
 import oth.shipeditor.components.viewer.layers.ShipLayer;
 
+import java.awt.*;
 import java.awt.geom.AffineTransform;
 
 /**

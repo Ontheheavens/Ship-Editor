@@ -3,12 +3,15 @@ package oth.shipeditor;
 import com.formdev.flatlaf.FlatIntelliJLaf;
 import lombok.extern.log4j.Log4j2;
 import oth.shipeditor.communication.EventBus;
+import oth.shipeditor.communication.events.viewer.ViewerBackgroundChanged;
 import oth.shipeditor.communication.events.viewer.layers.LayerCreationQueued;
 import oth.shipeditor.components.viewer.ShipViewable;
 import oth.shipeditor.components.viewer.layers.LayerManager;
 import oth.shipeditor.components.viewer.layers.LayerPainter;
 import oth.shipeditor.components.viewer.layers.ShipLayer;
 import oth.shipeditor.menubar.Files;
+import oth.shipeditor.persistence.Settings;
+import oth.shipeditor.persistence.SettingsManager;
 
 import javax.swing.*;
 import java.awt.*;
@@ -42,6 +45,11 @@ public final class Main {
         UIManager.put("TabbedPane.showTabSeparators", true);
         UIManager.put("TabbedPane.tabSeparatorsFullHeight", true);
         UIManager.put("TabbedPane.selectedBackground", Color.WHITE);
+
+        UIManager.put("SplitPane.dividerSize", 8);
+        UIManager.put("SplitPane.background", Color.LIGHT_GRAY);
+        UIManager.put("SplitPaneDivider.gripColor", Color.DARK_GRAY);
+        UIManager.put("SplitPaneDivider.draggingColor", Color.BLACK);
     }
 
     private static void testFiles(PrimaryWindow window) {

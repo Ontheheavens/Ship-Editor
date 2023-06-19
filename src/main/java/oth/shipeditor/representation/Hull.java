@@ -3,8 +3,8 @@ package oth.shipeditor.representation;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import lombok.Getter;
-import oth.shipeditor.parsing.Point2DArrayParser;
-import oth.shipeditor.parsing.Point2DParser;
+import oth.shipeditor.parsing.deserialize.Point2DArrayDeserializer;
+import oth.shipeditor.parsing.deserialize.Point2DDeserializer;
 
 import java.awt.geom.Point2D;
 import java.util.Map;
@@ -40,7 +40,7 @@ public class Hull {
 
     @Getter
     @JsonProperty("center")
-    @JsonDeserialize(using = Point2DParser.class)
+    @JsonDeserialize(using = Point2DDeserializer.class)
     Point2D.Double center;
 
     @Getter
@@ -51,7 +51,7 @@ public class Hull {
     private String coversColor;
 
     @JsonProperty("shieldCenter")
-    @JsonDeserialize(using = Point2DParser.class)
+    @JsonDeserialize(using = Point2DDeserializer.class)
     private Point2D.Double shieldCenter;
 
     @JsonProperty("shieldRadius")
@@ -79,7 +79,7 @@ public class Hull {
 
     @Getter
     @JsonProperty("bounds")
-    @JsonDeserialize(using = Point2DArrayParser.class)
+    @JsonDeserialize(using = Point2DArrayDeserializer.class)
     Point2D.Double[] bounds;
 
 }

@@ -92,7 +92,10 @@ public final class PrimaryShipViewer extends Viewer implements ShipViewable {
         EventBus.subscribe(event -> {
             if(event instanceof ViewerBackgroundChanged checked) {
                 Color background = checked.newColor();
-                this.setBackground(background);
+                Color opaque = new Color(background.getRed(),
+                        background.getGreen(), background.getBlue(), 255);
+                this.setBackground(opaque);
+                this.revalidate();
                 this.repaint();
             }
         });
