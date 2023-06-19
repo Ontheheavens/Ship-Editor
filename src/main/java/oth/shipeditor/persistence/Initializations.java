@@ -15,11 +15,13 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Objects;
+import java.util.function.Consumer;
 import java.util.function.Function;
 
 /**
@@ -31,6 +33,10 @@ public final class Initializations {
 
     public static final String FILE_CHOOSER_SHORTCUTS_FILES_FUNCTION = "FileChooser.shortcuts.filesFunction";
     public static final String SHELL_FOLDER_0_X_12 = "ShellFolder: 0x12";
+
+    private static boolean folderHasCore;
+
+    private static boolean folderHasMods;
 
     private Initializations() {
     }
@@ -139,9 +145,36 @@ public final class Initializations {
             int returnVal = folderChooser.showOpenDialog(null);
             if (returnVal == JFileChooser.APPROVE_OPTION) {
                 File file = folderChooser.getSelectedFile();
-                String absolutePath = file.getAbsolutePath();
-                log.info("Saving game folder path...");
-                settings.setGameFolderPath(absolutePath);
+                Path filePath = file.toPath();
+
+                try (var stream = Files.walk(filePath, 1)) {
+                    stream.filter(Files::isDirectory)
+                            .forEach(path -> {
+                                String folderName = path.getFileName().toString();
+                                if ("starsector-core".equals(folderName)) {
+                                    folderHasCore = true;
+                                }
+                                if ("mods".equals(folderName)) {
+                                    folderHasMods = true;
+                                }
+                            });
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+                if (folderHasCore && folderHasMods) {
+                    String absolutePath = file.getAbsolutePath();
+                    log.info("Saving game folder path...");
+                    settings.setGameFolderPath(absolutePath);
+                    folderHasCore = false;
+                    folderHasMods = false;
+                } else {
+                    log.info("Selected game folder path invalid.");
+                    JOptionPane.showMessageDialog(null,
+                            "Selected folder does not contain core and mod data folders.",
+                            "Invalid folder",
+                            JOptionPane.ERROR_MESSAGE);
+                    Initializations.initializeGameFolder();
+                }
             } else {
                 settings.setGameFolderPath("");
                 throw new RuntimeException(errorMessage);
