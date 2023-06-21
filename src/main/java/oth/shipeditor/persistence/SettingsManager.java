@@ -44,8 +44,9 @@ public final class SettingsManager {
 
     static File getSettingsPath() {
         Path workingDirectory = Paths.get("").toAbsolutePath();
+        log.info("Default working directory: {}", workingDirectory);
         if (!workingDirectory.endsWith(PrimaryWindow.SHIP_EDITOR)) {
-            throw new IllegalStateException("Failed to initialize settings: wrong directory!");
+            log.error("Error while initializing settings: default directory has wrong name.");
         }
         Path settingsPath = workingDirectory.resolve("ship_editor_settings.json");
         return settingsPath.toFile();
@@ -80,12 +81,6 @@ public final class SettingsManager {
         @Override
         public void writeStartObject(JsonGenerator g) throws IOException {
             super.writeStartObject(g);
-            g.writeRaw(blank);
-        }
-
-        @Override
-        public void writeRootValueSeparator(JsonGenerator g) throws IOException {
-            super.writeRootValueSeparator(g);
             g.writeRaw(blank);
         }
 

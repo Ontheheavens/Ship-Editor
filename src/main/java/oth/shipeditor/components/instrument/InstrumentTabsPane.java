@@ -45,6 +45,8 @@ public final class InstrumentTabsPane extends JTabbedPane {
     @Getter @Setter
     private boolean minimized;
 
+    private boolean restorationQueued;
+
     private boolean panelSwitched;
 
     public InstrumentTabsPane() {
@@ -60,7 +62,7 @@ public final class InstrumentTabsPane extends JTabbedPane {
             activePanel = (JPanel) getSelectedComponent();
             this.dispatchModeChange(activePanel);
             if (minimized) {
-                this.restoreTabbedPane();
+                this.restorationQueued = true;
             }
             panelSwitched = true;
         });
@@ -91,23 +93,6 @@ public final class InstrumentTabsPane extends JTabbedPane {
         EventBus.publish(new ViewerRepaintQueued());
     }
 
-    @SuppressWarnings("MethodOnlyUsedFromInnerClass")
-    private void minimizeTabbedPane() {
-        setMinimized(true);
-        Dimension preferred = this.getPreferredSize();
-        Dimension minimizedSize = new Dimension(10, preferred.height);
-        this.setMinimumSize(minimizedSize);
-        this.setMaximumSize(minimizedSize);
-        EventBus.publish(new InstrumentSplitterResized(true));
-    }
-
-    private void restoreTabbedPane() {
-        setMinimized(false);
-        this.setMinimumSize(null);
-        this.setMaximumSize(null);
-        EventBus.publish(new InstrumentSplitterResized(false));
-    }
-
     /**
      * This minimize-restore listener is inspired by behavior of tabbed panels in IntelliJ;
      * It is certainly not something implemented in a matter of minutes, took me some hours to tune all interactions.
@@ -120,14 +105,43 @@ public final class InstrumentTabsPane extends JTabbedPane {
                 int tabIndex = indexAtLocation(e.getX(), e.getY());
                 if (tabIndex != -1 && !panelSwitched) {
                     if (isMinimized()) {
-                        restoreTabbedPane();
+                        this.restoreTabbedPane();
                     } else {
-                        minimizeTabbedPane();
+                        this.minimizeTabbedPane();
                     }
                 }
                 panelSwitched = false;
             }
         }
+
+        private void minimizeTabbedPane() {
+            setMinimized(true);
+            Dimension preferred = InstrumentTabsPane.this.getPreferredSize();
+            Dimension minimizedSize = new Dimension(10, preferred.height);
+            InstrumentTabsPane.this.setMinimumSize(minimizedSize);
+            InstrumentTabsPane.this.setMaximumSize(minimizedSize);
+            EventBus.publish(new InstrumentSplitterResized(true));
+        }
+
+        private void restoreTabbedPane() {
+            setMinimized(false);
+            InstrumentTabsPane.this.setMinimumSize(null);
+            InstrumentTabsPane.this.setMaximumSize(null);
+            EventBus.publish(new InstrumentSplitterResized(false));
+        }
+
+        @Override
+        public void mouseReleased(MouseEvent e) {
+            if (InstrumentTabsPane.this.restorationQueued) {
+                int tabIndex = indexAtLocation(e.getX(), e.getY());
+                if (tabIndex != -1) {
+                    this.restoreTabbedPane();
+                }
+                InstrumentTabsPane.this.restorationQueued = false;
+            }
+        }
+
+
     }
 
 }

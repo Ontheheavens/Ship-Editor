@@ -1,5 +1,7 @@
 package oth.shipeditor.components;
 
+import com.formdev.flatlaf.ui.FlatArrowButton;
+import com.formdev.flatlaf.ui.FlatSplitPaneUI;
 import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
 import oth.shipeditor.communication.EventBus;
@@ -12,9 +14,13 @@ import oth.shipeditor.components.viewer.ShipViewable;
 import oth.shipeditor.components.viewer.PrimaryShipViewer;
 
 import javax.swing.*;
+import javax.swing.plaf.basic.BasicSplitPaneDivider;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
+import java.util.Arrays;
 
 /**
  * @author Ontheheavens
@@ -140,7 +146,19 @@ public class WindowContentPanes {
     }
 
     public void loadEditingPanes() {
+        // TODO: This is a test mock-up; revisit later!
+        JTabbedPane westTabsPane = new JTabbedPane();
+        westTabsPane.setTabPlacement(SwingConstants.LEFT);
+        westTabsPane.addTab("Example 1", new TestPanel(Color.BLUE));
+        westTabsPane.addTab("Example 2", new TestPanel(Color.GREEN));
+        westTabsPane.addTab("Example 3", new TestPanel(Color.PINK));
+        this.primaryContentPane.add(westTabsPane, BorderLayout.LINE_START);
+
         primaryLevel = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
+        primaryLevel.setOneTouchExpandable(true);
+        primaryLevel.putClientProperty("JSplitPane.expandableSide", "right");
+
+        // TODO: Behavior that we want for programmatic call of one-touch-minimize is in the OneTouchActionHandler class.
 
         this.instrumentPane = new InstrumentTabsPane();
         instrumentPane.setOpaque(true);
@@ -157,6 +175,26 @@ public class WindowContentPanes {
             }
         });
 
+        Component divider = primaryLevel.getComponents()[0];
+        BasicSplitPaneDivider casted = (BasicSplitPaneDivider) divider;
+        int r1 = 0;
+        for (Component childe : casted.getComponents()) {
+            log.info("DIVIDER CHILDER: " + childe);
+            log.info("Is visible: " + childe.isVisible());
+            log.info("Is showing: " + childe.isShowing());
+            r1++;
+            if (childe instanceof FlatArrowButton checked) {
+                log.info("IS A flat BUTTON");
+                log.info("Is showing: " + checked.getActionListeners());
+                ActionListener test = checked.getActionListeners()[0];
+                log.info(test);
+                if (r1 == 1) {
+                    log.info("CLICKED");
+                    checked.doClick();
+                }
+            }
+        }
+
         GameDataPanel dataPanel = new GameDataPanel();
         secondaryLevel.setMinimumSize(new Dimension(480, primaryContentPane.getHeight()));
 
@@ -170,6 +208,17 @@ public class WindowContentPanes {
 
     public void dispatchLoaderEvents() {
         EventBus.publish(new ShipViewableCreated(shipView));
+    }
+
+    private static class TestPanel extends JPanel {
+
+        TestPanel(Color color) {
+            this.setMaximumSize(new Dimension());
+            this.setPreferredSize(new Dimension());
+            this.setLayout(new BorderLayout());
+            this.setBackground(color);
+        }
+
     }
 
 }
