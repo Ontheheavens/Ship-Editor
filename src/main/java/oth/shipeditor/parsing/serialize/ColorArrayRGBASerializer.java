@@ -11,7 +11,7 @@ import java.io.IOException;
  * @author Ontheheavens
  * @since 19.06.2023
  */
-public class ColorRGBASerializer extends JsonSerializer<Color> {
+public class ColorArrayRGBASerializer extends JsonSerializer<Color> {
 
     @Override
     public void serialize(Color value, JsonGenerator gen, SerializerProvider serializers) throws IOException {

@@ -48,6 +48,7 @@ public final class Main {
         UIManager.put("TabbedPane.selectedBackground", Color.WHITE);
 
         UIManager.put("SplitPane.dividerSize", 8);
+        UIManager.put("SplitPane.oneTouchButtonSize", 10);
         UIManager.put("SplitPane.background", Color.LIGHT_GRAY);
         UIManager.put("SplitPaneDivider.gripColor", Color.DARK_GRAY);
         UIManager.put("SplitPaneDivider.draggingColor", Color.BLACK);

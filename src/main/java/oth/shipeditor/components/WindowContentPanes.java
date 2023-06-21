@@ -1,5 +1,6 @@
 package oth.shipeditor.components;
 
+import com.formdev.flatlaf.ui.FlatArrowButton;
 import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
 import oth.shipeditor.communication.EventBus;
@@ -8,11 +9,13 @@ import oth.shipeditor.communication.events.components.ShipViewableCreated;
 import oth.shipeditor.components.datafiles.GameDataPanel;
 import oth.shipeditor.components.instrument.InstrumentTabsPane;
 import oth.shipeditor.components.layering.ShipLayersPanel;
-import oth.shipeditor.components.viewer.ShipViewable;
 import oth.shipeditor.components.viewer.PrimaryShipViewer;
+import oth.shipeditor.components.viewer.ShipViewable;
 
 import javax.swing.*;
+import javax.swing.plaf.basic.BasicSplitPaneDivider;
 import java.awt.*;
+import java.awt.event.ActionListener;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 
@@ -20,14 +23,8 @@ import java.awt.event.ComponentEvent;
  * @author Ontheheavens
  * @since 18.06.2023
  */
-@SuppressWarnings("FieldCanBeLocal")
 @Log4j2
 public class WindowContentPanes {
-
-    /**
-     * Parent pane for layers panel and others.
-     */
-    private JPanel northPane;
 
     /**
      * Complex component responsible for ship layers display.
@@ -40,13 +37,6 @@ public class WindowContentPanes {
      */
     private InstrumentTabsPane instrumentPane;
 
-
-    private ShipLayersPanel layersPanel;
-
-    /**
-     * Parent pane for various status panels.
-     */
-    private JPanel southPane;
 
     /**
      * Status line panel for ship sprite viewer.
@@ -108,26 +98,26 @@ public class WindowContentPanes {
     }
 
     public void loadLayerHandling() {
-        this.northPane = new JPanel();
-        this.northPane.setLayout(new BorderLayout());
-        this.northPane.setBorder(null);
+        JPanel northPane = new JPanel();
+        northPane.setLayout(new BorderLayout());
+        northPane.setBorder(null);
         if (shipView == null) {
             // We want to fail fast here, just to be safe and find out quick.
             throw new IllegalStateException("Ship view was null at the time of layer panel initialization!");
         }
-        this.layersPanel = new ShipLayersPanel(shipView.getLayerManager());
-        this.northPane.add(layersPanel, BorderLayout.CENTER);
+        ShipLayersPanel layersPanel = new ShipLayersPanel(shipView.getLayerManager());
+        northPane.add(layersPanel, BorderLayout.CENTER);
         primaryContentPane.add(northPane, BorderLayout.PAGE_START);
     }
 
     public void loadShipView() {
         this.shipView = new PrimaryShipViewer();
-        this.southPane = new JPanel();
-        this.southPane.setLayout(new GridLayout());
+        JPanel southPane = new JPanel();
+        southPane.setLayout(new GridLayout());
         this.statusPanel = new ViewerStatusPanel(this.shipView);
         this.statusPanel.setLayout(new FlowLayout(FlowLayout.LEADING));
-        this.southPane.add(this.statusPanel);
-        primaryContentPane.add(this.southPane, BorderLayout.PAGE_END);
+        southPane.add(this.statusPanel);
+        primaryContentPane.add(southPane, BorderLayout.PAGE_END);
         this.refreshContent();
     }
 
@@ -140,7 +130,19 @@ public class WindowContentPanes {
     }
 
     public void loadEditingPanes() {
+        // TODO: This is a test mock-up; revisit later!
+        JTabbedPane westTabsPane = new JTabbedPane();
+        westTabsPane.setTabPlacement(SwingConstants.LEFT);
+        westTabsPane.addTab("Example 1", new TestPanel(Color.BLUE));
+        westTabsPane.addTab("Example 2", new TestPanel(Color.GREEN));
+        westTabsPane.addTab("Example 3", new TestPanel(Color.PINK));
+        this.primaryContentPane.add(westTabsPane, BorderLayout.LINE_START);
+
         primaryLevel = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
+        primaryLevel.setOneTouchExpandable(true);
+        primaryLevel.putClientProperty("JSplitPane.expandableSide", "right");
+
+        // TODO: Behavior that we want for programmatic call of one-touch-minimize is in the OneTouchActionHandler class.
 
         this.instrumentPane = new InstrumentTabsPane();
         instrumentPane.setOpaque(true);
@@ -157,6 +159,26 @@ public class WindowContentPanes {
             }
         });
 
+        Component divider = primaryLevel.getComponents()[0];
+        BasicSplitPaneDivider casted = (BasicSplitPaneDivider) divider;
+        int r1 = 0;
+        for (Component childe : casted.getComponents()) {
+            log.info("DIVIDER CHILDER: " + childe);
+            log.info("Is visible: " + childe.isVisible());
+            log.info("Is showing: " + childe.isShowing());
+            r1++;
+            if (childe instanceof FlatArrowButton checked) {
+                log.info("IS A flat BUTTON");
+                log.info("Is showing: " + checked.getActionListeners());
+                ActionListener test = checked.getActionListeners()[0];
+                log.info(test);
+                if (r1 == 1) {
+                    log.info("CLICKED");
+                    checked.doClick();
+                }
+            }
+        }
+
         GameDataPanel dataPanel = new GameDataPanel();
         secondaryLevel.setMinimumSize(new Dimension(480, primaryContentPane.getHeight()));
 
@@ -170,6 +192,17 @@ public class WindowContentPanes {
 
     public void dispatchLoaderEvents() {
         EventBus.publish(new ShipViewableCreated(shipView));
+    }
+
+    private static class TestPanel extends JPanel {
+
+        TestPanel(Color color) {
+            this.setMaximumSize(new Dimension());
+            this.setPreferredSize(new Dimension());
+            this.setLayout(new BorderLayout());
+            this.setBackground(color);
+        }
+
     }
 
 }

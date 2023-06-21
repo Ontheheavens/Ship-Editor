@@ -21,7 +21,6 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Objects;
-import java.util.function.Consumer;
 import java.util.function.Function;
 
 /**
@@ -152,9 +151,11 @@ public final class Initializations {
                             .forEach(path -> {
                                 String folderName = path.getFileName().toString();
                                 if ("starsector-core".equals(folderName)) {
+                                    settings.setCoreFolderPath(path.toString());
                                     folderHasCore = true;
                                 }
                                 if ("mods".equals(folderName)) {
+                                    settings.setModFolderPath(path.toString());
                                     folderHasMods = true;
                                 }
                             });

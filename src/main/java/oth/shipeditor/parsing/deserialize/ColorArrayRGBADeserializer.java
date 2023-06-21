@@ -11,7 +11,9 @@ import java.io.IOException;
  * @author Ontheheavens
  * @since 19.06.2023
  */
-public class ColorRGBADeserializer extends JsonDeserializer<Color> {
+public class ColorArrayRGBADeserializer extends JsonDeserializer<Color> {
+
+    // TODO: Introduce Color string serializer/deserializer as well for coversColor field.
 
     @Override
     public Color deserialize(JsonParser p, DeserializationContext ctxt) throws IOException {

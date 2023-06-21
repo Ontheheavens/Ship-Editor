@@ -5,8 +5,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import lombok.Getter;
-import oth.shipeditor.parsing.deserialize.ColorRGBADeserializer;
-import oth.shipeditor.parsing.serialize.ColorRGBASerializer;
+import oth.shipeditor.parsing.deserialize.ColorArrayRGBADeserializer;
+import oth.shipeditor.parsing.serialize.ColorArrayRGBASerializer;
 
 import java.awt.*;
 
@@ -20,14 +20,22 @@ public class Settings {
 
     @Getter
     @JsonProperty("backgroundColor")
-    @JsonDeserialize(using = ColorRGBADeserializer.class)
-    @JsonSerialize(using = ColorRGBASerializer.class)
+    @JsonDeserialize(using = ColorArrayRGBADeserializer.class)
+    @JsonSerialize(using = ColorArrayRGBASerializer.class)
     @JsonInclude(JsonInclude.Include.NON_NULL)
     Color backgroundColor;
 
     @Getter
     @JsonProperty("gameFolderPath")
     String gameFolderPath;
+
+    @Getter
+    @JsonProperty("coreFolderPath")
+    String coreFolderPath;
+
+    @Getter
+    @JsonProperty("modFolderPath")
+    String modFolderPath;
 
     public void setBackgroundColor(Color color) {
         if (color != null) {
@@ -38,8 +46,18 @@ public class Settings {
         SettingsManager.updateFileFromRuntime();
     }
 
-    public void setGameFolderPath(String path) {
+    void setGameFolderPath(String path) {
         this.gameFolderPath = path;
+        SettingsManager.updateFileFromRuntime();
+    }
+
+    void setCoreFolderPath(String path) {
+        this.coreFolderPath = path;
+        SettingsManager.updateFileFromRuntime();
+    }
+
+    void setModFolderPath(String path) {
+        this.modFolderPath = path;
         SettingsManager.updateFileFromRuntime();
     }
 
