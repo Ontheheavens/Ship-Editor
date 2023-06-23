@@ -8,7 +8,6 @@ import oth.shipeditor.components.WindowContentPanes;
 import oth.shipeditor.components.viewer.ShipViewable;
 import oth.shipeditor.menubar.PrimaryMenuBar;
 import oth.shipeditor.persistence.Initializations;
-import oth.shipeditor.persistence.SettingsManager;
 
 import javax.swing.*;
 import java.awt.*;
@@ -43,20 +42,15 @@ public final class PrimaryWindow extends JFrame {
 
         Container contentPane = this.getContentPane();
         contentPane.setLayout(new BorderLayout());
-
         primaryMenu = new PrimaryMenuBar();
         this.setJMenuBar(primaryMenu);
 
         this.contentPanes = new WindowContentPanes(this.getContentPane());
-
         contentPanes.loadShipView();
         contentPanes.loadLayerHandling();
-
         contentPanes.loadEditingPanes();
-        contentPanes.dispatchLoaderEvents();
 
         PrimaryWindow.configureTooltips();
-
         this.pack();
     }
 

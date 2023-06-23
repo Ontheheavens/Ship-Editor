@@ -1,19 +1,19 @@
 package oth.shipeditor.components.instrument;
 
 import lombok.Getter;
-import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
 import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.components.InstrumentSplitterResized;
 import oth.shipeditor.communication.events.viewer.ViewerRepaintQueued;
 import oth.shipeditor.communication.events.viewer.points.InstrumentModeChanged;
 import oth.shipeditor.components.viewer.InstrumentMode;
+import oth.shipeditor.utility.MinimizeListener;
+import oth.shipeditor.utility.MinimizerWidget;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.util.Dictionary;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -42,31 +42,27 @@ public final class InstrumentTabsPane extends JTabbedPane {
 
     private final Map<JPanel, InstrumentMode> panelMode;
 
-    @Getter @Setter
-    private boolean minimized;
-
-    private boolean restorationQueued;
-
-    private boolean panelSwitched;
+    private final MinimizerWidget minimizer;
 
     public InstrumentTabsPane() {
         panelMode = new HashMap<>();
+        this.minimizer = new MinimizerWidget(this.minimizeTabbedPane(), this.restoreTabbedPane());
+        minimizer.setPanelSwitched(false);
         this.initListeners();
         this.setTabPlacement(SwingConstants.LEFT);
         this.createTabs();
-        panelSwitched = false;
     }
 
     private void initListeners() {
         this.addChangeListener(event -> {
             activePanel = (JPanel) getSelectedComponent();
             this.dispatchModeChange(activePanel);
-            if (minimized) {
-                this.restorationQueued = true;
+            if (minimizer.isMinimized()) {
+                minimizer.setRestorationQueued(true);
             }
-            panelSwitched = true;
+            minimizer.setPanelSwitched(true);
         });
-        this.addMouseListener(new MinimizeListener());
+        this.addMouseListener(new MinimizeListener(this, this.minimizer));
     }
 
     private void createTabs() {
@@ -93,55 +89,24 @@ public final class InstrumentTabsPane extends JTabbedPane {
         EventBus.publish(new ViewerRepaintQueued());
     }
 
-    /**
-     * This minimize-restore listener is inspired by behavior of tabbed panels in IntelliJ;
-     * It is certainly not something implemented in a matter of minutes, took me some hours to tune all interactions.
-     */
-    private class MinimizeListener extends MouseAdapter {
-
-        @Override
-        public void mouseClicked(MouseEvent e) {
-            if (e.getButton() == MouseEvent.BUTTON1) {
-                int tabIndex = indexAtLocation(e.getX(), e.getY());
-                if (tabIndex != -1 && !panelSwitched) {
-                    if (isMinimized()) {
-                        this.restoreTabbedPane();
-                    } else {
-                        this.minimizeTabbedPane();
-                    }
-                }
-                panelSwitched = false;
-            }
-        }
-
-        private void minimizeTabbedPane() {
-            setMinimized(true);
-            Dimension preferred = InstrumentTabsPane.this.getPreferredSize();
+    private Runnable minimizeTabbedPane() {
+        return () -> {
+            minimizer.setMinimized(true);
+            Dimension preferred = this.getPreferredSize();
             Dimension minimizedSize = new Dimension(10, preferred.height);
-            InstrumentTabsPane.this.setMinimumSize(minimizedSize);
-            InstrumentTabsPane.this.setMaximumSize(minimizedSize);
+            this.setMinimumSize(minimizedSize);
+            this.setMaximumSize(minimizedSize);
             EventBus.publish(new InstrumentSplitterResized(true));
-        }
+        };
+    }
 
-        private void restoreTabbedPane() {
-            setMinimized(false);
-            InstrumentTabsPane.this.setMinimumSize(null);
-            InstrumentTabsPane.this.setMaximumSize(null);
+    private Runnable restoreTabbedPane() {
+        return () -> {
+            minimizer.setMinimized(false);
+            this.setMinimumSize(null);
+            this.setMaximumSize(null);
             EventBus.publish(new InstrumentSplitterResized(false));
-        }
-
-        @Override
-        public void mouseReleased(MouseEvent e) {
-            if (InstrumentTabsPane.this.restorationQueued) {
-                int tabIndex = indexAtLocation(e.getX(), e.getY());
-                if (tabIndex != -1) {
-                    this.restoreTabbedPane();
-                }
-                InstrumentTabsPane.this.restorationQueued = false;
-            }
-        }
-
-
+        };
     }
 
 }

@@ -8,4 +8,8 @@ import javax.swing.*;
  */
 public class GameDataPanel extends JPanel {
 
+    public GameDataPanel() {
+        this.add(new JLabel("Game data"));
+    }
+
 }
