@@ -13,18 +13,12 @@ import java.awt.*;
  * @author Ontheheavens
  * @since 18.06.2023
  */
-@SuppressWarnings("FieldCanBeLocal")
 @Log4j2
 public final class WindowContentPanes {
 
     enum LeftsideTabType {
         DEFAULT, GAME_DATA
     }
-
-    /**
-     * Parent pane for layers panel and others.
-     */
-    private JPanel northPane;
 
     /**
      * Complex component responsible for ship layers display.
@@ -58,26 +52,26 @@ public final class WindowContentPanes {
     }
 
     public void loadLayerHandling() {
-        this.northPane = new JPanel();
-        this.northPane.setLayout(new BorderLayout());
-        this.northPane.setBorder(null);
+        JPanel northPane = new JPanel();
+        northPane.setLayout(new BorderLayout());
+        northPane.setBorder(null);
         if (shipView == null) {
             // We want to fail fast here, just to be safe and find out quick.
             throw new IllegalStateException("Ship view was null at the time of layer panel initialization!");
         }
-        this.layersPanel = new ShipLayersPanel(shipView.getLayerManager());
-        this.northPane.add(layersPanel, BorderLayout.CENTER);
+        ShipLayersPanel layersPanel = new ShipLayersPanel(shipView.getLayerManager());
+        northPane.add(layersPanel, BorderLayout.CENTER);
         primaryContentPane.add(northPane, BorderLayout.PAGE_START);
     }
 
     public void loadShipView() {
         this.shipView = new PrimaryShipViewer();
-        this.southPane = new JPanel();
-        this.southPane.setLayout(new GridLayout());
+        JPanel southPane = new JPanel();
+        southPane.setLayout(new GridLayout());
         this.statusPanel = new ViewerStatusPanel(this.shipView);
         this.statusPanel.setLayout(new FlowLayout(FlowLayout.LEADING));
-        this.southPane.add(this.statusPanel);
-        primaryContentPane.add(this.southPane, BorderLayout.PAGE_END);
+        southPane.add(this.statusPanel);
+        primaryContentPane.add(southPane, BorderLayout.PAGE_END);
         this.refreshContent();
     }
 
