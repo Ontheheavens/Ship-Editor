@@ -16,22 +16,13 @@ import java.awt.*;
 @Log4j2
 public final class WindowContentPanes {
 
-    enum LeftsideTabType {
-        DEFAULT, GAME_DATA
-    }
+    static final String DEFAULT_LEFTSIDE_PANE = "Default";
 
     /**
      * Complex component responsible for ship layers display.
      */
     @Getter
     private ShipViewable shipView;
-
-    private ShipLayersPanel layersPanel;
-
-    /**
-     * Parent pane for various status panels.
-     */
-    private JPanel southPane;
 
     /**
      * Status line panel for ship sprite viewer.
@@ -85,7 +76,7 @@ public final class WindowContentPanes {
         JTabbedPane westTabsPane = new JTabbedPane();
         westTabsPane.setTabPlacement(SwingConstants.LEFT);
         westTabsPane.addTab("Game data", new LeftsidePanelTab(LeftsideTabType.GAME_DATA));
-        westTabsPane.addTab("Default", new LeftsidePanelTab(LeftsideTabType.DEFAULT));
+        westTabsPane.addTab(DEFAULT_LEFTSIDE_PANE, new LeftsidePanelTab(LeftsideTabType.DEFAULT));
         this.primaryContentPane.add(westTabsPane, BorderLayout.LINE_START);
 
         tripleSplitter = new TripleSplitContainer(westTabsPane);
@@ -94,7 +85,8 @@ public final class WindowContentPanes {
         this.refreshContent();
     }
 
-    static class LeftsidePanelTab extends JPanel {
+     @SuppressWarnings("PackageVisibleInnerClass")
+     static class LeftsidePanelTab extends JPanel {
         @Getter
         private final LeftsideTabType tabType;
         LeftsidePanelTab(LeftsideTabType type) {

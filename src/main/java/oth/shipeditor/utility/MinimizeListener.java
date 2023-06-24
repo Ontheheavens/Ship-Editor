@@ -1,5 +1,7 @@
 package oth.shipeditor.utility;
 
+import lombok.extern.log4j.Log4j2;
+
 import javax.swing.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -10,6 +12,7 @@ import java.awt.event.MouseEvent;
  * @author Ontheheavens
  * @since 23.06.2023
  */
+@Log4j2
 public class MinimizeListener extends MouseAdapter {
 
     private final JTabbedPane parent;
