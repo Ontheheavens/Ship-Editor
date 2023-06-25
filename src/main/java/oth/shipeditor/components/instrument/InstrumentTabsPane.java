@@ -69,18 +69,13 @@ public final class InstrumentTabsPane extends JTabbedPane {
         layerPanel = new LayerPropertiesPanel();
         panelMode.put(layerPanel, InstrumentMode.LAYER);
         this.addTab("Layer",layerPanel);
-        this.setToolTipTextAt(indexOfComponent(layerPanel),
-                "Layer properties");
         centerPointsPanel = new HullPointsPanel();
         panelMode.put(centerPointsPanel, InstrumentMode.CENTERS);
         this.addTab("Centers",centerPointsPanel);
-        this.setToolTipTextAt(indexOfComponent(centerPointsPanel),
-                "Ship center, collision, shield center and radius");
         boundsPanel = new BoundPointsPanel();
         panelMode.put(boundsPanel, InstrumentMode.BOUNDS);
         this.addTab("Bounds", boundsPanel);
-        this.setToolTipTextAt(indexOfComponent(boundsPanel),
-                "Ship bound polygon");
+        updateTooltipText();
     }
 
     private void dispatchModeChange(JPanel active) {
@@ -96,6 +91,7 @@ public final class InstrumentTabsPane extends JTabbedPane {
             Dimension minimizedSize = new Dimension(10, preferred.height);
             this.setMinimumSize(minimizedSize);
             this.setMaximumSize(minimizedSize);
+            updateTooltipText();
             EventBus.publish(new InstrumentSplitterResized(true));
         };
     }
@@ -105,8 +101,25 @@ public final class InstrumentTabsPane extends JTabbedPane {
             minimizer.setMinimized(false);
             this.setMinimumSize(null);
             this.setMaximumSize(null);
+            updateTooltipText();
             EventBus.publish(new InstrumentSplitterResized(false));
         };
+    }
+
+    private void updateTooltipText() {
+        String minimizePrompt = "Left-click to minimize panel";
+        if (minimizer.isMinimized()) {
+            minimizePrompt = "Left-click to expand panel";
+        }
+        String layerPanelLabel = "Layer properties";
+        String centerPanelLabel = "Ship center, collision, shield center and radius";
+        String boundPanelLabel = "Ship bound polygon";
+        this.setToolTipTextAt(indexOfComponent(layerPanel),
+                "<html>" + layerPanelLabel + "<br>" + minimizePrompt + "</html>");
+        this.setToolTipTextAt(indexOfComponent(centerPointsPanel),
+                "<html>" + centerPanelLabel + "<br>" + minimizePrompt + "</html>");
+        this.setToolTipTextAt(indexOfComponent(boundsPanel),
+                "<html>" + boundPanelLabel + "<br>" + minimizePrompt + "</html>");
     }
 
 }

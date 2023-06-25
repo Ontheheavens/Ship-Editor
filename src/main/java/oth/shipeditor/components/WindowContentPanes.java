@@ -72,7 +72,6 @@ public final class WindowContentPanes {
     }
 
     public void loadEditingPanes() {
-        // TODO: This is a test mock-up; revisit later!
         JTabbedPane westTabsPane = new JTabbedPane();
         westTabsPane.setTabPlacement(SwingConstants.LEFT);
         westTabsPane.addTab("Game data", new LeftsidePanelTab(LeftsideTabType.GAME_DATA));
