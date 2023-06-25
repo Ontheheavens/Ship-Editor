@@ -1,5 +1,6 @@
 package oth.shipeditor.components.datafiles;
 
+import lombok.Getter;
 import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.files.ShipCSVOpened;
 import oth.shipeditor.components.datafiles.entities.ShipCSVEntry;
@@ -19,6 +20,8 @@ import java.util.Map;
 class HullsTree extends JPanel {
 
     private final DefaultMutableTreeNode hullsRoot;
+
+    @Getter
     private final JTree hullsTree;
 
     HullsTree() {
