@@ -1,5 +1,7 @@
 package oth.shipeditor.components.datafiles.entities;
 
+import lombok.Getter;
+
 import java.util.Map;
 
 /**
@@ -8,6 +10,7 @@ import java.util.Map;
  */
 public class ShipCSVEntry {
 
+    @Getter
     private final Map<String, String> rowData;
 
     private final String hullID;
@@ -19,7 +22,11 @@ public class ShipCSVEntry {
 
     @Override
     public String toString() {
-        return rowData.get("name") + " (" + hullID + ")";
+        String displayedName = rowData.get("name");
+        if (displayedName.isEmpty()) {
+            displayedName = rowData.get("designation");
+        }
+        return displayedName + " (" + hullID + ")";
     }
 
 }
