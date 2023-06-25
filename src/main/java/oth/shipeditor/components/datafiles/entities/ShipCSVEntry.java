@@ -1,7 +1,9 @@
 package oth.shipeditor.components.datafiles.entities;
 
 import lombok.Getter;
+import oth.shipeditor.representation.Hull;
 
+import java.nio.file.Path;
 import java.util.Map;
 
 /**
@@ -13,9 +15,18 @@ public class ShipCSVEntry {
     @Getter
     private final Map<String, String> rowData;
 
+    @Getter
+    private final Hull hullFile;
+
+    @Getter
     private final String hullID;
 
-    public ShipCSVEntry(Map<String, String> row) {
+    @Getter
+    private final Path packageFolder;
+
+    public ShipCSVEntry(Map<String, String> row, Hull shipFile, Path folder) {
+        this.packageFolder = folder;
+        this.hullFile = shipFile;
         this.rowData = row;
         this.hullID = row.get("id");
     }

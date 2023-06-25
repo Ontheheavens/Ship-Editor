@@ -17,15 +17,18 @@ public class Hull {
 
     // TODO: implement reading, editing process and writing for all of these fields.
 
+    @Getter
     @JsonProperty("hullName")
     String hullName;
 
+    @Getter
     @JsonProperty("hullId")
     private String hullId;
 
     @JsonProperty("hullSize")
     private String hullSize;
 
+    @Getter
     @JsonProperty("spriteName")
     private String spriteName;
 
@@ -41,7 +44,11 @@ public class Hull {
     @Getter
     @JsonProperty("center")
     @JsonDeserialize(using = Point2DDeserializer.class)
-    Point2D.Double center;
+    private Point2D.Double center;
+
+    @JsonProperty("moduleAnchor")
+    @JsonDeserialize(using = Point2DDeserializer.class)
+    private Point2D.Double moduleAnchor;
 
     @Getter
     @JsonProperty("collisionRadius")
