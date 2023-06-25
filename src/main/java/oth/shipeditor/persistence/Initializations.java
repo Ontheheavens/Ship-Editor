@@ -150,7 +150,7 @@ public final class Initializations {
                     stream.filter(Files::isDirectory)
                             .forEach(path -> {
                                 String folderName = path.getFileName().toString();
-                                if ("starsector-core".equals(folderName)) {
+                                if (oth.shipeditor.menubar.Files.STARSECTOR_CORE.equals(folderName)) {
                                     settings.setCoreFolderPath(path.toString());
                                     folderHasCore = true;
                                 }

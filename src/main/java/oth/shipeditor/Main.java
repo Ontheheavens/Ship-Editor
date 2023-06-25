@@ -3,6 +3,8 @@ package oth.shipeditor;
 import com.formdev.flatlaf.FlatIntelliJLaf;
 import lombok.extern.log4j.Log4j2;
 import oth.shipeditor.communication.EventBus;
+import oth.shipeditor.communication.events.files.HullFileOpened;
+import oth.shipeditor.communication.events.files.SpriteOpened;
 import oth.shipeditor.communication.events.viewer.layers.LayerCreationQueued;
 import oth.shipeditor.components.viewer.ShipViewable;
 import oth.shipeditor.components.viewer.layers.LayerManager;
@@ -10,10 +12,12 @@ import oth.shipeditor.components.viewer.layers.LayerPainter;
 import oth.shipeditor.components.viewer.layers.ShipLayer;
 import oth.shipeditor.menubar.Files;
 import oth.shipeditor.persistence.Initializations;
+import oth.shipeditor.representation.Hull;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.geom.Point2D;
+import java.awt.image.BufferedImage;
 import java.io.File;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -53,6 +57,9 @@ public final class Main {
         UIManager.put("SplitPaneDivider.gripColor", Color.DARK_GRAY);
         UIManager.put("SplitPaneDivider.draggingColor", Color.BLACK);
 
+        UIManager.put("Tree.paintLines", true);
+        UIManager.put("Tree.showDefaultIcons", true);
+        UIManager.put("TitlePane.showIcon", true);
         UIManager.put("FileChooser.readOnly", true);
 
         UIManager.put(Initializations.FILE_CHOOSER_SHORTCUTS_FILES_FUNCTION, (Function<File[], File[]>) files -> {
@@ -77,26 +84,28 @@ public final class Main {
         shipView.centerViewpoint();
     }
 
-    private static void loadShip(PrimaryWindow window, String spriteFile, String hullFile) {
+    private static void loadShip(PrimaryWindow window, String spriteFilePath, String hullFilePath) {
         EventBus.publish(new LayerCreationQueued());
         ShipViewable shipView = window.getShipView();
         LayerManager layerManager = shipView.getLayerManager();
         layerManager.activateNextLayer();
         Class<? extends PrimaryWindow> windowClass = window.getClass();
         ClassLoader classLoader = windowClass.getClassLoader();
-        URL spritePath = Objects.requireNonNull(classLoader.getResource(spriteFile));
-        File sprite;
+        URL spritePath = Objects.requireNonNull(classLoader.getResource(spriteFilePath));
+        File spriteFile;
         try {
-            sprite = new File(spritePath.toURI());
-            Files.loadSprite(sprite);
+            spriteFile = new File(spritePath.toURI());
+            BufferedImage sprite = Files.loadSprite(spriteFile);
+            EventBus.publish(new SpriteOpened(sprite, spriteFile.getName()));
         } catch (URISyntaxException e) {
             e.printStackTrace();
         }
-        URL dataPath = Objects.requireNonNull(classLoader.getResource(hullFile));
+        URL dataPath = Objects.requireNonNull(classLoader.getResource(hullFilePath));
         try {
             URI url = dataPath.toURI();
-            File hull = new File(url);
-            Files.loadHullFile(hull);
+            File hullFile = new File(url);
+            Hull hull = Files.loadHullFile(hullFile);
+            EventBus.publish(new HullFileOpened(hull, hullFile.getName()));
         } catch (URISyntaxException e) {
             e.printStackTrace();
         }

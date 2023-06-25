@@ -1,6 +1,7 @@
 package oth.shipeditor.menubar;
 
 import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.core.json.JsonReadFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.log4j.Log4j2;
 import oth.shipeditor.communication.EventBus;
@@ -14,6 +15,7 @@ import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.io.UncheckedIOException;
 
 /**
  * @author Ontheheavens
@@ -22,6 +24,8 @@ import java.io.IOException;
 @Log4j2
 public final class Files {
 
+    private static final String OPEN_COMMAND_CANCELLED_BY_USER = "Open command cancelled by user.";
+    public static final String STARSECTOR_CORE = "starsector-core";
     private static File lastDirectory = null;
 
     private Files() {}
@@ -47,20 +51,22 @@ public final class Files {
     private static void tryOpenSprite(int returnVal, JFileChooser spriteChooser) {
         if (returnVal == JFileChooser.APPROVE_OPTION) {
             File file = spriteChooser.getSelectedFile();
-            Files.loadSprite(file);
+            BufferedImage sprite = Files.loadSprite(file);
+            EventBus.publish(new SpriteOpened(sprite, file.getName()));
         } else {
-            log.info("Open command cancelled by user.");
+            log.info(OPEN_COMMAND_CANCELLED_BY_USER);
         }
     }
 
-    public static void loadSprite(File file) {
+    public static BufferedImage loadSprite(File file) {
+        BufferedImage sprite;
         try {
-            BufferedImage sprite = ImageIO.read(file);
-            EventBus.publish(new SpriteOpened(sprite, file.getName()));
+            sprite = ImageIO.read(file);
         } catch (IOException ex) {
-            throw new RuntimeException(ex);
+            throw new UncheckedIOException("Failed to load sprite: " + file.getName(), ex);
         }
-        log.info("Opening: " + file.getName() + ".");
+        log.info("Opening sprite: {}.", file.getName());
+        return sprite;
     }
 
     static Runnable createOpenHullFileAction() {
@@ -81,24 +87,26 @@ public final class Files {
     private static void tryOpenHullFile(int returnVal, JFileChooser shipDataChooser) {
         if (returnVal == JFileChooser.APPROVE_OPTION) {
             File file = shipDataChooser.getSelectedFile();
-            Files.loadHullFile(file);
+            Hull hull = Files.loadHullFile(file);
+            EventBus.publish(new HullFileOpened(hull, file.getName()));
         } else {
-            log.info("Open command cancelled by user.");
+            log.info(OPEN_COMMAND_CANCELLED_BY_USER);
         }
     }
 
-    public static void loadHullFile(File file) {
+    public static Hull loadHullFile(File file) {
+        Hull hull = null;
         try {
             ObjectMapper objectMapper = new ObjectMapper();
-            objectMapper.configure(JsonParser.Feature.ALLOW_TRAILING_COMMA, true);
+            objectMapper.configure(JsonReadFeature.ALLOW_TRAILING_COMMA.mappedFeature(), true);
             objectMapper.configure(JsonParser.Feature.ALLOW_YAML_COMMENTS, true);
-            Hull hull = objectMapper.readValue(file, Hull.class);
-            EventBus.publish(new HullFileOpened(hull, file.getName()));
-            log.info("Opening: {}.", file.getName());
+            hull = objectMapper.readValue(file, Hull.class);
+            log.info("Opening hull file: {}.", file.getName());
         } catch (IOException e) {
             log.error("Hull file loading failed!");
             e.printStackTrace();
         }
+        return hull;
     }
 
 }

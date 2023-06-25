@@ -13,7 +13,7 @@ import java.util.function.Predicate;
 final class ControlPredicates {
 
     static final Predicate<MouseEvent> translatePredicate = Predicates.and(
-            InputEventPredicates.buttonDown(3),
+            InputEventPredicates.buttonDown(2),
             InputEventPredicates.noModifiers()
     );
 
