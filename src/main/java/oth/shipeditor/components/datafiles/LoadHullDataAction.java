@@ -5,10 +5,10 @@ import com.fasterxml.jackson.dataformat.csv.CsvMapper;
 import com.fasterxml.jackson.dataformat.csv.CsvSchema;
 import lombok.extern.log4j.Log4j2;
 import oth.shipeditor.communication.EventBus;
-import oth.shipeditor.communication.events.files.ShipCSVOpened;
-import oth.shipeditor.menubar.Files;
+import oth.shipeditor.communication.events.files.HullFolderWalked;
 import oth.shipeditor.persistence.Settings;
 import oth.shipeditor.persistence.SettingsManager;
+import oth.shipeditor.representation.Hull;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;
@@ -16,30 +16,54 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Stream;
 
 /**
  * @author Ontheheavens
  * @since 25.06.2023
  */
 @Log4j2
-class LoadShipDataAction extends AbstractAction {
+class LoadHullDataAction extends AbstractAction {
 
     @Override
     public void actionPerformed(ActionEvent e) {
         String command = e.getActionCommand();
         Settings settings = SettingsManager.getSettings();
         String folderPath = "";
-        if (command.equals(Files.STARSECTOR_CORE)) {
+        if (command.equals(oth.shipeditor.menubar.Files.STARSECTOR_CORE)) {
             folderPath = settings.getCoreFolderPath();
         }
         if (folderPath.isEmpty()) return;
         Path shipDataPath = Paths.get(folderPath, "data", "hulls", "ship_data.csv");
-        log.info("CSV File Path: {}", shipDataPath);
-        List<Map<String, String>> csvData = LoadShipDataAction.parseShipDataCSV(shipDataPath);
-        EventBus.publish(new ShipCSVOpened(csvData, command));
+
+        log.info("Parsing ship CSV data at: {}..", shipDataPath);
+        List<Map<String, String>> csvData = LoadHullDataAction.parseShipDataCSV(shipDataPath);
+        log.info("Ship CSV data at {} retrieved successfully.", shipDataPath);
+
+        List<File> shipFiles = new ArrayList<>();
+        log.info("Bulk fetching hull files at: {}...", folderPath);
+        try (Stream<Path> pathStream = Files.walk(shipDataPath.getParent())) {
+            pathStream.filter(path -> {
+                        String toString = path.getFileName().toString();
+                        return toString.endsWith(".ship");
+                    })
+                    .map(Path::toFile)
+                    .forEach(shipFiles::add);
+        } catch (IOException exception) {
+            exception.printStackTrace();
+        }
+        List<Hull> mappedHulls = new ArrayList<>();
+        for (File hullFile : shipFiles) {
+            Hull mapped = oth.shipeditor.menubar.Files.loadHullFile(hullFile);
+            mappedHulls.add(mapped);
+        }
+        log.info("Fetched and mapped {} hull files.", mappedHulls.size());
+
+        EventBus.publish(new HullFolderWalked(csvData, mappedHulls, Paths.get(folderPath, "")));
     }
 
     private static List<Map<String, String>> parseShipDataCSV(Path shipDataPath) {

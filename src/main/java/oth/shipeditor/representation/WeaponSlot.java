@@ -3,6 +3,7 @@ package oth.shipeditor.representation;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import oth.shipeditor.parsing.deserialize.Point2DArrayDeserializer;
+import oth.shipeditor.parsing.deserialize.Point2DDeserializer;
 
 import java.awt.geom.Point2D;
 
@@ -24,6 +25,9 @@ public class WeaponSlot {
     @JsonProperty("mount")
     private String mount;
 
+    @JsonProperty("renderOrderMod")
+    private double renderOrderMod;
+
     @JsonProperty("arc")
     private double arc;
 
@@ -33,5 +37,9 @@ public class WeaponSlot {
     @JsonProperty("locations")
     @JsonDeserialize(using = Point2DArrayDeserializer.class)
     private Point2D.Double[] locations;
+
+    @JsonProperty("position")
+    @JsonDeserialize(using = Point2DDeserializer.class)
+    private Point2D.Double position;
 
 }

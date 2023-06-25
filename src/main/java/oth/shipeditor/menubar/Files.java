@@ -26,7 +26,7 @@ public final class Files {
 
     private static final String OPEN_COMMAND_CANCELLED_BY_USER = "Open command cancelled by user.";
     public static final String STARSECTOR_CORE = "starsector-core";
-    private static File lastDirectory = null;
+    private static File lastDirectory;
 
     private Files() {}
 
@@ -103,7 +103,7 @@ public final class Files {
             hull = objectMapper.readValue(file, Hull.class);
             log.info("Opening hull file: {}.", file.getName());
         } catch (IOException e) {
-            log.error("Hull file loading failed!");
+            log.error("Hull file loading failed: {}", file.getName());
             e.printStackTrace();
         }
         return hull;
