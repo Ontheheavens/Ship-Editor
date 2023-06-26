@@ -241,7 +241,7 @@ public final class BoundPointsPainter extends AbstractPointPainter {
         // Set the color to white for visual convenience.
         BoundPoint anotherBoundPoint = bPoints.get(0);
         Point2D first = worldToScreen.transform(anotherBoundPoint.getPosition(), null);
-        Utility.drawBorderedLine(g, prev, first, Color.DARK_GRAY);
+        Utility.drawBorderedLine(g, prev, first, Color.GREEN);
         boolean hotkeyPressed = appendBoundHotkeyPressed || insertBoundHotkeyPressed;
         if (isInteractionEnabled() && hotkeyPressed) {
             this.paintCreationGuidelines(g, worldToScreen, prev, first);
