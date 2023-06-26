@@ -6,6 +6,7 @@ import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.files.HullFileOpened;
 import oth.shipeditor.communication.events.files.SpriteOpened;
 import oth.shipeditor.communication.events.viewer.layers.LayerCreationQueued;
+import oth.shipeditor.communication.events.viewer.layers.LayerCyclingQueued;
 import oth.shipeditor.components.viewer.ShipViewable;
 import oth.shipeditor.components.viewer.layers.LayerManager;
 import oth.shipeditor.components.viewer.layers.LayerPainter;
@@ -86,9 +87,7 @@ public final class Main {
 
     private static void loadShip(PrimaryWindow window, String spriteFilePath, String hullFilePath) {
         EventBus.publish(new LayerCreationQueued());
-        ShipViewable shipView = window.getShipView();
-        LayerManager layerManager = shipView.getLayerManager();
-        layerManager.activateNextLayer();
+        EventBus.publish(new LayerCyclingQueued());
         Class<? extends PrimaryWindow> windowClass = window.getClass();
         ClassLoader classLoader = windowClass.getClassLoader();
         URL spritePath = Objects.requireNonNull(classLoader.getResource(spriteFilePath));

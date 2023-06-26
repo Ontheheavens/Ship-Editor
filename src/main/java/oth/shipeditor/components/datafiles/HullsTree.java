@@ -3,8 +3,13 @@ package oth.shipeditor.components.datafiles;
 import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
 import oth.shipeditor.communication.EventBus;
+import oth.shipeditor.communication.events.files.HullFileOpened;
 import oth.shipeditor.communication.events.files.HullFolderWalked;
+import oth.shipeditor.communication.events.files.SpriteOpened;
+import oth.shipeditor.communication.events.viewer.layers.LayerCreationQueued;
+import oth.shipeditor.communication.events.viewer.layers.LayerCyclingQueued;
 import oth.shipeditor.components.datafiles.entities.ShipCSVEntry;
+import oth.shipeditor.menubar.Files;
 import oth.shipeditor.representation.Hull;
 
 import javax.swing.*;
@@ -15,6 +20,8 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.image.BufferedImage;
+import java.io.File;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
@@ -71,18 +78,22 @@ class HullsTree extends JPanel {
     }
 
     private DefaultMutableTreeNode loadHullList(Iterable<Map<String, String>> tableData,
-                                                Iterable<Hull> hullFiles, Path packagePath) {
+                                                Map<String, Hull> hullFiles, Path packagePath) {
         DefaultMutableTreeNode packageRoot = new DefaultMutableTreeNode(packagePath.getFileName().toString());
         for (Map<String, String> row : tableData) {
             Hull matching = null;
-            for (Hull shipFile : hullFiles) {
+            String fileName = "";
+            for (String shipFileName : hullFiles.keySet()) {
+                Hull shipFile = hullFiles.get(shipFileName);
                 String hullId = shipFile.getHullId();
                 if (hullId.equals(row.get("id"))) {
                     matching = shipFile;
+                    fileName = shipFileName;
                 }
             }
-            if (matching != null) {
-                MutableTreeNode shipNode = new DefaultMutableTreeNode(new ShipCSVEntry(row, matching, packagePath));
+            if (matching != null && !fileName.isEmpty()) {
+                MutableTreeNode shipNode = new DefaultMutableTreeNode(new ShipCSVEntry(row,
+                        matching, packagePath, fileName));
                 packageRoot.add(shipNode);
             }
         }
@@ -97,14 +108,19 @@ class HullsTree extends JPanel {
         }
         @Override
         public void actionPerformed(ActionEvent e) {
-            DefaultMutableTreeNode packageNode = (DefaultMutableTreeNode) cachedSelectForMenu.getParent();
-            String packageName = (String) packageNode.getUserObject();
             if (cachedSelectForMenu.getUserObject() instanceof ShipCSVEntry checked) {
-                Map<String, String> data = checked.getRowData();
-                String hullID = data.get("id");
-                // TODO: implement layer loading.
-                log.info(packageName);
-                log.info(hullID);
+                Path packagePath = checked.getPackageFolder();
+                Hull hullFile = checked.getHullFile();
+                String spriteName = hullFile.getSpriteName();
+
+                Path spriteFilePath = packagePath.resolve(spriteName);
+                File spriteFile = spriteFilePath.toFile();
+
+                EventBus.publish(new LayerCreationQueued());
+                EventBus.publish(new LayerCyclingQueued());
+                BufferedImage sprite = Files.loadSprite(spriteFile);
+                EventBus.publish(new SpriteOpened(sprite, spriteFile.getName()));
+                EventBus.publish(new HullFileOpened(hullFile, checked.getHullFileName()));
             }
         }
 

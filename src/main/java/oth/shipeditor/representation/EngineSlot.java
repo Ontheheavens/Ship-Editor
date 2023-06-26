@@ -3,6 +3,7 @@ package oth.shipeditor.representation;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import oth.shipeditor.parsing.deserialize.Point2DDeserializer;
+import oth.shipeditor.utility.StringConstants;
 
 import java.awt.geom.Point2D;
 
@@ -10,7 +11,7 @@ import java.awt.geom.Point2D;
  * @author Ontheheavens
  * @since 05.05.2023
  */
-public class EngineSlot {
+class EngineSlot {
 
     @JsonProperty("location")
     @JsonDeserialize(using = Point2DDeserializer.class)
@@ -19,16 +20,16 @@ public class EngineSlot {
     @JsonProperty("length")
     private double length;
 
-    @JsonProperty("width")
+    @JsonProperty(StringConstants.WIDTH)
     private double width;
 
-    @JsonProperty("angle")
+    @JsonProperty(StringConstants.ANGLE)
     private double angle;
 
     @JsonProperty("contrailSize")
     private double contrailSize;
 
-    @JsonProperty("style")
+    @JsonProperty(StringConstants.STYLE)
     private String style;
 
 }

@@ -2,6 +2,7 @@ package oth.shipeditor.components.datafiles.entities;
 
 import lombok.Getter;
 import oth.shipeditor.representation.Hull;
+import oth.shipeditor.utility.StringConstants;
 
 import java.nio.file.Path;
 import java.util.Map;
@@ -19,23 +20,27 @@ public class ShipCSVEntry {
     private final Hull hullFile;
 
     @Getter
+    private final String hullFileName;
+
+    @Getter
     private final String hullID;
 
     @Getter
     private final Path packageFolder;
 
-    public ShipCSVEntry(Map<String, String> row, Hull shipFile, Path folder) {
+    public ShipCSVEntry(Map<String, String> row, Hull shipFile, Path folder, String fileName) {
         this.packageFolder = folder;
         this.hullFile = shipFile;
         this.rowData = row;
-        this.hullID = row.get("id");
+        this.hullID = row.get(StringConstants.ID);
+        this.hullFileName = fileName;
     }
 
     @Override
     public String toString() {
-        String displayedName = rowData.get("name");
+        String displayedName = rowData.get(StringConstants.NAME);
         if (displayedName.isEmpty()) {
-            displayedName = rowData.get("designation");
+            displayedName = rowData.get(StringConstants.DESIGNATION);
         }
         return displayedName + " (" + hullID + ")";
     }
