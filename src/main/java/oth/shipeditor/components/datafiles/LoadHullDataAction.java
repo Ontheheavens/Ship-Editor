@@ -9,6 +9,7 @@ import oth.shipeditor.communication.events.files.HullFolderWalked;
 import oth.shipeditor.persistence.Settings;
 import oth.shipeditor.persistence.SettingsManager;
 import oth.shipeditor.representation.Hull;
+import oth.shipeditor.utility.StringConstants;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;
@@ -18,6 +19,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.Files;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
@@ -56,10 +58,10 @@ class LoadHullDataAction extends AbstractAction {
         } catch (IOException exception) {
             exception.printStackTrace();
         }
-        List<Hull> mappedHulls = new ArrayList<>();
+        Map<String, Hull> mappedHulls = new HashMap<>();
         for (File hullFile : shipFiles) {
             Hull mapped = oth.shipeditor.menubar.Files.loadHullFile(hullFile);
-            mappedHulls.add(mapped);
+            mappedHulls.put(hullFile.getName(), mapped);
         }
         log.info("Fetched and mapped {} hull files.", mappedHulls.size());
 
@@ -77,7 +79,7 @@ class LoadHullDataAction extends AbstractAction {
                 .readValues(csvFile)) {
             while (iterator.hasNext()) {
                 Map<String, String> row = iterator.next();
-                String id = row.get("id");
+                String id = row.get(StringConstants.ID);
                 if (!id.isEmpty()) {
                     // We are skipping a row if ship ID is missing.
                     csvData.add(row);

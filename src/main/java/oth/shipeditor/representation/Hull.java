@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import lombok.Getter;
 import oth.shipeditor.parsing.deserialize.Point2DArrayDeserializer;
 import oth.shipeditor.parsing.deserialize.Point2DDeserializer;
+import oth.shipeditor.utility.StringConstants;
 
 import java.awt.geom.Point2D;
 import java.util.Map;
@@ -29,16 +30,16 @@ public class Hull {
     private String hullSize;
 
     @Getter
-    @JsonProperty("spriteName")
+    @JsonProperty(StringConstants.SPRITE_NAME)
     private String spriteName;
 
-    @JsonProperty("style")
+    @JsonProperty(StringConstants.STYLE)
     private String style;
 
     @JsonProperty("height")
     private double height;
 
-    @JsonProperty("width")
+    @JsonProperty(StringConstants.WIDTH)
     private double width;
 
     @Getter

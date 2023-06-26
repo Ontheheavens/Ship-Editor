@@ -10,5 +10,5 @@ import java.util.Map;
  * @author Ontheheavens
  * @since 25.06.2023
  */
-public record HullFolderWalked(List<Map<String, String>> csvData, List<Hull> hullFiles, Path folder) implements FileEvent {
+public record HullFolderWalked(List<Map<String, String>> csvData, Map<String, Hull> hullFiles, Path folder) implements FileEvent {
 }

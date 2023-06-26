@@ -56,6 +56,11 @@ public class LayerManager {
             }
         });
         EventBus.subscribe(event -> {
+            if (event instanceof LayerCyclingQueued) {
+                activateNextLayer();
+            }
+        });
+        EventBus.subscribe(event -> {
             if (event instanceof ActiveLayerRemovalQueued) {
                 ShipLayer selected = this.activeLayer;
                 publishLayerRemoval(selected);
