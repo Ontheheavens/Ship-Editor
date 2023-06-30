@@ -14,4 +14,12 @@ public interface StringConstants {
     String NAME = "name";
     String DESIGNATION = "designation";
 
+    String HULL_NAME = "hullName";
+
+    String BUILT_IN_MODS = "builtInMods";
+
+    String BUILT_IN_WEAPONS = "builtInWeapons";
+
+    String BUILT_IN_WINGS = "builtInWings";
+
 }

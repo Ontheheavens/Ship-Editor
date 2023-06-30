@@ -32,4 +32,7 @@ class EngineSlot {
     @JsonProperty(StringConstants.STYLE)
     private String style;
 
+    @JsonProperty("styleId")
+    private String styleId;
+
 }

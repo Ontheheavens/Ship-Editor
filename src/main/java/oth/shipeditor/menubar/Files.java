@@ -8,6 +8,7 @@ import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.files.HullFileOpened;
 import oth.shipeditor.communication.events.files.SpriteOpened;
 import oth.shipeditor.representation.Hull;
+import oth.shipeditor.representation.Skin;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
@@ -94,12 +95,22 @@ public final class Files {
         }
     }
 
+    private static ObjectMapper getConfigured() {
+        ObjectMapper objectMapper = new ObjectMapper();
+        objectMapper.configure(JsonParser.Feature.ALLOW_YAML_COMMENTS, true);
+        objectMapper.configure(JsonReadFeature.ALLOW_TRAILING_COMMA.mappedFeature(), true);
+        objectMapper.configure(JsonReadFeature.ALLOW_LEADING_DECIMAL_POINT_FOR_NUMBERS.mappedFeature(), true);
+        return objectMapper;
+    }
+
     public static Hull loadHullFile(File file) {
+        String toString = file.getPath();
+        if (!toString.endsWith(".ship")) {
+            throw new IllegalArgumentException("Tried to resolve hull file with invalid extension!");
+        }
         Hull hull = null;
         try {
-            ObjectMapper objectMapper = new ObjectMapper();
-            objectMapper.configure(JsonReadFeature.ALLOW_TRAILING_COMMA.mappedFeature(), true);
-            objectMapper.configure(JsonParser.Feature.ALLOW_YAML_COMMENTS, true);
+            ObjectMapper objectMapper = Files.getConfigured();
             hull = objectMapper.readValue(file, Hull.class);
             log.info("Opening hull file: {}.", file.getName());
         } catch (IOException e) {
@@ -107,6 +118,23 @@ public final class Files {
             e.printStackTrace();
         }
         return hull;
+    }
+
+    public static Skin loadSkinFile(File file) {
+        String toString = file.getPath();
+        if (!toString.endsWith(".skin")) {
+            throw new IllegalArgumentException("Tried to resolve skin file with invalid extension!");
+        }
+        Skin skin = null;
+        try {
+            ObjectMapper objectMapper = Files.getConfigured();
+            log.info("Opening skin file: {}.", file.getName());
+            skin = objectMapper.readValue(file, Skin.class);
+        } catch (IOException e) {
+            log.error("Skin file loading failed: {}", file.getName());
+            e.printStackTrace();
+        }
+        return skin;
     }
 
 }
