@@ -16,10 +16,8 @@ import java.util.Map;
  */
 public class Hull {
 
-    // TODO: implement reading, editing process and writing for all of these fields.
-
     @Getter
-    @JsonProperty("hullName")
+    @JsonProperty(StringConstants.HULL_NAME)
     String hullName;
 
     @Getter
@@ -68,13 +66,13 @@ public class Hull {
     @JsonProperty("viewOffset")
     private double viewOffset;
 
-    @JsonProperty("builtInMods")
+    @JsonProperty(StringConstants.BUILT_IN_MODS)
     private String[] builtInMods;
 
-    @JsonProperty("builtInWeapons")
+    @JsonProperty(StringConstants.BUILT_IN_WEAPONS)
     private Map<String, String> builtInWeapons;
 
-    @JsonProperty("builtInWings")
+    @JsonProperty(StringConstants.BUILT_IN_WINGS)
     private String[] builtInWings;
 
     @JsonProperty("weaponSlots")
@@ -82,8 +80,6 @@ public class Hull {
 
     @JsonProperty("engineSlots")
     private EngineSlot[] engineSlots;
-
-    // TODO: implement undo.
 
     @Getter
     @JsonProperty("bounds")

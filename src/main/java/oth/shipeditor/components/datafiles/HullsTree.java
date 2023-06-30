@@ -5,6 +5,7 @@ import lombok.extern.log4j.Log4j2;
 import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.files.HullFileOpened;
 import oth.shipeditor.communication.events.files.HullFolderWalked;
+import oth.shipeditor.communication.events.files.HullTreeExpansionQueued;
 import oth.shipeditor.communication.events.files.SpriteOpened;
 import oth.shipeditor.communication.events.viewer.layers.LayerCreationQueued;
 import oth.shipeditor.communication.events.viewer.layers.LayerCyclingQueued;
@@ -13,9 +14,7 @@ import oth.shipeditor.menubar.Files;
 import oth.shipeditor.representation.Hull;
 
 import javax.swing.*;
-import javax.swing.tree.DefaultMutableTreeNode;
-import javax.swing.tree.MutableTreeNode;
-import javax.swing.tree.TreePath;
+import javax.swing.tree.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseAdapter;
@@ -23,8 +22,8 @@ import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.nio.file.Path;
+import java.util.*;
 import java.util.List;
-import java.util.Map;
 
 /**
  * @author Ontheheavens
@@ -58,11 +57,44 @@ class HullsTree extends JPanel {
             if (event instanceof HullFolderWalked checked) {
                 List<Map<String, String>> tableData = checked.csvData();
                 if (tableData == null) return;
-                DefaultMutableTreeNode node = loadHullList(tableData, checked.hullFiles(), checked.folder());
-                hullsTree.expandPath(new TreePath(new DefaultMutableTreeNode[]{hullsRoot, node}));
+                loadHullList(tableData, checked.hullFiles(), checked.folder());
                 hullsTree.repaint();
             }
         });
+        EventBus.subscribe(event -> {
+            if (event instanceof HullTreeExpansionQueued) {
+                Enumeration<TreeNode> children = hullsRoot.children();
+                while (children.hasMoreElements()) {
+                    TreeNode folder = children.nextElement();
+                    HullsTree.sortFolderNode(folder, (node1, node2) -> {
+                        String name1 = node1.toString();
+                        String name2 = node2.toString();
+                        return name1.compareToIgnoreCase(name2);
+                    });
+                }
+                if (hullsTree.getModel() instanceof DefaultTreeModel checked) {
+                    checked.nodeStructureChanged(hullsRoot);
+                }
+                hullsTree.expandPath(new TreePath(hullsRoot));
+                hullsTree.repaint();
+            }
+        });
+    }
+
+    private static void sortFolderNode(TreeNode folder, Comparator<DefaultMutableTreeNode> comparator) {
+        Enumeration<? extends TreeNode> children = folder.children();
+        List<DefaultMutableTreeNode> nodeList = new ArrayList<>();
+        while (children.hasMoreElements()) {
+            if (children.nextElement() instanceof DefaultMutableTreeNode checked) {
+                nodeList.add(checked);
+            }
+        }
+        nodeList.sort(comparator);
+        DefaultMutableTreeNode casted = (DefaultMutableTreeNode) folder;
+        casted.removeAllChildren();
+        for (MutableTreeNode node : nodeList) {
+            casted.add(node);
+        }
     }
 
     private void initComponentListeners() {
