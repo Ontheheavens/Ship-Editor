@@ -101,12 +101,10 @@ class LoadGameDataAction extends AbstractAction {
         Path skinDataPath = Paths.get(folderPath, "data", HULLS, "skins");
         if (Files.exists(skinDataPath) && Files.isDirectory(skinDataPath)) {
             skins = LoadGameDataAction.walkSkinFolder(skinDataPath);
-            for (Map.Entry<String, Skin> entry : skins.entrySet()) {
-                log.info("Skin path: {}", entry.getKey());
-            }
         }
 
-//        EventBus.publish(new HullFolderWalked(csvData, mappedHulls, Paths.get(folderPath, "")));
+        EventBus.publish(new HullFolderWalked(csvData, mappedHulls,
+                skins, Paths.get(folderPath, "")));
     }
 
     private static Map<String, Skin> walkSkinFolder(Path skinFolder) {

@@ -7,6 +7,7 @@ import lombok.extern.log4j.Log4j2;
 import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.files.HullFileOpened;
 import oth.shipeditor.communication.events.files.SpriteOpened;
+import oth.shipeditor.parsing.JsonProcessor;
 import oth.shipeditor.representation.Hull;
 import oth.shipeditor.representation.Skin;
 
@@ -27,6 +28,9 @@ public final class Files {
 
     private static final String OPEN_COMMAND_CANCELLED_BY_USER = "Open command cancelled by user.";
     public static final String STARSECTOR_CORE = "starsector-core";
+    private static final String OPENING_SKIN_FILE = "Opening skin file: {}.";
+    private static final String SKIN_FILE_LOADING_FAILED = "Skin file loading failed: {}";
+    private static final String TRIED_TO_RESOLVE_SKIN_FILE_WITH_INVALID_EXTENSION = "Tried to resolve skin file with invalid extension!";
     private static File lastDirectory;
 
     private Files() {}
@@ -112,7 +116,7 @@ public final class Files {
         try {
             ObjectMapper objectMapper = Files.getConfigured();
             hull = objectMapper.readValue(file, Hull.class);
-            log.info("Opening hull file: {}.", file.getName());
+            log.info("Opening hull file: {}", file.getName());
         } catch (IOException e) {
             log.error("Hull file loading failed: {}", file.getName());
             e.printStackTrace();
@@ -123,15 +127,20 @@ public final class Files {
     public static Skin loadSkinFile(File file) {
         String toString = file.getPath();
         if (!toString.endsWith(".skin")) {
-            throw new IllegalArgumentException("Tried to resolve skin file with invalid extension!");
+            throw new IllegalArgumentException(TRIED_TO_RESOLVE_SKIN_FILE_WITH_INVALID_EXTENSION);
         }
+        return Files.parseSkinAsJSON(file);
+    }
+
+    private static Skin parseSkinAsJSON(File file) {
         Skin skin = null;
-        try {
-            ObjectMapper objectMapper = Files.getConfigured();
-            log.info("Opening skin file: {}.", file.getName());
-            skin = objectMapper.readValue(file, Skin.class);
+        ObjectMapper objectMapper = Files.getConfigured();
+        String preprocessed = JsonProcessor.correctJSON(file);
+        try (JsonParser parser = objectMapper.createParser(preprocessed)) {
+            log.info(OPENING_SKIN_FILE, file.getName());
+            skin = objectMapper.readValue(parser, Skin.class);
         } catch (IOException e) {
-            log.error("Skin file loading failed: {}", file.getName());
+            log.error(SKIN_FILE_LOADING_FAILED, file.getName());
             e.printStackTrace();
         }
         return skin;

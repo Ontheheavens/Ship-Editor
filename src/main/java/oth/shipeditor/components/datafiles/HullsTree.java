@@ -17,6 +17,7 @@ import javax.swing.*;
 import javax.swing.tree.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
@@ -182,6 +183,16 @@ class HullsTree extends JPanel {
             JMenuItem loadAsLayer = new JMenuItem("Load as layer");
             loadAsLayer.addActionListener(new LoadLayerFromTree());
             menu.add(loadAsLayer);
+            JMenuItem collapsePackage = new JMenuItem("Collapse parent");
+            collapsePackage.addActionListener(e -> {
+                if (cachedSelectForMenu.getUserObject() instanceof ShipCSVEntry) {
+                    TreePath selected = hullsTree.getSelectionPath();
+                    if (selected != null) {
+                        hullsTree.collapsePath(selected.getParentPath());
+                    }
+                }
+            });
+            menu.add(collapsePackage);
             return menu;
         }
 

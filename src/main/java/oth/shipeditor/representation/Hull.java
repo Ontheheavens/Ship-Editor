@@ -3,10 +3,12 @@ package oth.shipeditor.representation;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import lombok.Getter;
+import oth.shipeditor.parsing.deserialize.ColorArrayRGBADeserializer;
 import oth.shipeditor.parsing.deserialize.Point2DArrayDeserializer;
 import oth.shipeditor.parsing.deserialize.Point2DDeserializer;
 import oth.shipeditor.utility.StringConstants;
 
+import java.awt.*;
 import java.awt.geom.Point2D;
 import java.util.Map;
 
@@ -53,7 +55,7 @@ public class Hull {
     @JsonProperty("collisionRadius")
     private double collisionRadius;
 
-    @JsonProperty("coversColor")
+    @JsonProperty(StringConstants.COVERS_COLOR)
     private String coversColor;
 
     @JsonProperty("shieldCenter")
