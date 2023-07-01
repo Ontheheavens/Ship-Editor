@@ -55,8 +55,8 @@ public class GameDataPanel extends JPanel {
     }
 
     void updateEntryPanel(ShipCSVEntry selected) {
-        rightPanel.removeAll();
-        JComboBox<Skin> skinChooser = new JComboBox<>();
+//        rightPanel.removeAll();
+//        JComboBox<Skin> skinChooser = new JComboBox<>();
 
 
         entryDataPanel.removeAll();

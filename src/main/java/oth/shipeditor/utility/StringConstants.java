@@ -22,4 +22,52 @@ public interface StringConstants {
 
     String BUILT_IN_WINGS = "builtInWings";
 
+    String BASE_HULL_ID = "baseHullId";
+
+    String SKIN_HULL_ID = "skinHullId";
+
+    String SYSTEM_ID = "systemId";
+
+    String HULL_DESIGNATION = "hullDesignation";
+
+    String RESTORE_TO_BASE_HULL = "restoreToBaseHull";
+
+    String INCOMPATIBLE_WITH_BASE_HULL = "incompatibleWithBaseHull";
+
+    String FLEET_POINTS = "fleetPoints";
+
+    String ORDNANCE_POINTS = "ordnancePoints";
+
+    String BASE_VALUE = "baseValue";
+
+    String SUPPLIES_PER_MONTH = "suppliesPerMonth";
+
+    String SUPPLIES_TO_RECOVER = "suppliesToRecover";
+
+    String DESCRIPTION_ID = "descriptionId";
+
+    String DESCRIPTION_PREFIX = "descriptionPrefix";
+
+    String COVERS_COLOR = "coversColor";
+
+    String FIGHTER_BAYS = "fighterBays";
+
+    String BASE_VALUE_MULT = "baseValueMult";
+
+    String REMOVE_HINTS = "removeHints";
+
+    String ADD_HINTS = "addHints";
+
+    String REMOVE_WEAPON_SLOTS = "removeWeaponSlots";
+
+    String REMOVE_ENGINE_SLOTS = "removeEngineSlots";
+
+    String REMOVE_BUILT_IN_MODS = "removeBuiltInMods";
+
+    String REMOVE_BUILT_IN_WEAPONS = "removeBuiltInWeapons";
+
+    String WEAPON_SLOT_CHANGES = "weaponSlotChanges";
+
+    String ENGINE_SLOT_CHANGES = "engineSlotChanges";
+
 }

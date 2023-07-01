@@ -1,14 +1,14 @@
 package oth.shipeditor.representation;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonRawValue;
-import com.fasterxml.jackson.annotation.JsonValue;
+import com.fasterxml.jackson.annotation.*;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import lombok.Getter;
+import lombok.Setter;
+import oth.shipeditor.parsing.deserialize.ColorArrayRGBADeserializer;
 import oth.shipeditor.parsing.deserialize.ShipTypeHintsDeserializer;
 import oth.shipeditor.utility.StringConstants;
 
+import java.awt.*;
 import java.util.List;
 import java.util.Map;
 
@@ -16,8 +16,11 @@ import java.util.Map;
  * @author Ontheheavens
  * @since 29.06.2023
  */
+@Getter @Setter
+@SuppressWarnings("TransientFieldInNonSerializableClass")
 public class Skin {
 
+    @JsonIgnore
     private static final Skin NO_SKIN = new Skin(true);
 
     @JsonCreator
@@ -33,41 +36,54 @@ public class Skin {
         return NO_SKIN;
     }
 
-    @Getter
-    private final boolean base;
+    @JsonIgnore
+    private final transient boolean base;
 
-    @JsonProperty("baseHullId")
+    @JsonProperty(StringConstants.BASE_HULL_ID)
     private String baseHullId;
 
-    @JsonProperty("skinHullId")
+    @JsonProperty(StringConstants.SKIN_HULL_ID)
     private String skinHullId;
 
-    @JsonProperty("systemId")
+    @JsonProperty(StringConstants.SYSTEM_ID)
     private String systemId;
 
     @JsonProperty(StringConstants.HULL_NAME)
     private String hullName;
 
-    @JsonProperty("hullDesignation")
+    @JsonProperty(StringConstants.HULL_DESIGNATION)
     private String hullDesignation;
 
-    @JsonProperty("restoreToBaseHull")
+    @JsonProperty(StringConstants.RESTORE_TO_BASE_HULL)
     private boolean restoreToBaseHull;
 
-    @JsonProperty("incompatibleWithBaseHull")
+    @JsonProperty(StringConstants.INCOMPATIBLE_WITH_BASE_HULL)
     private boolean incompatibleWithBaseHull;
 
-    @JsonProperty("fleetPoints")
+    @JsonProperty(StringConstants.FLEET_POINTS)
     private int fleetPoints;
 
-    @JsonProperty("ordnancePoints")
+    @JsonProperty(StringConstants.ORDNANCE_POINTS)
     private int ordnancePoints;
 
-    @JsonProperty("descriptionId")
+    @JsonProperty(StringConstants.BASE_VALUE)
+    private int baseValue;
+
+    @JsonProperty(StringConstants.SUPPLIES_PER_MONTH)
+    private double suppliesPerMonth;
+
+    @JsonProperty(StringConstants.SUPPLIES_TO_RECOVER)
+    private double suppliesToRecover;
+
+    @JsonProperty(StringConstants.DESCRIPTION_ID)
     private String descriptionId;
 
-    @JsonProperty("descriptionPrefix")
+    @JsonProperty(StringConstants.DESCRIPTION_PREFIX)
     private String descriptionPrefix;
+
+    @JsonProperty(StringConstants.COVERS_COLOR)
+    @JsonDeserialize(using = ColorArrayRGBADeserializer.class)
+    private Color coversColor;
 
     @JsonProperty("tags")
     private List<String> tags;
@@ -78,32 +94,32 @@ public class Skin {
     @JsonProperty(StringConstants.BUILT_IN_WINGS)
     private List<String> builtInWings;
 
-    @JsonProperty("fighterBays")
+    @JsonProperty(StringConstants.FIGHTER_BAYS)
     private int fighterBays;
 
     @JsonProperty(StringConstants.SPRITE_NAME)
     private String spriteName;
 
-    @JsonProperty("baseValueMult")
+    @JsonProperty(StringConstants.BASE_VALUE_MULT)
     private double baseValueMult;
 
     @JsonDeserialize(using = ShipTypeHintsDeserializer.class)
-    @JsonProperty("removeHints")
+    @JsonProperty(StringConstants.REMOVE_HINTS)
     private ShipTypeHints[] removeHints;
 
-    @JsonProperty("addHints")
+    @JsonProperty(StringConstants.ADD_HINTS)
     private List<ShipTypeHints> addHints;
 
-    @JsonProperty("removeWeaponSlots")
+    @JsonProperty(StringConstants.REMOVE_WEAPON_SLOTS)
     private List<String> removeWeaponSlots;
 
-    @JsonProperty("removeEngineSlots")
+    @JsonProperty(StringConstants.REMOVE_ENGINE_SLOTS)
     private List<Integer> removeEngineSlots;
 
-    @JsonProperty("removeBuiltInMods")
+    @JsonProperty(StringConstants.REMOVE_BUILT_IN_MODS)
     private List<String> removeBuiltInMods;
 
-    @JsonProperty("removeBuiltInWeapons")
+    @JsonProperty(StringConstants.REMOVE_BUILT_IN_WEAPONS)
     private List<String> removeBuiltInWeapons;
 
     @JsonProperty(StringConstants.BUILT_IN_MODS)
@@ -112,26 +128,11 @@ public class Skin {
     @JsonProperty(StringConstants.BUILT_IN_WEAPONS)
     private Map<String, String> builtInWeapons;
 
-    @JsonProperty("weaponSlotChanges")
-    private Map<String, WeaponSlotChange> weaponSlotChanges;
+    @JsonProperty(StringConstants.WEAPON_SLOT_CHANGES)
+    private Map<String, WeaponSlot> weaponSlotChanges;
 
-    static class WeaponSlotChange {
-
-        @JsonProperty("type")
-        private String type;
-
-        @JsonProperty("angle")
-        private Double angle;
-
-        @JsonProperty("arc")
-        private Integer arc;
-
-        @JsonProperty("mount")
-        private String mount;
-
-        @JsonProperty("size")
-        private String size;
-    }
+    @JsonProperty(StringConstants.ENGINE_SLOT_CHANGES)
+    private Map<String, EngineSlot> engineSlotChanges;
 
 }
 

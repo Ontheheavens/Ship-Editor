@@ -89,8 +89,7 @@ public final class ViewerStatusPanel extends JPanel {
         });
         EventBus.subscribe(event -> {
             if (event instanceof ViewerCursorMoved checked) {
-                Point2D corrected = checked.adjustedAndCorrected();
-                this.cursorPoint = corrected;
+                this.cursorPoint = checked.adjustedAndCorrected();
                 this.updateCursorCoordsLabel();
             }
         });

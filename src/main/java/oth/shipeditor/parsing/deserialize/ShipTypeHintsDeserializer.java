@@ -1,6 +1,7 @@
 package oth.shipeditor.parsing.deserialize;
 
 import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.core.JsonToken;
 import com.fasterxml.jackson.core.ObjectCodec;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonDeserializer;
@@ -21,16 +22,22 @@ public class ShipTypeHintsDeserializer extends JsonDeserializer<ShipTypeHints[]>
 
     @Override
     public ShipTypeHints[] deserialize(JsonParser p, DeserializationContext ctxt) throws IOException {
-        ObjectCodec codec = p.getCodec();
-        JsonNode node = codec.readTree(p);
-        List<ShipTypeHints> hintsList = new ArrayList<>();
-        for (JsonNode hintNode : node) {
-            log.info("TESSSSSST: " + hintNode);
-            String hintValue = hintNode.textValue();
-            ShipTypeHints hint = ShipTypeHints.valueOf(hintValue);
-            hintsList.add(hint);
+        List<ShipTypeHints> hints = new ArrayList<>();
+
+        if (p.currentToken() == JsonToken.START_ARRAY) {
+            while (p.nextToken() != JsonToken.END_ARRAY) {
+                if (p.currentToken() == JsonToken.VALUE_STRING) {
+                    String enumString = p.getText();
+                    ShipTypeHints hint = ShipTypeHints.valueOf(enumString);
+                    hints.add(hint);
+                } else {
+                    // Handle other token types if needed
+                    // Throw an exception or skip invalid tokens
+                }
+            }
         }
-        return hintsList.toArray(new ShipTypeHints[0]);
+
+        return hints.toArray(new ShipTypeHints[0]);
     }
 
 }
