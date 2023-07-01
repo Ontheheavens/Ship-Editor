@@ -21,7 +21,7 @@ public class ShipCSVEntry {
 
     private final Hull hullFile;
 
-    private final List<Skin> skins;
+    private final Map<String, Skin> skins;
 
     @Setter
     private Skin activeSkin;
@@ -32,7 +32,7 @@ public class ShipCSVEntry {
 
     private final Path packageFolder;
 
-    public ShipCSVEntry(Map<String, String> row, Map.Entry<Hull, List<Skin>> hullWithSkins,
+    public ShipCSVEntry(Map<String, String> row, Map.Entry<Hull, Map<String, Skin>> hullWithSkins,
                         Path folder, String fileName) {
         this.packageFolder = folder;
         this.hullFile = hullWithSkins.getKey();
@@ -41,6 +41,9 @@ public class ShipCSVEntry {
         this.hullID = row.get(StringConstants.ID);
         this.hullFileName = fileName;
         this.activeSkin = Skin.empty();
+        if (this.skins != null) {
+            this.skins.put(StringConstants.DEFAULT, activeSkin);
+        }
     }
 
     @Override

@@ -6,6 +6,9 @@ import oth.shipeditor.representation.Skin;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
@@ -59,10 +62,16 @@ public class GameDataPanel extends JPanel {
 
     void updateEntryPanel(ShipCSVEntry selected) {
         rightPanel.removeAll();
-        List<Skin> skins = selected.getSkins();
+        Map<String, Skin> skins = selected.getSkins();
         if (skins != null) {
-            Skin[] skinArray = skins.toArray(new Skin[0]);
+            Collection<Skin> values = skins.values();
+            Skin[] skinArray = values.toArray(new Skin[0]);
             JComboBox<Skin> skinChooser = new JComboBox<>(skinArray);
+            skinChooser.setSelectedItem(selected.getActiveSkin());
+            skinChooser.addActionListener(e -> {
+                Skin chosen = (Skin) skinChooser.getSelectedItem();
+                selected.setActiveSkin(chosen);
+            });
             rightPanel.add(skinChooser);
         } else {
             rightPanel.removeAll();

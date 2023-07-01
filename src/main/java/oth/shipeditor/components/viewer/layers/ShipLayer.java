@@ -29,6 +29,8 @@ public class ShipLayer {
 
     private String hullFileName = "";
 
+    private String skinFileName = "";
+
     private LayerPainter painter;
 
     public ShipLayer() {

@@ -3,10 +3,7 @@ package oth.shipeditor.components.datafiles;
 import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
 import oth.shipeditor.communication.EventBus;
-import oth.shipeditor.communication.events.files.HullFileOpened;
-import oth.shipeditor.communication.events.files.HullFolderWalked;
-import oth.shipeditor.communication.events.files.HullTreeExpansionQueued;
-import oth.shipeditor.communication.events.files.SpriteOpened;
+import oth.shipeditor.communication.events.files.*;
 import oth.shipeditor.communication.events.viewer.layers.LayerCreationQueued;
 import oth.shipeditor.communication.events.viewer.layers.LayerCyclingQueued;
 import oth.shipeditor.components.datafiles.entities.ShipCSVEntry;
@@ -115,14 +112,14 @@ class HullsTree extends JPanel {
                               Map<String, Hull> hullFiles, Map<String, Skin> skinFiles, Path packagePath) {
         DefaultMutableTreeNode packageRoot = new DefaultMutableTreeNode(packagePath.getFileName().toString());
         for (Map<String, String> row : tableData) {
-            Map.Entry<Hull, List<Skin>> hullWithSkins = null;
+            Map.Entry<Hull, Map<String, Skin>> hullWithSkins = null;
             String fileName = "";
             for (String shipFileName : hullFiles.keySet()) {
                 Hull shipFile = hullFiles.get(shipFileName);
                 String hullId = shipFile.getHullId();
                 if (hullId.equals(row.get("id"))) {
                     fileName = shipFileName;
-                    List<Skin> skins = HullsTree.fetchSkinsByHull(shipFile, skinFiles);
+                    Map<String, Skin> skins = HullsTree.fetchSkinsByHull(shipFile, skinFiles);
                     hullWithSkins = new AbstractMap.SimpleEntry<>(shipFile, skins);
                 }
             }
@@ -135,13 +132,14 @@ class HullsTree extends JPanel {
         hullsRoot.add(packageRoot);
     }
 
-    private static List<Skin> fetchSkinsByHull(Hull hull, Map<String, Skin> skins) {
+    private static Map<String, Skin> fetchSkinsByHull(Hull hull, Map<String, Skin> skins) {
         if (skins == null) return null;
         String hullId = hull.getHullId();
-        List<Skin> associated = new ArrayList<>();
-        for (Skin skin : skins.values()) {
-            if (Objects.equals(skin.getBaseHullId(), hullId)) {
-                associated.add(skin);
+        Map<String, Skin> associated = new HashMap<>();
+        for (Map.Entry<String, Skin> skin : skins.entrySet()) {
+            Skin value = skin.getValue();
+            if (Objects.equals(value.getBaseHullId(), hullId)) {
+                associated.put(skin.getKey(), skin.getValue());
             }
         }
         if (!associated.isEmpty()) {
@@ -161,6 +159,11 @@ class HullsTree extends JPanel {
                 Path packagePath = checked.getPackageFolder();
                 Hull hullFile = checked.getHullFile();
                 String spriteName = hullFile.getSpriteName();
+                Skin activeSkin = checked.getActiveSkin();
+                boolean skinChosen = !activeSkin.isBase();
+                if (skinChosen) {
+                    spriteName = activeSkin.getSpriteName();
+                }
 
                 Path spriteFilePath = packagePath.resolve(spriteName);
                 File spriteFile = spriteFilePath.toFile();
@@ -170,6 +173,18 @@ class HullsTree extends JPanel {
                 BufferedImage sprite = Files.loadSprite(spriteFile);
                 EventBus.publish(new SpriteOpened(sprite, spriteFile.getName()));
                 EventBus.publish(new HullFileOpened(hullFile, checked.getHullFileName()));
+                if (skinChosen) {
+                    String skinFileName = "";
+                    Map<String, Skin> skins = checked.getSkins();
+                    for (String skinName : skins.keySet()) {
+                        Skin skin = skins.get(skinName);
+                        if (skin.equals(activeSkin)) {
+                            skinFileName = skinName;
+                            break;
+                        }
+                    }
+                    EventBus.publish(new SkinFileOpened(activeSkin, skinFileName));
+                }
             }
         }
 

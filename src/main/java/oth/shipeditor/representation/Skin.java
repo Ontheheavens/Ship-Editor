@@ -137,6 +137,9 @@ public class Skin {
 
     @Override
     public String toString() {
+        if (base) {
+            return "Base hull";
+        }
         String designation = tech;
         String techResult = "";
         if (designation != null && !designation.isEmpty()) {

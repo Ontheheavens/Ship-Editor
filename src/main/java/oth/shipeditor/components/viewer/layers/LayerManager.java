@@ -4,11 +4,13 @@ import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
 import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.files.HullFileOpened;
+import oth.shipeditor.communication.events.files.SkinFileOpened;
 import oth.shipeditor.communication.events.files.SpriteOpened;
 import oth.shipeditor.communication.events.viewer.ViewerRepaintQueued;
 import oth.shipeditor.communication.events.viewer.layers.*;
 import oth.shipeditor.representation.Hull;
 import oth.shipeditor.representation.ShipData;
+import oth.shipeditor.representation.Skin;
 
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
@@ -132,6 +134,23 @@ public class LayerManager {
                     EventBus.publish(new ActiveLayerUpdated(activeLayer, false));
                 } else {
                     throw new IllegalStateException("Hull file loaded into layer without a sprite!");
+                }
+            }
+        });
+        EventBus.subscribe(event -> {
+            if (event instanceof SkinFileOpened checked) {
+                Skin skin = checked.skin();
+                if (activeLayer != null) {
+                    ShipData data = activeLayer.getShipData();
+                    if (data != null ) {
+                        data.setSkin(skin);
+                    } else {
+                        throw new IllegalStateException("Skin file loaded onto a null ship data!");
+                    }
+                    activeLayer.setSkinFileName(checked.skinFileName());
+                    EventBus.publish(new ActiveLayerUpdated(activeLayer, false));
+                } else {
+                    throw new IllegalStateException("Skin file loaded into a null layer!");
                 }
             }
         });
