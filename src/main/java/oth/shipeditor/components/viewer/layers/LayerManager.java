@@ -18,6 +18,7 @@ import java.util.List;
  * @author Ontheheavens
  * @since 27.05.2023
  */
+@SuppressWarnings("OverlyCoupledClass")
 @Log4j2
 public class LayerManager {
 
@@ -33,7 +34,7 @@ public class LayerManager {
         this.initOpenHullListener();
     }
 
-    public void activateNextLayer() {
+    private void activateNextLayer() {
         ShipLayer old = this.activeLayer;
         int nextIndex = layers.indexOf(old) + 1;
         if (nextIndex > layers.size() - 1) return;
@@ -98,7 +99,9 @@ public class LayerManager {
         EventBus.subscribe(event -> {
             if (event instanceof SpriteOpened checked) {
                 BufferedImage sprite = checked.sprite();
-                if (activeLayer != null) {
+                if (activeLayer.getShipSprite() != null) {
+                    throw new IllegalStateException("Sprite loaded onto existing sprite!");
+                } else if (activeLayer != null) {
                     activeLayer.setShipSprite(sprite);
                     activeLayer.setSpriteFileName(checked.filename());
                     EventBus.publish(new ActiveLayerUpdated(activeLayer, true));
@@ -128,11 +131,7 @@ public class LayerManager {
                     activeLayer.setHullFileName(checked.hullFileName());
                     EventBus.publish(new ActiveLayerUpdated(activeLayer, false));
                 } else {
-                    ShipLayer newLayer = new ShipLayer(new ShipData(hull));
-                    newLayer.setHullFileName(checked.hullFileName());
-                    activeLayer = newLayer;
-                    layers.add(newLayer);
-                    EventBus.publish(new ShipLayerCreated(newLayer));
+                    throw new IllegalStateException("Hull file loaded into layer without a sprite!");
                 }
             }
         });

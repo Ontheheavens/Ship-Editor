@@ -2,6 +2,7 @@ package oth.shipeditor.components.datafiles;
 
 import com.fasterxml.jackson.databind.MappingIterator;
 import com.fasterxml.jackson.dataformat.csv.CsvMapper;
+import com.fasterxml.jackson.dataformat.csv.CsvParser;
 import com.fasterxml.jackson.dataformat.csv.CsvSchema;
 import lombok.extern.log4j.Log4j2;
 import oth.shipeditor.communication.EventBus;
@@ -132,6 +133,7 @@ class LoadGameDataAction extends AbstractAction {
 
     private static List<Map<String, String>> parseShipDataCSV(Path shipDataPath) {
         CsvMapper csvMapper = new CsvMapper();
+        csvMapper.enable(CsvParser.Feature.ALLOW_COMMENTS);
 
         CsvSchema csvSchema = CsvSchema.emptySchema().withHeader();
         File csvFile = shipDataPath.toFile();

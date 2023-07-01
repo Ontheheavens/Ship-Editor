@@ -6,6 +6,7 @@ import oth.shipeditor.representation.Skin;
 
 import javax.swing.*;
 import java.awt.*;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -18,6 +19,8 @@ public class GameDataPanel extends JPanel {
     private JPanel entryDataPanel;
 
     private JPanel rightPanel;
+
+    private JScrollPane dataScrollContainer;
 
     public GameDataPanel() {
         this.setLayout(new BorderLayout());
@@ -38,7 +41,7 @@ public class GameDataPanel extends JPanel {
         entryDataPanel.setLayout(new BoxLayout(entryDataPanel, BoxLayout.PAGE_AXIS));
         entryDataPanel.setAlignmentX(CENTER_ALIGNMENT);
         entryDataPanel.setBorder(BorderFactory.createEmptyBorder(2,6, 2, 2));
-        JScrollPane dataScrollContainer = new JScrollPane(entryDataPanel);
+        dataScrollContainer = new JScrollPane(entryDataPanel);
         dataScrollContainer.setBorder(BorderFactory.createEmptyBorder());
         rightPanel = new JPanel();
         rightPanel.setLayout(new BoxLayout(rightPanel, BoxLayout.PAGE_AXIS));
@@ -55,18 +58,24 @@ public class GameDataPanel extends JPanel {
     }
 
     void updateEntryPanel(ShipCSVEntry selected) {
-//        rightPanel.removeAll();
-//        JComboBox<Skin> skinChooser = new JComboBox<>();
-
-
+        rightPanel.removeAll();
+        List<Skin> skins = selected.getSkins();
+        if (skins != null) {
+            Skin[] skinArray = skins.toArray(new Skin[0]);
+            JComboBox<Skin> skinChooser = new JComboBox<>(skinArray);
+            rightPanel.add(skinChooser);
+        } else {
+            rightPanel.removeAll();
+        }
+        rightPanel.add(dataScrollContainer);
         entryDataPanel.removeAll();
         Map<String, String> data = selected.getRowData();
         for (Map.Entry<String, String> entry : data.entrySet()) {
             JLabel keyLabel = new JLabel(entry.getKey() + ": " + entry.getValue());
             entryDataPanel.add(keyLabel);
         }
-        entryDataPanel.revalidate();
-        entryDataPanel.repaint();
+        rightPanel.revalidate();
+        rightPanel.repaint();
     }
 
 }

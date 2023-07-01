@@ -11,6 +11,7 @@ import oth.shipeditor.utility.StringConstants;
 import java.awt.*;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * @author Ontheheavens
@@ -133,6 +134,16 @@ public class Skin {
 
     @JsonProperty(StringConstants.ENGINE_SLOT_CHANGES)
     private Map<String, EngineSlot> engineSlotChanges;
+
+    @Override
+    public String toString() {
+        String designation = tech;
+        String techResult = "";
+        if (designation != null && !designation.isEmpty()) {
+            techResult = " (" + designation + ")";
+        }
+        return hullName + techResult;
+    }
 
 }
 
