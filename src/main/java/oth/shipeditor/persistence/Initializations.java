@@ -14,6 +14,8 @@ import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.Files;
@@ -48,6 +50,7 @@ public final class Initializations {
         try {
             Initializations.installGameFolderShortcut(window);
         } catch (URISyntaxException | IOException e) {
+            e.printStackTrace();
             throw new RuntimeException("Customization of file chooser failed!", e);
         }
     }
@@ -57,11 +60,23 @@ public final class Initializations {
         ClassLoader classLoader = windowClass.getClassLoader();
         String iconName = "gamefolder_icon64.png";
 
+        File iconFile;
+        BufferedImage iconImage;
         URL iconPath = Objects.requireNonNull(classLoader.getResource(iconName));
-        File iconFile = new File(iconPath.toURI());
-
-        log.info("Loading game folder icon...");
-        BufferedImage iconImage = ImageIO.read(iconFile);
+        URI checked = iconPath.toURI();
+        if (checked.isOpaque()) {
+            try ( InputStream inputStream = Initializations.class.getResourceAsStream("/" + iconName)) {
+                if (inputStream != null) {
+                    iconImage = ImageIO.read(inputStream);
+                } else {
+                    throw new RuntimeException("Game folder icon not found!");
+                }
+            }
+        } else {
+            iconFile = new File(checked);
+            log.info("Loading game folder icon...");
+            iconImage = ImageIO.read(iconFile);
+        }
 
         Settings settings = SettingsManager.getSettings();
         String folderPath = settings.getGameFolderPath();
