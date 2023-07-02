@@ -6,6 +6,7 @@ import lombok.extern.log4j.Log4j2;
 import oth.shipeditor.PrimaryWindow;
 import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.viewer.ViewerBackgroundChanged;
+import oth.shipeditor.menubar.FileUtilities;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
@@ -13,6 +14,8 @@ import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.Files;
@@ -47,6 +50,7 @@ public final class Initializations {
         try {
             Initializations.installGameFolderShortcut(window);
         } catch (URISyntaxException | IOException e) {
+            e.printStackTrace();
             throw new RuntimeException("Customization of file chooser failed!", e);
         }
     }
@@ -56,11 +60,23 @@ public final class Initializations {
         ClassLoader classLoader = windowClass.getClassLoader();
         String iconName = "gamefolder_icon64.png";
 
+        File iconFile;
+        BufferedImage iconImage;
         URL iconPath = Objects.requireNonNull(classLoader.getResource(iconName));
-        File iconFile = new File(iconPath.toURI());
-
-        log.info("Loading game folder icon...");
-        BufferedImage iconImage = ImageIO.read(iconFile);
+        URI checked = iconPath.toURI();
+        if (checked.isOpaque()) {
+            try ( InputStream inputStream = Initializations.class.getResourceAsStream("/" + iconName)) {
+                if (inputStream != null) {
+                    iconImage = ImageIO.read(inputStream);
+                } else {
+                    throw new RuntimeException("Game folder icon not found!");
+                }
+            }
+        } else {
+            iconFile = new File(checked);
+            log.info("Loading game folder icon...");
+            iconImage = ImageIO.read(iconFile);
+        }
 
         Settings settings = SettingsManager.getSettings();
         String folderPath = settings.getGameFolderPath();
@@ -150,7 +166,7 @@ public final class Initializations {
                     stream.filter(Files::isDirectory)
                             .forEach(path -> {
                                 String folderName = path.getFileName().toString();
-                                if (oth.shipeditor.menubar.Files.STARSECTOR_CORE.equals(folderName)) {
+                                if (FileUtilities.STARSECTOR_CORE.equals(folderName)) {
                                     settings.setCoreFolderPath(path.toString());
                                     folderHasCore = true;
                                 }

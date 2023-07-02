@@ -8,6 +8,7 @@ import oth.shipeditor.communication.events.Events;
 import oth.shipeditor.communication.events.viewer.points.BoundCreationQueued;
 import oth.shipeditor.communication.events.viewer.points.BoundInsertedConfirmed;
 import oth.shipeditor.communication.events.viewer.points.InstrumentModeChanged;
+import oth.shipeditor.components.instrument.InstrumentTabsPane;
 import oth.shipeditor.components.viewer.InstrumentMode;
 import oth.shipeditor.components.viewer.PrimaryShipViewer;
 import oth.shipeditor.components.viewer.control.ViewerControl;
@@ -55,7 +56,7 @@ public final class BoundPointsPainter extends AbstractPointPainter {
         this.initHotkeys();
         this.initModeListener();
         this.initCreationListener();
-        this.setInteractionEnabled(false);
+        this.setInteractionEnabled(InstrumentTabsPane.getCurrentMode() == InstrumentMode.BOUNDS);
     }
 
     @Override

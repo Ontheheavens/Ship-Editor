@@ -3,21 +3,18 @@ package oth.shipeditor.components.datafiles;
 import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
 import oth.shipeditor.communication.EventBus;
-import oth.shipeditor.communication.events.files.HullFileOpened;
-import oth.shipeditor.communication.events.files.HullFolderWalked;
-import oth.shipeditor.communication.events.files.HullTreeExpansionQueued;
-import oth.shipeditor.communication.events.files.SpriteOpened;
+import oth.shipeditor.communication.events.files.*;
 import oth.shipeditor.communication.events.viewer.layers.LayerCreationQueued;
 import oth.shipeditor.communication.events.viewer.layers.LayerCyclingQueued;
 import oth.shipeditor.components.datafiles.entities.ShipCSVEntry;
-import oth.shipeditor.menubar.Files;
+import oth.shipeditor.menubar.FileUtilities;
 import oth.shipeditor.representation.Hull;
+import oth.shipeditor.representation.Skin;
 
 import javax.swing.*;
 import javax.swing.tree.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
@@ -58,8 +55,16 @@ class HullsTree extends JPanel {
             if (event instanceof HullFolderWalked checked) {
                 List<Map<String, String>> tableData = checked.csvData();
                 if (tableData == null) return;
-                loadHullList(tableData, checked.hullFiles(), checked.folder());
+                loadHullList(tableData, checked.hullFiles(), checked.skinFiles(), checked.folder());
                 hullsTree.repaint();
+            }
+        });
+        EventBus.subscribe(event -> {
+            if (event instanceof HullTreeCleanupQueued) {
+                hullsRoot.removeAllChildren();
+                hullsTree.repaint();
+                parent.resetInfoPanel();
+                parent.repaint();
             }
         });
         EventBus.subscribe(event -> {
@@ -82,6 +87,7 @@ class HullsTree extends JPanel {
         });
     }
 
+    @SuppressWarnings("ConstantConditions")
     private static void sortFolderNode(TreeNode folder, Comparator<DefaultMutableTreeNode> comparator) {
         Enumeration<? extends TreeNode> children = folder.children();
         List<DefaultMutableTreeNode> nodeList = new ArrayList<>();
@@ -110,28 +116,44 @@ class HullsTree extends JPanel {
         });
     }
 
-    private DefaultMutableTreeNode loadHullList(Iterable<Map<String, String>> tableData,
-                                                Map<String, Hull> hullFiles, Path packagePath) {
+    private void loadHullList(Iterable<Map<String, String>> tableData,
+                              Map<String, Hull> hullFiles, Map<String, Skin> skinFiles, Path packagePath) {
         DefaultMutableTreeNode packageRoot = new DefaultMutableTreeNode(packagePath.getFileName().toString());
         for (Map<String, String> row : tableData) {
-            Hull matching = null;
+            Map.Entry<Hull, Map<String, Skin>> hullWithSkins = null;
             String fileName = "";
             for (String shipFileName : hullFiles.keySet()) {
                 Hull shipFile = hullFiles.get(shipFileName);
                 String hullId = shipFile.getHullId();
                 if (hullId.equals(row.get("id"))) {
-                    matching = shipFile;
                     fileName = shipFileName;
+                    Map<String, Skin> skins = HullsTree.fetchSkinsByHull(shipFile, skinFiles);
+                    hullWithSkins = new AbstractMap.SimpleEntry<>(shipFile, skins);
                 }
             }
-            if (matching != null && !fileName.isEmpty()) {
+            if (hullWithSkins != null && !fileName.isEmpty()) {
                 MutableTreeNode shipNode = new DefaultMutableTreeNode(new ShipCSVEntry(row,
-                        matching, packagePath, fileName));
+                        hullWithSkins, packagePath, fileName));
                 packageRoot.add(shipNode);
             }
         }
         hullsRoot.add(packageRoot);
-        return packageRoot;
+    }
+
+    private static Map<String, Skin> fetchSkinsByHull(Hull hull, Map<String, Skin> skins) {
+        if (skins == null) return null;
+        String hullId = hull.getHullId();
+        Map<String, Skin> associated = new HashMap<>();
+        for (Map.Entry<String, Skin> skin : skins.entrySet()) {
+            Skin value = skin.getValue();
+            if (Objects.equals(value.getBaseHullId(), hullId)) {
+                associated.put(skin.getKey(), skin.getValue());
+            }
+        }
+        if (!associated.isEmpty()) {
+            return associated;
+        }
+        return null;
     }
 
     private class LoadLayerFromTree extends AbstractAction {
@@ -145,15 +167,33 @@ class HullsTree extends JPanel {
                 Path packagePath = checked.getPackageFolder();
                 Hull hullFile = checked.getHullFile();
                 String spriteName = hullFile.getSpriteName();
+                Skin activeSkin = checked.getActiveSkin();
+                boolean skinChosen = !activeSkin.isBase();
+                if (skinChosen) {
+                    spriteName = activeSkin.getSpriteName();
+                    packagePath = activeSkin.getContainingPackage();
+                }
 
                 Path spriteFilePath = packagePath.resolve(spriteName);
                 File spriteFile = spriteFilePath.toFile();
 
                 EventBus.publish(new LayerCreationQueued());
                 EventBus.publish(new LayerCyclingQueued());
-                BufferedImage sprite = Files.loadSprite(spriteFile);
+                BufferedImage sprite = FileUtilities.loadSprite(spriteFile);
                 EventBus.publish(new SpriteOpened(sprite, spriteFile.getName()));
                 EventBus.publish(new HullFileOpened(hullFile, checked.getHullFileName()));
+                if (skinChosen) {
+                    String skinFileName = "";
+                    Map<String, Skin> skins = checked.getSkins();
+                    for (String skinName : skins.keySet()) {
+                        Skin skin = skins.get(skinName);
+                        if (skin.equals(activeSkin)) {
+                            skinFileName = skinName;
+                            break;
+                        }
+                    }
+                    EventBus.publish(new SkinFileOpened(activeSkin, skinFileName));
+                }
             }
         }
 

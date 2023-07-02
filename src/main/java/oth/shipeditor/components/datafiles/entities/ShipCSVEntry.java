@@ -1,39 +1,49 @@
 package oth.shipeditor.components.datafiles.entities;
 
 import lombok.Getter;
+import lombok.Setter;
 import oth.shipeditor.representation.Hull;
+import oth.shipeditor.representation.Skin;
 import oth.shipeditor.utility.StringConstants;
 
 import java.nio.file.Path;
+import java.util.List;
 import java.util.Map;
 
 /**
  * @author Ontheheavens
  * @since 25.06.2023
  */
+@Getter
 public class ShipCSVEntry {
 
-    @Getter
     private final Map<String, String> rowData;
 
-    @Getter
     private final Hull hullFile;
 
-    @Getter
+    private final Map<String, Skin> skins;
+
+    @Setter
+    private Skin activeSkin;
+
     private final String hullFileName;
 
-    @Getter
     private final String hullID;
 
-    @Getter
     private final Path packageFolder;
 
-    public ShipCSVEntry(Map<String, String> row, Hull shipFile, Path folder, String fileName) {
+    public ShipCSVEntry(Map<String, String> row, Map.Entry<Hull, Map<String, Skin>> hullWithSkins,
+                        Path folder, String fileName) {
         this.packageFolder = folder;
-        this.hullFile = shipFile;
+        this.hullFile = hullWithSkins.getKey();
+        this.skins = hullWithSkins.getValue();
         this.rowData = row;
         this.hullID = row.get(StringConstants.ID);
         this.hullFileName = fileName;
+        this.activeSkin = Skin.empty();
+        if (this.skins != null) {
+            this.skins.put(StringConstants.DEFAULT, activeSkin);
+        }
     }
 
     @Override

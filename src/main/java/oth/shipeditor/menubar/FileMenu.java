@@ -29,13 +29,13 @@ class FileMenu extends JMenu {
 
         JMenuItem openSprite = new JMenuItem("Open sprite");
         openSprite.setIcon(FontIcon.of(FluentUiRegularAL.IMAGE_20, 16));
-        openSprite.addActionListener(event -> SwingUtilities.invokeLater(Files.createOpenSpriteAction())
+        openSprite.addActionListener(event -> SwingUtilities.invokeLater(FileUtilities.createOpenSpriteAction())
         );
         newSubmenu.add(openSprite);
 
         JMenuItem openShipData = new JMenuItem("Open ship file");
         openShipData.setIcon(FontIcon.of(FluentUiRegularAL.CLIPBOARD_TEXT_20, 16));
-        openShipData.addActionListener(event -> SwingUtilities.invokeLater(Files.createOpenHullFileAction()));
+        openShipData.addActionListener(event -> SwingUtilities.invokeLater(FileUtilities.createOpenHullFileAction()));
         newSubmenu.add(openShipData);
 
         return newSubmenu;

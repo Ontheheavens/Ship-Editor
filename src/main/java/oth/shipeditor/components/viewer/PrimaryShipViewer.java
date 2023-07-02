@@ -17,6 +17,7 @@ import oth.shipeditor.components.viewer.layers.LayerPainter;
 import oth.shipeditor.components.viewer.layers.ShipLayer;
 import oth.shipeditor.components.viewer.painters.AbstractPointPainter;
 import oth.shipeditor.components.viewer.painters.GuidesPainter;
+import oth.shipeditor.components.viewer.painters.HotkeyHelpPainter;
 import oth.shipeditor.components.viewer.painters.WorldPointsPainter;
 
 import java.awt.*;
@@ -45,6 +46,8 @@ public final class PrimaryShipViewer extends Viewer implements ShipViewable {
     @Getter
     private final GuidesPainter guidesPainter;
 
+    private final HotkeyHelpPainter hotkeyPainter;
+
     @Getter
     private final ViewerControl controls;
 
@@ -70,6 +73,9 @@ public final class PrimaryShipViewer extends Viewer implements ShipViewable {
         EventBus.publish(new ViewerGuidesToggled(true,
                 true, true, true));
         this.addPainter(this.guidesPainter, 4);
+
+        this.hotkeyPainter = new HotkeyHelpPainter(this);
+        this.addPainter(this.hotkeyPainter, 90);
 
         this.controls = ShipViewerControls.create(this);
         this.setMouseControl(this.controls);

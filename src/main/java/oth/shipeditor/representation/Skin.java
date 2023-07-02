@@ -1,6 +1,8 @@
 package oth.shipeditor.representation;
 
-import com.fasterxml.jackson.annotation.*;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import lombok.Getter;
 import lombok.Setter;
@@ -9,6 +11,7 @@ import oth.shipeditor.parsing.deserialize.ShipTypeHintsDeserializer;
 import oth.shipeditor.utility.StringConstants;
 
 import java.awt.*;
+import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
 
@@ -38,6 +41,9 @@ public class Skin {
 
     @JsonIgnore
     private final transient boolean base;
+
+    @JsonIgnore
+    private transient Path containingPackage;
 
     @JsonProperty(StringConstants.BASE_HULL_ID)
     private String baseHullId;
@@ -133,6 +139,19 @@ public class Skin {
 
     @JsonProperty(StringConstants.ENGINE_SLOT_CHANGES)
     private Map<String, EngineSlot> engineSlotChanges;
+
+    @Override
+    public String toString() {
+        if (base) {
+            return "Base hull";
+        }
+        String designation = tech;
+        String techResult = "";
+        if (designation != null && !designation.isEmpty()) {
+            techResult = " (" + designation + ")";
+        }
+        return hullName + techResult;
+    }
 
 }
 

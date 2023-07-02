@@ -12,27 +12,25 @@ import java.awt.image.BufferedImage;
  * @author Ontheheavens
  * @since 27.05.2023
  */
+@Getter @Setter
 public class ShipLayer {
 
     /**
      * Runtime representation of JSON ship files.
      */
-    @Getter @Setter
     private ShipData shipData;
 
     /**
      * Loaded instance of PNG ship sprite.
      */
-    @Getter @Setter
     private BufferedImage shipSprite;
 
-    @Getter @Setter
     private String spriteFileName = "";
 
-    @Getter @Setter
     private String hullFileName = "";
 
-    @Getter @Setter
+    private String skinFileName = "";
+
     private LayerPainter painter;
 
     public ShipLayer() {
@@ -41,10 +39,6 @@ public class ShipLayer {
 
     public ShipLayer(BufferedImage sprite) {
         this(sprite, null);
-    }
-
-    public ShipLayer(ShipData data) {
-        this(null, data);
     }
 
     public ShipLayer(BufferedImage sprite, ShipData data) {

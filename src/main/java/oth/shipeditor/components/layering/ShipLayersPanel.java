@@ -10,7 +10,10 @@ import oth.shipeditor.communication.events.components.WindowRepaintQueued;
 import oth.shipeditor.communication.events.viewer.layers.*;
 import oth.shipeditor.components.viewer.layers.LayerManager;
 import oth.shipeditor.components.viewer.layers.ShipLayer;
+import oth.shipeditor.representation.Hull;
 import oth.shipeditor.representation.ShipData;
+import oth.shipeditor.representation.Skin;
+import oth.shipeditor.utility.StringConstants;
 
 import javax.swing.*;
 import java.awt.*;
@@ -78,16 +81,25 @@ public final class ShipLayersPanel extends JTabbedPane {
                 ShipLayer eventLayer = checked.updated();
                 LayerTab updated = tabIndex.get(eventLayer);
                 BufferedImage sprite = eventLayer.getShipSprite();
-                ShipData hullFile = eventLayer.getShipData();
+                ShipData shipData = eventLayer.getShipData();
                 ShipLayer associatedLayer = updated.getAssociatedLayer();
+                if (shipData == null) return;
                 if (sprite != null) {
                     updated.setSpriteFileName(associatedLayer.getSpriteFileName());
-                    this.setToolTipTextAt(indexOfComponent(updated), updated.getTabTooltip());
                 }
-                if (hullFile != null) {
+                Hull hull = shipData.getHull();
+                if (hull != null) {
                     updated.setHullFileName(associatedLayer.getHullFileName());
-                    this.setToolTipTextAt(indexOfComponent(updated), updated.getTabTooltip());
+                    this.setTitleAt(indexOfComponent(updated), hull.getHullName());
                 }
+                Skin skin = shipData.getSkin();
+                if (skin != null) {
+                    updated.setSkinFileName(associatedLayer.getSkinFileName());
+                    if (skin.getHullName() != null) {
+                        this.setTitleAt(indexOfComponent(updated), skin.getHullName());
+                    }
+                }
+                this.setToolTipTextAt(indexOfComponent(updated), updated.getTabTooltip());
             }
         });
         EventBus.subscribe(event -> {
@@ -126,10 +138,14 @@ public final class ShipLayersPanel extends JTabbedPane {
         @Getter @Setter
         private String hullFileName;
 
+        @Getter @Setter
+        private String skinFileName;
+
         private LayerTab(ShipLayer layer) {
             this.associatedLayer = layer;
             this.spriteFileName = layer.getSpriteFileName();
             this.hullFileName = layer.getHullFileName();
+            this.skinFileName = layer.getSkinFileName();
             this.setLayout(new BorderLayout());
         }
 
@@ -148,7 +164,12 @@ public final class ShipLayersPanel extends JTabbedPane {
                 hull = notLoaded;
             }
             String hullNameLine = "Hull file: " + hull;
-            return "<html>" + spriteNameLine + "<br>" + hullNameLine + "</html>";
+            String skin = skinFileName;
+            if (Objects.equals(skin, "")) {
+                skin = StringConstants.DEFAULT;
+            }
+            String skinNameLine = "Skin file: " + skin;
+            return "<html>" + spriteNameLine + "<br>" + hullNameLine + "<br>" + skinNameLine + "</html>";
         }
 
     }
