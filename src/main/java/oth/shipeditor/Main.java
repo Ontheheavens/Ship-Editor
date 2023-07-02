@@ -11,12 +11,13 @@ import oth.shipeditor.components.viewer.ShipViewable;
 import oth.shipeditor.components.viewer.layers.LayerManager;
 import oth.shipeditor.components.viewer.layers.LayerPainter;
 import oth.shipeditor.components.viewer.layers.ShipLayer;
-import oth.shipeditor.menubar.Files;
+import oth.shipeditor.menubar.FileUtilities;
 import oth.shipeditor.persistence.Initializations;
 import oth.shipeditor.representation.Hull;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ActionEvent;
 import java.awt.geom.Point2D;
 import java.awt.image.BufferedImage;
 import java.io.File;
@@ -27,6 +28,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Objects;
 import java.util.function.Function;
+
+import static java.awt.event.ActionEvent.ACTION_PERFORMED;
 
 /**
  * @author Ontheheavens
@@ -41,8 +44,12 @@ public final class Main {
         SwingUtilities.invokeLater(() -> {
             Main.configureLaf();
             PrimaryWindow window = PrimaryWindow.create();
-            window.showGUI();
+            Initializations.updateStateFromSettings(window);
             Main.testFiles(window);
+            Action loadGameDataAction = FileUtilities.getLoadGameDataAction();
+            loadGameDataAction.actionPerformed(new ActionEvent(window,
+                    ACTION_PERFORMED, null));
+            window.showGUI();
         });
     }
 
@@ -94,7 +101,7 @@ public final class Main {
         File spriteFile;
         try {
             spriteFile = new File(spritePath.toURI());
-            BufferedImage sprite = Files.loadSprite(spriteFile);
+            BufferedImage sprite = FileUtilities.loadSprite(spriteFile);
             EventBus.publish(new SpriteOpened(sprite, spriteFile.getName()));
         } catch (URISyntaxException e) {
             e.printStackTrace();
@@ -103,7 +110,7 @@ public final class Main {
         try {
             URI url = dataPath.toURI();
             File hullFile = new File(url);
-            Hull hull = Files.loadHullFile(hullFile);
+            Hull hull = FileUtilities.loadHullFile(hullFile);
             EventBus.publish(new HullFileOpened(hull, hullFile.getName()));
         } catch (URISyntaxException e) {
             e.printStackTrace();

@@ -3,10 +3,12 @@ package oth.shipeditor.menubar;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.json.JsonReadFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
 import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.files.HullFileOpened;
 import oth.shipeditor.communication.events.files.SpriteOpened;
+import oth.shipeditor.components.datafiles.LoadGameDataAction;
 import oth.shipeditor.parsing.JsonProcessor;
 import oth.shipeditor.representation.Hull;
 import oth.shipeditor.representation.Skin;
@@ -24,7 +26,7 @@ import java.io.UncheckedIOException;
  * @since 09.05.2023
  */
 @Log4j2
-public final class Files {
+public final class FileUtilities {
 
     private static final String OPEN_COMMAND_CANCELLED_BY_USER = "Open command cancelled by user.";
     public static final String STARSECTOR_CORE = "starsector-core";
@@ -33,7 +35,10 @@ public final class Files {
     private static final String TRIED_TO_RESOLVE_SKIN_FILE_WITH_INVALID_EXTENSION = "Tried to resolve skin file with invalid extension!";
     private static File lastDirectory;
 
-    private Files() {}
+    @Getter
+    private static final Action loadGameDataAction = new LoadGameDataAction();
+
+    private FileUtilities() {}
 
     /**
      * @return lambda that opens PNG file chooser.
@@ -49,14 +54,14 @@ public final class Files {
             spriteChooser.setFileFilter(spriteFilter);
             int returnVal = spriteChooser.showOpenDialog(null);
             lastDirectory = spriteChooser.getCurrentDirectory();
-            Files.tryOpenSprite(returnVal,spriteChooser);
+            FileUtilities.tryOpenSprite(returnVal,spriteChooser);
         };
     }
 
     private static void tryOpenSprite(int returnVal, JFileChooser spriteChooser) {
         if (returnVal == JFileChooser.APPROVE_OPTION) {
             File file = spriteChooser.getSelectedFile();
-            BufferedImage sprite = Files.loadSprite(file);
+            BufferedImage sprite = FileUtilities.loadSprite(file);
             EventBus.publish(new SpriteOpened(sprite, file.getName()));
         } else {
             log.info(OPEN_COMMAND_CANCELLED_BY_USER);
@@ -85,14 +90,14 @@ public final class Files {
             shipDataChooser.setFileFilter(shipDataFilter);
             int returnVal = shipDataChooser.showOpenDialog(null);
             lastDirectory = shipDataChooser.getCurrentDirectory();
-            Files.tryOpenHullFile(returnVal, shipDataChooser);
+            FileUtilities.tryOpenHullFile(returnVal, shipDataChooser);
         };
     }
 
     private static void tryOpenHullFile(int returnVal, JFileChooser shipDataChooser) {
         if (returnVal == JFileChooser.APPROVE_OPTION) {
             File file = shipDataChooser.getSelectedFile();
-            Hull hull = Files.loadHullFile(file);
+            Hull hull = FileUtilities.loadHullFile(file);
             EventBus.publish(new HullFileOpened(hull, file.getName()));
         } else {
             log.info(OPEN_COMMAND_CANCELLED_BY_USER);
@@ -114,7 +119,7 @@ public final class Files {
         }
         Hull hull = null;
         try {
-            ObjectMapper objectMapper = Files.getConfigured();
+            ObjectMapper objectMapper = FileUtilities.getConfigured();
             hull = objectMapper.readValue(file, Hull.class);
             log.info("Opening hull file: {}", file.getName());
         } catch (IOException e) {
@@ -129,12 +134,12 @@ public final class Files {
         if (!toString.endsWith(".skin")) {
             throw new IllegalArgumentException(TRIED_TO_RESOLVE_SKIN_FILE_WITH_INVALID_EXTENSION);
         }
-        return Files.parseSkinAsJSON(file);
+        return FileUtilities.parseSkinAsJSON(file);
     }
 
     private static Skin parseSkinAsJSON(File file) {
         Skin skin = null;
-        ObjectMapper objectMapper = Files.getConfigured();
+        ObjectMapper objectMapper = FileUtilities.getConfigured();
         String preprocessed = JsonProcessor.correctJSON(file);
         try (JsonParser parser = objectMapper.createParser(preprocessed)) {
             log.info(OPENING_SKIN_FILE, file.getName());

@@ -7,7 +7,7 @@ import oth.shipeditor.communication.events.files.*;
 import oth.shipeditor.communication.events.viewer.layers.LayerCreationQueued;
 import oth.shipeditor.communication.events.viewer.layers.LayerCyclingQueued;
 import oth.shipeditor.components.datafiles.entities.ShipCSVEntry;
-import oth.shipeditor.menubar.Files;
+import oth.shipeditor.menubar.FileUtilities;
 import oth.shipeditor.representation.Hull;
 import oth.shipeditor.representation.Skin;
 
@@ -57,6 +57,14 @@ class HullsTree extends JPanel {
                 if (tableData == null) return;
                 loadHullList(tableData, checked.hullFiles(), checked.skinFiles(), checked.folder());
                 hullsTree.repaint();
+            }
+        });
+        EventBus.subscribe(event -> {
+            if (event instanceof HullTreeCleanupQueued) {
+                hullsRoot.removeAllChildren();
+                hullsTree.repaint();
+                parent.resetInfoPanel();
+                parent.repaint();
             }
         });
         EventBus.subscribe(event -> {
@@ -163,6 +171,7 @@ class HullsTree extends JPanel {
                 boolean skinChosen = !activeSkin.isBase();
                 if (skinChosen) {
                     spriteName = activeSkin.getSpriteName();
+                    packagePath = activeSkin.getContainingPackage();
                 }
 
                 Path spriteFilePath = packagePath.resolve(spriteName);
@@ -170,7 +179,7 @@ class HullsTree extends JPanel {
 
                 EventBus.publish(new LayerCreationQueued());
                 EventBus.publish(new LayerCyclingQueued());
-                BufferedImage sprite = Files.loadSprite(spriteFile);
+                BufferedImage sprite = FileUtilities.loadSprite(spriteFile);
                 EventBus.publish(new SpriteOpened(sprite, spriteFile.getName()));
                 EventBus.publish(new HullFileOpened(hullFile, checked.getHullFileName()));
                 if (skinChosen) {

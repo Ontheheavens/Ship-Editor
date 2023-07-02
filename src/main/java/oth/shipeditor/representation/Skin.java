@@ -1,6 +1,8 @@
 package oth.shipeditor.representation;
 
-import com.fasterxml.jackson.annotation.*;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import lombok.Getter;
 import lombok.Setter;
@@ -9,9 +11,9 @@ import oth.shipeditor.parsing.deserialize.ShipTypeHintsDeserializer;
 import oth.shipeditor.utility.StringConstants;
 
 import java.awt.*;
+import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 
 /**
  * @author Ontheheavens
@@ -39,6 +41,9 @@ public class Skin {
 
     @JsonIgnore
     private final transient boolean base;
+
+    @JsonIgnore
+    private transient Path containingPackage;
 
     @JsonProperty(StringConstants.BASE_HULL_ID)
     private String baseHullId;

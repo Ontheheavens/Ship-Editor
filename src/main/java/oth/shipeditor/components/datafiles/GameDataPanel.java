@@ -2,14 +2,12 @@ package oth.shipeditor.components.datafiles;
 
 import lombok.extern.log4j.Log4j2;
 import oth.shipeditor.components.datafiles.entities.ShipCSVEntry;
+import oth.shipeditor.menubar.FileUtilities;
 import oth.shipeditor.representation.Skin;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.util.Collection;
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -29,7 +27,7 @@ public class GameDataPanel extends JPanel {
         this.setLayout(new BorderLayout());
         JPanel topContainer = new JPanel();
         topContainer.add(new JLabel("Game data"));
-        JButton loadCSVButton = new JButton(new LoadGameDataAction());
+        JButton loadCSVButton = new JButton(FileUtilities.getLoadGameDataAction());
         loadCSVButton.setText("Load ship data");
         topContainer.add(loadCSVButton);
         this.add(topContainer, BorderLayout.PAGE_START);
@@ -49,8 +47,6 @@ public class GameDataPanel extends JPanel {
         rightPanel = new JPanel();
         rightPanel.setLayout(new BoxLayout(rightPanel, BoxLayout.PAGE_AXIS));
 
-
-
         rightPanel.add(dataScrollContainer);
         JSplitPane treeSplitter = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
         treeSplitter.setOneTouchExpandable(true);
@@ -58,6 +54,10 @@ public class GameDataPanel extends JPanel {
         treeSplitter.setLeftComponent(hullsTree);
         treeSplitter.setRightComponent(rightPanel);
         return treeSplitter;
+    }
+
+    void resetInfoPanel() {
+        rightPanel.removeAll();
     }
 
     void updateEntryPanel(ShipCSVEntry selected) {
@@ -71,8 +71,17 @@ public class GameDataPanel extends JPanel {
             skinChooser.addActionListener(e -> {
                 Skin chosen = (Skin) skinChooser.getSelectedItem();
                 selected.setActiveSkin(chosen);
+                updateEntryPanel(selected);
             });
             rightPanel.add(skinChooser);
+            Skin activeSkin = selected.getActiveSkin();
+            if (activeSkin != null && !activeSkin.isBase()) {
+                JPanel skinPanel = new JPanel();
+                skinPanel.setLayout(new BoxLayout(skinPanel, BoxLayout.PAGE_AXIS));
+                skinPanel.add(new JLabel(activeSkin.getHullName()));
+                skinPanel.add(new JLabel(activeSkin.getDescriptionPrefix()));
+                rightPanel.add(skinPanel);
+            }
         } else {
             rightPanel.removeAll();
         }

@@ -6,6 +6,7 @@ import lombok.extern.log4j.Log4j2;
 import oth.shipeditor.PrimaryWindow;
 import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.viewer.ViewerBackgroundChanged;
+import oth.shipeditor.menubar.FileUtilities;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
@@ -150,7 +151,7 @@ public final class Initializations {
                     stream.filter(Files::isDirectory)
                             .forEach(path -> {
                                 String folderName = path.getFileName().toString();
-                                if (oth.shipeditor.menubar.Files.STARSECTOR_CORE.equals(folderName)) {
+                                if (FileUtilities.STARSECTOR_CORE.equals(folderName)) {
                                     settings.setCoreFolderPath(path.toString());
                                     folderHasCore = true;
                                 }

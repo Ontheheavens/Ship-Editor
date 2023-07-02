@@ -75,7 +75,6 @@ public final class PrimaryWindow extends JFrame {
     }
 
     void showGUI() {
-        Initializations.updateStateFromSettings(this);
         this.setVisible(true);
     }
 
