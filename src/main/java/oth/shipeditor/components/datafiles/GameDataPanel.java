@@ -28,7 +28,8 @@ public class GameDataPanel extends JPanel {
         JPanel topContainer = new JPanel();
         topContainer.add(new JLabel("Game data"));
         JButton loadCSVButton = new JButton(FileUtilities.getLoadGameDataAction());
-        loadCSVButton.setText("Load ship data");
+        loadCSVButton.setText("Reload ship data");
+        loadCSVButton.setToolTipText("Reload all ship, skin and variant files, grouped by package");
         topContainer.add(loadCSVButton);
         this.add(topContainer, BorderLayout.PAGE_START);
         JSplitPane splitPane = createContentSplitter();

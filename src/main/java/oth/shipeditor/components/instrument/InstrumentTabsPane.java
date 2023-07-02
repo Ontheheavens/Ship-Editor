@@ -25,6 +25,9 @@ import java.util.Map;
 @Log4j2
 public final class InstrumentTabsPane extends JTabbedPane {
 
+    @Getter
+    private static InstrumentMode currentMode;
+
     /**
      * Panel that is currently selected; depending on which panel it is interactivity of certain entities is resolved.
      */
@@ -51,6 +54,7 @@ public final class InstrumentTabsPane extends JTabbedPane {
         this.initListeners();
         this.setTabPlacement(SwingConstants.LEFT);
         this.createTabs();
+        this.dispatchModeChange((JPanel) getSelectedComponent());
     }
 
     private void initListeners() {
@@ -80,6 +84,7 @@ public final class InstrumentTabsPane extends JTabbedPane {
 
     private void dispatchModeChange(JPanel active) {
         InstrumentMode selected = panelMode.get(active);
+        currentMode = selected;
         EventBus.publish(new InstrumentModeChanged(selected));
         EventBus.publish(new ViewerRepaintQueued());
     }
