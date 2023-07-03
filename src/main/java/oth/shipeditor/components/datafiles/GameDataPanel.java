@@ -6,9 +6,13 @@ import oth.shipeditor.menubar.FileUtilities;
 import oth.shipeditor.representation.Skin;
 
 import javax.swing.*;
+import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableColumn;
+import javax.swing.table.TableColumnModel;
 import java.awt.*;
 import java.util.Collection;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * @author Ontheheavens
@@ -20,8 +24,6 @@ public class GameDataPanel extends JPanel {
     private JPanel entryDataPanel;
 
     private JPanel rightPanel;
-
-    private JScrollPane dataScrollContainer;
 
     public GameDataPanel() {
         this.setLayout(new BorderLayout());
@@ -42,19 +44,26 @@ public class GameDataPanel extends JPanel {
         entryDataPanel.add(new JLabel("Entry Content"));
         entryDataPanel.setLayout(new BoxLayout(entryDataPanel, BoxLayout.PAGE_AXIS));
         entryDataPanel.setAlignmentX(CENTER_ALIGNMENT);
-        entryDataPanel.setBorder(BorderFactory.createEmptyBorder(2,6, 2, 2));
-        dataScrollContainer = new JScrollPane(entryDataPanel);
-        dataScrollContainer.setBorder(BorderFactory.createEmptyBorder());
-        rightPanel = new JPanel();
-        rightPanel.setLayout(new BoxLayout(rightPanel, BoxLayout.PAGE_AXIS));
-
-        rightPanel.add(dataScrollContainer);
+        entryDataPanel.setBorder(BorderFactory.createEmptyBorder(0,0, 0, 0));
+        rightPanel = new JPanel(new GridBagLayout());
+        rightPanel.add(entryDataPanel, getDefault());
         JSplitPane treeSplitter = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
         treeSplitter.setOneTouchExpandable(true);
         treeSplitter.setResizeWeight(0.4f);
         treeSplitter.setLeftComponent(hullsTree);
         treeSplitter.setRightComponent(rightPanel);
         return treeSplitter;
+    }
+
+    GridBagConstraints getDefault() {
+        GridBagConstraints constraints = new GridBagConstraints();
+        constraints.gridx = 0;
+        constraints.gridy = 0;
+        constraints.fill = GridBagConstraints.HORIZONTAL;
+        constraints.anchor = GridBagConstraints.PAGE_START;
+        constraints.weighty = 0.0;
+        constraints.insets = new Insets(0, 0, 0, 0);
+        return constraints;
     }
 
     void resetInfoPanel() {
@@ -74,27 +83,52 @@ public class GameDataPanel extends JPanel {
                 selected.setActiveSkin(chosen);
                 updateEntryPanel(selected);
             });
-            rightPanel.add(skinChooser);
+            skinChooser.setAlignmentX(CENTER_ALIGNMENT);
+            GridBagConstraints constraints = getDefault();
+            constraints.insets = new Insets(0, 0, 0, 0);
+            rightPanel.add(skinChooser, constraints);
             Skin activeSkin = selected.getActiveSkin();
             if (activeSkin != null && !activeSkin.isBase()) {
                 JPanel skinPanel = new JPanel();
                 skinPanel.setLayout(new BoxLayout(skinPanel, BoxLayout.PAGE_AXIS));
                 skinPanel.add(new JLabel(activeSkin.getHullName()));
                 skinPanel.add(new JLabel(activeSkin.getDescriptionPrefix()));
-                rightPanel.add(skinPanel);
+                constraints.gridy = 1;
+                constraints.insets = new Insets(0, 5, 0, 5);
+                rightPanel.add(skinPanel, constraints);
             }
         } else {
             rightPanel.removeAll();
         }
-        rightPanel.add(dataScrollContainer);
         entryDataPanel.removeAll();
         Map<String, String> data = selected.getRowData();
-        for (Map.Entry<String, String> entry : data.entrySet()) {
-            JLabel keyLabel = new JLabel(entry.getKey() + ": " + entry.getValue());
-            entryDataPanel.add(keyLabel);
-        }
+        JScrollPane tableContainer = GameDataPanel.createTableFromMap(data);
+        GridBagConstraints constraints = new GridBagConstraints();
+        constraints.gridx = 0;
+        constraints.gridy = 2;
+        constraints.fill = GridBagConstraints.BOTH;
+        constraints.weightx = 1.0;
+        constraints.weighty = 1.0;
+        constraints.insets = new Insets(0, 0, 0, 0);
+        rightPanel.add(tableContainer, constraints);
+
         rightPanel.revalidate();
         rightPanel.repaint();
+    }
+
+    private static JScrollPane createTableFromMap(Map<String, String> data) {
+        Set<Map.Entry<String, String>> entries = data.entrySet();
+        Object[][] tableData = entries.stream()
+                .map(entry -> new Object[]{entry.getKey(), entry.getValue()})
+                .toArray(Object[][]::new);
+        DefaultTableModel model = new DefaultTableModel(tableData, new Object[]{"Property", "Value"}) {
+            @Override
+            public boolean isCellEditable(int row, int column) {
+                return false; // Make the table read-only.
+            }
+        };
+        JTable table = new JTable(model);
+        return new JScrollPane(table);
     }
 
 }
