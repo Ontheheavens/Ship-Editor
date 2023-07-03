@@ -12,9 +12,11 @@ import oth.shipeditor.representation.Hull;
 import oth.shipeditor.representation.Skin;
 
 import javax.swing.*;
+import javax.swing.border.EmptyBorder;
 import javax.swing.tree.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
@@ -22,6 +24,9 @@ import java.io.File;
 import java.nio.file.Path;
 import java.util.*;
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 /**
  * @author Ontheheavens
@@ -39,13 +44,36 @@ class HullsTree extends JPanel {
 
     private final GameDataPanel parent;
 
+    private final JTextField searchField;
+
     HullsTree(GameDataPanel gameDataPanel) {
         this.parent = gameDataPanel;
         hullsRoot = new DefaultMutableTreeNode("Hull files");
         hullsTree = new JTree(hullsRoot);
         JScrollPane scrollContainer = new JScrollPane(hullsTree);
         this.setLayout(new BorderLayout());
-        this.add(scrollContainer);
+        JPanel searchContainer = new JPanel(new GridBagLayout());
+        searchContainer.setBorder(new EmptyBorder(0, 0, 0, 5));
+        searchField = new JTextField();
+        // Set the constraints for the search field.
+        GridBagConstraints gridBagConstraints = new GridBagConstraints();
+        gridBagConstraints.fill = GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.weightx = 1.0; // Allow horizontal expansion.
+        gridBagConstraints.insets = new Insets(5, 5, 5, 5); // Set padding.
+        // Add the search field to the container with the specified constraints.
+        searchContainer.add(searchField, gridBagConstraints);
+        JButton searchButton = new JButton("Search");
+        searchButton.addActionListener(e -> {
+            String query = searchField.getText();
+            if (query.isEmpty()) return;
+            List<DefaultMutableTreeNode> nodes = getMatchingNodes(query);
+            if (!nodes.isEmpty()) {
+                selectMatchedNodes(nodes);
+            }
+        });
+        searchContainer.add(searchButton);
+        this.add(searchContainer, BorderLayout.PAGE_START);
+        this.add(scrollContainer, BorderLayout.CENTER);
         this.initBusListening();
         this.initComponentListeners();
     }
@@ -85,6 +113,35 @@ class HullsTree extends JPanel {
                 hullsTree.repaint();
             }
         });
+    }
+
+    @SuppressWarnings("UnnecessaryLocalVariable")
+    private List<DefaultMutableTreeNode> getMatchingNodes(String input) {
+        Enumeration<TreeNode> allNodes = this.hullsRoot.depthFirstEnumeration();
+        Spliterator<TreeNode> spliterator = Spliterators.spliteratorUnknownSize(
+                allNodes.asIterator(), Spliterator.ORDERED);
+        Stream<TreeNode> stream = StreamSupport.stream(spliterator, false);
+        List<DefaultMutableTreeNode> result = stream
+                .filter(node -> node instanceof DefaultMutableTreeNode)
+                .map(node -> (DefaultMutableTreeNode) node)
+                .filter(node -> {
+                    Object userObject = node.getUserObject();
+                    if (userObject == null) return false;
+                    String toString = userObject.toString().toLowerCase(Locale.ROOT);
+                    return toString.matches(".*" + input.toLowerCase() + ".*");
+                })
+                .collect(Collectors.toList());
+        return result;
+    }
+
+    private void selectMatchedNodes(List<DefaultMutableTreeNode> nodes) {
+            TreePath[] paths = new TreePath[nodes.size()];
+            for (int i = 0; i < nodes.size(); i++) {
+                DefaultMutableTreeNode node = nodes.get(i);
+                paths[i] = new TreePath(node.getPath());
+            }
+            hullsTree.setSelectionPaths(paths);
+            hullsTree.scrollPathToVisible(paths[0]);
     }
 
     @SuppressWarnings("ConstantConditions")

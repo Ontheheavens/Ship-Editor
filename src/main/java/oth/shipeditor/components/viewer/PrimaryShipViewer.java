@@ -74,7 +74,7 @@ public final class PrimaryShipViewer extends Viewer implements ShipViewable {
                 true, true, true));
         this.addPainter(this.guidesPainter, 4);
 
-        this.hotkeyPainter = new HotkeyHelpPainter(this);
+        this.hotkeyPainter = new HotkeyHelpPainter();
         this.addPainter(this.hotkeyPainter, 90);
 
         this.controls = ShipViewerControls.create(this);
