@@ -6,6 +6,7 @@ import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.components.WindowRepaintQueued;
 import oth.shipeditor.components.WindowContentPanes;
 import oth.shipeditor.components.viewer.ShipViewable;
+import oth.shipeditor.menubar.FileUtilities;
 import oth.shipeditor.menubar.PrimaryMenuBar;
 import oth.shipeditor.persistence.Initializations;
 
@@ -33,6 +34,7 @@ public final class PrimaryWindow extends JFrame {
 
         Initializations.initializeSettingsFile();
         Initializations.initializeGameFolder();
+        FileUtilities.listenToLayerChange();
 
         this.setMinimumSize(new Dimension(800, 600));
 

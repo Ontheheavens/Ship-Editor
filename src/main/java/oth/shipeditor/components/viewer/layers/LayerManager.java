@@ -89,7 +89,13 @@ public class LayerManager {
 
     private void publishLayerRemoval(ShipLayer layer) {
         if (layers.size() >= 2) {
-            this.setActiveLayer(layers.get(layers.indexOf(layer) - 1));
+            ShipLayer other = null;
+            for (ShipLayer checked : layers) {
+                if (checked != layer) {
+                    other = checked;
+                }
+            }
+            this.setActiveLayer(other);
         } else {
             this.setActiveLayer(null);
         }

@@ -26,6 +26,7 @@ public class Hull {
     @JsonProperty("hullId")
     private String hullId;
 
+    @Getter
     @JsonProperty("hullSize")
     private String hullSize;
 

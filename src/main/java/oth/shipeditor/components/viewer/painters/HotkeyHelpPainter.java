@@ -1,17 +1,14 @@
 package oth.shipeditor.components.viewer.painters;
 
 import de.javagl.viewer.Painter;
-import de.javagl.viewer.painters.LabelPainter;
 import de.javagl.viewer.painters.StringBoundsUtils;
 import lombok.extern.log4j.Log4j2;
 import oth.shipeditor.components.instrument.InstrumentTabsPane;
 import oth.shipeditor.components.viewer.InstrumentMode;
 import oth.shipeditor.components.viewer.PrimaryShipViewer;
 
-import javax.swing.*;
 import java.awt.*;
 import java.awt.geom.AffineTransform;
-import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 
 /**
@@ -20,16 +17,6 @@ import java.awt.geom.Rectangle2D;
  */
 @Log4j2
 public class HotkeyHelpPainter implements Painter {
-
-    private final AffineTransform delegateWorldToScreen;
-
-    private final PrimaryShipViewer parent;
-
-    public HotkeyHelpPainter(PrimaryShipViewer viewer) {
-        this.parent = viewer;
-        this.delegateWorldToScreen = new AffineTransform();
-    }
-
 
     @Override
     public void paint(Graphics2D g, AffineTransform worldToScreen, double w, double h) {

@@ -158,7 +158,7 @@ public final class ShipLayersPanel extends JTabbedPane {
             if (Objects.equals(sprite, "")) {
                 sprite = notLoaded;
             }
-            String spriteNameLine = "Sprite file: " + sprite;
+            String spriteNameLine = StringConstants.SPRITE_FILE + sprite;
             String hull = hullFileName;
             if (Objects.equals(hull, "")) {
                 hull = notLoaded;

@@ -47,6 +47,7 @@ final class LayerPropertiesPanel extends JPanel {
                 0, 100, 100);
         opacitySlider.setAlignmentX(0.0f);
         opacitySlider.setEnabled(false);
+        opacitySlider.setSnapToTicks(true);
         opacitySlider.addChangeListener(e -> {
             JSlider source = (JSlider)e.getSource();
             int opacity = source.getValue();
