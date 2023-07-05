@@ -72,4 +72,6 @@ public interface StringConstants {
 
     String DEFAULT = "Default";
 
+    String SPRITE_FILE = "Sprite file: ";
+
 }

@@ -1,9 +1,13 @@
 package oth.shipeditor.utility;
 
+import oth.shipeditor.components.datafiles.entities.ShipCSVEntry;
+import oth.shipeditor.representation.Skin;
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Point2D;
+import java.util.Map;
 
 /**
  * @author Ontheheavens
@@ -43,6 +47,19 @@ public final class Utility {
         JSeparator copy = new JSeparator(original.getOrientation());
         copy.setPreferredSize(original.getPreferredSize());
         return copy;
+    }
+
+    public static String getSkinFileName(ShipCSVEntry checked, Skin activeSkin) {
+        String skinFileName = "";
+        Map<String, Skin> skins = checked.getSkins();
+        for (String skinName : skins.keySet()) {
+            Skin skin = skins.get(skinName);
+            if (skin.equals(activeSkin)) {
+                skinFileName = skinName;
+                break;
+            }
+        }
+        return skinFileName;
     }
 
 }

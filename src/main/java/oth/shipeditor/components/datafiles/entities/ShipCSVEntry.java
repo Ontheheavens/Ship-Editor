@@ -52,7 +52,7 @@ public class ShipCSVEntry {
         if (displayedName.isEmpty()) {
             displayedName = rowData.get(StringConstants.DESIGNATION);
         }
-        return displayedName + " (" + hullID + ")";
+        return displayedName;
     }
 
 }

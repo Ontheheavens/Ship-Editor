@@ -10,13 +10,14 @@ import oth.shipeditor.components.datafiles.entities.ShipCSVEntry;
 import oth.shipeditor.menubar.FileUtilities;
 import oth.shipeditor.representation.Hull;
 import oth.shipeditor.representation.Skin;
+import oth.shipeditor.utility.StringConstants;
+import oth.shipeditor.utility.Utility;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.tree.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
@@ -49,7 +50,8 @@ class HullsTree extends JPanel {
     HullsTree(GameDataPanel gameDataPanel) {
         this.parent = gameDataPanel;
         hullsRoot = new DefaultMutableTreeNode("Hull files");
-        hullsTree = new JTree(hullsRoot);
+        hullsTree = createCustomTree();
+        ToolTipManager.sharedInstance().registerComponent(hullsTree);
         JScrollPane scrollContainer = new JScrollPane(hullsTree);
         this.setLayout(new BorderLayout());
         JPanel searchContainer = new JPanel(new GridBagLayout());
@@ -76,6 +78,28 @@ class HullsTree extends JPanel {
         this.add(scrollContainer, BorderLayout.CENTER);
         this.initBusListening();
         this.initComponentListeners();
+    }
+
+    @SuppressWarnings("OverlyComplexAnonymousInnerClass")
+    private JTree createCustomTree() {
+        return new JTree(hullsRoot) {
+            @Override
+            public String getToolTipText(MouseEvent event) {
+                if (getRowForLocation(event.getX(), event.getY()) == -1) return null;
+                TreePath currPath = getPathForLocation(event.getX(), event.getY());
+                if (currPath == null) return null;
+                DefaultMutableTreeNode node = (DefaultMutableTreeNode) currPath.getLastPathComponent();
+                Object entry = node.getUserObject();
+                if(entry instanceof ShipCSVEntry checked) {
+                    Hull hullFile = checked.getHullFile();
+                    return "<html>" +
+                            "<p>" + "Hull size: " + hullFile.getHullSize() + "</p>" +
+                            "<p>" + "Hull ID: " + checked.getHullID() + "</p>" +
+                            "</html>";
+                }
+                return null;
+            }
+        };
     }
 
     private void initBusListening() {
@@ -189,7 +213,7 @@ class HullsTree extends JPanel {
                 }
             }
             if (hullWithSkins != null && !fileName.isEmpty()) {
-                MutableTreeNode shipNode = new DefaultMutableTreeNode(new ShipCSVEntry(row,
+                DefaultMutableTreeNode shipNode = new DefaultMutableTreeNode(new ShipCSVEntry(row,
                         hullWithSkins, packagePath, fileName));
                 packageRoot.add(shipNode);
             }
@@ -240,20 +264,11 @@ class HullsTree extends JPanel {
                 EventBus.publish(new SpriteOpened(sprite, spriteFile.getName()));
                 EventBus.publish(new HullFileOpened(hullFile, checked.getHullFileName()));
                 if (skinChosen) {
-                    String skinFileName = "";
-                    Map<String, Skin> skins = checked.getSkins();
-                    for (String skinName : skins.keySet()) {
-                        Skin skin = skins.get(skinName);
-                        if (skin.equals(activeSkin)) {
-                            skinFileName = skinName;
-                            break;
-                        }
-                    }
+                    String skinFileName = Utility.getSkinFileName(checked, activeSkin);
                     EventBus.publish(new SkinFileOpened(activeSkin, skinFileName));
                 }
             }
         }
-
     }
 
     private class ContextMenuListener extends MouseAdapter {
