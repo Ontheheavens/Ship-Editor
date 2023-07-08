@@ -12,7 +12,6 @@ import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.MutableTreeNode;
 import javax.swing.tree.TreePath;
 import java.awt.*;
-import java.awt.event.MouseEvent;
 import java.io.File;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -105,13 +104,8 @@ class HullmodsTreePanel extends DataTreePanel{
     }
 
     @Override
-    void showMenuIfMatching(JPopupMenu contextMenu, TreePath pathForLocation, MouseEvent e) {
-
-    }
-
-    @Override
-    JPopupMenu getContextMenu() {
-        return new JPopupMenu();
+    Class<?> getEntryClass() {
+        return HullmodCSVEntry.class;
     }
 
     private void loadAllHullmods(Map<String, List<HullmodCSVEntry>> hullmods) {
@@ -130,6 +124,19 @@ class HullmodsTreePanel extends DataTreePanel{
             rootNode.add(packageRoot);
         }
         log.info("Total {} hullmod entries registered.", allHullmodEntries.size());
+    }
+
+    @Override
+    void openEntryPath(OpenDataTarget target) {
+        DefaultMutableTreeNode cachedSelectForMenu = getCachedSelectForMenu();
+        if (!(cachedSelectForMenu.getUserObject() instanceof HullmodCSVEntry checked)) return;
+        Path toOpen;
+        switch (target) {
+            case FILE -> toOpen = checked.getTableFilePath();
+            case CONTAINER -> toOpen = checked.getTableFilePath().getParent();
+            default -> toOpen = checked.getPackageFolderPath();
+        }
+        FileUtilities.openPathInDesktop(toOpen);
     }
 
 }

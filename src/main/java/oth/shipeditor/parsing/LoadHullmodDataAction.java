@@ -79,7 +79,7 @@ public class LoadHullmodDataAction extends AbstractAction {
         for (Map<String, String> row : csvData) {
             String rowId = row.get("id");
             if (rowId != null && !rowId.isEmpty()) {
-                HullmodCSVEntry newEntry = new HullmodCSVEntry(row, Path.of(folderPath));
+                HullmodCSVEntry newEntry = new HullmodCSVEntry(row, Path.of(folderPath), hullmodDataPath);
                 hullmodsList.add(newEntry);
             }
         }

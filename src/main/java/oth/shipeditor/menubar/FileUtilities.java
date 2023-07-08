@@ -20,6 +20,7 @@ import oth.shipeditor.representation.Skin;
 import javax.imageio.ImageIO;
 import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.image.BufferedImage;
 import java.io.File;
@@ -100,6 +101,14 @@ public final class FileUtilities {
         } catch (IOException e) {
             e.printStackTrace();
             return null;
+        }
+    }
+
+    public static void openPathInDesktop(Path toOpen) {
+        try {
+            Desktop.getDesktop().open(toOpen.toFile());
+        } catch (IOException ex) {
+            log.error("Failed to open {} in Explorer!", toOpen);
         }
     }
 

@@ -10,9 +10,6 @@ import java.io.File;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.stream.Stream;
 
 /**
  * @author Ontheheavens
@@ -24,15 +21,18 @@ public class HullmodCSVEntry {
 
     private final Map<String, String> rowData;
 
-    private final Path packageFolder;
+    private final Path packageFolderPath;
+
+    private final Path tableFilePath;
 
     private final String hullmodID;
 
     private final String spriteFileName;
 
-    public HullmodCSVEntry(Map<String, String> row, Path folder) {
+    public HullmodCSVEntry(Map<String, String> row, Path folder, Path tablePath) {
         this.rowData = row;
-        packageFolder = folder;
+        packageFolderPath = folder;
+        this.tableFilePath = tablePath;
         hullmodID = this.rowData.get("id");
         spriteFileName = this.rowData.get("sprite");
     }
@@ -53,7 +53,7 @@ public class HullmodCSVEntry {
         File result;
 
         // Search in parent mod package.
-        result = FileUtilities.searchFileInFolder(spritePath, this.packageFolder);
+        result = FileUtilities.searchFileInFolder(spritePath, this.packageFolderPath);
 
         // If not found, search in core folder.
         if (result == null) {

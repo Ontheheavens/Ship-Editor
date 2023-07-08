@@ -1,6 +1,7 @@
 package oth.shipeditor.components.datafiles;
 
 import lombok.Getter;
+import lombok.extern.log4j.Log4j2;
 import oth.shipeditor.utility.StringConstants;
 
 import javax.swing.*;
@@ -8,6 +9,7 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.tree.*;
 import java.awt.*;
+import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.List;
@@ -20,6 +22,7 @@ import java.util.stream.StreamSupport;
  * @author Ontheheavens
  * @since 08.07.2023
  */
+@Log4j2
 abstract class DataTreePanel extends JPanel {
 
     private static final String NO_ENTRY_SELECTED = "No entry selected";
@@ -232,9 +235,38 @@ abstract class DataTreePanel extends JPanel {
 
     abstract String getTooltipForEntry(Object entry);
 
-    abstract void showMenuIfMatching(JPopupMenu contextMenu, TreePath pathForLocation, MouseEvent e);
+    abstract Class<?> getEntryClass();
 
-    abstract JPopupMenu getContextMenu();
+    JPopupMenu getContextMenu() {
+        JPopupMenu menu = new JPopupMenu();
+        JMenuItem collapsePackage = new JMenuItem("Collapse parent");
+        collapsePackage.addActionListener(getCollapseAction());
+        menu.add(collapsePackage);
+        JMenuItem openSourceFile = new JMenuItem("Open source file");
+        openSourceFile.addActionListener(e -> openEntryPath(OpenDataTarget.FILE));
+        menu.add(openSourceFile);
+        JMenuItem openInExplorer = new JMenuItem("Open containing folder");
+        openInExplorer.addActionListener(e -> openEntryPath(OpenDataTarget.CONTAINER));
+        menu.add(openInExplorer);
+        JMenuItem openPackage = new JMenuItem("Open data package");
+        openPackage.addActionListener(e -> openEntryPath(OpenDataTarget.PACKAGE));
+        menu.add(openPackage);
+        return menu;
+    }
+
+    abstract void openEntryPath(OpenDataTarget target);
+    
+    private ActionListener getCollapseAction() {
+        return e -> {
+            Class<?> entryClass = getEntryClass();
+            if (entryClass.isInstance(this.cachedSelectForMenu.getUserObject())) {
+                TreePath selected = this.tree.getSelectionPath();
+                if (selected != null) {
+                    this.tree.collapsePath(selected.getParentPath());
+                }
+            }
+        };
+    }
 
     @SuppressWarnings("ProtectedInnerClass")
     protected class ContextMenuListener extends MouseAdapter {
@@ -251,6 +283,14 @@ abstract class DataTreePanel extends JPanel {
                 }
             }
             super.mousePressed(e);
+        }
+
+        private void showMenuIfMatching(JPopupMenu contextMenu, TreePath pathForLocation, MouseEvent e) {
+            Class<?> entryClass = getEntryClass();
+            if (entryClass.isInstance(cachedSelectForMenu.getUserObject())) {
+                tree.setSelectionPath(pathForLocation);
+                contextMenu.show(tree, e.getPoint().x, e.getPoint().y);
+            }
         }
 
         private JPopupMenu createContextMenu() {

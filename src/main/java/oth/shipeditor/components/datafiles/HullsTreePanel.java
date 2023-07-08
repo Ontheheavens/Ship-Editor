@@ -15,7 +15,6 @@ import javax.swing.*;
 import javax.swing.tree.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
-import java.awt.event.MouseEvent;
 import java.io.File;
 import java.nio.file.Path;
 import java.util.List;
@@ -226,34 +225,31 @@ class HullsTreePanel extends DataTreePanel {
     }
 
     @Override
-    void showMenuIfMatching(JPopupMenu contextMenu, TreePath pathForLocation, MouseEvent e) {
-        DefaultMutableTreeNode cachedSelectForMenu = getCachedSelectForMenu();
-        if (cachedSelectForMenu.getUserObject() instanceof ShipCSVEntry) {
-            JTree tree = getTree();
-            tree.setSelectionPath(pathForLocation);
-            contextMenu.show(tree, e.getPoint().x, e.getPoint().y);
-        }
+    Class<?> getEntryClass() {
+        return ShipCSVEntry.class;
     }
 
     @Override
     JPopupMenu getContextMenu() {
-        JPopupMenu menu = new JPopupMenu();
+        JPopupMenu menu = super.getContextMenu();
         JMenuItem loadAsLayer = new JMenuItem("Load as layer");
         loadAsLayer.addActionListener(new HullsTreePanel.LoadLayerFromTree());
         menu.add(loadAsLayer);
-        JMenuItem collapsePackage = new JMenuItem("Collapse parent");
-        collapsePackage.addActionListener(e -> {
-            DefaultMutableTreeNode cachedSelectForMenu = getCachedSelectForMenu();
-            if (cachedSelectForMenu.getUserObject() instanceof ShipCSVEntry) {
-                JTree tree = getTree();
-                TreePath selected = tree.getSelectionPath();
-                if (selected != null) {
-                    tree.collapsePath(selected.getParentPath());
-                }
-            }
-        });
-        menu.add(collapsePackage);
         return menu;
+    }
+
+    @Override
+    void openEntryPath(OpenDataTarget target) {
+        DefaultMutableTreeNode cachedSelectForMenu = getCachedSelectForMenu();
+        if (!(cachedSelectForMenu.getUserObject() instanceof ShipCSVEntry checked)) return;
+        Hull hullFile = checked.getHullFile();
+        Path toOpen;
+        switch (target) {
+            case FILE -> toOpen = hullFile.getShipFilePath();
+            case CONTAINER -> toOpen = hullFile.getShipFilePath().getParent();
+            default -> toOpen = checked.getPackageFolder();
+        }
+        FileUtilities.openPathInDesktop(toOpen);
     }
 
 }
