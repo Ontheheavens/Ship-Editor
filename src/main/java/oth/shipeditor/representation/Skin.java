@@ -60,6 +60,9 @@ public class Skin {
     @JsonProperty(StringConstants.HULL_DESIGNATION)
     private String hullDesignation;
 
+    @JsonProperty("hullStyle")
+    private String hullStyle;
+
     @JsonProperty(StringConstants.RESTORE_TO_BASE_HULL)
     private boolean restoreToBaseHull;
 

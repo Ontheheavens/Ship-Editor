@@ -33,7 +33,7 @@ public final class PrimaryWindow extends JFrame {
         this.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
 
         Initializations.initializeSettingsFile();
-        Initializations.initializeGameFolder();
+        Initializations.selectGameFolder();
         FileUtilities.listenToLayerChange();
 
         this.setMinimumSize(new Dimension(800, 600));

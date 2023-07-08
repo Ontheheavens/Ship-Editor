@@ -46,8 +46,11 @@ public final class Main {
             PrimaryWindow window = PrimaryWindow.create();
             Initializations.updateStateFromSettings(window);
             Main.testFiles(window);
-            Action loadGameDataAction = FileUtilities.getLoadGameDataAction();
-            loadGameDataAction.actionPerformed(new ActionEvent(window,
+            Action loadShipDataAction = FileUtilities.getLoadShipDataAction();
+            loadShipDataAction.actionPerformed(new ActionEvent(window,
+                    ACTION_PERFORMED, null));
+            Action loadHullmodDataAction = FileUtilities.getLoadHullmodDataAction();
+            loadHullmodDataAction.actionPerformed(new ActionEvent(window,
                     ACTION_PERFORMED, null));
             window.showGUI();
         });

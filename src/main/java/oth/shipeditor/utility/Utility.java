@@ -1,5 +1,10 @@
 package oth.shipeditor.utility;
 
+import com.fasterxml.jackson.databind.MappingIterator;
+import com.fasterxml.jackson.dataformat.csv.CsvMapper;
+import com.fasterxml.jackson.dataformat.csv.CsvParser;
+import com.fasterxml.jackson.dataformat.csv.CsvSchema;
+import lombok.extern.log4j.Log4j2;
 import oth.shipeditor.components.datafiles.entities.ShipCSVEntry;
 import oth.shipeditor.representation.Skin;
 
@@ -7,12 +12,18 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Point2D;
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 /**
  * @author Ontheheavens
  * @since 01.05.2023
  */
+@Log4j2
 public final class Utility {
 
     /**
@@ -60,6 +71,36 @@ public final class Utility {
             }
         }
         return skinFileName;
+    }
+
+    /**
+     * Target CSV file is expected to have a header row and an ID column designated in said header.
+     * @param path address of the target file.
+     * @return List of rows where each row is a Map of string keys and string values.
+     */
+    public static java.util.List<Map<String, String>> parseCSVTable(Path path) {
+        CsvMapper csvMapper = new CsvMapper();
+        csvMapper.enable(CsvParser.Feature.ALLOW_COMMENTS);
+
+        CsvSchema csvSchema = CsvSchema.emptySchema().withHeader();
+        File csvFile = path.toFile();
+        List<Map<String, String>> csvData = new ArrayList<>();
+        try (MappingIterator<Map<String, String>> iterator = csvMapper.readerFor(Map.class)
+                .with(csvSchema)
+                .readValues(csvFile)) {
+            while (iterator.hasNext()) {
+                Map<String, String> row = iterator.next();
+                String id = row.get(StringConstants.ID);
+                if (!id.isEmpty()) {
+                    // We are skipping a row if ID is missing.
+                    csvData.add(row);
+                }
+            }
+        } catch (IOException exception) {
+            log.error("Data CSV loading failed!");
+            exception.printStackTrace();
+        }
+        return csvData;
     }
 
 }

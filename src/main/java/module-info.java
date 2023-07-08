@@ -40,5 +40,6 @@
     opens oth.shipeditor.parsing.deserialize;
     exports oth.shipeditor.parsing.serialize;
     opens oth.shipeditor.parsing.serialize;
+    exports oth.shipeditor.components.datafiles.entities;
 
 }

@@ -9,13 +9,21 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
 import oth.shipeditor.PrimaryWindow;
+import oth.shipeditor.components.datafiles.entities.HullmodCSVEntry;
+import oth.shipeditor.components.datafiles.entities.ShipCSVEntry;
+import oth.shipeditor.representation.GameDataRepository;
 
 import javax.swing.*;
 import java.io.File;
 import java.io.IOException;
 import java.io.UncheckedIOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Stream;
 
 /**
  * @author Ontheheavens
@@ -27,7 +35,17 @@ public final class SettingsManager {
     @Getter @Setter
     private static Settings settings;
 
+    private static final GameDataRepository gameData = new GameDataRepository();
+
     private SettingsManager() {}
+
+    public static Map<String, ShipCSVEntry> getAllShips() {
+        return gameData.getAllShipEntries();
+    }
+
+    public static Map<String, HullmodCSVEntry> getAllHullmods() {
+        return gameData.getAllHullmodEntries();
+    }
 
     static Settings createDefault() {
         Settings empty = new Settings();
@@ -40,6 +58,24 @@ public final class SettingsManager {
         mapper.setDefaultPrettyPrinter(new SettingsFilePrinter());
         mapper.configure(SerializationFeature.INDENT_OUTPUT, true);
         return mapper;
+    }
+
+    /**
+     * @return all directories in "mods" folder.
+     * Caller is expected to do the filtering.
+     */
+    public static List<Path> getAllModFolders() {
+        List<Path> dataFolders = new ArrayList<>();
+        try (Stream<Path> childDirectories = Files.list(Paths.get(settings.getModFolderPath()))) {
+            childDirectories.filter(Files::isDirectory).forEach(dataFolders::add);
+        } catch (IOException exception) {
+            exception.printStackTrace();
+        }
+        return dataFolders;
+    }
+
+    public static Path getCoreFolderPath() {
+        return Path.of(settings.getCoreFolderPath());
     }
 
     static File getSettingsPath() {

@@ -10,7 +10,8 @@ import oth.shipeditor.communication.events.files.HullFileOpened;
 import oth.shipeditor.communication.events.files.SpriteOpened;
 import oth.shipeditor.communication.events.viewer.layers.ActiveLayerUpdated;
 import oth.shipeditor.communication.events.viewer.layers.LayerWasSelected;
-import oth.shipeditor.components.datafiles.LoadGameDataAction;
+import oth.shipeditor.parsing.LoadHullmodDataAction;
+import oth.shipeditor.parsing.LoadShipDataAction;
 import oth.shipeditor.components.viewer.layers.ShipLayer;
 import oth.shipeditor.parsing.JsonProcessor;
 import oth.shipeditor.representation.Hull;
@@ -20,11 +21,13 @@ import javax.imageio.ImageIO;
 import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.io.UncheckedIOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.Optional;
 
 /**
  * @author Ontheheavens
@@ -43,13 +46,19 @@ public final class FileUtilities {
     private static ShipLayer current;
 
     @Getter
-    private static final Action loadGameDataAction = new LoadGameDataAction();
+    private static final Action loadShipDataAction = new LoadShipDataAction();
+
+    @Getter
+    private static final Action loadHullmodDataAction = new LoadHullmodDataAction();
 
     @Getter
     private static final Action openSpriteAction = new OpenSpriteAction();
 
     @Getter
     private static final Action openShipDataAction = new OpenHullAction();
+
+    private FileUtilities() {
+    }
 
     public static void listenToLayerChange() {
         EventBus.subscribe(event -> {
@@ -69,6 +78,29 @@ public final class FileUtilities {
         boolean hullState = (current != null) && current.getShipSprite() != null && current.getShipData() == null;
         openSpriteAction.setEnabled(spriteState);
         openShipDataAction.setEnabled(hullState);
+    }
+
+    public static File searchFileInFolder(Path filePath, Path folderPath) {
+        if (!Files.exists(folderPath) || !Files.isDirectory(folderPath)) {
+            return null;
+        }
+
+        String fileName = filePath.getFileName().toString();
+
+        try (var stream = Files.walk(folderPath)) {
+            Optional<File> first = stream
+                    .filter(Files::isRegularFile)
+                    .filter(file -> {
+                        String toString = file.getFileName().toString();
+                        return toString.equals(fileName);
+                    })
+                    .map(Path::toFile)
+                    .findFirst();
+            return first.orElse(null);
+        } catch (IOException e) {
+            e.printStackTrace();
+            return null;
+        }
     }
 
     public static BufferedImage loadSprite(File file) {
