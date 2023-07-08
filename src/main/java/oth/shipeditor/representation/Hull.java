@@ -76,6 +76,7 @@ public class Hull {
     @JsonProperty("viewOffset")
     private double viewOffset;
 
+    @Getter @Setter
     @JsonProperty(StringConstants.BUILT_IN_MODS)
     private String[] builtInMods;
 

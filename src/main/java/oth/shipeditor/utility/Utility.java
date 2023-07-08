@@ -10,6 +10,8 @@ import oth.shipeditor.representation.Skin;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Point2D;
 import java.io.File;
@@ -101,6 +103,24 @@ public final class Utility {
             exception.printStackTrace();
         }
         return csvData;
+    }
+
+    public static ActionListener scheduleTask(int waitTime, ActionListener taskBeforeStart, ActionListener taskWhenDone) {
+        return e -> {
+            taskBeforeStart.actionPerformed(e);
+            SwingWorker<Void, Void> worker = new SwingWorker<>() {
+                @Override
+                protected Void doInBackground() throws InterruptedException {
+                    Thread.sleep(waitTime);
+                    return null;
+                }
+                @Override
+                protected void done() {
+                    taskWhenDone.actionPerformed(e);
+                }
+            };
+            worker.execute();
+        };
     }
 
 }

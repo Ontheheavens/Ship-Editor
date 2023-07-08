@@ -2,6 +2,7 @@ package oth.shipeditor.components.datafiles.entities;
 
 import lombok.Getter;
 import lombok.Setter;
+import lombok.extern.log4j.Log4j2;
 import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.files.HullFileOpened;
 import oth.shipeditor.communication.events.files.SkinFileOpened;
@@ -24,6 +25,7 @@ import java.util.Map;
  * @author Ontheheavens
  * @since 25.06.2023
  */
+@Log4j2
 @Getter
 public class ShipCSVEntry {
 
@@ -33,7 +35,6 @@ public class ShipCSVEntry {
 
     private final Map<String, Skin> skins;
 
-    @Setter
     private Skin activeSkin;
 
     private final String hullFileName;
@@ -54,6 +55,13 @@ public class ShipCSVEntry {
         if (this.skins != null) {
             this.skins.put(StringConstants.DEFAULT, activeSkin);
         }
+    }
+
+    public void setActiveSkin(Skin input) {
+        if (!skins.containsValue(input)) {
+            throw new RuntimeException("Attempt to set incompatible skin on ship entry!");
+        }
+        this.activeSkin = input;
     }
 
     @Override

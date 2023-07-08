@@ -11,6 +11,7 @@ import oth.shipeditor.menubar.FileUtilities;
 import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ActionEvent;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
@@ -25,6 +26,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Objects;
 import java.util.function.Function;
+
+import static java.awt.event.ActionEvent.ACTION_PERFORMED;
 
 /**
  * @author Ontheheavens
@@ -41,6 +44,17 @@ public final class Initializations {
     private static boolean folderHasMods;
 
     private Initializations() {
+    }
+
+    /**
+     * To be called only after all components and settings have been initialized.
+     */
+    public static void loadGameData(PrimaryWindow window) {
+        ActionEvent initEvent = new ActionEvent(window, ACTION_PERFORMED, null);
+        Action loadShipDataAction = FileUtilities.getLoadShipDataAction();
+        loadShipDataAction.actionPerformed(initEvent);
+        Action loadHullmodDataAction = FileUtilities.getLoadHullmodDataAction();
+        loadHullmodDataAction.actionPerformed(initEvent);
     }
 
     @SuppressWarnings("ProhibitedExceptionThrown")

@@ -1,11 +1,13 @@
 package oth.shipeditor.components.datafiles;
 
+import com.formdev.flatlaf.ui.FlatLineBorder;
 import lombok.extern.log4j.Log4j2;
 import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.files.HullmodFoldersWalked;
 import oth.shipeditor.components.datafiles.entities.HullmodCSVEntry;
 import oth.shipeditor.menubar.FileUtilities;
 import oth.shipeditor.persistence.SettingsManager;
+import oth.shipeditor.utility.Utility;
 
 import javax.swing.*;
 import javax.swing.tree.DefaultMutableTreeNode;
@@ -34,6 +36,15 @@ class HullmodsTreePanel extends DataTreePanel{
         JPanel topContainer = new JPanel();
         topContainer.add(new JLabel("Hullmod data:"));
         JButton loadCSVButton = new JButton(FileUtilities.getLoadHullmodDataAction());
+        loadCSVButton.addActionListener(Utility.scheduleTask(3000,
+                e1 -> {
+                    loadCSVButton.setEnabled(false);
+                    repaint();
+                },
+                e1 -> {
+                    loadCSVButton.setEnabled(true);
+                    repaint();
+                }));
         loadCSVButton.setText("Reload hullmod data");
         loadCSVButton.setToolTipText("Reload all hullmod entries, grouped by package");
         topContainer.add(loadCSVButton);
@@ -47,7 +58,9 @@ class HullmodsTreePanel extends DataTreePanel{
                 Map<String, List<HullmodCSVEntry>> hullmods = checked.hullmodsByPackage();
                 if (hullmods == null) {
                     throw new RuntimeException("Hullmod data initialization failed: table data is NULL!");
-                };
+                }
+                DefaultMutableTreeNode rootNode = getRootNode();
+                rootNode.removeAllChildren();
                 loadAllHullmods(hullmods);
                 sortAndExpandTree();
                 repaint();
@@ -89,6 +102,9 @@ class HullmodsTreePanel extends DataTreePanel{
         JPanel iconPanel = new JPanel();
         ImageIcon icon = new ImageIcon(FileUtilities.loadSprite(spriteFile));
         JLabel imageLabel = new JLabel(icon);
+        imageLabel.setOpaque(true);
+        imageLabel.setBorder(new FlatLineBorder(new Insets(2, 2, 2, 2), Color.GRAY));
+        imageLabel.setBackground(Color.LIGHT_GRAY);
         iconPanel.add(imageLabel);
         return iconPanel;
     }

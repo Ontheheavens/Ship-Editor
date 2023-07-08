@@ -7,17 +7,19 @@ import oth.shipeditor.communication.events.files.HullFileOpened;
 import oth.shipeditor.communication.events.files.SpriteOpened;
 import oth.shipeditor.communication.events.viewer.layers.LayerCreationQueued;
 import oth.shipeditor.communication.events.viewer.layers.LayerCyclingQueued;
+import oth.shipeditor.components.datafiles.entities.ShipCSVEntry;
 import oth.shipeditor.components.viewer.ShipViewable;
 import oth.shipeditor.components.viewer.layers.LayerManager;
 import oth.shipeditor.components.viewer.layers.LayerPainter;
 import oth.shipeditor.components.viewer.layers.ShipLayer;
 import oth.shipeditor.menubar.FileUtilities;
 import oth.shipeditor.persistence.Initializations;
+import oth.shipeditor.persistence.SettingsManager;
 import oth.shipeditor.representation.Hull;
+import oth.shipeditor.representation.Skin;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
 import java.awt.geom.Point2D;
 import java.awt.image.BufferedImage;
 import java.io.File;
@@ -26,10 +28,9 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Map;
 import java.util.Objects;
 import java.util.function.Function;
-
-import static java.awt.event.ActionEvent.ACTION_PERFORMED;
 
 /**
  * @author Ontheheavens
@@ -45,13 +46,8 @@ public final class Main {
             Main.configureLaf();
             PrimaryWindow window = PrimaryWindow.create();
             Initializations.updateStateFromSettings(window);
-            Main.testFiles(window);
-            Action loadShipDataAction = FileUtilities.getLoadShipDataAction();
-            loadShipDataAction.actionPerformed(new ActionEvent(window,
-                    ACTION_PERFORMED, null));
-            Action loadHullmodDataAction = FileUtilities.getLoadHullmodDataAction();
-            loadHullmodDataAction.actionPerformed(new ActionEvent(window,
-                    ACTION_PERFORMED, null));
+            Initializations.loadGameData(window);
+            Main.testFilesNew(window);
             window.showGUI();
         });
     }
@@ -80,7 +76,28 @@ public final class Main {
         } );
     }
 
-    private static void testFiles(PrimaryWindow window) {
+    private static void testFilesNew(PrimaryWindow window) {
+        Map<String, ShipCSVEntry> allShips = SettingsManager.getAllShips();
+
+        ShipCSVEntry crigEntry = allShips.get("crig");
+        crigEntry.loadLayerFromEntry();
+
+        ShipCSVEntry legionEntry = allShips.get("legion");
+        Map<String, Skin> legionSkins = legionEntry.getSkins();
+        Skin legionXIV = legionSkins.get("legion_xiv.skin");
+        legionEntry.setActiveSkin(legionXIV);
+        legionEntry.loadLayerFromEntry();
+
+        ShipViewable shipView = window.getShipView();
+        LayerManager layerManager = shipView.getLayerManager();
+        ShipLayer activeLayer = layerManager.getActiveLayer();
+        LayerPainter painter = activeLayer.getPainter();
+        painter.updateAnchorOffset(new Point2D.Double(-400, 0));
+        shipView.centerViewpoint();
+    }
+
+    @SuppressWarnings("unused")
+    private static void testFilesOld(PrimaryWindow window) {
         String legionSprite = "legion_xiv.png";
         String crigSprite = "salvage_rig.png";
         String legionHull = "legion.ship";

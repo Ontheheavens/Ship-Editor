@@ -2,7 +2,9 @@ package oth.shipeditor.components.datafiles;
 
 import lombok.extern.log4j.Log4j2;
 import oth.shipeditor.communication.EventBus;
-import oth.shipeditor.communication.events.files.*;
+import oth.shipeditor.communication.events.files.HullFolderWalked;
+import oth.shipeditor.communication.events.files.HullTreeCleanupQueued;
+import oth.shipeditor.communication.events.files.HullTreeExpansionQueued;
 import oth.shipeditor.components.datafiles.entities.ShipCSVEntry;
 import oth.shipeditor.menubar.FileUtilities;
 import oth.shipeditor.persistence.SettingsManager;
@@ -12,7 +14,9 @@ import oth.shipeditor.utility.StringConstants;
 import oth.shipeditor.utility.Utility;
 
 import javax.swing.*;
-import javax.swing.tree.*;
+import javax.swing.tree.DefaultMutableTreeNode;
+import javax.swing.tree.MutableTreeNode;
+import javax.swing.tree.TreePath;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.io.File;
@@ -57,7 +61,7 @@ class HullsTreePanel extends DataTreePanel {
                 List<Map<String, String>> tableData = checked.csvData();
                 if (tableData == null) {
                     throw new RuntimeException("Ship data initialization failed: table data is NULL!");
-                };
+                }
                 loadHullList(tableData, checked.hullFiles(), checked.skinFiles(), checked.folder());
                 tree.repaint();
             }
@@ -203,6 +207,15 @@ class HullsTreePanel extends DataTreePanel {
         JPanel topContainer = new JPanel();
         topContainer.add(new JLabel("Ship data:"));
         JButton loadCSVButton = new JButton(FileUtilities.getLoadShipDataAction());
+        loadCSVButton.addActionListener(Utility.scheduleTask(3000,
+                e1 -> {
+                    loadCSVButton.setEnabled(false);
+                    repaint();
+                },
+                e1 -> {
+                    loadCSVButton.setEnabled(true);
+                    repaint();
+                }));
         loadCSVButton.setText("Reload ship data");
         loadCSVButton.setToolTipText("Reload all ship, skin and variant files, grouped by package");
         topContainer.add(loadCSVButton);
