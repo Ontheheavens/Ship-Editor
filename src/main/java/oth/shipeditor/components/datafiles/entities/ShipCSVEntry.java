@@ -18,6 +18,8 @@ import oth.shipeditor.utility.Utility;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
@@ -100,6 +102,19 @@ public class ShipCSVEntry {
             String skinFileName = Utility.getSkinFileName(this, this.activeSkin);
             EventBus.publish(new SkinFileOpened(this.activeSkin, skinFileName));
         }
+    }
+
+    public List<String> getBuiltInHullmods() {
+        String[] fromHull = hullFile.getBuiltInMods();
+        List<String> hullmodIDs = new ArrayList<>();
+        if (fromHull != null) {
+            hullmodIDs.addAll(List.of(fromHull));
+        }
+        Skin skin = this.activeSkin;
+        if (skin != null && !skin.isBase()) {
+            hullmodIDs.addAll(skin.getBuiltInMods());
+        }
+        return hullmodIDs;
     }
 
 }

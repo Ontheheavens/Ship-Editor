@@ -5,20 +5,26 @@ import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.files.HullFolderWalked;
 import oth.shipeditor.communication.events.files.HullTreeCleanupQueued;
 import oth.shipeditor.communication.events.files.HullTreeExpansionQueued;
+import oth.shipeditor.components.datafiles.entities.HullmodCSVEntry;
 import oth.shipeditor.components.datafiles.entities.ShipCSVEntry;
 import oth.shipeditor.menubar.FileUtilities;
 import oth.shipeditor.persistence.SettingsManager;
+import oth.shipeditor.representation.GameDataRepository;
 import oth.shipeditor.representation.Hull;
 import oth.shipeditor.representation.Skin;
 import oth.shipeditor.utility.StringConstants;
 import oth.shipeditor.utility.Utility;
 
 import javax.swing.*;
+import javax.swing.border.Border;
+import javax.swing.border.MatteBorder;
+import javax.swing.border.TitledBorder;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.MutableTreeNode;
 import javax.swing.tree.TreePath;
 import java.awt.*;
 import java.awt.event.ActionEvent;
+import java.awt.image.BufferedImage;
 import java.io.File;
 import java.nio.file.Path;
 import java.util.List;
@@ -101,6 +107,7 @@ class HullsTreePanel extends DataTreePanel {
         constraints.gridy = 1;
         constraints.insets = new Insets(0, 5, 0, 5);
         JPanel shipFilesPanel = createShipFilesPanel(selected);
+
         rightPanel.add(shipFilesPanel, constraints);
         Map<String, String> data = selected.getRowData();
         createRightPanelDataTable(data);
@@ -147,15 +154,54 @@ class HullsTreePanel extends DataTreePanel {
         if (spriteFileName == null || spriteFileName.isEmpty()) {
             spriteFileName = hullFile.getSpriteName();
         }
-        shipFilesPanel.add(new JLabel("Ship name: " + shipName));
-        shipFilesPanel.add(new JLabel("Ship ID: " + shipId));
-        shipFilesPanel.add(new JLabel("Hull file : " + hullFileName));
+        JPanel labelContainer = new JPanel();
+        labelContainer.setAlignmentX(LEFT_ALIGNMENT);
+
+        labelContainer.setLayout(new BoxLayout(labelContainer, BoxLayout.PAGE_AXIS));
+        labelContainer.add(new JLabel("Ship name: " + shipName));
+        labelContainer.add(new JLabel("Ship ID: " + shipId));
+        labelContainer.add(new JLabel("Hull file : " + hullFileName));
         File spriteFile = new File(spriteFileName);
-        shipFilesPanel.add(new JLabel("Sprite file: : " + spriteFile.getName()));
+        labelContainer.add(new JLabel("Sprite file: : " + spriteFile.getName()));
         if (!skinFileName.isEmpty()) {
-            shipFilesPanel.add(new JLabel("Skin file: " + skinFileName));
+            labelContainer.add(new JLabel("Skin file: " + skinFileName));
         }
+        shipFilesPanel.add(labelContainer);
+
+        HullsTreePanel.addHullmodPanel(shipFilesPanel, selected);
+
         return shipFilesPanel;
+    }
+
+    private static void addHullmodPanel(JPanel panel, ShipCSVEntry selected) {
+        GameDataRepository gameData = SettingsManager.getGameData();
+        if (!gameData.isHullmodDataLoaded()) return;
+
+        MatteBorder matteLine = new MatteBorder(1, 0, 0, 0, Color.LIGHT_GRAY);
+        Border titledBorder = new TitledBorder(matteLine, "Built-in hullmods",
+                TitledBorder.CENTER, TitledBorder.DEFAULT_POSITION);
+        JPanel hullmodsPanel = new JPanel();
+        hullmodsPanel.setBorder(titledBorder);
+        hullmodsPanel.setAlignmentX(LEFT_ALIGNMENT);
+
+        Collection<String> hullmodIDs = selected.getBuiltInHullmods();
+
+        if (hullmodIDs.isEmpty()) return;
+
+        Map<String, HullmodCSVEntry> allHullmods = gameData.getAllHullmodEntries();
+        for (String id : hullmodIDs) {
+            HullmodCSVEntry entry = allHullmods.get(id);
+            Map<String, String> rowData = entry.getRowData();
+            String name = rowData.get("name");
+            BufferedImage iconImage = FileUtilities.loadSprite(entry.fetchSpriteFile());
+            JLabel imageLabel = Utility.getIconLabelWithBorder(new ImageIcon(iconImage));
+            imageLabel.setToolTipText(name);
+            hullmodsPanel.add(imageLabel);
+        }
+
+        panel.add(hullmodsPanel);
+        panel.revalidate();
+        panel.repaint();
     }
 
     private void loadHullList(Iterable<Map<String, String>> tableData,
@@ -176,7 +222,8 @@ class HullsTreePanel extends DataTreePanel {
             }
             if (hullWithSkins != null && !fileName.isEmpty()) {
                 ShipCSVEntry newEntry = new ShipCSVEntry(row, hullWithSkins, packagePath, fileName);
-                Map<String, ShipCSVEntry> allShipEntries = SettingsManager.getAllShips();
+                GameDataRepository gameData = SettingsManager.getGameData();
+                Map<String, ShipCSVEntry> allShipEntries = gameData.getAllShipEntries();
                 allShipEntries.putIfAbsent(rowId, newEntry);
                 MutableTreeNode shipNode = new DefaultMutableTreeNode(newEntry);
                 packageRoot.add(shipNode);

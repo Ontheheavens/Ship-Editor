@@ -2,7 +2,6 @@ package oth.shipeditor.undo;
 
 import lombok.Getter;
 import lombok.Setter;
-import oth.shipeditor.undo.edits.PointDragEdit;
 
 import java.util.*;
 

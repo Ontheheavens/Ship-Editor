@@ -9,11 +9,8 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
 import oth.shipeditor.PrimaryWindow;
-import oth.shipeditor.components.datafiles.entities.HullmodCSVEntry;
-import oth.shipeditor.components.datafiles.entities.ShipCSVEntry;
 import oth.shipeditor.representation.GameDataRepository;
 
-import javax.swing.*;
 import java.io.File;
 import java.io.IOException;
 import java.io.UncheckedIOException;
@@ -22,7 +19,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Stream;
 
 /**
@@ -35,17 +31,10 @@ public final class SettingsManager {
     @Getter @Setter
     private static Settings settings;
 
+    @Getter
     private static final GameDataRepository gameData = new GameDataRepository();
 
     private SettingsManager() {}
-
-    public static Map<String, ShipCSVEntry> getAllShips() {
-        return gameData.getAllShipEntries();
-    }
-
-    public static Map<String, HullmodCSVEntry> getAllHullmods() {
-        return gameData.getAllHullmodEntries();
-    }
 
     static Settings createDefault() {
         Settings empty = new Settings();

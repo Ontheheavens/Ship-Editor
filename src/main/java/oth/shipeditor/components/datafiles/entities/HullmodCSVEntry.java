@@ -29,6 +29,8 @@ public class HullmodCSVEntry {
 
     private final String spriteFileName;
 
+    private File fetchedSpriteFile;
+
     public HullmodCSVEntry(Map<String, String> row, Path folder, Path tablePath) {
         this.rowData = row;
         packageFolderPath = folder;
@@ -46,8 +48,15 @@ public class HullmodCSVEntry {
         return displayedName;
     }
 
+
     public File fetchSpriteFile() {
-        Path spritePath = Path.of(this.spriteFileName);
+        if (fetchedSpriteFile != null) return fetchedSpriteFile;
+        String path = this.spriteFileName;
+        if (path == null || path.isEmpty()) {
+            // Fallback sprite with question mark.
+            path = "graphics/icons/intel/investigation.png";
+        };
+        Path spritePath = Path.of(path);
         Path coreDataFolder = SettingsManager.getCoreFolderPath();
         List<Path> otherModFolders = SettingsManager.getAllModFolders();
         File result;
@@ -70,7 +79,8 @@ public class HullmodCSVEntry {
                 log.error("Failed to fetch sprite file for {}!", this.getHullmodID());
             }
         }
-        return result;
+        fetchedSpriteFile = result;
+        return fetchedSpriteFile;
     }
 
 }

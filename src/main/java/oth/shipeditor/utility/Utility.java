@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.MappingIterator;
 import com.fasterxml.jackson.dataformat.csv.CsvMapper;
 import com.fasterxml.jackson.dataformat.csv.CsvParser;
 import com.fasterxml.jackson.dataformat.csv.CsvSchema;
+import com.formdev.flatlaf.ui.FlatLineBorder;
 import lombok.extern.log4j.Log4j2;
 import oth.shipeditor.components.datafiles.entities.ShipCSVEntry;
 import oth.shipeditor.representation.Skin;
@@ -104,6 +105,14 @@ public final class Utility {
             exception.printStackTrace();
         }
         return csvData;
+    }
+
+    public static JLabel getIconLabelWithBorder(Icon icon) {
+        JLabel imageLabel = new JLabel(icon);
+        imageLabel.setOpaque(true);
+        imageLabel.setBorder(new FlatLineBorder(new Insets(2, 2, 2, 2), Color.GRAY));
+        imageLabel.setBackground(Color.LIGHT_GRAY);
+        return imageLabel;
     }
 
     public static ActionListener scheduleTask(int waitTime, ActionListener taskBeforeStart, ActionListener taskWhenDone) {

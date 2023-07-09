@@ -15,6 +15,7 @@ import oth.shipeditor.components.viewer.layers.ShipLayer;
 import oth.shipeditor.menubar.FileUtilities;
 import oth.shipeditor.persistence.Initializations;
 import oth.shipeditor.persistence.SettingsManager;
+import oth.shipeditor.representation.GameDataRepository;
 import oth.shipeditor.representation.Hull;
 import oth.shipeditor.representation.Skin;
 
@@ -77,7 +78,8 @@ public final class Main {
     }
 
     private static void testFilesNew(PrimaryWindow window) {
-        Map<String, ShipCSVEntry> allShips = SettingsManager.getAllShips();
+        GameDataRepository gameData = SettingsManager.getGameData();
+        Map<String, ShipCSVEntry> allShips = gameData.getAllShipEntries();
 
         ShipCSVEntry crigEntry = allShips.get("crig");
         crigEntry.loadLayerFromEntry();

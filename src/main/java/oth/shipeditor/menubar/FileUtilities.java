@@ -16,6 +16,7 @@ import oth.shipeditor.components.viewer.layers.ShipLayer;
 import oth.shipeditor.parsing.JsonProcessor;
 import oth.shipeditor.representation.Hull;
 import oth.shipeditor.representation.Skin;
+import oth.shipeditor.utility.ImageCache;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
@@ -61,6 +62,7 @@ public final class FileUtilities {
     private FileUtilities() {
     }
 
+    @SuppressWarnings("ChainOfInstanceofChecks")
     public static void listenToLayerChange() {
         EventBus.subscribe(event -> {
             if (event instanceof LayerWasSelected checked) {
@@ -113,14 +115,7 @@ public final class FileUtilities {
     }
 
     public static BufferedImage loadSprite(File file) {
-        BufferedImage sprite;
-        try {
-            sprite = ImageIO.read(file);
-        } catch (IOException ex) {
-            throw new UncheckedIOException("Failed to load sprite: " + file.getName(), ex);
-        }
-        log.info("Opening sprite: {}.", file.getName());
-        return sprite;
+        return ImageCache.loadImage(file);
     }
 
     private static ObjectMapper getConfigured() {

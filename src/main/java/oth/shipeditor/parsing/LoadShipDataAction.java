@@ -8,6 +8,7 @@ import oth.shipeditor.communication.events.files.HullTreeExpansionQueued;
 import oth.shipeditor.menubar.FileUtilities;
 import oth.shipeditor.persistence.Settings;
 import oth.shipeditor.persistence.SettingsManager;
+import oth.shipeditor.representation.GameDataRepository;
 import oth.shipeditor.representation.Hull;
 import oth.shipeditor.representation.Skin;
 import oth.shipeditor.utility.Utility;
@@ -83,6 +84,8 @@ class LoadShipDataAction extends AbstractAction {
             LoadShipDataAction.walkHullFolder(folder, allSkins);
         }
         EventBus.publish(new HullTreeExpansionQueued());
+        GameDataRepository gameData = SettingsManager.getGameData();
+        gameData.setShipDataLoaded(true);
     }
 
     private static void walkHullFolder(String folderPath, Map<String, Skin> skins) {

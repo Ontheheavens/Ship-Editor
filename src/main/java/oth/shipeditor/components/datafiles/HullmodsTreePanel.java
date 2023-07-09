@@ -7,6 +7,7 @@ import oth.shipeditor.communication.events.files.HullmodFoldersWalked;
 import oth.shipeditor.components.datafiles.entities.HullmodCSVEntry;
 import oth.shipeditor.menubar.FileUtilities;
 import oth.shipeditor.persistence.SettingsManager;
+import oth.shipeditor.representation.GameDataRepository;
 import oth.shipeditor.utility.Utility;
 
 import javax.swing.*;
@@ -100,11 +101,8 @@ class HullmodsTreePanel extends DataTreePanel{
     private static JPanel createHullmodIconPanel(HullmodCSVEntry selected) {
         File spriteFile = selected.fetchSpriteFile();
         JPanel iconPanel = new JPanel();
-        ImageIcon icon = new ImageIcon(FileUtilities.loadSprite(spriteFile));
-        JLabel imageLabel = new JLabel(icon);
-        imageLabel.setOpaque(true);
-        imageLabel.setBorder(new FlatLineBorder(new Insets(2, 2, 2, 2), Color.GRAY));
-        imageLabel.setBackground(Color.LIGHT_GRAY);
+        Icon icon = new ImageIcon(FileUtilities.loadSprite(spriteFile));
+        JLabel imageLabel = Utility.getIconLabelWithBorder(icon);
         iconPanel.add(imageLabel);
         return iconPanel;
     }
@@ -125,7 +123,8 @@ class HullmodsTreePanel extends DataTreePanel{
     }
 
     private void loadAllHullmods(Map<String, List<HullmodCSVEntry>> hullmods) {
-        Map<String, HullmodCSVEntry> allHullmodEntries = SettingsManager.getAllHullmods();
+        GameDataRepository gameData = SettingsManager.getGameData();
+        Map<String, HullmodCSVEntry> allHullmodEntries = gameData.getAllHullmodEntries();
         for (Map.Entry<String, List<HullmodCSVEntry>> entry : hullmods.entrySet()) {
             Path folderPath = Paths.get(entry.getKey(), "");
             DefaultMutableTreeNode packageRoot = new DefaultMutableTreeNode(folderPath.getFileName().toString());
@@ -140,6 +139,7 @@ class HullmodsTreePanel extends DataTreePanel{
             rootNode.add(packageRoot);
         }
         log.info("Total {} hullmod entries registered.", allHullmodEntries.size());
+        gameData.setHullmodDataLoaded(true);
     }
 
     @Override
