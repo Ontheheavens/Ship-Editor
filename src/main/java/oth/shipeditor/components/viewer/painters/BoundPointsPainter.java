@@ -5,15 +5,20 @@ import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
 import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.Events;
+import oth.shipeditor.communication.events.viewer.ViewerRepaintQueued;
 import oth.shipeditor.communication.events.viewer.points.BoundCreationQueued;
 import oth.shipeditor.communication.events.viewer.points.BoundInsertedConfirmed;
 import oth.shipeditor.communication.events.viewer.points.InstrumentModeChanged;
+import oth.shipeditor.communication.events.viewer.points.PointSelectedConfirmed;
 import oth.shipeditor.components.instrument.InstrumentTabsPane;
 import oth.shipeditor.components.viewer.InstrumentMode;
 import oth.shipeditor.components.viewer.PrimaryShipViewer;
+import oth.shipeditor.components.viewer.control.ControlPredicates;
+import oth.shipeditor.components.viewer.control.PointSelectionMode;
 import oth.shipeditor.components.viewer.control.ViewerControl;
 import oth.shipeditor.components.viewer.entities.BaseWorldPoint;
 import oth.shipeditor.components.viewer.entities.BoundPoint;
+import oth.shipeditor.components.viewer.entities.WorldPoint;
 import oth.shipeditor.components.viewer.layers.LayerPainter;
 import oth.shipeditor.undo.EditDispatch;
 import oth.shipeditor.utility.Utility;
@@ -62,6 +67,36 @@ public final class BoundPointsPainter extends AbstractPointPainter {
     @Override
     public boolean isInteractionEnabled() {
         return super.isInteractionEnabled() && this.parentLayer.isLayerActive();
+    }
+
+    @Override
+    protected void selectPointConditionally() {
+        PointSelectionMode current = ControlPredicates.getSelectionMode();
+        if (current == PointSelectionMode.STRICT) {
+            super.selectPointConditionally();
+            return;
+        }
+        Point2D correctedCursor = AbstractPointPainter.getCorrectedCursor();
+        WorldPoint toSelect = null;
+        double minDistance = Double.MAX_VALUE;
+        for (BoundPoint point : this.boundPoints) {
+            Point2D position = point.getPosition();
+            double distance = position.distance(correctedCursor);
+            if (distance < minDistance) {
+                minDistance = distance;
+                toSelect = point;
+            }
+        }
+        WorldPoint selected = this.getSelected();
+        if (selected != null) {
+            selected.setSelected(false);
+        }
+        this.setSelected(toSelect);
+        if (toSelect != null) {
+            toSelect.setSelected(true);
+        }
+        EventBus.publish(new PointSelectedConfirmed(toSelect));
+        EventBus.publish(new ViewerRepaintQueued());
     }
 
     @Override

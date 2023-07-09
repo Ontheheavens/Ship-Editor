@@ -144,7 +144,16 @@ public final class ShipViewerControls implements ViewerControl {
             this.layerDragPoint.setLocation(e.getX() - transformed.getX(), e.getY() - transformed.getY());
         }
         this.tryBoundCreation();
-        if (ControlPredicates.selectPointPredicate.test(e)) {
+
+        ShipViewerControls.handlePointSelection(e);
+    }
+
+    private static void handlePointSelection(MouseEvent e) {
+        PointSelectionMode current = ControlPredicates.getSelectionMode();
+        if (current == PointSelectionMode.STRICT) {
+            if (!ControlPredicates.selectPointPredicate.test(e)) return;
+            EventBus.publish(new PointSelectQueued(null));
+        } else if (current == PointSelectionMode.CLOSEST) {
             EventBus.publish(new PointSelectQueued(null));
         }
     }
@@ -210,6 +219,7 @@ public final class ShipViewerControls implements ViewerControl {
         this.previousPoint.setLocation(x, y);
         this.parentViewer.repaint();
         this.refreshCursorPosition(e);
+        ShipViewerControls.handlePointSelection(e);
     }
 
     @Override

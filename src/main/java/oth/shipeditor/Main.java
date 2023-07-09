@@ -6,18 +6,21 @@ import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.files.HullFileOpened;
 import oth.shipeditor.communication.events.files.SpriteOpened;
 import oth.shipeditor.communication.events.viewer.layers.LayerCreationQueued;
-import oth.shipeditor.communication.events.viewer.layers.LayerCyclingQueued;
+import oth.shipeditor.communication.events.viewer.layers.LastLayerSelectQueued;
+import oth.shipeditor.components.datafiles.entities.ShipCSVEntry;
 import oth.shipeditor.components.viewer.ShipViewable;
 import oth.shipeditor.components.viewer.layers.LayerManager;
 import oth.shipeditor.components.viewer.layers.LayerPainter;
 import oth.shipeditor.components.viewer.layers.ShipLayer;
 import oth.shipeditor.menubar.FileUtilities;
 import oth.shipeditor.persistence.Initializations;
+import oth.shipeditor.persistence.SettingsManager;
+import oth.shipeditor.representation.GameDataRepository;
 import oth.shipeditor.representation.Hull;
+import oth.shipeditor.representation.Skin;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
 import java.awt.geom.Point2D;
 import java.awt.image.BufferedImage;
 import java.io.File;
@@ -26,10 +29,9 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Map;
 import java.util.Objects;
 import java.util.function.Function;
-
-import static java.awt.event.ActionEvent.ACTION_PERFORMED;
 
 /**
  * @author Ontheheavens
@@ -45,10 +47,8 @@ public final class Main {
             Main.configureLaf();
             PrimaryWindow window = PrimaryWindow.create();
             Initializations.updateStateFromSettings(window);
-            Main.testFiles(window);
-            Action loadGameDataAction = FileUtilities.getLoadGameDataAction();
-            loadGameDataAction.actionPerformed(new ActionEvent(window,
-                    ACTION_PERFORMED, null));
+            Initializations.loadGameData(window);
+            Main.testFilesNew(window);
             window.showGUI();
         });
     }
@@ -68,6 +68,7 @@ public final class Main {
         UIManager.put("Tree.paintLines", true);
         UIManager.put("Tree.showDefaultIcons", true);
         UIManager.put("TitlePane.showIcon", true);
+        UIManager.put("TitlePane.showIconInDialogs", true);
         UIManager.put("FileChooser.readOnly", true);
 
         UIManager.put(Initializations.FILE_CHOOSER_SHORTCUTS_FILES_FUNCTION, (Function<File[], File[]>) files -> {
@@ -77,7 +78,29 @@ public final class Main {
         } );
     }
 
-    private static void testFiles(PrimaryWindow window) {
+    private static void testFilesNew(PrimaryWindow window) {
+        GameDataRepository gameData = SettingsManager.getGameData();
+        Map<String, ShipCSVEntry> allShips = gameData.getAllShipEntries();
+
+        ShipCSVEntry crigEntry = allShips.get("crig");
+        crigEntry.loadLayerFromEntry();
+
+        ShipCSVEntry legionEntry = allShips.get("legion");
+        Map<String, Skin> legionSkins = legionEntry.getSkins();
+        Skin legionXIV = legionSkins.get("legion_xiv.skin");
+        legionEntry.setActiveSkin(legionXIV);
+        legionEntry.loadLayerFromEntry();
+
+        ShipViewable shipView = window.getShipView();
+        LayerManager layerManager = shipView.getLayerManager();
+        ShipLayer activeLayer = layerManager.getActiveLayer();
+        LayerPainter painter = activeLayer.getPainter();
+        painter.updateAnchorOffset(new Point2D.Double(-400, 0));
+        shipView.centerViewpoint();
+    }
+
+    @SuppressWarnings("unused")
+    private static void testFilesOld(PrimaryWindow window) {
         String legionSprite = "legion_xiv.png";
         String crigSprite = "salvage_rig.png";
         String legionHull = "legion.ship";
@@ -94,7 +117,7 @@ public final class Main {
 
     private static void loadShip(PrimaryWindow window, String spriteFilePath, String hullFilePath) {
         EventBus.publish(new LayerCreationQueued());
-        EventBus.publish(new LayerCyclingQueued());
+        EventBus.publish(new LastLayerSelectQueued());
         Class<? extends PrimaryWindow> windowClass = window.getClass();
         ClassLoader classLoader = windowClass.getClassLoader();
         URL spritePath = Objects.requireNonNull(classLoader.getResource(spriteFilePath));

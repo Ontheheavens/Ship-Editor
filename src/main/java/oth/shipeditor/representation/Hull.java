@@ -1,36 +1,42 @@
 package oth.shipeditor.representation;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import lombok.Getter;
-import oth.shipeditor.parsing.deserialize.ColorArrayRGBADeserializer;
+import lombok.Setter;
 import oth.shipeditor.parsing.deserialize.Point2DArrayDeserializer;
 import oth.shipeditor.parsing.deserialize.Point2DDeserializer;
 import oth.shipeditor.utility.StringConstants;
 
-import java.awt.*;
 import java.awt.geom.Point2D;
+import java.nio.file.Path;
 import java.util.Map;
 
 /**
+ * This is a serialization/deserialization class, not intended for edit through viewer at runtime.
+ * Input data from instance of this class (which is acquired via deserialization of JSON) is passed to layer,
+ * which transforms and edits the data as necessary, then constructs new result instance of this class for serialization.
  * @author Ontheheavens
  * @since 05.05.2023
  */
+@SuppressWarnings("ClassWithTooManyFields")
+@Getter
 public class Hull {
 
-    @Getter
+    @JsonIgnore
+    @Setter
+    Path shipFilePath;
+
     @JsonProperty(StringConstants.HULL_NAME)
     String hullName;
 
-    @Getter
     @JsonProperty("hullId")
     private String hullId;
 
-    @Getter
     @JsonProperty("hullSize")
     private String hullSize;
 
-    @Getter
     @JsonProperty(StringConstants.SPRITE_NAME)
     private String spriteName;
 
@@ -43,7 +49,6 @@ public class Hull {
     @JsonProperty(StringConstants.WIDTH)
     private double width;
 
-    @Getter
     @JsonProperty("center")
     @JsonDeserialize(using = Point2DDeserializer.class)
     private Point2D.Double center;
@@ -52,7 +57,6 @@ public class Hull {
     @JsonDeserialize(using = Point2DDeserializer.class)
     private Point2D.Double moduleAnchor;
 
-    @Getter
     @JsonProperty("collisionRadius")
     private double collisionRadius;
 
@@ -69,6 +73,7 @@ public class Hull {
     @JsonProperty("viewOffset")
     private double viewOffset;
 
+    @Setter
     @JsonProperty(StringConstants.BUILT_IN_MODS)
     private String[] builtInMods;
 
@@ -84,7 +89,6 @@ public class Hull {
     @JsonProperty("engineSlots")
     private EngineSlot[] engineSlots;
 
-    @Getter
     @JsonProperty("bounds")
     @JsonDeserialize(using = Point2DArrayDeserializer.class)
     Point2D.Double[] bounds;

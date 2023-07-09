@@ -43,6 +43,9 @@ public class Skin {
     private final transient boolean base;
 
     @JsonIgnore
+    private transient Path skinFilePath;
+
+    @JsonIgnore
     private transient Path containingPackage;
 
     @JsonProperty(StringConstants.BASE_HULL_ID)
@@ -59,6 +62,9 @@ public class Skin {
 
     @JsonProperty(StringConstants.HULL_DESIGNATION)
     private String hullDesignation;
+
+    @JsonProperty("hullStyle")
+    private String hullStyle;
 
     @JsonProperty(StringConstants.RESTORE_TO_BASE_HULL)
     private boolean restoreToBaseHull;

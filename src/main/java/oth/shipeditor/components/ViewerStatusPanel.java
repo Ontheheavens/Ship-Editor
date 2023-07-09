@@ -32,7 +32,7 @@ import java.awt.image.BufferedImage;
  * @since 01.05.2023
  */
 @Log4j2
-public final class ViewerStatusPanel extends JPanel {
+final class ViewerStatusPanel extends JPanel {
 
     private static double zoomLevel = 1.0f;
 
@@ -49,7 +49,7 @@ public final class ViewerStatusPanel extends JPanel {
 
     private Point2D cursorPoint;
 
-    public ViewerStatusPanel(ShipViewable viewable) {
+    ViewerStatusPanel(ShipViewable viewable) {
         this.viewer = viewable;
         FontIcon dimensionIcon = FontIcon.of(FluentUiRegularMZ.SLIDE_SIZE_24, 20);
         dimensions = new JLabel("", dimensionIcon, SwingConstants.TRAILING);

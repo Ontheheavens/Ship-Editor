@@ -131,11 +131,8 @@ public final class LayerPainter implements Painter {
                 if (layer.getShipSprite() != null) {
                     this.shipSprite = layer.getShipSprite();
                 }
-                // TODO: handle the case where ship data loads onto existing ship data.
                 if (layer.getShipData() != null && this.uninitialized) {
                     this.initializeShipData(layer.getShipData());
-                } else if (layer.getShipData() != null) {
-
                 }
             }
         });
@@ -179,7 +176,7 @@ public final class LayerPainter implements Painter {
         g.setTransform(oldAT);
     }
 
-    public void setSpriteOpacity(float opacity) {
+    void setSpriteOpacity(float opacity) {
         if (opacity < 0.0f) {
             this.spriteOpacity = 0.0f;
         } else this.spriteOpacity = Math.min(opacity, 1.0f);

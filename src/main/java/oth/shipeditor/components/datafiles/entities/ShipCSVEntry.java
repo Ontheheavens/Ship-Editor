@@ -1,12 +1,23 @@
 package oth.shipeditor.components.datafiles.entities;
 
 import lombok.Getter;
-import lombok.Setter;
+import lombok.extern.log4j.Log4j2;
+import oth.shipeditor.communication.EventBus;
+import oth.shipeditor.communication.events.files.HullFileOpened;
+import oth.shipeditor.communication.events.files.SkinFileOpened;
+import oth.shipeditor.communication.events.files.SpriteOpened;
+import oth.shipeditor.communication.events.viewer.layers.LayerCreationQueued;
+import oth.shipeditor.communication.events.viewer.layers.LastLayerSelectQueued;
+import oth.shipeditor.menubar.FileUtilities;
 import oth.shipeditor.representation.Hull;
 import oth.shipeditor.representation.Skin;
 import oth.shipeditor.utility.StringConstants;
+import oth.shipeditor.utility.Utility;
 
+import java.awt.image.BufferedImage;
+import java.io.File;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -14,6 +25,7 @@ import java.util.Map;
  * @author Ontheheavens
  * @since 25.06.2023
  */
+@Log4j2
 @Getter
 public class ShipCSVEntry {
 
@@ -21,9 +33,11 @@ public class ShipCSVEntry {
 
     private final Hull hullFile;
 
+    /**
+     * Keys are simple names of skin files, e.g.: legion_xiv.skin.
+     */
     private final Map<String, Skin> skins;
 
-    @Setter
     private Skin activeSkin;
 
     private final String hullFileName;
@@ -46,6 +60,13 @@ public class ShipCSVEntry {
         }
     }
 
+    public void setActiveSkin(Skin input) {
+        if (!skins.containsValue(input)) {
+            throw new RuntimeException("Attempt to set incompatible skin on ship entry!");
+        }
+        this.activeSkin = input;
+    }
+
     @Override
     public String toString() {
         String displayedName = rowData.get(StringConstants.NAME);
@@ -53,6 +74,45 @@ public class ShipCSVEntry {
             displayedName = rowData.get(StringConstants.DESIGNATION);
         }
         return displayedName;
+    }
+
+    public void loadLayerFromEntry() {
+        Path packagePath = this.packageFolder;
+        String spriteName = this.hullFile.getSpriteName();
+        boolean skinChosen = !this.activeSkin.isBase();
+        if (skinChosen) {
+            spriteName = this.activeSkin.getSpriteName();
+            packagePath = this.activeSkin.getContainingPackage();
+        }
+        if (spriteName == null || spriteName.isEmpty()) {
+            spriteName = this.hullFile.getSpriteName();
+        }
+
+        Path spriteFilePath = packagePath.resolve(spriteName);
+        File spriteFile = spriteFilePath.toFile();
+
+        EventBus.publish(new LayerCreationQueued());
+        EventBus.publish(new LastLayerSelectQueued());
+        BufferedImage sprite = FileUtilities.loadSprite(spriteFile);
+        EventBus.publish(new SpriteOpened(sprite, spriteFile.getName()));
+        EventBus.publish(new HullFileOpened(this.hullFile, this.getHullFileName()));
+        if (skinChosen) {
+            String skinFileName = Utility.getSkinFileName(this, this.activeSkin);
+            EventBus.publish(new SkinFileOpened(this.activeSkin, skinFileName));
+        }
+    }
+
+    public List<String> getBuiltInHullmods() {
+        String[] fromHull = hullFile.getBuiltInMods();
+        List<String> hullmodIDs = new ArrayList<>();
+        if (fromHull != null) {
+            hullmodIDs.addAll(List.of(fromHull));
+        }
+        Skin skin = this.activeSkin;
+        if (skin != null && !skin.isBase()) {
+            hullmodIDs.addAll(skin.getBuiltInMods());
+        }
+        return hullmodIDs;
     }
 
 }

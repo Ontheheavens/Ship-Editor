@@ -1,6 +1,7 @@
 package oth.shipeditor.undo.edits;
 
 import lombok.AllArgsConstructor;
+import lombok.extern.log4j.Log4j2;
 import oth.shipeditor.communication.events.Events;
 import oth.shipeditor.components.viewer.entities.BaseWorldPoint;
 import oth.shipeditor.components.viewer.entities.BoundPoint;
@@ -12,6 +13,7 @@ import oth.shipeditor.undo.AbstractEdit;
  * @author Ontheheavens
  * @since 17.06.2023
  */
+@Log4j2
 @AllArgsConstructor
 public class PointRemovalEdit extends AbstractEdit {
     private final AbstractPointPainter painter;

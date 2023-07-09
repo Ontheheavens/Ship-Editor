@@ -1,9 +1,5 @@
-package oth.shipeditor.components.datafiles;
+package oth.shipeditor.parsing;
 
-import com.fasterxml.jackson.databind.MappingIterator;
-import com.fasterxml.jackson.dataformat.csv.CsvMapper;
-import com.fasterxml.jackson.dataformat.csv.CsvParser;
-import com.fasterxml.jackson.dataformat.csv.CsvSchema;
 import lombok.extern.log4j.Log4j2;
 import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.files.HullFolderWalked;
@@ -12,9 +8,10 @@ import oth.shipeditor.communication.events.files.HullTreeExpansionQueued;
 import oth.shipeditor.menubar.FileUtilities;
 import oth.shipeditor.persistence.Settings;
 import oth.shipeditor.persistence.SettingsManager;
+import oth.shipeditor.representation.GameDataRepository;
 import oth.shipeditor.representation.Hull;
 import oth.shipeditor.representation.Skin;
-import oth.shipeditor.utility.StringConstants;
+import oth.shipeditor.utility.Utility;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;
@@ -24,7 +21,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.Files;
 import java.util.*;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
@@ -33,7 +29,7 @@ import java.util.stream.Stream;
  */
 @Log4j2
 public
-class LoadGameDataAction extends AbstractAction {
+class LoadShipDataAction extends AbstractAction {
 
     private static final String HULLS = "hulls";
     private static final String SHIP_DATA_CSV = "ship_data.csv";
@@ -44,17 +40,15 @@ class LoadGameDataAction extends AbstractAction {
         Collection<String> eligibleFolders = new ArrayList<>();
         eligibleFolders.add(settings.getCoreFolderPath());
 
-        String modFolderPath = settings.getModFolderPath();
         Path targetFile = Paths.get("data", HULLS, SHIP_DATA_CSV);
 
         Collection<Path> modsWithShipData = new ArrayList<>();
         Collection<Path> modsWithSkinFolder = new ArrayList<>();
         modsWithSkinFolder.add(Paths.get(settings.getCoreFolderPath()));
 
-        try (Stream<Path> childDirectories = Files.list(Paths.get(modFolderPath))) {
-            childDirectories
-                    .filter(Files::isDirectory)
-                    .forEach(childDir -> {
+        List<Path> allModFolders = SettingsManager.getAllModFolders();
+        try (Stream<Path> childDirectories = allModFolders.stream()) {
+            childDirectories.forEach(childDir -> {
                         Path targetFilePath = childDir.resolve(targetFile);
                         if (Files.exists(targetFilePath)) {
                             modsWithShipData.add(childDir);
@@ -66,8 +60,6 @@ class LoadGameDataAction extends AbstractAction {
                             modsWithSkinFolder.add(childDir);
                         }
                     });
-        } catch (IOException exception) {
-            exception.printStackTrace();
         }
 
         if (modsWithShipData.isEmpty()) {
@@ -84,22 +76,23 @@ class LoadGameDataAction extends AbstractAction {
         Map<String, Skin> allSkins = new HashMap<>();
         for (Path directory : modsWithSkinFolder) {
             log.info("Skin folder found in mod directory: {}", directory);
-            Map<String, Skin> containedSkins = LoadGameDataAction.walkSkinFolder(directory);
+            Map<String, Skin> containedSkins = LoadShipDataAction.walkSkinFolder(directory);
             allSkins.putAll(containedSkins);
         }
 
         for (String folder : eligibleFolders) {
-            LoadGameDataAction.walkHullFolder(folder, allSkins);
+            LoadShipDataAction.walkHullFolder(folder, allSkins);
         }
-
         EventBus.publish(new HullTreeExpansionQueued());
+        GameDataRepository gameData = SettingsManager.getGameData();
+        gameData.setShipDataLoaded(true);
     }
 
     private static void walkHullFolder(String folderPath, Map<String, Skin> skins) {
         Path shipDataPath = Paths.get(folderPath, "data", HULLS, SHIP_DATA_CSV);
 
         log.info("Parsing ship CSV data at: {}..", shipDataPath);
-        List<Map<String, String>> csvData = LoadGameDataAction.parseShipDataCSV(shipDataPath);
+        List<Map<String, String>> csvData = Utility.parseCSVTable(shipDataPath);
         log.info("Ship CSV data at {} retrieved successfully.", shipDataPath);
 
         List<File> shipFiles = new ArrayList<>();
@@ -117,6 +110,7 @@ class LoadGameDataAction extends AbstractAction {
         Map<String, Hull> mappedHulls = new HashMap<>();
         for (File hullFile : shipFiles) {
             Hull mapped = FileUtilities.loadHullFile(hullFile);
+
             mappedHulls.put(hullFile.getName(), mapped);
         }
         log.info("Fetched and mapped {} hull files.", mappedHulls.size());
@@ -147,31 +141,6 @@ class LoadGameDataAction extends AbstractAction {
         }
         log.info("Fetched and mapped {} skin files.", mappedSkins.size());
         return mappedSkins;
-    }
-
-    private static List<Map<String, String>> parseShipDataCSV(Path shipDataPath) {
-        CsvMapper csvMapper = new CsvMapper();
-        csvMapper.enable(CsvParser.Feature.ALLOW_COMMENTS);
-
-        CsvSchema csvSchema = CsvSchema.emptySchema().withHeader();
-        File csvFile = shipDataPath.toFile();
-        List<Map<String, String>> csvData = new ArrayList<>();
-        try (MappingIterator<Map<String, String>> iterator = csvMapper.readerFor(Map.class)
-                .with(csvSchema)
-                .readValues(csvFile)) {
-            while (iterator.hasNext()) {
-                Map<String, String> row = iterator.next();
-                String id = row.get(StringConstants.ID);
-                if (!id.isEmpty()) {
-                    // We are skipping a row if ship ID is missing.
-                    csvData.add(row);
-                }
-            }
-        } catch (IOException exception) {
-            log.error("Ship data CSV loading failed!");
-            exception.printStackTrace();
-        }
-        return csvData;
     }
 
 }

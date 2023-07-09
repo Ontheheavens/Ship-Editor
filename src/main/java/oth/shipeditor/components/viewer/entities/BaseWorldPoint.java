@@ -35,6 +35,7 @@ public class BaseWorldPoint implements WorldPoint {
     // TODO: Introduce some form of visual indication of whether the points are interactable or not.
     //  Likely this needs to be based on whether the respective instrument pane is opened.
 
+
     private static Point2D viewerCursor = new Point2D.Double();
 
     private static CoordsDisplayMode coordsMode = CoordsDisplayMode.WORLD;
@@ -132,7 +133,7 @@ public class BaseWorldPoint implements WorldPoint {
         });
     }
 
-    protected static boolean checkIsHovered(Shape[] paintParts) {
+    private static boolean checkIsHovered(Shape[] paintParts) {
         for (Shape part: paintParts) {
             if (part.contains(viewerCursor)) {
                 return true;
@@ -141,14 +142,14 @@ public class BaseWorldPoint implements WorldPoint {
         return false;
     }
 
-    protected Shape createWorldConstantPaintPart(AffineTransform worldToScreen) {
+    private Shape createWorldConstantPaintPart(AffineTransform worldToScreen) {
         float radius = 0.25f;
         Shape dot = new Ellipse2D.Double(position.getX() - radius, position.getY() - radius,
                 2 * radius, 2 * radius);
         return worldToScreen.createTransformedShape(dot);
     }
 
-    protected RectangularShape createScreenConstantPaintPart(AffineTransform worldToScreen) {
+    private RectangularShape createScreenConstantPaintPart(AffineTransform worldToScreen) {
         Point2D point = new Point2D.Double(position.getX(), position.getY());
         Point2D dest = worldToScreen.transform(point, null);
         float radius = 6.0f;
@@ -162,7 +163,7 @@ public class BaseWorldPoint implements WorldPoint {
         return new Color(0xBFFFFFFF, true);
     }
 
-    protected Color createSelectColor() {
+    private static Color createSelectColor() {
         return new Color(0xBFFF0000, true);
     }
 
@@ -170,7 +171,7 @@ public class BaseWorldPoint implements WorldPoint {
         return new Color(0xBF000000, true);
     }
 
-    protected boolean isInteractable() {
+    private boolean isInteractable() {
         return instrumentationMode == getAssociatedMode();
     }
 
@@ -182,7 +183,7 @@ public class BaseWorldPoint implements WorldPoint {
 
             this.cursorInBounds = BaseWorldPoint.checkIsHovered(new Shape[]{inner, outer});
             if (this.selected && isInteractable()) {
-                g.setPaint(createSelectColor());
+                g.setPaint(BaseWorldPoint.createSelectColor());
             } else if (this.cursorInBounds && isInteractable()) {
                 g.setPaint(createHoverColor());
             } else {
@@ -208,14 +209,14 @@ public class BaseWorldPoint implements WorldPoint {
     }
 
     public Point2D getCoordinatesForDisplay() {
-        Point2D position = this.getPosition();
-        Point2D result = position;
+        Point2D pointPosition = this.getPosition();
+        Point2D result = pointPosition;
         LayerPainter layer = BaseWorldPoint.selectedLayer;
         if (layer == null) {
             return result;
         }
-        double positionX = position.getX();
-        double positionY = position.getY();
+        double positionX = pointPosition.getX();
+        double positionY = pointPosition.getY();
         switch (coordsMode) {
             case WORLD -> {}
             case SPRITE_CENTER -> {

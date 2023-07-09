@@ -74,4 +74,6 @@ public interface StringConstants {
 
     String SPRITE_FILE = "Sprite file: ";
 
+    String SEARCH = "Search";
+
 }

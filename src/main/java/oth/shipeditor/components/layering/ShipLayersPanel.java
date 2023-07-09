@@ -82,19 +82,20 @@ public final class ShipLayersPanel extends JTabbedPane {
                 LayerTab updated = tabIndex.get(eventLayer);
                 BufferedImage sprite = eventLayer.getShipSprite();
                 ShipData shipData = eventLayer.getShipData();
-                ShipLayer associatedLayer = updated.getAssociatedLayer();
-                if (shipData == null) return;
                 if (sprite != null) {
-                    updated.setSpriteFileName(associatedLayer.getSpriteFileName());
+                    log.info(eventLayer.getSpriteFileName());
+                    updated.setSpriteFileName(eventLayer.getSpriteFileName());
+                    this.setToolTipTextAt(indexOfComponent(updated), updated.getTabTooltip());
                 }
+                if (shipData == null) return;
                 Hull hull = shipData.getHull();
                 if (hull != null) {
-                    updated.setHullFileName(associatedLayer.getHullFileName());
+                    updated.setHullFileName(eventLayer.getHullFileName());
                     this.setTitleAt(indexOfComponent(updated), hull.getHullName());
                 }
                 Skin skin = shipData.getSkin();
                 if (skin != null) {
-                    updated.setSkinFileName(associatedLayer.getSkinFileName());
+                    updated.setSkinFileName(eventLayer.getSkinFileName());
                     if (skin.getHullName() != null) {
                         this.setTitleAt(indexOfComponent(updated), skin.getHullName());
                     }

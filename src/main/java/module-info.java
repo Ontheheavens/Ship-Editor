@@ -16,6 +16,7 @@
     requires com.fasterxml.jackson.dataformat.csv;
     requires com.formdev.flatlaf;
     requires geom;
+    requires org.kordamp.ikonli.boxicons;
 
     exports oth.shipeditor;
     exports oth.shipeditor.representation;
@@ -40,5 +41,6 @@
     opens oth.shipeditor.parsing.deserialize;
     exports oth.shipeditor.parsing.serialize;
     opens oth.shipeditor.parsing.serialize;
+    exports oth.shipeditor.components.datafiles.entities;
 
 }

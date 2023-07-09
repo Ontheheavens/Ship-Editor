@@ -2,6 +2,10 @@ package oth.shipeditor.components.viewer.control;
 
 import de.javagl.viewer.InputEventPredicates;
 import de.javagl.viewer.Predicates;
+import lombok.Getter;
+import oth.shipeditor.communication.EventBus;
+import oth.shipeditor.communication.events.viewer.control.PointSelectionModeChange;
+import oth.shipeditor.communication.events.viewer.layers.LayerShipDataInitialized;
 
 import java.awt.event.MouseEvent;
 import java.util.function.Predicate;
@@ -10,7 +14,18 @@ import java.util.function.Predicate;
  * @author Ontheheavens
  * @since 01.06.2023
  */
-final class ControlPredicates {
+public final class ControlPredicates {
+
+    @Getter
+    private static PointSelectionMode selectionMode = PointSelectionMode.CLOSEST;
+
+    public static void initSelectionModeListening() {
+        EventBus.subscribe(event -> {
+            if (event instanceof PointSelectionModeChange checked) {
+                selectionMode = checked.newMode();
+            }
+        });
+    }
 
     static final Predicate<MouseEvent> translatePredicate = Predicates.and(
             InputEventPredicates.buttonDown(2),

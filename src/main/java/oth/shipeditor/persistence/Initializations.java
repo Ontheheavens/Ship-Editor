@@ -11,6 +11,7 @@ import oth.shipeditor.menubar.FileUtilities;
 import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ActionEvent;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
@@ -25,6 +26,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Objects;
 import java.util.function.Function;
+
+import static java.awt.event.ActionEvent.ACTION_PERFORMED;
 
 /**
  * @author Ontheheavens
@@ -41,6 +44,17 @@ public final class Initializations {
     private static boolean folderHasMods;
 
     private Initializations() {
+    }
+
+    /**
+     * To be called only after all components and settings have been initialized.
+     */
+    public static void loadGameData(PrimaryWindow window) {
+        ActionEvent initEvent = new ActionEvent(window, ACTION_PERFORMED, null);
+        Action loadShipDataAction = FileUtilities.getLoadShipDataAction();
+        loadShipDataAction.actionPerformed(initEvent);
+        Action loadHullmodDataAction = FileUtilities.getLoadHullmodDataAction();
+        loadHullmodDataAction.actionPerformed(initEvent);
     }
 
     @SuppressWarnings("ProhibitedExceptionThrown")
@@ -148,54 +162,60 @@ public final class Initializations {
         SettingsManager.setSettings(loaded);
     }
 
-    @SuppressWarnings("ProhibitedExceptionThrown")
-    public static void initializeGameFolder() {
+    @SuppressWarnings({"ProhibitedExceptionThrown", "IfStatementWithNegatedCondition"})
+    public static void selectGameFolder() {
         Settings settings = SettingsManager.getSettings();
         String gameFolderPath = settings.getGameFolderPath();
-        if (gameFolderPath == null || gameFolderPath.isEmpty()) {
-            String errorMessage = "Game folder selection failed!";
-            JFileChooser folderChooser = new JFileChooser();
-            folderChooser.setDialogTitle("Choose folder containing installed game:");
-            folderChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-            int returnVal = folderChooser.showOpenDialog(null);
-            if (returnVal == JFileChooser.APPROVE_OPTION) {
-                File file = folderChooser.getSelectedFile();
-                Path filePath = file.toPath();
+        if (gameFolderPath != null && !gameFolderPath.isEmpty()) {
+            return;
+        }
+        String errorMessage = "Game folder selection failed!";
+        JFileChooser folderChooser = new JFileChooser();
+        folderChooser.setDialogTitle("Choose folder containing installed game:");
+        folderChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+        int returnVal = folderChooser.showOpenDialog(null);
+        if (returnVal != JFileChooser.APPROVE_OPTION) {
+            settings.setGameFolderPath("");
+            throw new RuntimeException(errorMessage);
+        }
+        else {
+            File file = folderChooser.getSelectedFile();
+            Path filePath = file.toPath();
 
-                try (var stream = Files.walk(filePath, 1)) {
-                    stream.filter(Files::isDirectory)
-                            .forEach(path -> {
-                                String folderName = path.getFileName().toString();
-                                if (FileUtilities.STARSECTOR_CORE.equals(folderName)) {
-                                    settings.setCoreFolderPath(path.toString());
-                                    folderHasCore = true;
-                                }
-                                if ("mods".equals(folderName)) {
-                                    settings.setModFolderPath(path.toString());
-                                    folderHasMods = true;
-                                }
-                            });
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
-                }
-                if (folderHasCore && folderHasMods) {
-                    String absolutePath = file.getAbsolutePath();
-                    log.info("Saving game folder path...");
-                    settings.setGameFolderPath(absolutePath);
-                    folderHasCore = false;
-                    folderHasMods = false;
-                } else {
-                    log.info("Selected game folder path invalid.");
-                    JOptionPane.showMessageDialog(null,
-                            "Selected folder does not contain core and mod data folders.",
-                            "Invalid folder",
-                            JOptionPane.ERROR_MESSAGE);
-                    Initializations.initializeGameFolder();
-                }
+            Initializations.checkGameFolderEligibility(filePath, settings);
+            if (folderHasCore && folderHasMods) {
+                String absolutePath = file.getAbsolutePath();
+                log.info("Saving game folder path...");
+                settings.setGameFolderPath(absolutePath);
+                folderHasCore = false;
+                folderHasMods = false;
             } else {
-                settings.setGameFolderPath("");
-                throw new RuntimeException(errorMessage);
+                log.info("Selected game folder path invalid.");
+                JOptionPane.showMessageDialog(null,
+                        "Selected folder does not contain core and mod data folders.",
+                        "Invalid folder",
+                        JOptionPane.ERROR_MESSAGE);
+                Initializations.selectGameFolder();
             }
+        }
+    }
+
+    @SuppressWarnings("NonBooleanMethodNameMayNotStartWithQuestion")
+    private static void checkGameFolderEligibility(Path filePath, Settings settings) {
+        try (var stream = Files.walk(filePath, 1)) {
+            stream.filter(Files::isDirectory).forEach(path -> {
+                String folderName = path.getFileName().toString();
+                if (FileUtilities.STARSECTOR_CORE.equals(folderName)) {
+                    settings.setCoreFolderPath(path.toString());
+                    folderHasCore = true;
+                }
+                if ("mods".equals(folderName)) {
+                    settings.setModFolderPath(path.toString());
+                    folderHasMods = true;
+                }
+            });
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
     }
 

@@ -11,7 +11,6 @@ import oth.shipeditor.components.viewer.entities.ShipCenterPoint;
 import oth.shipeditor.components.viewer.entities.WorldPoint;
 import oth.shipeditor.components.viewer.painters.AbstractPointPainter;
 import oth.shipeditor.components.viewer.painters.BoundPointsPainter;
-import oth.shipeditor.components.viewer.painters.CenterPointsPainter;
 import oth.shipeditor.undo.edits.CollisionRadiusEdit;
 import oth.shipeditor.undo.edits.PointAdditionEdit;
 import oth.shipeditor.undo.edits.PointDragEdit;
@@ -45,6 +44,7 @@ public final class EditDispatch {
 
     public static void postPointRemoved(AbstractPointPainter pointPainter, BaseWorldPoint point) {
         int index = pointPainter.getIndexOfPoint(point);
+        if (index == -1) return;
         Edit removeEdit = new PointRemovalEdit(pointPainter, point, index);
         UndoOverseer.post(removeEdit);
         pointPainter.removePoint(point);

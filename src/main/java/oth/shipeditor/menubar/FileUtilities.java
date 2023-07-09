@@ -10,21 +10,24 @@ import oth.shipeditor.communication.events.files.HullFileOpened;
 import oth.shipeditor.communication.events.files.SpriteOpened;
 import oth.shipeditor.communication.events.viewer.layers.ActiveLayerUpdated;
 import oth.shipeditor.communication.events.viewer.layers.LayerWasSelected;
-import oth.shipeditor.components.datafiles.LoadGameDataAction;
 import oth.shipeditor.components.viewer.layers.ShipLayer;
 import oth.shipeditor.parsing.JsonProcessor;
+import oth.shipeditor.parsing.LoadHullmodDataAction;
+import oth.shipeditor.parsing.LoadShipDataAction;
 import oth.shipeditor.representation.Hull;
 import oth.shipeditor.representation.Skin;
+import oth.shipeditor.utility.ImageCache;
 
-import javax.imageio.ImageIO;
 import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
+import java.awt.*;
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
-import java.io.UncheckedIOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.Optional;
 
 /**
  * @author Ontheheavens
@@ -43,7 +46,10 @@ public final class FileUtilities {
     private static ShipLayer current;
 
     @Getter
-    private static final Action loadGameDataAction = new LoadGameDataAction();
+    private static final Action loadShipDataAction = new LoadShipDataAction();
+
+    @Getter
+    private static final Action loadHullmodDataAction = new LoadHullmodDataAction();
 
     @Getter
     private static final Action openSpriteAction = new OpenSpriteAction();
@@ -51,6 +57,10 @@ public final class FileUtilities {
     @Getter
     private static final Action openShipDataAction = new OpenHullAction();
 
+    private FileUtilities() {
+    }
+
+    @SuppressWarnings("ChainOfInstanceofChecks")
     public static void listenToLayerChange() {
         EventBus.subscribe(event -> {
             if (event instanceof LayerWasSelected checked) {
@@ -71,15 +81,39 @@ public final class FileUtilities {
         openShipDataAction.setEnabled(hullState);
     }
 
-    public static BufferedImage loadSprite(File file) {
-        BufferedImage sprite;
-        try {
-            sprite = ImageIO.read(file);
-        } catch (IOException ex) {
-            throw new UncheckedIOException("Failed to load sprite: " + file.getName(), ex);
+    public static File searchFileInFolder(Path filePath, Path folderPath) {
+        if (!Files.exists(folderPath) || !Files.isDirectory(folderPath)) {
+            return null;
         }
-        log.info("Opening sprite: {}.", file.getName());
-        return sprite;
+
+        String fileName = filePath.getFileName().toString();
+
+        try (var stream = Files.walk(folderPath)) {
+            Optional<File> first = stream
+                    .filter(Files::isRegularFile)
+                    .filter(file -> {
+                        String toString = file.getFileName().toString();
+                        return toString.equals(fileName);
+                    })
+                    .map(Path::toFile)
+                    .findFirst();
+            return first.orElse(null);
+        } catch (IOException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    public static void openPathInDesktop(Path toOpen) {
+        try {
+            Desktop.getDesktop().open(toOpen.toFile());
+        } catch (IOException ex) {
+            log.error("Failed to open {} in Explorer!", toOpen);
+        }
+    }
+
+    public static BufferedImage loadSprite(File file) {
+        return ImageCache.loadImage(file);
     }
 
     private static ObjectMapper getConfigured() {
@@ -99,6 +133,7 @@ public final class FileUtilities {
         try {
             ObjectMapper objectMapper = FileUtilities.getConfigured();
             hull = objectMapper.readValue(file, Hull.class);
+            hull.setShipFilePath(file.toPath());
             log.info("Opening hull file: {}", file.getName());
         } catch (IOException e) {
             log.error("Hull file loading failed: {}", file.getName());
@@ -122,6 +157,7 @@ public final class FileUtilities {
         try (JsonParser parser = objectMapper.createParser(preprocessed)) {
             log.info(OPENING_SKIN_FILE, file.getName());
             skin = objectMapper.readValue(parser, Skin.class);
+            skin.setSkinFilePath(file.toPath());
         } catch (IOException e) {
             log.error(SKIN_FILE_LOADING_FAILED, file.getName());
             e.printStackTrace();
