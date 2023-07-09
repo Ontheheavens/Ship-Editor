@@ -13,6 +13,7 @@ import oth.shipeditor.undo.UndoOverseer;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
 
 /**
  * @author Ontheheavens
@@ -47,12 +48,16 @@ public final class PrimaryMenuBar extends JMenuBar {
         undo.setAction(UndoOverseer.getUndoAction());
         undo.setIcon(FontIcon.of(FluentUiRegularAL.ARROW_UNDO_20, 16));
         undo.setDisabledIcon(FontIcon.of(FluentUiRegularAL.ARROW_UNDO_20, 16, Color.GRAY));
+        KeyStroke keyStrokeToUndo = KeyStroke.getKeyStroke("U");
+        undo.setAccelerator(keyStrokeToUndo);
         editMenu.add(undo);
 
         JMenuItem redo = new JMenuItem("Redo");
         redo.setAction(UndoOverseer.getRedoAction());
         redo.setIcon(FontIcon.of(FluentUiRegularAL.ARROW_REDO_20, 16));
         redo.setDisabledIcon(FontIcon.of(FluentUiRegularAL.ARROW_REDO_20, 16, Color.GRAY));
+        KeyStroke keyStrokeToRedo = KeyStroke.getKeyStroke("R");
+        redo.setAccelerator(keyStrokeToRedo);
         editMenu.add(redo);
 
         return editMenu;

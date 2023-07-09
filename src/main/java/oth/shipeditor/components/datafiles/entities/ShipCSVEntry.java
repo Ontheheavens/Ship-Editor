@@ -33,6 +33,9 @@ public class ShipCSVEntry {
 
     private final Hull hullFile;
 
+    /**
+     * Keys are simple names of skin files, e.g.: legion_xiv.skin.
+     */
     private final Map<String, Skin> skins;
 
     private Skin activeSkin;

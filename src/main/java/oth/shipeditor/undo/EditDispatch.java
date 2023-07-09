@@ -45,6 +45,7 @@ public final class EditDispatch {
 
     public static void postPointRemoved(AbstractPointPainter pointPainter, BaseWorldPoint point) {
         int index = pointPainter.getIndexOfPoint(point);
+        if (index == -1) return;
         Edit removeEdit = new PointRemovalEdit(pointPainter, point, index);
         UndoOverseer.post(removeEdit);
         pointPainter.removePoint(point);

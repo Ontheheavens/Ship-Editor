@@ -16,6 +16,9 @@ import java.nio.file.Path;
 import java.util.Map;
 
 /**
+ * This is a serialization/deserialization class, not intended for edit through viewer at runtime.
+ * Input data from instance of this class (which is acquired via deserialization of JSON) is passed to layer,
+ * which transforms and edits the data as necessary, then constructs new result instance of this class for serialization.
  * @author Ontheheavens
  * @since 05.05.2023
  */

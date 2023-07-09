@@ -82,9 +82,8 @@ public final class Utility {
      */
     public static java.util.List<Map<String, String>> parseCSVTable(Path path) {
         CsvMapper csvMapper = new CsvMapper();
-        csvMapper.enable(CsvParser.Feature.ALLOW_COMMENTS);
 
-        CsvSchema csvSchema = CsvSchema.emptySchema().withHeader();
+        CsvSchema csvSchema = CsvSchema.emptySchema().withHeader().withComments();
         File csvFile = path.toFile();
         List<Map<String, String>> csvData = new ArrayList<>();
         try (MappingIterator<Map<String, String>> iterator = csvMapper.readerFor(Map.class)
@@ -93,8 +92,10 @@ public final class Utility {
             while (iterator.hasNext()) {
                 Map<String, String> row = iterator.next();
                 String id = row.get(StringConstants.ID);
-                if (!id.isEmpty()) {
-                    // We are skipping a row if ID is missing.
+                String name = row.get("name");
+                if (!id.isEmpty() && !name.startsWith("#") && row.size() > 10) {
+                    // We are skipping a row if ID is missing or if row is commented out.
+                    // Size of 10 is a hack intended to exclude remainders of commented lines.
                     csvData.add(row);
                 }
             }
