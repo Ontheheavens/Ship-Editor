@@ -16,6 +16,7 @@
     requires com.fasterxml.jackson.dataformat.csv;
     requires com.formdev.flatlaf;
     requires geom;
+    requires org.kordamp.ikonli.boxicons;
 
     exports oth.shipeditor;
     exports oth.shipeditor.representation;

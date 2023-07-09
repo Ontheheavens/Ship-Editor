@@ -1,6 +1,8 @@
 package oth.shipeditor.components.datafiles;
 
 import lombok.extern.log4j.Log4j2;
+import org.kordamp.ikonli.boxicons.BoxiconsRegular;
+import org.kordamp.ikonli.swing.FontIcon;
 import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.files.HullFolderWalked;
 import oth.shipeditor.communication.events.files.HullTreeCleanupQueued;
@@ -20,6 +22,7 @@ import javax.swing.border.Border;
 import javax.swing.border.MatteBorder;
 import javax.swing.border.TitledBorder;
 import javax.swing.tree.DefaultMutableTreeNode;
+import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.tree.MutableTreeNode;
 import javax.swing.tree.TreePath;
 import java.awt.*;
@@ -287,6 +290,34 @@ class HullsTreePanel extends DataTreePanel {
     @Override
     Class<?> getEntryClass() {
         return ShipCSVEntry.class;
+    }
+
+    @SuppressWarnings("OverlyComplexAnonymousInnerClass")
+    @Override
+    protected JTree createCustomTree() {
+        JTree custom = super.createCustomTree();
+        custom.setCellRenderer(new DefaultTreeCellRenderer() {
+            @Override
+            public Component getTreeCellRendererComponent(JTree tree, Object value, boolean sel,
+                                                          boolean expanded, boolean leaf, int row, boolean hasFocus) {
+                super.getTreeCellRendererComponent(tree, value, sel, expanded, leaf, row, hasFocus);
+                Object object = ((DefaultMutableTreeNode) value).getUserObject();
+                if (object instanceof ShipCSVEntry checked && leaf) {
+                    Hull hull = checked.getHullFile();
+                    String hullSize = hull.getHullSize();
+                    switch (hullSize) {
+                        case "FIGHTER" -> setIcon(FontIcon.of(BoxiconsRegular.DICE_1, 16, Color.DARK_GRAY));
+                        case "FRIGATE" -> setIcon(FontIcon.of(BoxiconsRegular.DICE_2, 16, Color.DARK_GRAY));
+                        case "DESTROYER" -> setIcon(FontIcon.of(BoxiconsRegular.DICE_3, 16, Color.DARK_GRAY));
+                        case "CRUISER" -> setIcon(FontIcon.of(BoxiconsRegular.DICE_4, 16, Color.DARK_GRAY));
+                        case "CAPITAL_SHIP" -> setIcon(FontIcon.of(BoxiconsRegular.DICE_5, 16, Color.DARK_GRAY));
+                        default -> {}
+                    }
+                }
+                return this;
+            }
+        });
+        return custom;
     }
 
     @Override

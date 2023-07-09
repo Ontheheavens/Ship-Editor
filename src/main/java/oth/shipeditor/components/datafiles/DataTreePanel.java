@@ -142,7 +142,7 @@ abstract class DataTreePanel extends JPanel {
 
     abstract void initTreePanelListeners(JPanel passedTreePanel);
 
-    private JTree createCustomTree() {
+    protected JTree createCustomTree() {
         return new JTree(getRootNode()) {
             @Override
             public String getToolTipText(MouseEvent event) {
