@@ -61,6 +61,7 @@ final class TripleSplitContainer extends JSplitPane {
         this.initEventListeners();
         this.minimizer = new MinimizerWidget(getMinimizeAction(), getMaximizeAction());
         leftsidePanels = new EnumMap<>(LeftsideTabType.class);
+
         leftsidePanels.put(LeftsideTabType.DEFAULT, new JPanel());
         JPanel panel = leftsidePanels.get(LeftsideTabType.DEFAULT);
         panel.add(new JLabel(WindowContentPanes.DEFAULT_LEFTSIDE_PANE));

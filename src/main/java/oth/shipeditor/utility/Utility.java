@@ -6,6 +6,7 @@ import com.fasterxml.jackson.dataformat.csv.CsvSchema;
 import com.formdev.flatlaf.ui.FlatLineBorder;
 import lombok.extern.log4j.Log4j2;
 import oth.shipeditor.components.datafiles.entities.ShipCSVEntry;
+import oth.shipeditor.menubar.FileUtilities;
 import oth.shipeditor.representation.Skin;
 
 import javax.swing.*;
@@ -13,6 +14,7 @@ import java.awt.*;
 import java.awt.event.ActionListener;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Point2D;
+import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;

@@ -48,14 +48,15 @@ public class HullmodCSVEntry {
         return displayedName;
     }
 
-
     public File fetchSpriteFile() {
-        if (fetchedSpriteFile != null) return fetchedSpriteFile;
+        if (fetchedSpriteFile != null) {
+            return fetchedSpriteFile;
+        }
         String path = this.spriteFileName;
         if (path == null || path.isEmpty()) {
             // Fallback sprite with question mark.
             path = "graphics/icons/intel/investigation.png";
-        };
+        }
         Path spritePath = Path.of(path);
         Path coreDataFolder = SettingsManager.getCoreFolderPath();
         List<Path> otherModFolders = SettingsManager.getAllModFolders();
@@ -68,16 +69,20 @@ public class HullmodCSVEntry {
         if (result == null) {
             result = FileUtilities.searchFileInFolder(spritePath, coreDataFolder);
         }
-        if (result != null) return result;
+        if (result != null) {
+            fetchedSpriteFile = result;
+            return fetchedSpriteFile;
+        }
 
         // If not found, search in other mods.
         for (Path modFolder : otherModFolders) {
             result = FileUtilities.searchFileInFolder(spritePath, modFolder);
             if (result != null) {
                 break;
-            } else {
-                log.error("Failed to fetch sprite file for {}!", this.getHullmodID());
             }
+        }
+        if (result == null) {
+            log.error("Failed to fetch sprite file for {}!", this.getHullmodID());
         }
         fetchedSpriteFile = result;
         return fetchedSpriteFile;
