@@ -110,7 +110,7 @@ class LoadShipDataAction extends AbstractAction {
         Map<String, Hull> mappedHulls = new HashMap<>();
         for (File hullFile : shipFiles) {
             Hull mapped = FileUtilities.loadHullFile(hullFile);
-            mapped.setShipFilePath(hullFile.toPath());
+
             mappedHulls.put(hullFile.getName(), mapped);
         }
         log.info("Fetched and mapped {} hull files.", mappedHulls.size());

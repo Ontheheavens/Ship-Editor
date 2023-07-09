@@ -43,6 +43,9 @@ public class Skin {
     private final transient boolean base;
 
     @JsonIgnore
+    private transient Path skinFilePath;
+
+    @JsonIgnore
     private transient Path containingPackage;
 
     @JsonProperty(StringConstants.BASE_HULL_ID)

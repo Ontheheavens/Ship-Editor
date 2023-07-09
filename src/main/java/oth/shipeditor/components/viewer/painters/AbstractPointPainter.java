@@ -6,7 +6,10 @@ import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
 import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.viewer.ViewerRepaintQueued;
+import oth.shipeditor.communication.events.viewer.control.ViewerCursorMoved;
 import oth.shipeditor.communication.events.viewer.points.*;
+import oth.shipeditor.components.viewer.control.ControlPredicates;
+import oth.shipeditor.components.viewer.control.PointSelectionMode;
 import oth.shipeditor.components.viewer.entities.BaseWorldPoint;
 import oth.shipeditor.components.viewer.entities.WorldPoint;
 import oth.shipeditor.undo.EditDispatch;
@@ -43,10 +46,21 @@ public abstract class AbstractPointPainter implements Painter {
      */
     private final AffineTransform delegateWorldToScreen;
 
+    @Getter
+    private static Point2D correctedCursor = new Point2D.Double();
+
     AbstractPointPainter() {
         this.delegates = new ArrayList<>();
         this.delegateWorldToScreen = new AffineTransform();
         this.initChangeListeners();
+    }
+
+    public static void initCursorListening() {
+        EventBus.subscribe(event -> {
+            if (event instanceof ViewerCursorMoved checked) {
+                correctedCursor = checked.adjustedAndCorrected();
+            }
+        });
     }
 
     public boolean isInteractionEnabled() {
@@ -89,7 +103,8 @@ public abstract class AbstractPointPainter implements Painter {
         });
     }
 
-    private void handlePointSelectionEvent(WorldPoint point) {
+    @SuppressWarnings("WeakerAccess")
+    protected void handlePointSelectionEvent(WorldPoint point) {
         if (point != null) {
             if (this.selected != null) {
                 this.selected.setSelected(false);
@@ -99,15 +114,19 @@ public abstract class AbstractPointPainter implements Painter {
             EventBus.publish(new PointSelectedConfirmed(this.selected));
             EventBus.publish(new ViewerRepaintQueued());
         } else {
-            if (this.isMousedOverPoint()) {
-                if (this.selected != null) {
-                    this.selected.setSelected(false);
-                }
-                this.selected = this.getMousedOver();
-                this.selected.setSelected(true);
-                EventBus.publish(new PointSelectedConfirmed(this.selected));
-                EventBus.publish(new ViewerRepaintQueued());
+            selectPointConditionally();
+        }
+    }
+
+    protected void selectPointConditionally() {
+        if (this.isMousedOverPoint()) {
+            if (this.selected != null) {
+                this.selected.setSelected(false);
             }
+            this.selected = this.getMousedOver();
+            this.selected.setSelected(true);
+            EventBus.publish(new PointSelectedConfirmed(this.selected));
+            EventBus.publish(new ViewerRepaintQueued());
         }
     }
 

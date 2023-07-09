@@ -292,10 +292,28 @@ class HullsTreePanel extends DataTreePanel {
     @Override
     JPopupMenu getContextMenu() {
         JPopupMenu menu = super.getContextMenu();
+        DefaultMutableTreeNode cachedSelectForMenu = getCachedSelectForMenu();
+        if (cachedSelectForMenu.getUserObject() instanceof ShipCSVEntry checked) {
+            JMenuItem openSkin = HullsTreePanel.addOpenSkinOption(checked);
+            if (openSkin != null) {
+                menu.add(openSkin);
+            }
+        };
         JMenuItem loadAsLayer = new JMenuItem("Load as layer");
         loadAsLayer.addActionListener(new HullsTreePanel.LoadLayerFromTree());
         menu.add(loadAsLayer);
         return menu;
+    }
+
+    private static JMenuItem addOpenSkinOption(ShipCSVEntry checked) {
+        Skin activeSkin = checked.getActiveSkin();
+        if (activeSkin == null || activeSkin.isBase()) return null;
+        JMenuItem openSkin = new JMenuItem("Open skin file");
+        openSkin.addActionListener(e -> {
+            Path toOpen = activeSkin.getSkinFilePath();
+            FileUtilities.openPathInDesktop(toOpen);
+        });
+        return openSkin;
     }
 
     @Override

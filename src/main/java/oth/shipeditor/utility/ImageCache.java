@@ -1,7 +1,5 @@
 package oth.shipeditor.utility;
 
-import com.formdev.flatlaf.util.SoftCache;
-import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
 
 import javax.imageio.ImageIO;

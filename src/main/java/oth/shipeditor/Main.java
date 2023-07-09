@@ -6,7 +6,7 @@ import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.files.HullFileOpened;
 import oth.shipeditor.communication.events.files.SpriteOpened;
 import oth.shipeditor.communication.events.viewer.layers.LayerCreationQueued;
-import oth.shipeditor.communication.events.viewer.layers.LayerCyclingQueued;
+import oth.shipeditor.communication.events.viewer.layers.LastLayerSelectQueued;
 import oth.shipeditor.components.datafiles.entities.ShipCSVEntry;
 import oth.shipeditor.components.viewer.ShipViewable;
 import oth.shipeditor.components.viewer.layers.LayerManager;
@@ -68,6 +68,7 @@ public final class Main {
         UIManager.put("Tree.paintLines", true);
         UIManager.put("Tree.showDefaultIcons", true);
         UIManager.put("TitlePane.showIcon", true);
+        UIManager.put("TitlePane.showIconInDialogs", true);
         UIManager.put("FileChooser.readOnly", true);
 
         UIManager.put(Initializations.FILE_CHOOSER_SHORTCUTS_FILES_FUNCTION, (Function<File[], File[]>) files -> {
@@ -116,7 +117,7 @@ public final class Main {
 
     private static void loadShip(PrimaryWindow window, String spriteFilePath, String hullFilePath) {
         EventBus.publish(new LayerCreationQueued());
-        EventBus.publish(new LayerCyclingQueued());
+        EventBus.publish(new LastLayerSelectQueued());
         Class<? extends PrimaryWindow> windowClass = window.getClass();
         ClassLoader classLoader = windowClass.getClassLoader();
         URL spritePath = Objects.requireNonNull(classLoader.getResource(spriteFilePath));

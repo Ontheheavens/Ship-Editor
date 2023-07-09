@@ -36,11 +36,8 @@ public class LayerManager {
         this.initOpenHullListener();
     }
 
-    private void activateNextLayer() {
-        ShipLayer old = this.activeLayer;
-        int nextIndex = layers.indexOf(old) + 1;
-        if (nextIndex > layers.size() - 1) return;
-        ShipLayer next = layers.get(nextIndex);
+    private void activateLastLayer() {
+        ShipLayer next = layers.get(layers.size() - 1);
         this.setActiveLayer(next);
     }
 
@@ -58,9 +55,10 @@ public class LayerManager {
                 EventBus.publish(new ShipLayerCreated(newLayer));
             }
         });
+        // It is implicitly assumed that the last layer in list is also the one that was just created.
         EventBus.subscribe(event -> {
-            if (event instanceof LayerCyclingQueued) {
-                activateNextLayer();
+            if (event instanceof LastLayerSelectQueued) {
+                activateLastLayer();
             }
         });
         EventBus.subscribe(event -> {
@@ -133,8 +131,8 @@ public class LayerManager {
                     if (data != null ) {
                         data.setHull(hull);
                     } else {
-                        data = new ShipData(hull);
-                        activeLayer.setShipData(data);
+                        ShipData newData = new ShipData(hull);
+                        activeLayer.setShipData(newData);
                     }
                     activeLayer.setHullFileName(checked.hullFileName());
                     EventBus.publish(new ActiveLayerUpdated(activeLayer, false));

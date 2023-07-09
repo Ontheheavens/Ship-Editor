@@ -2,7 +2,6 @@ package oth.shipeditor.utility;
 
 import com.fasterxml.jackson.databind.MappingIterator;
 import com.fasterxml.jackson.dataformat.csv.CsvMapper;
-import com.fasterxml.jackson.dataformat.csv.CsvParser;
 import com.fasterxml.jackson.dataformat.csv.CsvSchema;
 import com.formdev.flatlaf.ui.FlatLineBorder;
 import lombok.extern.log4j.Log4j2;
@@ -11,7 +10,6 @@ import oth.shipeditor.representation.Skin;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Point2D;
@@ -38,6 +36,7 @@ public final class Utility {
         Utility.drawBorderedLine(canvas, start, finish, inner, Color.BLACK, 2.0f, 3.0f);
     }
 
+    @SuppressWarnings({"SameParameterValue", "MethodWithTooManyParameters"})
     private static void drawBorderedLine(Graphics2D canvas, Point2D start, Point2D finish,
                                          Color innerColor, Color outerColor, float innerWidth, float outerWidth) {
         Stroke originalStroke = canvas.getStroke();

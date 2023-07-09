@@ -6,12 +6,16 @@ import org.kordamp.ikonli.fluentui.FluentUiRegularAL;
 import org.kordamp.ikonli.fluentui.FluentUiRegularMZ;
 import org.kordamp.ikonli.swing.FontIcon;
 import oth.shipeditor.communication.EventBus;
+import oth.shipeditor.communication.events.viewer.control.PointSelectionModeChange;
+import oth.shipeditor.communication.events.viewer.control.ViewerRotationToggled;
 import oth.shipeditor.communication.events.viewer.layers.LayerCreationQueued;
 import oth.shipeditor.communication.events.viewer.layers.ActiveLayerRemovalQueued;
+import oth.shipeditor.components.viewer.control.PointSelectionMode;
 import oth.shipeditor.undo.UndoOverseer;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 
@@ -60,7 +64,41 @@ public final class PrimaryMenuBar extends JMenuBar {
         redo.setAccelerator(keyStrokeToRedo);
         editMenu.add(redo);
 
+        JMenuItem pointSelectionMode = PrimaryMenuBar.createPointSelectionModeOptions();
+        editMenu.add(pointSelectionMode);
+
         return editMenu;
+    }
+
+    private static JMenu createPointSelectionModeOptions() {
+        JMenu newSubmenu = new JMenu("Point selection mode");
+
+        JMenuItem selectHovered = new JRadioButtonMenuItem("Select clicked");
+        selectHovered.addActionListener(e ->
+                EventBus.publish(new PointSelectionModeChange(PointSelectionMode.STRICT)));
+        newSubmenu.add(selectHovered);
+
+        JMenuItem selectClosest = new JRadioButtonMenuItem("Select closest");
+        selectClosest.addActionListener(e ->
+                EventBus.publish(new PointSelectionModeChange(PointSelectionMode.CLOSEST)));
+        newSubmenu.add(selectClosest);
+        selectClosest.setSelected(true);
+
+        ButtonGroup buttonGroup = new ButtonGroup();
+        buttonGroup.add(selectHovered);
+        buttonGroup.add(selectClosest);
+
+        EventBus.subscribe(event -> {
+            if (event instanceof PointSelectionModeChange checked) {
+                if (checked.newMode() == PointSelectionMode.STRICT && !selectHovered.isSelected()) {
+                    selectHovered.setSelected(true);
+                } else if (checked.newMode() == PointSelectionMode.CLOSEST && !selectClosest.isSelected()) {
+                    selectClosest.setSelected(true);
+                }
+            }
+        });
+
+        return newSubmenu;
     }
 
     private static JMenu createLayersMenu() {

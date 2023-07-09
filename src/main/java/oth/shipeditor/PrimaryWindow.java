@@ -6,9 +6,12 @@ import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.components.WindowRepaintQueued;
 import oth.shipeditor.components.WindowContentPanes;
 import oth.shipeditor.components.viewer.ShipViewable;
+import oth.shipeditor.components.viewer.control.ControlPredicates;
+import oth.shipeditor.components.viewer.painters.AbstractPointPainter;
 import oth.shipeditor.menubar.FileUtilities;
 import oth.shipeditor.menubar.PrimaryMenuBar;
 import oth.shipeditor.persistence.Initializations;
+import oth.shipeditor.components.viewer.layers.StaticLayerController;
 
 import javax.swing.*;
 import java.awt.*;
@@ -32,9 +35,7 @@ public final class PrimaryWindow extends JFrame {
         this.setTitle(SHIP_EDITOR);
         this.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
 
-        Initializations.initializeSettingsFile();
-        Initializations.selectGameFolder();
-        FileUtilities.listenToLayerChange();
+        PrimaryWindow.performStaticInits();
 
         this.setMinimumSize(new Dimension(800, 600));
 
@@ -54,6 +55,16 @@ public final class PrimaryWindow extends JFrame {
 
         PrimaryWindow.configureTooltips();
         this.pack();
+    }
+
+    private static void performStaticInits() {
+        Initializations.initializeSettingsFile();
+        Initializations.selectGameFolder();
+        FileUtilities.listenToLayerChange();
+        StaticLayerController.init();
+
+        ControlPredicates.initSelectionModeListening();
+        AbstractPointPainter.initCursorListening();
     }
 
     ShipViewable getShipView() {

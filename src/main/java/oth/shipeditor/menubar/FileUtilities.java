@@ -10,15 +10,14 @@ import oth.shipeditor.communication.events.files.HullFileOpened;
 import oth.shipeditor.communication.events.files.SpriteOpened;
 import oth.shipeditor.communication.events.viewer.layers.ActiveLayerUpdated;
 import oth.shipeditor.communication.events.viewer.layers.LayerWasSelected;
-import oth.shipeditor.parsing.LoadHullmodDataAction;
-import oth.shipeditor.parsing.LoadShipDataAction;
 import oth.shipeditor.components.viewer.layers.ShipLayer;
 import oth.shipeditor.parsing.JsonProcessor;
+import oth.shipeditor.parsing.LoadHullmodDataAction;
+import oth.shipeditor.parsing.LoadShipDataAction;
 import oth.shipeditor.representation.Hull;
 import oth.shipeditor.representation.Skin;
 import oth.shipeditor.utility.ImageCache;
 
-import javax.imageio.ImageIO;
 import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.*;
@@ -26,7 +25,6 @@ import java.awt.event.ActionEvent;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
-import java.io.UncheckedIOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Optional;
@@ -135,6 +133,7 @@ public final class FileUtilities {
         try {
             ObjectMapper objectMapper = FileUtilities.getConfigured();
             hull = objectMapper.readValue(file, Hull.class);
+            hull.setShipFilePath(file.toPath());
             log.info("Opening hull file: {}", file.getName());
         } catch (IOException e) {
             log.error("Hull file loading failed: {}", file.getName());
@@ -158,6 +157,7 @@ public final class FileUtilities {
         try (JsonParser parser = objectMapper.createParser(preprocessed)) {
             log.info(OPENING_SKIN_FILE, file.getName());
             skin = objectMapper.readValue(parser, Skin.class);
+            skin.setSkinFilePath(file.toPath());
         } catch (IOException e) {
             log.error(SKIN_FILE_LOADING_FAILED, file.getName());
             e.printStackTrace();
