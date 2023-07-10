@@ -5,16 +5,12 @@ import com.fasterxml.jackson.dataformat.csv.CsvMapper;
 import com.fasterxml.jackson.dataformat.csv.CsvSchema;
 import com.formdev.flatlaf.ui.FlatLineBorder;
 import lombok.extern.log4j.Log4j2;
-import oth.shipeditor.components.datafiles.entities.ShipCSVEntry;
-import oth.shipeditor.menubar.FileUtilities;
-import oth.shipeditor.representation.Skin;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionListener;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Point2D;
-import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
@@ -64,19 +60,6 @@ public final class Utility {
         return copy;
     }
 
-    public static String getSkinFileName(ShipCSVEntry checked, Skin activeSkin) {
-        String skinFileName = "";
-        Map<String, Skin> skins = checked.getSkins();
-        for (String skinName : skins.keySet()) {
-            Skin skin = skins.get(skinName);
-            if (skin.equals(activeSkin)) {
-                skinFileName = skinName;
-                break;
-            }
-        }
-        return skinFileName;
-    }
-
     /**
      * Target CSV file is expected to have a header row and an ID column designated in said header.
      * @param path address of the target file.
@@ -98,6 +81,8 @@ public final class Utility {
                 if (!id.isEmpty() && !name.startsWith("#") && row.size() > 10) {
                     // We are skipping a row if ID is missing or if row is commented out.
                     // Size of 10 is a hack intended to exclude remainders of commented lines.
+                    row.remove("number");
+                    row.remove("8/6/5/4%");
                     csvData.add(row);
                 }
             }

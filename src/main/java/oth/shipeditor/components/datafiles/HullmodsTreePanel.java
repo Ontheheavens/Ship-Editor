@@ -98,7 +98,7 @@ class HullmodsTreePanel extends DataTreePanel{
     }
 
     private static JPanel createHullmodIconPanel(HullmodCSVEntry selected) {
-        File spriteFile = selected.fetchSpriteFile();
+        File spriteFile = selected.fetchHullmodSpriteFile();
         JPanel iconPanel = new JPanel();
         Icon icon = new ImageIcon(FileUtilities.loadSprite(spriteFile));
         JLabel imageLabel = Utility.getIconLabelWithBorder(icon);

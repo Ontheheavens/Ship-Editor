@@ -100,6 +100,13 @@ public final class BoundPointsPainter extends AbstractPointPainter {
     }
 
     @Override
+    public BaseWorldPoint getMirroredCounterpart() {
+        Point2D spriteCenter = parentLayer.getSpriteCenter();
+        // TODO!
+        return null;
+    }
+
+    @Override
     protected BoundPoint getTypeReference() {
         return new BoundPoint(new Point2D.Double());
     }

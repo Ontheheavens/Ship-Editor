@@ -4,6 +4,7 @@ import de.javagl.viewer.InputEventPredicates;
 import de.javagl.viewer.Predicates;
 import lombok.Getter;
 import oth.shipeditor.communication.EventBus;
+import oth.shipeditor.communication.events.viewer.control.MirrorModeChange;
 import oth.shipeditor.communication.events.viewer.control.PointSelectionModeChange;
 import oth.shipeditor.communication.events.viewer.layers.LayerShipDataInitialized;
 
@@ -19,10 +20,18 @@ public final class ControlPredicates {
     @Getter
     private static PointSelectionMode selectionMode = PointSelectionMode.CLOSEST;
 
+    @Getter
+    private static boolean mirrorModeEnabled = true;
+
     public static void initSelectionModeListening() {
         EventBus.subscribe(event -> {
             if (event instanceof PointSelectionModeChange checked) {
                 selectionMode = checked.newMode();
+            }
+        });
+        EventBus.subscribe(event -> {
+            if (event instanceof MirrorModeChange checked) {
+                mirrorModeEnabled = checked.enabled();
             }
         });
     }

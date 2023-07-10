@@ -12,7 +12,6 @@ import oth.shipeditor.menubar.FileUtilities;
 import oth.shipeditor.representation.Hull;
 import oth.shipeditor.representation.Skin;
 import oth.shipeditor.utility.StringConstants;
-import oth.shipeditor.utility.Utility;
 
 import java.awt.image.BufferedImage;
 import java.io.File;
@@ -88,8 +87,8 @@ public class ShipCSVEntry {
             spriteName = this.hullFile.getSpriteName();
         }
 
-        Path spriteFilePath = packagePath.resolve(spriteName);
-        File spriteFile = spriteFilePath.toFile();
+        Path spriteFilePath = Path.of(spriteName);
+        File spriteFile = FileUtilities.fetchDataFile(spriteFilePath, packagePath);
 
         EventBus.publish(new LayerCreationQueued());
         EventBus.publish(new LastLayerSelectQueued());
@@ -97,7 +96,7 @@ public class ShipCSVEntry {
         EventBus.publish(new SpriteOpened(sprite, spriteFile.getName()));
         EventBus.publish(new HullFileOpened(this.hullFile, this.getHullFileName()));
         if (skinChosen) {
-            String skinFileName = Utility.getSkinFileName(this, this.activeSkin);
+            String skinFileName = this.activeSkin.getSkinFilePath().getFileName().toString();
             EventBus.publish(new SkinFileOpened(this.activeSkin, skinFileName));
         }
     }

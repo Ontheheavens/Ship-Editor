@@ -14,6 +14,7 @@ import oth.shipeditor.components.viewer.layers.ShipLayer;
 import oth.shipeditor.parsing.JsonProcessor;
 import oth.shipeditor.parsing.LoadHullmodDataAction;
 import oth.shipeditor.parsing.LoadShipDataAction;
+import oth.shipeditor.persistence.SettingsManager;
 import oth.shipeditor.representation.Hull;
 import oth.shipeditor.representation.Skin;
 import oth.shipeditor.utility.ImageCache;
@@ -27,6 +28,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -81,22 +83,14 @@ public final class FileUtilities {
         openShipDataAction.setEnabled(hullState);
     }
 
-    public static File searchFileInFolder(Path filePath, Path folderPath) {
-        if (!Files.exists(folderPath) || !Files.isDirectory(folderPath)) {
-            return null;
-        }
-
+    private static Path searchFileInFolder(Path filePath, Path folderPath) {
         String fileName = filePath.getFileName().toString();
 
         try (var stream = Files.walk(folderPath)) {
-            Optional<File> first = stream
-                    .filter(Files::isRegularFile)
-                    .filter(file -> {
+            Optional<Path> first = stream.filter(file -> {
                         String toString = file.getFileName().toString();
                         return toString.equals(fileName);
-                    })
-                    .map(Path::toFile)
-                    .findFirst();
+                    }).findFirst();
             return first.orElse(null);
         } catch (IOException e) {
             e.printStackTrace();
@@ -105,8 +99,12 @@ public final class FileUtilities {
     }
 
     public static void openPathInDesktop(Path toOpen) {
+        FileUtilities.openPathInDesktop(toOpen.toFile());
+    }
+
+    private static void openPathInDesktop(File toOpen) {
         try {
-            Desktop.getDesktop().open(toOpen.toFile());
+            Desktop.getDesktop().open(toOpen);
         } catch (IOException ex) {
             log.error("Failed to open {} in Explorer!", toOpen);
         }
@@ -114,6 +112,46 @@ public final class FileUtilities {
 
     public static BufferedImage loadSprite(File file) {
         return ImageCache.loadImage(file);
+    }
+
+    /**
+     * Searches for the input file, first in passed package folder, then in core data folder, then in mod folders.
+     * @param filePath should be, for example, Path.of("graphics/icons/intel/investigation.png").
+     * @param packageFolderPath supposed parent package, where search will start. Can be null.
+     * @return fetched file if it exists, else NULL.
+     */
+    public static File fetchDataFile(Path filePath, Path packageFolderPath) {
+        Path coreDataFolder = SettingsManager.getCoreFolderPath();
+        List<Path> otherModFolders = SettingsManager.getAllModFolders();
+        Path result = null;
+
+        if (packageFolderPath != null) {
+            // Search in parent mod package.
+            result = FileUtilities.searchFileInFolder(filePath, packageFolderPath);
+        }
+
+        // If not found, search in core folder.
+        if (result == null) {
+            result = FileUtilities.searchFileInFolder(filePath, coreDataFolder);
+        }
+        if (result != null) {
+            return result.toFile();
+        }
+
+        // If not found, search in other mods.
+        for (Path modFolder : otherModFolders) {
+            result = FileUtilities.searchFileInFolder(filePath, modFolder);
+            if (result != null) {
+                break;
+            }
+        }
+        if (result == null) {
+            log.error("Failed to fetch data file for {}!", filePath.getFileName());
+        }
+        if (result != null) {
+            return result.toFile();
+        }
+        return null;
     }
 
     private static ObjectMapper getConfigured() {

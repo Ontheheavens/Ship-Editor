@@ -138,6 +138,8 @@ public abstract class AbstractPointPainter implements Painter {
 
     public abstract int getIndexOfPoint(BaseWorldPoint point);
 
+    public abstract BaseWorldPoint getMirroredCounterpart();
+
     protected abstract BaseWorldPoint getTypeReference();
 
     private boolean isPointEligible(WorldPoint point) {

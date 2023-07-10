@@ -45,6 +45,12 @@ public final class WorldPointsPainter extends AbstractPointPainter {
     }
 
     @Override
+    public BaseWorldPoint getMirroredCounterpart() {
+        // TODO!
+        return null;
+    }
+
+    @Override
     public int getIndexOfPoint(BaseWorldPoint point) {
         return worldPoints.indexOf(point);
     }

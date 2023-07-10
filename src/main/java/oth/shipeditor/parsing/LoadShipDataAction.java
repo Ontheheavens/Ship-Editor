@@ -119,6 +119,9 @@ class LoadShipDataAction extends AbstractAction {
                 skins, Paths.get(folderPath, "")));
     }
 
+    // TODO: Refactor to compress tables and IDs!
+    //  Also load hull and engine styles JSONs.
+
     private static Map<String, Skin> walkSkinFolder(Path skinFolder) {
         List<File> skinFiles = new ArrayList<>();
         log.info("Bulk fetching skin files at: {}...", skinFolder);

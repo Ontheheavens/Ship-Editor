@@ -122,6 +122,15 @@ public class CenterPointsPainter extends AbstractPointPainter {
         return points.indexOf(point);
     }
 
+    /**
+     * Conceptually irrelevant for center points.
+     * @return null.
+     */
+    @Override
+    public BaseWorldPoint getMirroredCounterpart() {
+        return null;
+    }
+
     @Override
     protected BaseWorldPoint getTypeReference() {
         return new BaseWorldPoint();

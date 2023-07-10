@@ -17,13 +17,12 @@ import oth.shipeditor.components.viewer.ShipViewable;
 import oth.shipeditor.components.viewer.entities.ShipCenterPoint;
 import oth.shipeditor.components.viewer.layers.LayerPainter;
 import oth.shipeditor.components.viewer.layers.ShipLayer;
+import oth.shipeditor.utility.MouseoverLabelListener;
 import oth.shipeditor.utility.Utility;
 
 import javax.swing.*;
 import javax.swing.border.Border;
 import java.awt.*;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
 import java.awt.geom.Point2D;
 import java.awt.image.BufferedImage;
 
@@ -61,9 +60,9 @@ final class ViewerStatusPanel extends JPanel {
         FontIcon mouseIcon = FontIcon.of(FluentUiRegularAL.CURSOR_HOVER_20, 20);
         cursorCoords = new JLabel("", mouseIcon, SwingConstants.TRAILING);
         cursorCoords.setBorder(ViewerStatusPanel.createLabelBorder());
-        cursorCoords.setToolTipText("Click to change coordinate system");
+        cursorCoords.setToolTipText("Right-click to change coordinate system");
         JPopupMenu popupMenu = this.createCoordsMenu();
-        cursorCoords.addMouseListener(new MouseoverBorderListener(popupMenu));
+        cursorCoords.addMouseListener(new MouseoverLabelListener(popupMenu, cursorCoords));
         this.add(cursorCoords);
         this.add(Utility.clone(separator));
         FontIcon zoomIcon = FontIcon.of(FluentUiRegularMZ.ZOOM_IN_20, 20);
@@ -220,40 +219,6 @@ final class ViewerStatusPanel extends JPanel {
     private void setZoomLabel(double newZoom) {
         int rounded = (int) Math.round(newZoom * 100);
         zoom.setText(rounded + "%");
-    }
-
-    private class MouseoverBorderListener extends MouseAdapter {
-
-        private final JPopupMenu popupMenu;
-
-        MouseoverBorderListener(JPopupMenu menu) {
-            this.popupMenu = menu;
-        }
-
-        // Not entirely satisfied with the mismatch between background coloring bounds and border bounds;
-        // However, this is good enough for the time being.
-
-        @Override
-        public void mouseEntered(MouseEvent e) {
-            super.mouseEntered(e);
-            cursorCoords.setBackground(Color.LIGHT_GRAY);
-            cursorCoords.setOpaque(true);
-        }
-
-        @Override
-        public void mouseExited(MouseEvent e) {
-            super.mouseExited(e);
-            cursorCoords.setBackground(Color.WHITE);
-            cursorCoords.setOpaque(false);
-        }
-
-        @Override
-        public void mouseClicked(MouseEvent e) {
-            if (SwingUtilities.isLeftMouseButton(e)) {
-                popupMenu.show(cursorCoords, e.getX(), e.getY());
-            }
-        }
-
     }
 
 }

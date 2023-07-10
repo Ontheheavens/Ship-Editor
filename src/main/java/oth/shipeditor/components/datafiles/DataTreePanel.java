@@ -26,6 +26,8 @@ import java.util.stream.StreamSupport;
 abstract class DataTreePanel extends JPanel {
 
     private static final String NO_ENTRY_SELECTED = "No entry selected";
+    public static final String OPEN_CONTAINING_FOLDER = "Open containing folder";
+    public static final String OPEN_SOURCE_FILE = "Open source file";
 
     @Getter
     private DefaultMutableTreeNode rootNode;
@@ -242,10 +244,10 @@ abstract class DataTreePanel extends JPanel {
         JMenuItem collapsePackage = new JMenuItem("Collapse parent");
         collapsePackage.addActionListener(getCollapseAction());
         menu.add(collapsePackage);
-        JMenuItem openSourceFile = new JMenuItem("Open source file");
+        JMenuItem openSourceFile = new JMenuItem(OPEN_SOURCE_FILE);
         openSourceFile.addActionListener(e -> openEntryPath(OpenDataTarget.FILE));
         menu.add(openSourceFile);
-        JMenuItem openInExplorer = new JMenuItem("Open containing folder");
+        JMenuItem openInExplorer = new JMenuItem(OPEN_CONTAINING_FOLDER);
         openInExplorer.addActionListener(e -> openEntryPath(OpenDataTarget.CONTAINER));
         menu.add(openInExplorer);
         JMenuItem openPackage = new JMenuItem("Open data package");
