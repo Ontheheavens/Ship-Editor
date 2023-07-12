@@ -103,10 +103,17 @@ public final class FileUtilities {
             log.error("Failed to open {} in Explorer!", toOpen);
             JOptionPane.showMessageDialog(null,
                     "Failed to open file in Explorer, exception thrown at: " + toOpen,
-                    "File interaction error",
+                    "File interaction error!",
                     JOptionPane.ERROR_MESSAGE);
             ex.printStackTrace();
         }
+    }
+
+    public static void createLayerWithSprite(File spriteFile) {
+        EventBus.publish(new LayerCreationQueued());
+        EventBus.publish(new LastLayerSelectQueued());
+        BufferedImage sprite = FileUtilities.loadSprite(spriteFile);
+        EventBus.publish(new SpriteOpened(sprite, spriteFile.getName()));
     }
 
     public static BufferedImage loadSprite(File file) {

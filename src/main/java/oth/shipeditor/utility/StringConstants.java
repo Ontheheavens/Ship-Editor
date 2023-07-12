@@ -76,6 +76,6 @@ public interface StringConstants {
 
     String SEARCH = "Search";
 
-    String FILE_LOADING_ERROR = "File loading error";
+    String FILE_LOADING_ERROR = "File loading error!";
 
 }

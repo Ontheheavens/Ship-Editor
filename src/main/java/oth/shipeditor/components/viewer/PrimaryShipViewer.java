@@ -19,11 +19,20 @@ import oth.shipeditor.components.viewer.painters.AbstractPointPainter;
 import oth.shipeditor.components.viewer.painters.GuidesPainter;
 import oth.shipeditor.components.viewer.painters.HotkeyHelpPainter;
 import oth.shipeditor.components.viewer.painters.WorldPointsPainter;
+import oth.shipeditor.menubar.FileUtilities;
 
+import javax.swing.*;
 import java.awt.*;
+import java.awt.datatransfer.DataFlavor;
+import java.awt.datatransfer.Transferable;
+import java.awt.dnd.DnDConstants;
+import java.awt.dnd.DropTarget;
+import java.awt.dnd.DropTargetDropEvent;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Point2D;
+import java.io.File;
 import java.util.List;
+import java.util.Locale;
 
 /**
  * Despite being a bit of a God-class, this one is justified in its coupling as a conceptual root of the whole app.
@@ -83,6 +92,8 @@ public final class PrimaryShipViewer extends Viewer implements ShipViewable {
         this.setMouseControl(this.controls);
         this.initViewerStateListeners();
         this.initLayerListening();
+
+        this.setDropTarget(new SpriteDropReceiver());
     }
 
     private void initViewerStateListeners() {
@@ -241,6 +252,43 @@ public final class PrimaryShipViewer extends Viewer implements ShipViewable {
         double x = (this.getWidth() / 2.0f);
         double y = (this.getHeight() / 2.0f);
         return new Point2D.Double(x, y);
+    }
+
+    private static class SpriteDropReceiver extends DropTarget {
+        @SuppressWarnings({"unchecked", "AccessToStaticFieldLockedOnInstance"})
+        public synchronized void drop(DropTargetDropEvent dtde) {
+            try {
+                dtde.acceptDrop(DnDConstants.ACTION_COPY);
+                Transferable transferable = dtde.getTransferable();
+                Iterable<File> droppedFiles = (Iterable<File>) transferable.getTransferData(DataFlavor.javaFileListFlavor);
+                File firstEligible = null;
+                for (File file : droppedFiles) {
+                    if (file.getName().toLowerCase(Locale.ROOT).endsWith(".png")) {
+                        firstEligible = file;
+                        break;
+                    }
+                }
+                if (firstEligible == null) {
+                    log.error("Drag-and-drop sprite loading unsuccessful: wrong file extension.");
+                    JOptionPane.showMessageDialog(null,
+                            "Failed to load file as sprite or initialize layer with it: invalid file extension.",
+                            "Drag-and-drop layer initialization unsuccessful!",
+                            JOptionPane.INFORMATION_MESSAGE);
+                    dtde.dropComplete(false);
+                    return;
+                }
+                FileUtilities.createLayerWithSprite(firstEligible);
+                dtde.dropComplete(true);
+            } catch (Exception ex) {
+                dtde.dropComplete(false);
+                log.error("Drag-and-drop sprite loading failed!");
+                JOptionPane.showMessageDialog(null,
+                        "Failed to load file as sprite or initialize layer with it, exception thrown at: " + dtde,
+                        "Drag-and-drop layer initialization error!",
+                        JOptionPane.ERROR_MESSAGE);
+                ex.printStackTrace();
+            }
+        }
     }
 
 }
