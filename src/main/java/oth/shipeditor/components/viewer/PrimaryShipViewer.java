@@ -51,6 +51,8 @@ public final class PrimaryShipViewer extends Viewer implements ShipViewable {
     @Getter
     private final ViewerControl controls;
 
+    private int layerCount;
+
     /**
      * Usage of self as an argument is a suboptimal practice, but in this case it did not prove to be an issue.
      * However, keep this constructor in mind for future refactors.
@@ -67,15 +69,15 @@ public final class PrimaryShipViewer extends Viewer implements ShipViewable {
         this.layerManager.initListeners();
 
         this.miscPointsPainter = WorldPointsPainter.create();
-        this.addPainter(this.miscPointsPainter, 3);
+        this.addPainter(this.miscPointsPainter, 901);
 
         this.guidesPainter = new GuidesPainter(this);
         EventBus.publish(new ViewerGuidesToggled(true,
                 true, true, true));
-        this.addPainter(this.guidesPainter, 4);
+        this.addPainter(this.guidesPainter, 902);
 
         this.hotkeyPainter = new HotkeyHelpPainter();
-        this.addPainter(this.hotkeyPainter, 90);
+        this.addPainter(this.hotkeyPainter, 903);
 
         this.controls = ShipViewerControls.create(this);
         this.setMouseControl(this.controls);
@@ -192,14 +194,14 @@ public final class PrimaryShipViewer extends Viewer implements ShipViewable {
 
     @Override
     public void loadLayer(ShipLayer layer) {
-        LayerPainter newPainter = new LayerPainter(layer, this);
+        LayerPainter newPainter = new LayerPainter(layer, this, layerCount);
         ShipLayer activeLayer = this.layerManager.getActiveLayer();
         activeLayer.setPainter(newPainter);
         // Main sprite painter and said painter children point painters are distinct conceptually.
         // Layer might be selected and deselected, in which case children painters are loaded/unloaded.
         // At the same time main sprite painter remains loaded until layer is explicitly removed.
-        // TODO: consider the ordering of added layers later.
-        this.addPainter(newPainter);
+        this.addPainter(newPainter, layerCount);
+        ++layerCount;
         this.centerViewpoint();
         EventBus.publish(new ShipLayerLoadConfirmed(layer));
     }
@@ -209,13 +211,14 @@ public final class PrimaryShipViewer extends Viewer implements ShipViewable {
         if (mainPainter != null) {
             List<AbstractPointPainter> layerPainters = mainPainter.getAllPainters();
             for (AbstractPointPainter iterated : layerPainters) {
-                boolean removed = this.removePainter(iterated, 4);
+                boolean removed = this.removePainter(iterated);
                 if (removed) {
                     log.info("Removed from viewer:{}", iterated);
                 }
             }
         }
         this.removePainter(layer.getPainter());
+        --layerCount;
     }
 
     public void centerViewpoint() {

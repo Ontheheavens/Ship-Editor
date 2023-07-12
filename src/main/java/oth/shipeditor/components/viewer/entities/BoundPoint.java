@@ -43,9 +43,6 @@ public class BoundPoint extends FeaturePoint{
         return painter;
     }
 
-    // TODO: implement selected-from-any-point functionality and the toggle between it and strict selection method.
-    //  For this bound point class will need a reference to bounds painter so it'll be able to loop between point list.
-
     private void paintCoordsLabel(Graphics2D g, AffineTransform worldToScreen, double w, double h) {
         Point2D coordsPoint = getPosition();
         Point2D toDisplay = this.getCoordinatesForDisplay();

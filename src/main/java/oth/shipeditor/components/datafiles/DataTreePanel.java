@@ -241,9 +241,10 @@ abstract class DataTreePanel extends JPanel {
 
     JPopupMenu getContextMenu() {
         JPopupMenu menu = new JPopupMenu();
-        JMenuItem collapsePackage = new JMenuItem("Collapse parent");
+        JMenuItem collapsePackage = new JMenuItem("Collapse package");
         collapsePackage.addActionListener(getCollapseAction());
         menu.add(collapsePackage);
+        menu.addSeparator();
         JMenuItem openSourceFile = new JMenuItem(OPEN_SOURCE_FILE);
         openSourceFile.addActionListener(e -> openEntryPath(OpenDataTarget.FILE));
         menu.add(openSourceFile);

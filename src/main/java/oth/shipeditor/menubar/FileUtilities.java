@@ -2,14 +2,18 @@ package oth.shipeditor.menubar;
 
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.json.JsonReadFeature;
+import com.fasterxml.jackson.databind.MappingIterator;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.dataformat.csv.CsvMapper;
+import com.fasterxml.jackson.dataformat.csv.CsvParser;
+import com.fasterxml.jackson.dataformat.csv.CsvSchema;
 import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
 import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.files.HullFileOpened;
 import oth.shipeditor.communication.events.files.SpriteOpened;
-import oth.shipeditor.communication.events.viewer.layers.ActiveLayerUpdated;
-import oth.shipeditor.communication.events.viewer.layers.LayerWasSelected;
+import oth.shipeditor.communication.events.viewer.layers.LastLayerSelectQueued;
+import oth.shipeditor.communication.events.viewer.layers.LayerCreationQueued;
 import oth.shipeditor.components.viewer.layers.ShipLayer;
 import oth.shipeditor.parsing.JsonProcessor;
 import oth.shipeditor.parsing.LoadHullmodDataAction;
@@ -18,17 +22,21 @@ import oth.shipeditor.persistence.SettingsManager;
 import oth.shipeditor.representation.Hull;
 import oth.shipeditor.representation.Skin;
 import oth.shipeditor.utility.ImageCache;
+import oth.shipeditor.utility.StringConstants;
 
 import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.*;
 import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 /**
@@ -45,8 +53,6 @@ public final class FileUtilities {
     private static final String TRIED_TO_RESOLVE_SKIN_FILE_WITH_INVALID_EXTENSION = "Tried to resolve skin file with invalid extension!";
     private static File lastDirectory;
 
-    private static ShipLayer current;
-
     @Getter
     private static final Action loadShipDataAction = new LoadShipDataAction();
 
@@ -59,24 +65,12 @@ public final class FileUtilities {
     @Getter
     private static final Action openShipDataAction = new OpenHullAction();
 
-    private FileUtilities() {
-    }
+    @Getter
+    private static final Action loadHullAsLayerAction = new LoadHullAsLayer();
 
-    @SuppressWarnings("ChainOfInstanceofChecks")
-    public static void listenToLayerChange() {
-        EventBus.subscribe(event -> {
-            if (event instanceof LayerWasSelected checked) {
-                current = checked.selected();
-                FileUtilities.updateActionStates();
-            }
-            if (event instanceof ActiveLayerUpdated checked) {
-                current = checked.updated();
-                FileUtilities.updateActionStates();
-            }
-        });
-    }
+    private FileUtilities() {}
 
-    private static void updateActionStates() {
+    public static void updateActionStates(ShipLayer current) {
         boolean spriteState = (current != null) && current.getShipSprite() == null && current.getShipData() == null;
         boolean hullState = (current != null) && current.getShipSprite() != null && current.getShipData() == null;
         openSpriteAction.setEnabled(spriteState);
@@ -105,8 +99,13 @@ public final class FileUtilities {
     private static void openPathInDesktop(File toOpen) {
         try {
             Desktop.getDesktop().open(toOpen);
-        } catch (IOException ex) {
+        } catch (IOException | IllegalArgumentException ex) {
             log.error("Failed to open {} in Explorer!", toOpen);
+            JOptionPane.showMessageDialog(null,
+                    "Failed to open file in Explorer, exception thrown at: " + toOpen,
+                    "File interaction error",
+                    JOptionPane.ERROR_MESSAGE);
+            ex.printStackTrace();
         }
     }
 
@@ -134,9 +133,7 @@ public final class FileUtilities {
         if (result == null) {
             result = FileUtilities.searchFileInFolder(filePath, coreDataFolder);
         }
-        if (result != null) {
-            return result.toFile();
-        }
+        if (result != null) return result.toFile();
 
         // If not found, search in other mods.
         for (Path modFolder : otherModFolders) {
@@ -148,9 +145,7 @@ public final class FileUtilities {
         if (result == null) {
             log.error("Failed to fetch data file for {}!", filePath.getFileName());
         }
-        if (result != null) {
-            return result.toFile();
-        }
+        if (result != null) return result.toFile();
         return null;
     }
 
@@ -175,6 +170,10 @@ public final class FileUtilities {
             log.info("Opening hull file: {}", file.getName());
         } catch (IOException e) {
             log.error("Hull file loading failed: {}", file.getName());
+            JOptionPane.showMessageDialog(null,
+                    "Ship hull file loading failed, exception thrown at: " + file,
+                    StringConstants.FILE_LOADING_ERROR,
+                    JOptionPane.ERROR_MESSAGE);
             e.printStackTrace();
         }
         return hull;
@@ -203,25 +202,99 @@ public final class FileUtilities {
         return skin;
     }
 
+    private static void openHullAndDo(ActionListener action) {
+        Path coreFolderPath = SettingsManager.getCoreFolderPath();
+        JFileChooser shipDataChooser = new JFileChooser(coreFolderPath.toString());
+        if (lastDirectory != null) {
+            shipDataChooser.setCurrentDirectory(lastDirectory);
+        }
+        FileNameExtensionFilter shipDataFilter = new FileNameExtensionFilter(
+                "JSON ship files", "ship");
+        shipDataChooser.setFileFilter(shipDataFilter);
+        int returnVal = shipDataChooser.showOpenDialog(null);
+        lastDirectory = shipDataChooser.getCurrentDirectory();
+        if (returnVal == JFileChooser.APPROVE_OPTION) {
+            ActionEvent event = new ActionEvent(shipDataChooser, ActionEvent.ACTION_PERFORMED, null);
+            action.actionPerformed(event);
+        }
+        else {
+            log.info(OPEN_COMMAND_CANCELLED_BY_USER);
+        }
+    }
+
+    /**
+     * Target CSV file is expected to have a header row and an ID column designated in said header.
+     * @param path address of the target file.
+     * @return List of rows where each row is a Map of string keys and string values.
+     */
+    public static List<Map<String, String>> parseCSVTable(Path path) {
+        CsvMapper csvMapper = new CsvMapper();
+        csvMapper.configure(CsvParser.Feature.IGNORE_TRAILING_UNMAPPABLE, true);
+
+        CsvSchema csvSchema = CsvSchema.emptySchema().withHeader();
+        File csvFile = path.toFile();
+        List<Map<String, String>> csvData = new ArrayList<>();
+        try (MappingIterator<Map<String, String>> iterator = csvMapper.readerFor(Map.class)
+                .with(csvSchema)
+                .readValues(csvFile)) {
+            while (iterator.hasNext()) {
+                Map<String, String> row = iterator.next();
+                String id = row.get(StringConstants.ID);
+                String name = row.get("name");
+                if (id != null && !id.isEmpty() && !name.startsWith("#")) {
+                    // We are skipping a row if ID is missing or if row is commented out.
+                    row.remove("number");
+                    row.remove("8/6/5/4%");
+                    csvData.add(row);
+                }
+            }
+        } catch (IOException exception) {
+            log.error("Data CSV loading failed!");
+            exception.printStackTrace();
+        }
+        return csvData;
+    }
+
     private static class OpenHullAction extends AbstractAction {
         @Override
         public void actionPerformed(ActionEvent e) {
-            JFileChooser shipDataChooser = new JFileChooser("C:\\Games\\Ship Editor\\src\\main\\resources");
-            if (lastDirectory != null) {
-                shipDataChooser.setCurrentDirectory(lastDirectory);
-            }
-            FileNameExtensionFilter shipDataFilter = new FileNameExtensionFilter(
-                    "JSON ship files", "ship");
-            shipDataChooser.setFileFilter(shipDataFilter);
-            int returnVal = shipDataChooser.showOpenDialog(null);
-            lastDirectory = shipDataChooser.getCurrentDirectory();
-            if (returnVal == JFileChooser.APPROVE_OPTION) {
+            FileUtilities.openHullAndDo(e1 -> {
+                    JFileChooser shipDataChooser = (JFileChooser) e1.getSource();
+                    File file = shipDataChooser.getSelectedFile();
+                    Hull hull = FileUtilities.loadHullFile(file);
+                    EventBus.publish(new HullFileOpened(hull, file.getName()));
+            });
+        }
+    }
+
+    private static class LoadHullAsLayer extends AbstractAction {
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            FileUtilities.openHullAndDo(e1 -> {
+                JFileChooser shipDataChooser = (JFileChooser) e1.getSource();
                 File file = shipDataChooser.getSelectedFile();
                 Hull hull = FileUtilities.loadHullFile(file);
+
+                String spriteName = hull.getSpriteName();
+
+                Path spriteFilePath = Path.of(spriteName);
+                File spriteFile = FileUtilities.fetchDataFile(spriteFilePath, null);
+
+                if (spriteFile == null) {
+                    log.error("Failed to find sprite for ship file {}", file);
+                    JOptionPane.showMessageDialog(null,
+                            "No sprite in game data is found for the selected ship file.",
+                            "Sprite not found",
+                            JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
+
+                EventBus.publish(new LayerCreationQueued());
+                EventBus.publish(new LastLayerSelectQueued());
+                BufferedImage sprite = FileUtilities.loadSprite(spriteFile);
+                EventBus.publish(new SpriteOpened(sprite, spriteFile.getName()));
                 EventBus.publish(new HullFileOpened(hull, file.getName()));
-            } else {
-                log.info(OPEN_COMMAND_CANCELLED_BY_USER);
-            }
+            });
         }
     }
 
@@ -229,7 +302,8 @@ public final class FileUtilities {
 
         @Override
         public void actionPerformed(ActionEvent e) {
-            JFileChooser spriteChooser = new JFileChooser("C:\\Games\\Ship Editor\\src\\main\\resources");
+            Path coreFolderPath = SettingsManager.getCoreFolderPath();
+            JFileChooser spriteChooser = new JFileChooser(coreFolderPath.toString());
             if (lastDirectory != null) {
                 spriteChooser.setCurrentDirectory(lastDirectory);
             }

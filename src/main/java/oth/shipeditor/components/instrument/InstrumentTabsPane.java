@@ -112,9 +112,9 @@ public final class InstrumentTabsPane extends JTabbedPane {
     }
 
     private void updateTooltipText() {
-        String minimizePrompt = "Left-click to minimize panel";
+        String minimizePrompt = "(Left-click to minimize panel)";
         if (minimizer.isMinimized()) {
-            minimizePrompt = "Left-click to expand panel";
+            minimizePrompt = "(Left-click to expand panel)";
         }
         String layerPanelLabel = "Layer properties";
         String centerPanelLabel = "Ship center, collision, shield center and radius";

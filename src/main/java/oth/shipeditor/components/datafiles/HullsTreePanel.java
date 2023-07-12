@@ -22,6 +22,8 @@ import javax.swing.tree.MutableTreeNode;
 import javax.swing.tree.TreePath;
 import java.awt.*;
 import java.awt.event.ActionEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.*;
@@ -44,6 +46,7 @@ class HullsTreePanel extends DataTreePanel {
             return "<html>" +
                     "<p>" + "Hull size: " + hullFile.getHullSize() + "</p>" +
                     "<p>" + "Hull ID: " + checked.getHullID() + "</p>" +
+                    "<p>" + "(Double-click to load as layer)" + "</p>" +
                     "</html>";
         }
         return null;
@@ -94,6 +97,7 @@ class HullsTreePanel extends DataTreePanel {
                 updateEntryPanel(checked);
             }
         });
+        tree.addMouseListener(new DoubleClickLayerLoader());
     }
 
     void updateEntryPanel(ShipCSVEntry selected) {
@@ -195,32 +199,10 @@ class HullsTreePanel extends DataTreePanel {
         return ShipCSVEntry.class;
     }
 
-    @SuppressWarnings("OverlyComplexAnonymousInnerClass")
     @Override
     protected JTree createCustomTree() {
         JTree custom = super.createCustomTree();
-        custom.setCellRenderer(new DefaultTreeCellRenderer() {
-            @SuppressWarnings("ParameterHidesMemberVariable")
-            @Override
-            public Component getTreeCellRendererComponent(JTree tree, Object value, boolean sel,
-                                                          boolean expanded, boolean leaf, int row, boolean hasFocus) {
-                super.getTreeCellRendererComponent(tree, value, sel, expanded, leaf, row, hasFocus);
-                Object object = ((DefaultMutableTreeNode) value).getUserObject();
-                if (object instanceof ShipCSVEntry checked && leaf) {
-                    Hull hull = checked.getHullFile();
-                    String hullSize = hull.getHullSize();
-                    switch (hullSize) {
-                        case "FIGHTER" -> setIcon(FontIcon.of(BoxiconsRegular.DICE_1, 16, Color.DARK_GRAY));
-                        case "FRIGATE" -> setIcon(FontIcon.of(BoxiconsRegular.DICE_2, 16, Color.DARK_GRAY));
-                        case "DESTROYER" -> setIcon(FontIcon.of(BoxiconsRegular.DICE_3, 16, Color.DARK_GRAY));
-                        case "CRUISER" -> setIcon(FontIcon.of(BoxiconsRegular.DICE_4, 16, Color.DARK_GRAY));
-                        case "CAPITAL_SHIP" -> setIcon(FontIcon.of(BoxiconsRegular.DICE_5, 16, Color.DARK_GRAY));
-                        default -> {}
-                    }
-                }
-                return this;
-            }
-        });
+        custom.setCellRenderer(new HullsTreeCellRenderer());
         return custom;
     }
     @Override
@@ -233,6 +215,7 @@ class HullsTreePanel extends DataTreePanel {
                 menu.add(openSkin);
             }
         }
+        menu.addSeparator();
         JMenuItem loadAsLayer = new JMenuItem("Load as layer");
         loadAsLayer.addActionListener(new HullsTreePanel.LoadLayerFromTree());
         menu.add(loadAsLayer);
@@ -262,6 +245,55 @@ class HullsTreePanel extends DataTreePanel {
             default -> toOpen = checked.getPackageFolder();
         }
         FileUtilities.openPathInDesktop(toOpen);
+    }
+
+    private static class HullsTreeCellRenderer extends DefaultTreeCellRenderer {
+
+        @SuppressWarnings("ParameterHidesMemberVariable")
+        @Override
+        public Component getTreeCellRendererComponent(JTree tree, Object value, boolean sel,
+                                                      boolean expanded, boolean leaf, int row, boolean hasFocus) {
+            super.getTreeCellRendererComponent(tree, value, sel, expanded, leaf, row, hasFocus);
+            Object object = ((DefaultMutableTreeNode) value).getUserObject();
+            if (object instanceof ShipCSVEntry checked && leaf) {
+                Hull hull = checked.getHullFile();
+                String hullSize = hull.getHullSize();
+                switch (hullSize) {
+                    case "FIGHTER" -> setIcon(FontIcon.of(BoxiconsRegular.DICE_1, 16, Color.DARK_GRAY));
+                    case "FRIGATE" -> setIcon(FontIcon.of(BoxiconsRegular.DICE_2, 16, Color.DARK_GRAY));
+                    case "DESTROYER" -> setIcon(FontIcon.of(BoxiconsRegular.DICE_3, 16, Color.DARK_GRAY));
+                    case "CRUISER" -> setIcon(FontIcon.of(BoxiconsRegular.DICE_4, 16, Color.DARK_GRAY));
+                    case "CAPITAL_SHIP" -> setIcon(FontIcon.of(BoxiconsRegular.DICE_5, 16, Color.DARK_GRAY));
+                    default -> {}
+                }
+            }
+
+            return this;
+        }
+
+    }
+
+    private class DoubleClickLayerLoader extends MouseAdapter {
+
+        @SuppressWarnings({"ChainOfInstanceofChecks", "MethodWithMultipleReturnPoints"})
+        @Override
+        public void mouseClicked(MouseEvent e) {
+            // Check for double-click.
+            if(e.getButton() == MouseEvent.BUTTON1 && e.getClickCount() >= 2){
+                JTree tree = getTree();
+                Point eventPoint = e.getPoint();
+                TreePath pathForLocation = tree.getPathForLocation(eventPoint.x, eventPoint.y);
+                if (pathForLocation == null) return;
+                DefaultMutableTreeNode node = (DefaultMutableTreeNode) pathForLocation.getLastPathComponent();
+                TreePath selectionPath = tree.getSelectionPath();
+                if (selectionPath == null) return;
+                Object selected = selectionPath.getLastPathComponent();
+                if (node == null || !(selected instanceof DefaultMutableTreeNode checkedNode) || node != checkedNode) return;
+                if (node.getUserObject() instanceof ShipCSVEntry checked) {
+                    checked.loadLayerFromEntry();
+                }
+            }
+        }
     }
 
 }

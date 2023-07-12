@@ -11,7 +11,6 @@ import oth.shipeditor.persistence.SettingsManager;
 import oth.shipeditor.representation.GameDataRepository;
 import oth.shipeditor.representation.Hull;
 import oth.shipeditor.representation.Skin;
-import oth.shipeditor.utility.Utility;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;
@@ -92,7 +91,7 @@ class LoadShipDataAction extends AbstractAction {
         Path shipDataPath = Paths.get(folderPath, "data", HULLS, SHIP_DATA_CSV);
 
         log.info("Parsing ship CSV data at: {}..", shipDataPath);
-        List<Map<String, String>> csvData = Utility.parseCSVTable(shipDataPath);
+        List<Map<String, String>> csvData = FileUtilities.parseCSVTable(shipDataPath);
         log.info("Ship CSV data at {} retrieved successfully.", shipDataPath);
 
         List<File> shipFiles = new ArrayList<>();

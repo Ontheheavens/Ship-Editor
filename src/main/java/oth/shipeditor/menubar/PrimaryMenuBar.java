@@ -61,6 +61,8 @@ public final class PrimaryMenuBar extends JMenuBar {
         redo.setAccelerator(keyStrokeToRedo);
         editMenu.add(redo);
 
+        editMenu.addSeparator();
+
         JMenuItem pointSelectionMode = PrimaryMenuBar.createPointSelectionModeOptions();
         editMenu.add(pointSelectionMode);
 

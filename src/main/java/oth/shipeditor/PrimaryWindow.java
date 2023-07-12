@@ -61,7 +61,6 @@ public final class PrimaryWindow extends JFrame {
     private static void performStaticInits() {
         Initializations.initializeSettingsFile();
         Initializations.selectGameFolder();
-        FileUtilities.listenToLayerChange();
         StaticLayerController.init();
 
         ControlPredicates.initSelectionModeListening();
@@ -77,7 +76,8 @@ public final class PrimaryWindow extends JFrame {
     }
 
     private static void configureTooltips() {
-        ToolTipManager.sharedInstance().setInitialDelay(0);
+        ToolTipManager.sharedInstance().setInitialDelay(10);
+        ToolTipManager.sharedInstance().setDismissDelay(90000);
     }
 
     private void initListeners() {

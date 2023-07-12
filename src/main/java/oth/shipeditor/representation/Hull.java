@@ -1,6 +1,7 @@
 package oth.shipeditor.representation;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import lombok.Getter;
@@ -21,6 +22,7 @@ import java.util.Map;
  * @since 05.05.2023
  */
 @SuppressWarnings("ClassWithTooManyFields")
+@JsonIgnoreProperties(ignoreUnknown = true)
 @Getter
 public class Hull {
 

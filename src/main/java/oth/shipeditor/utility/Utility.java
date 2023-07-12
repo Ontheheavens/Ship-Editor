@@ -1,8 +1,5 @@
 package oth.shipeditor.utility;
 
-import com.fasterxml.jackson.databind.MappingIterator;
-import com.fasterxml.jackson.dataformat.csv.CsvMapper;
-import com.fasterxml.jackson.dataformat.csv.CsvSchema;
 import com.formdev.flatlaf.ui.FlatLineBorder;
 import lombok.extern.log4j.Log4j2;
 
@@ -11,12 +8,6 @@ import java.awt.*;
 import java.awt.event.ActionListener;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Point2D;
-import java.io.File;
-import java.io.IOException;
-import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
 
 /**
  * @author Ontheheavens
@@ -58,39 +49,6 @@ public final class Utility {
         JSeparator copy = new JSeparator(original.getOrientation());
         copy.setPreferredSize(original.getPreferredSize());
         return copy;
-    }
-
-    /**
-     * Target CSV file is expected to have a header row and an ID column designated in said header.
-     * @param path address of the target file.
-     * @return List of rows where each row is a Map of string keys and string values.
-     */
-    public static java.util.List<Map<String, String>> parseCSVTable(Path path) {
-        CsvMapper csvMapper = new CsvMapper();
-
-        CsvSchema csvSchema = CsvSchema.emptySchema().withHeader().withComments();
-        File csvFile = path.toFile();
-        List<Map<String, String>> csvData = new ArrayList<>();
-        try (MappingIterator<Map<String, String>> iterator = csvMapper.readerFor(Map.class)
-                .with(csvSchema)
-                .readValues(csvFile)) {
-            while (iterator.hasNext()) {
-                Map<String, String> row = iterator.next();
-                String id = row.get(StringConstants.ID);
-                String name = row.get("name");
-                if (!id.isEmpty() && !name.startsWith("#") && row.size() > 10) {
-                    // We are skipping a row if ID is missing or if row is commented out.
-                    // Size of 10 is a hack intended to exclude remainders of commented lines.
-                    row.remove("number");
-                    row.remove("8/6/5/4%");
-                    csvData.add(row);
-                }
-            }
-        } catch (IOException exception) {
-            log.error("Data CSV loading failed!");
-            exception.printStackTrace();
-        }
-        return csvData;
     }
 
     public static JLabel getIconLabelWithBorder(Icon icon) {

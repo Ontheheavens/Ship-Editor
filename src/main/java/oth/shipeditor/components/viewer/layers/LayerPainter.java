@@ -2,6 +2,7 @@ package oth.shipeditor.components.viewer.layers;
 
 import de.javagl.viewer.Painter;
 import lombok.Getter;
+import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
 import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.Events;
@@ -36,8 +37,12 @@ import java.util.stream.Stream;
  * @author Ontheheavens
  * @since 29.05.2023
  */
+@SuppressWarnings("ClassWithTooManyFields")
 @Log4j2
 public final class LayerPainter implements Painter {
+
+    @Getter @Setter
+    private int paintOrdering;
 
     @Getter
     private final BoundPointsPainter boundsPainter;
@@ -70,7 +75,9 @@ public final class LayerPainter implements Painter {
     @Getter
     private boolean uninitialized = true;
 
-    public LayerPainter(ShipLayer layer, PrimaryShipViewer viewerPanel) {
+    @SuppressWarnings("ThisEscapedInObjectConstruction")
+    public LayerPainter(ShipLayer layer, PrimaryShipViewer viewerPanel, int order) {
+        this.paintOrdering = order;
         this.parentLayer = layer;
         this.viewer = viewerPanel;
         this.centerPointsPainter = new CenterPointsPainter(this);
@@ -198,7 +205,7 @@ public final class LayerPainter implements Painter {
         });
         this.uninitialized = false;
         log.info("{} initialized!", this);
-        EventBus.publish(new LayerShipDataInitialized(this, 4));
+        EventBus.publish(new LayerShipDataInitialized(this, this.paintOrdering));
         EventBus.publish(new ViewerRepaintQueued());
     }
 
