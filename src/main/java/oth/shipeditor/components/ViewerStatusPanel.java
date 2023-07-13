@@ -9,6 +9,7 @@ import org.kordamp.ikonli.swing.FontIcon;
 import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.viewer.ViewerRepaintQueued;
 import oth.shipeditor.communication.events.viewer.control.ViewerCursorMoved;
+import oth.shipeditor.communication.events.viewer.control.ViewerTransformRotated;
 import oth.shipeditor.communication.events.viewer.control.ViewerZoomChanged;
 import oth.shipeditor.communication.events.viewer.layers.ActiveLayerUpdated;
 import oth.shipeditor.communication.events.viewer.layers.LayerWasSelected;
@@ -35,6 +36,8 @@ final class ViewerStatusPanel extends JPanel {
 
     private static double zoomLevel = 1.0f;
 
+    private static double rotationDegrees;
+
     @Getter
     private CoordsDisplayMode mode = CoordsDisplayMode.WORLD;
 
@@ -46,17 +49,21 @@ final class ViewerStatusPanel extends JPanel {
 
     private final JLabel zoom;
 
+    private final JLabel rotation;
+
     private Point2D cursorPoint;
 
     ViewerStatusPanel(ShipViewable viewable) {
         this.viewer = viewable;
+
         FontIcon dimensionIcon = FontIcon.of(FluentUiRegularMZ.SLIDE_SIZE_24, 20);
         dimensions = new JLabel("", dimensionIcon, SwingConstants.TRAILING);
         dimensions.setToolTipText("Width / height of active layer");
+
         this.add(dimensions);
-        JSeparator separator = new JSeparator(SwingConstants.VERTICAL);
-        separator.setPreferredSize(new Dimension(1, dimensionIcon.getIconHeight()));
-        this.add(separator);
+
+        this.addSeparator();
+
         FontIcon mouseIcon = FontIcon.of(FluentUiRegularAL.CURSOR_HOVER_20, 20);
         cursorCoords = new JLabel("", mouseIcon, SwingConstants.TRAILING);
         cursorCoords.setBorder(ViewerStatusPanel.createLabelBorder());
@@ -64,26 +71,47 @@ final class ViewerStatusPanel extends JPanel {
         JPopupMenu popupMenu = this.createCoordsMenu();
         cursorCoords.addMouseListener(new MouseoverLabelListener(popupMenu, cursorCoords));
         this.add(cursorCoords);
-        this.add(Utility.clone(separator));
+
+        this.addSeparator();
+
         FontIcon zoomIcon = FontIcon.of(FluentUiRegularMZ.ZOOM_IN_20, 20);
         this.zoom = new JLabel("", zoomIcon, SwingConstants.TRAILING);
         this.zoom.setToolTipText("Zoom level");
         this.add(this.zoom);
+
+        this.addSeparator();
+
+        FontIcon rotationIcon = FontIcon.of(FluentUiRegularAL.ARROW_ROTATE_CLOCKWISE_20, 20);
+        this.rotation = new JLabel("", rotationIcon, SwingConstants.TRAILING);
+        this.rotation.setToolTipText("Rotation degrees");
+        this.add(this.rotation);
 
         this.setBorder(BorderFactory.createMatteBorder(1, 0, 0, 0, Color.LIGHT_GRAY));
 
         this.initListeners();
         this.setDimensionsLabel(null);
         this.setZoomLabel(zoomLevel);
+        this.setRotationLabel(rotationDegrees);
         this.cursorPoint = new Point2D.Double();
         this.updateCursorCoordsLabel();
     }
 
+    private void addSeparator() {
+        JSeparator separator = new JSeparator(SwingConstants.VERTICAL);
+        separator.setPreferredSize(new Dimension(2, 24));
+        separator.setForeground(Color.GRAY);
+        this.add(separator);
+    }
+
+    @SuppressWarnings("ChainOfInstanceofChecks")
     private void initListeners() {
         EventBus.subscribe(event -> {
             if (event instanceof ViewerZoomChanged checked) {
                 zoomLevel = checked.newValue();
                 this.setZoomLabel(zoomLevel);
+            } else if (event instanceof ViewerTransformRotated checked) {
+                rotationDegrees = checked.degrees();
+                this.setRotationLabel(rotationDegrees);
             }
         });
         EventBus.subscribe(event -> {
@@ -219,6 +247,11 @@ final class ViewerStatusPanel extends JPanel {
     private void setZoomLabel(double newZoom) {
         int rounded = (int) Math.round(newZoom * 100);
         zoom.setText(rounded + "%");
+    }
+
+    private void setRotationLabel(double newRotation) {
+        int rounded = (int) Math.round(newRotation);
+        rotation.setText(rounded + "°");
     }
 
 }

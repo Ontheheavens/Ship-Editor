@@ -60,6 +60,9 @@ public final class ShipViewerControls implements ViewerControl {
     @Getter
     private double zoomLevel = 1;
 
+    @Getter
+    private double rotationDegree = 0;
+
     /**
      * @param parent Viewer which is manipulated via this instance of controls class.
      */
@@ -96,6 +99,8 @@ public final class ShipViewerControls implements ViewerControl {
         EventBus.subscribe(event -> {
             if (event instanceof ViewerTransformsReset) {
                 this.setZoomLevel(1);
+                this.rotationDegree = 0;
+                EventBus.publish(new ViewerTransformRotated(rotationDegree));
             }
         });
         EventBus.subscribe(event -> {
@@ -228,8 +233,12 @@ public final class ShipViewerControls implements ViewerControl {
         if (ControlPredicates.rotatePredicate.test(e) && this.rotationEnabled) {
             double toRadians = Math.toRadians(wheelRotation);
             Point2D midpoint = parentViewer.getViewerMidpoint();
+            double resultRadians = toRadians * ROTATION_SPEED;
             this.parentViewer.rotate(midpoint.getX(), midpoint.getY(),
-                    toRadians * ROTATION_SPEED);
+                    resultRadians);
+            this.rotationDegree += Math.toDegrees(resultRadians);
+            rotationDegree = (rotationDegree + 360) % 360;
+            EventBus.publish(new ViewerTransformRotated(rotationDegree));
         } else {
             // Calculate the zoom factor - sign of wheel rotation argument determines the direction.
             double d = Math.pow(1 + ZOOMING_SPEED, -wheelRotation) - 1;

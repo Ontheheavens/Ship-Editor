@@ -45,12 +45,6 @@ public final class Utility {
         return new Point2D.Double(roundedX, roundedY);
     }
 
-    public static JSeparator clone(JSeparator original) {
-        JSeparator copy = new JSeparator(original.getOrientation());
-        copy.setPreferredSize(original.getPreferredSize());
-        return copy;
-    }
-
     public static JLabel getIconLabelWithBorder(Icon icon) {
         JLabel imageLabel = new JLabel(icon);
         imageLabel.setOpaque(true);
