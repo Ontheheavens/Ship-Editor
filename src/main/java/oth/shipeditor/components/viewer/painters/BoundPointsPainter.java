@@ -18,6 +18,7 @@ import oth.shipeditor.components.viewer.control.PointSelectionMode;
 import oth.shipeditor.components.viewer.control.ViewerControl;
 import oth.shipeditor.components.viewer.entities.BaseWorldPoint;
 import oth.shipeditor.components.viewer.entities.BoundPoint;
+import oth.shipeditor.components.viewer.entities.ShipCenterPoint;
 import oth.shipeditor.components.viewer.entities.WorldPoint;
 import oth.shipeditor.components.viewer.layers.LayerPainter;
 import oth.shipeditor.undo.EditDispatch;
@@ -28,6 +29,7 @@ import java.awt.event.KeyEvent;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
+import java.awt.geom.RectangularShape;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -70,6 +72,11 @@ public final class BoundPointsPainter extends AbstractPointPainter {
     }
 
     @Override
+    public boolean isMirrorable() {
+        return true;
+    }
+
+    @Override
     protected void selectPointConditionally() {
         PointSelectionMode current = ControlPredicates.getSelectionMode();
         if (current == PointSelectionMode.STRICT) {
@@ -100,10 +107,34 @@ public final class BoundPointsPainter extends AbstractPointPainter {
     }
 
     @Override
-    public BaseWorldPoint getMirroredCounterpart() {
-        Point2D spriteCenter = parentLayer.getSpriteCenter();
-        // TODO!
-        return null;
+    public BaseWorldPoint getMirroredCounterpart(WorldPoint point) {
+        List<BoundPoint> bounds = this.getBoundPoints();
+        Point2D pointPosition = point.getPosition();
+        Point2D counterpartPosition = this.createCounterpartPosition(pointPosition);
+        double threshold = 2.0d; // Adjust the threshold value as needed; default 2 scaled pixels.
+        BoundPoint closestBound = null;
+        double closestDistance = Double.MAX_VALUE;
+        for (BoundPoint bound : bounds) {
+            double distance = counterpartPosition.distance(bound.getPosition());
+            if (distance < closestDistance) {
+                closestBound = bound;
+                closestDistance = distance;
+            }
+        }
+        if (closestDistance <= threshold) {
+            return closestBound; // Found the mirrored counterpart within the threshold.
+        } else {
+            return null; // Mirrored counterpart not found.
+        }
+    }
+
+    @Override
+    protected Point2D createCounterpartPosition(Point2D toMirror) {
+        ShipCenterPoint shipCenter = parentLayer.getShipCenter();
+        Point2D centerPosition = shipCenter.getPosition();
+        double counterpartX = 2 * centerPosition.getX() - toMirror.getX();
+        double counterpartY = toMirror.getY(); // Y-coordinate remains the same.
+        return new Point2D.Double(counterpartX, counterpartY);
     }
 
     @Override
@@ -188,24 +219,43 @@ public final class BoundPointsPainter extends AbstractPointPainter {
 
     private void createBound(BoundCreationQueued event) {
         Point2D position = event.position();
+        boolean mirrorMode = ControlPredicates.isMirrorModeEnabled();
         if (insertBoundHotkeyPressed) {
-            List<BoundPoint> boundPointList = boundPoints;
-            if (boundPointList.size() >= 2) {
-                List<BoundPoint> twoClosest = findClosestBoundPoints(position);
-                int index = getLowestBoundPointIndex(twoClosest);
-                if (index >= 0) index += 1;
-                if (index > boundPointList.size() - 1) index = 0;
-                if (getHighestBoundPointIndex(twoClosest) == boundPointList.size() - 1 &&
-                        getLowestBoundPointIndex(twoClosest) == 0) index = 0;
-                BoundPoint preceding = boundPointList.get(index);
+            if (boundPoints.size() >= 2) {
+                int precedingIndex = calculateInsertionIndex(position);
                 BoundPoint wrapped = new BoundPoint(position, this.parentLayer);
-                int precedingIndex = boundPoints.indexOf(preceding);
                 EditDispatch.postPointInserted(this, wrapped, precedingIndex);
+                log.info(precedingIndex);
+                if (mirrorMode) {
+                    if (getMirroredCounterpart(wrapped) == null) {
+                        Point2D counterpartPosition = createCounterpartPosition(position);
+                        int precedingCounterpartIndex = calculateInsertionIndex(counterpartPosition);
+                        if (precedingCounterpartIndex == precedingIndex && boundPoints.size() > 3) {
+                            precedingCounterpartIndex -= 1;
+                        }
+                        log.info(precedingCounterpartIndex);
+                        BoundPoint wrappedCounterpart = new BoundPoint(counterpartPosition, this.parentLayer);
+                        EditDispatch.postPointInserted(this, wrappedCounterpart, precedingCounterpartIndex);
+                    }
+                }
             }
         } else if (appendBoundHotkeyPressed) {
             BoundPoint wrapped = new BoundPoint(position, this.parentLayer);
             EditDispatch.postPointAdded(this, wrapped);
         }
+    }
+
+    private int calculateInsertionIndex(Point2D position) {
+        List<BoundPoint> twoClosest = findClosestBoundPoints(position);
+        int index = getLowestBoundPointIndex(twoClosest);
+        if (index >= 0) index += 1;
+        if (index > boundPoints.size() - 1) index = 0;
+        if (getHighestBoundPointIndex(twoClosest) == boundPoints.size() - 1 &&
+                getLowestBoundPointIndex(twoClosest) == 0) {
+            index = 0;
+        }
+        BoundPoint preceding = boundPoints.get(index);
+        return boundPoints.indexOf(preceding);
     }
 
     @SuppressWarnings("unused")
@@ -270,10 +320,16 @@ public final class BoundPointsPainter extends AbstractPointPainter {
     @Override
     public void paint(Graphics2D g, AffineTransform worldToScreen, double w, double h) {
         if (!isShown()) return;
-        List<BoundPoint> bPoints = this.boundPoints;
-        if (bPoints.isEmpty()) return;
         Stroke origStroke = g.getStroke();
         Paint origPaint = g.getPaint();
+        List<BoundPoint> bPoints = this.boundPoints;
+        if (bPoints.isEmpty()) {
+            this.paintIfBoundsEmpty(g, worldToScreen);
+            g.setStroke(origStroke);
+            g.setPaint(origPaint);
+            return;
+        }
+        drawSelectionHighlight(g, worldToScreen);
         BoundPoint boundPoint = bPoints.get(bPoints.size() - 1);
         Point2D prev = worldToScreen.transform(boundPoint.getPosition(), null);
         for (BoundPoint p : bPoints) {
@@ -294,25 +350,117 @@ public final class BoundPointsPainter extends AbstractPointPainter {
         super.paintDelegates(g, worldToScreen, w, h);
     }
 
+    private void drawSelectionHighlight(Graphics2D g, AffineTransform worldToScreen) {
+        WorldPoint selection = this.getSelected();
+        if (selection != null) {
+            BoundPointsPainter.paintPointDot(g, worldToScreen, selection.getPosition(), 2.0f);
+            WorldPoint counterpart = this.getMirroredCounterpart(selection);
+            if (counterpart != null) {
+                BoundPointsPainter.paintPointDot(g, worldToScreen, counterpart.getPosition(), 2.0f);
+            }
+        }
+    }
+
+    private void paintIfBoundsEmpty(Graphics2D g, AffineTransform worldToScreen) {
+        ViewerControl viewerControl = viewerPanel.getControls();
+        Point2D cursor = viewerControl.getAdjustedCursor();
+        AffineTransform screenToWorld = viewerPanel.getScreenToWorld();
+        Point2D adjustedWorldCursor = Utility.correctAdjustedCursor(cursor, screenToWorld);
+        Point2D worldCounterpart = this.createCounterpartPosition(adjustedWorldCursor);
+        boolean hotkeyPressed = appendBoundHotkeyPressed || insertBoundHotkeyPressed;
+        if (!isInteractionEnabled() || !hotkeyPressed) return;
+        BoundPointsPainter.paintPointDot(g, worldToScreen, adjustedWorldCursor, 1.0f);
+        if (ControlPredicates.isMirrorModeEnabled()) {
+            Point2D adjustedScreenCursor = worldToScreen.transform(adjustedWorldCursor, null);
+            Point2D adjustedScreenCounterpart = worldToScreen.transform(worldCounterpart, null);
+            BoundPointsPainter.paintPointDot(g, worldToScreen, worldCounterpart, 1.0f);
+            Utility.drawBorderedLine(g, adjustedScreenCursor, adjustedScreenCounterpart, Color.WHITE);
+        }
+    }
+
+
     private void paintCreationGuidelines(Graphics2D g, AffineTransform worldToScreen,
                                          Point2D prev, Point2D first) {
         ViewerControl viewerControl = viewerPanel.getControls();
         Point2D cursor = viewerControl.getAdjustedCursor();
         AffineTransform screenToWorld = viewerPanel.getScreenToWorld();
-        Point2D adjusted = worldToScreen.transform(Utility.correctAdjustedCursor(cursor, screenToWorld), null);
+        Point2D adjustedWorldCursor = Utility.correctAdjustedCursor(cursor, screenToWorld);
+        Point2D adjustedScreenCursor = worldToScreen.transform(adjustedWorldCursor, null);
+        Point2D worldCounterpart = this.createCounterpartPosition(adjustedWorldCursor);
+        Point2D adjustedScreenCounterpart = worldToScreen.transform(worldCounterpart, null);
+        boolean mirrorMode = ControlPredicates.isMirrorModeEnabled();
         if (appendBoundHotkeyPressed) {
-            Utility.drawBorderedLine(g, prev, adjusted, Color.WHITE);
-            Utility.drawBorderedLine(g, adjusted, first, Color.WHITE);
+            if (mirrorMode) {
+                Utility.drawBorderedLine(g, prev, adjustedScreenCursor, Color.WHITE);
+                Utility.drawBorderedLine(g, adjustedScreenCursor, adjustedScreenCounterpart, Color.WHITE);
+                Utility.drawBorderedLine(g, adjustedScreenCounterpart, first, Color.WHITE);
+            } else {
+                BoundPointsPainter.drawGuidelines(g, prev, first, adjustedScreenCursor);
+            }
         } else if (insertBoundHotkeyPressed) {
-            Point2D transformed = screenToWorld.transform(adjusted, null);
-            List<BoundPoint> closest = this.findClosestBoundPoints(transformed);
-            BoundPoint precedingPoint = closest.get(1);
-            Point2D preceding = worldToScreen.transform(precedingPoint.getPosition(), null);
-            BoundPoint subsequentPoint = closest.get(0);
-            Point2D subsequent = worldToScreen.transform(subsequentPoint.getPosition(), null);
-            Utility.drawBorderedLine(g, preceding, adjusted, Color.WHITE);
-            Utility.drawBorderedLine(g, subsequent, adjusted, Color.WHITE);
+            this.handleInsertionGuides(g, worldToScreen,
+                    adjustedWorldCursor, worldCounterpart);
         }
+        // Also paint dots where the points would be placed.
+        BoundPointsPainter.paintPointDot(g, worldToScreen, adjustedWorldCursor, 1.0f);
+        if (mirrorMode) {
+            BoundPointsPainter.paintPointDot(g, worldToScreen, worldCounterpart, 1.0f);
+        }
+    }
+
+    private static void paintPointDot(Graphics2D g, AffineTransform worldToScreen,
+                                      Point2D point, float radiusMult) {
+        Color originalColor = g.getColor();
+        g.setColor(Color.WHITE);
+        Shape worldDot = Utility.createCircle(point, 0.25f * radiusMult);
+        Shape screenDot = worldToScreen.createTransformedShape(worldDot);
+        Point2D screenPoint = worldToScreen.transform(point, null);
+        RectangularShape screenOuterDot = Utility.createCircle(screenPoint, 6.0f * radiusMult);
+        int x = (int) screenOuterDot.getX();
+        int y = (int) screenOuterDot.getY();
+        int width = (int) screenOuterDot.getWidth();
+        int height = (int) screenOuterDot.getHeight();
+        g.fill(screenDot);
+        g.drawOval(x, y, width, height);
+        g.setColor(originalColor);
+    }
+
+    @SuppressWarnings("DuplicatedCode")
+    private void handleInsertionGuides(Graphics2D g, AffineTransform worldToScreen,
+                                       Point2D adjustedWorldCursor, Point2D worldCounterpart) {
+        List<BoundPoint> closest = this.findClosestBoundPoints(adjustedWorldCursor);
+        BoundPoint precedingPoint = closest.get(1);
+        Point2D preceding = worldToScreen.transform(precedingPoint.getPosition(), null);
+        BoundPoint subsequentPoint = closest.get(0);
+        Point2D subsequent = worldToScreen.transform(subsequentPoint.getPosition(), null);
+        Point2D transformed = worldToScreen.transform(adjustedWorldCursor, null);
+
+        List<BoundPoint> closestToCounterpart = this.findClosestBoundPoints(worldCounterpart);
+        BoundPoint precedingToCounterpart = closestToCounterpart.get(1);
+        Point2D precedingTC = worldToScreen.transform(precedingToCounterpart.getPosition(), null);
+        BoundPoint subsequentToCounterpart = closestToCounterpart.get(0);
+        Point2D subsequentTC = worldToScreen.transform(subsequentToCounterpart.getPosition(), null);
+        Point2D transformedCounterpart = worldToScreen.transform(worldCounterpart, null);
+
+        boolean crossingEmerged = preceding.equals(precedingTC) || subsequent.equals(subsequentTC);
+
+        if (ControlPredicates.isMirrorModeEnabled()) {
+            if (crossingEmerged) {
+                Utility.drawBorderedLine(g, preceding, transformed, Color.WHITE);
+                Utility.drawBorderedLine(g, transformed, transformedCounterpart, Color.WHITE);
+                Utility.drawBorderedLine(g, transformedCounterpart, subsequent, Color.WHITE);
+            } else {
+                BoundPointsPainter.drawGuidelines(g, preceding, subsequent, transformed);
+                BoundPointsPainter.drawGuidelines(g, precedingTC, subsequentTC, transformedCounterpart);
+            }
+        } else {
+            BoundPointsPainter.drawGuidelines(g, preceding, subsequent, transformed);
+        }
+    }
+
+    private static void drawGuidelines(Graphics2D g, Point2D preceding, Point2D subsequent, Point2D cursor) {
+        Utility.drawBorderedLine(g, preceding, cursor, Color.WHITE);
+        Utility.drawBorderedLine(g, subsequent, cursor, Color.WHITE);
     }
 
 }

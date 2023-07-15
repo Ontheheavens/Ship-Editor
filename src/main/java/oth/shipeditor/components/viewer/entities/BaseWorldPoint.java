@@ -18,6 +18,7 @@ import oth.shipeditor.components.CoordsDisplayMode;
 import oth.shipeditor.components.viewer.InstrumentMode;
 import oth.shipeditor.components.viewer.layers.LayerPainter;
 import oth.shipeditor.components.viewer.layers.ShipLayer;
+import oth.shipeditor.utility.Utility;
 
 import java.awt.*;
 import java.awt.geom.AffineTransform;
@@ -143,9 +144,7 @@ public class BaseWorldPoint implements WorldPoint {
     }
 
     private Shape createWorldConstantPaintPart(AffineTransform worldToScreen) {
-        float radius = 0.25f;
-        Shape dot = new Ellipse2D.Double(position.getX() - radius, position.getY() - radius,
-                2 * radius, 2 * radius);
+        Shape dot = Utility.createCircle(this.position, 0.25f);
         return worldToScreen.createTransformedShape(dot);
     }
 
@@ -153,10 +152,7 @@ public class BaseWorldPoint implements WorldPoint {
         Point2D point = new Point2D.Double(position.getX(), position.getY());
         Point2D dest = worldToScreen.transform(point, null);
         float radius = 6.0f;
-        double destX = dest.getX();
-        double destY = dest.getY();
-        return new Ellipse2D.Double((int) destX - radius, (int) destY - radius,
-                radius * 2, radius * 2);
+        return Utility.createCircle(dest, radius);
     }
 
     protected Color createHoverColor() {

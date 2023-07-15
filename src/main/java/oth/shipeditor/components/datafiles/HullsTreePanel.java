@@ -4,6 +4,7 @@ import lombok.extern.log4j.Log4j2;
 import org.kordamp.ikonli.boxicons.BoxiconsRegular;
 import org.kordamp.ikonli.swing.FontIcon;
 import oth.shipeditor.communication.EventBus;
+import oth.shipeditor.communication.events.components.GameDataPanelResized;
 import oth.shipeditor.communication.events.files.HullFolderWalked;
 import oth.shipeditor.communication.events.files.HullTreeCleanupQueued;
 import oth.shipeditor.communication.events.files.HullTreeExpansionQueued;
@@ -95,6 +96,7 @@ class HullsTreePanel extends DataTreePanel {
             DefaultMutableTreeNode node = (DefaultMutableTreeNode) selectedNode.getLastPathComponent();
             if (node.getUserObject() instanceof ShipCSVEntry checked) {
                 updateEntryPanel(checked);
+                EventBus.publish(new GameDataPanelResized(this.getMinimumSize()));
             }
         });
         tree.addMouseListener(new DoubleClickLayerLoader());

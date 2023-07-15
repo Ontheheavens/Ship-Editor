@@ -11,6 +11,7 @@ import oth.shipeditor.communication.events.viewer.points.RadiusDragQueued;
 import oth.shipeditor.components.viewer.InstrumentMode;
 import oth.shipeditor.components.viewer.entities.BaseWorldPoint;
 import oth.shipeditor.components.viewer.entities.ShipCenterPoint;
+import oth.shipeditor.components.viewer.entities.WorldPoint;
 import oth.shipeditor.components.viewer.layers.LayerPainter;
 import oth.shipeditor.representation.Hull;
 import oth.shipeditor.undo.EditDispatch;
@@ -90,6 +91,11 @@ public class CenterPointsPainter extends AbstractPointPainter {
         return super.isInteractionEnabled() && this.parentLayer.isLayerActive();
     }
 
+    @Override
+    public boolean isMirrorable() {
+        return false;
+    }
+
     public void initCenterPoint(Point2D translatedCenter, Hull hull) {
         this.centerPoint = new ShipCenterPoint(translatedCenter,
                 (float) hull.getCollisionRadius(), this.parentLayer);
@@ -127,8 +133,8 @@ public class CenterPointsPainter extends AbstractPointPainter {
      * @return null.
      */
     @Override
-    public BaseWorldPoint getMirroredCounterpart() {
-        return null;
+    public BaseWorldPoint getMirroredCounterpart(WorldPoint point) {
+        throw new UnsupportedOperationException("Mirrored operations unsupported by CenterPointPainters!");
     }
 
     @Override

@@ -7,7 +7,9 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionListener;
 import java.awt.geom.AffineTransform;
+import java.awt.geom.Ellipse2D;
 import java.awt.geom.Point2D;
+import java.awt.geom.RectangularShape;
 
 /**
  * @author Ontheheavens
@@ -29,6 +31,7 @@ public final class Utility {
     private static void drawBorderedLine(Graphics2D canvas, Point2D start, Point2D finish,
                                          Color innerColor, Color outerColor, float innerWidth, float outerWidth) {
         Stroke originalStroke = canvas.getStroke();
+        Color originalColor = canvas.getColor();
         canvas.setColor(outerColor);
         canvas.setStroke(new BasicStroke(outerWidth));
         canvas.drawLine((int) start.getX(), (int) start.getY(), (int) finish.getX(), (int) finish.getY());
@@ -36,6 +39,7 @@ public final class Utility {
         canvas.setStroke(new BasicStroke(innerWidth));
         canvas.drawLine((int) start.getX(), (int) start.getY(), (int) finish.getX(), (int) finish.getY());
         canvas.setStroke(originalStroke);
+        canvas.setColor(originalColor);
     }
 
     public static Point2D correctAdjustedCursor(Point2D adjustedCursor, AffineTransform screenToWorld) {
@@ -43,6 +47,11 @@ public final class Utility {
         double roundedX = Math.round(wP.getX() * 2) / 2.0;
         double roundedY = Math.round(wP.getY() * 2) / 2.0;
         return new Point2D.Double(roundedX, roundedY);
+    }
+
+    public static RectangularShape createCircle(Point2D position, float radius) {
+        return new Ellipse2D.Double(position.getX() - radius, position.getY() - radius,
+                2 * radius, 2 * radius);
     }
 
     public static JLabel getIconLabelWithBorder(Icon icon) {

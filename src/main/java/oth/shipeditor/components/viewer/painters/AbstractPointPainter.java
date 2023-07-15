@@ -9,7 +9,6 @@ import oth.shipeditor.communication.events.viewer.ViewerRepaintQueued;
 import oth.shipeditor.communication.events.viewer.control.ViewerCursorMoved;
 import oth.shipeditor.communication.events.viewer.points.*;
 import oth.shipeditor.components.viewer.control.ControlPredicates;
-import oth.shipeditor.components.viewer.control.PointSelectionMode;
 import oth.shipeditor.components.viewer.entities.BaseWorldPoint;
 import oth.shipeditor.components.viewer.entities.WorldPoint;
 import oth.shipeditor.undo.EditDispatch;
@@ -24,6 +23,7 @@ import java.util.List;
  * @author Ontheheavens
  * @since 29.05.2023
  */
+@SuppressWarnings("ClassWithTooManyMethods")
 @Log4j2
 public abstract class AbstractPointPainter implements Painter {
 
@@ -67,17 +67,22 @@ public abstract class AbstractPointPainter implements Painter {
         return interactionEnabled;
     }
 
+    @SuppressWarnings("BooleanMethodIsAlwaysInverted")
+    public abstract boolean isMirrorable();
+
+    @SuppressWarnings("OverlyComplexMethod")
     private void initChangeListeners() {
         EventBus.subscribe(event -> {
             if (event instanceof PointRemoveQueued && this.isInteractionEnabled()) {
-                BaseWorldPoint toRemove = this.getMousedOver();
-
-                // TODO: This is one of the spots where we will implement mirroring.
-
-                if (toRemove != null) {
-                    EditDispatch.postPointRemoved(this, toRemove);
-                } else if (selected != null) {
-                    EditDispatch.postPointRemoved(this, (BaseWorldPoint) selected);
+                if (selected == null) return;
+                boolean mirroringEnabled = ControlPredicates.isMirrorModeEnabled();
+                WorldPoint counterpart = null;
+                if (isMirrorable() && mirroringEnabled) {
+                    counterpart = getMirroredCounterpart(selected);
+                }
+                EditDispatch.postPointRemoved(this, (BaseWorldPoint) selected);
+                if (counterpart != null) {
+                    EditDispatch.postPointRemoved(this, (BaseWorldPoint) counterpart);
                 }
             }
         });
@@ -98,9 +103,26 @@ public abstract class AbstractPointPainter implements Painter {
                 double roundedX = Math.round(x * 2) / 2.0;
                 double roundedY = Math.round(y * 2) / 2.0;
                 Point2D changedPosition = new Point2D.Double(roundedX, roundedY);
+
+                WorldPoint counterpart = null;
+                Point2D counterpartNewPosition = null;
+                boolean mirroringEnabled = ControlPredicates.isMirrorModeEnabled();
+                if (isMirrorable() && mirroringEnabled) {
+                    counterpart = getMirroredCounterpart(this.selected);
+                    if (counterpart != null) {
+                        counterpartNewPosition = createCounterpartPosition(changedPosition);
+                    }
+                }
                 EditDispatch.postPointDragged(this.selected, changedPosition);
+                if (counterpartNewPosition != null) {
+                    EditDispatch.postPointDragged(counterpart, counterpartNewPosition);
+                }
             }
         });
+    }
+
+    protected Point2D createCounterpartPosition(Point2D toMirror) {
+        throw new UnsupportedOperationException("Point mirroring supported only for specific point painters!");
     }
 
     @SuppressWarnings("WeakerAccess")
@@ -119,15 +141,16 @@ public abstract class AbstractPointPainter implements Painter {
     }
 
     protected void selectPointConditionally() {
-        if (this.isMousedOverPoint()) {
-            if (this.selected != null) {
-                this.selected.setSelected(false);
-            }
-            this.selected = this.getMousedOver();
-            this.selected.setSelected(true);
-            EventBus.publish(new PointSelectedConfirmed(this.selected));
-            EventBus.publish(new ViewerRepaintQueued());
+        if (!this.isMousedOverPoint()) return;
+        if (this.selected != null) {
+            this.selected.setSelected(false);
         }
+        this.selected = this.getMousedOver();
+        this.selected.setSelected(true);
+        EventBus.publish(new PointSelectedConfirmed(this.selected));
+        EventBus.publish(new ViewerRepaintQueued());
+
+
     }
 
     protected abstract List<? extends BaseWorldPoint> getPointsIndex();
@@ -138,7 +161,7 @@ public abstract class AbstractPointPainter implements Painter {
 
     public abstract int getIndexOfPoint(BaseWorldPoint point);
 
-    public abstract BaseWorldPoint getMirroredCounterpart();
+    public abstract WorldPoint getMirroredCounterpart(WorldPoint point);
 
     protected abstract BaseWorldPoint getTypeReference();
 
@@ -176,6 +199,9 @@ public abstract class AbstractPointPainter implements Painter {
         this.removePointFromIndex(point);
         EventBus.publish(new PointRemovedConfirmed(point));
         Painter painter = point.getPainter();
+        if (this.selected == point) {
+            this.setSelected(null);
+        }
         this.delegates.remove(painter);
     }
 
