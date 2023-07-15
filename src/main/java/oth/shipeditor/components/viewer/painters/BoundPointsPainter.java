@@ -111,11 +111,16 @@ public final class BoundPointsPainter extends AbstractPointPainter {
         List<BoundPoint> bounds = this.getBoundPoints();
         Point2D pointPosition = point.getPosition();
         Point2D counterpartPosition = this.createCounterpartPosition(pointPosition);
-        double threshold = 2.0d; // Adjust the threshold value as needed; default 2 scaled pixels.
+        double threshold = ControlPredicates.getMirrorPointLinkageTolerance();
         BoundPoint closestBound = null;
         double closestDistance = Double.MAX_VALUE;
         for (BoundPoint bound : bounds) {
-            double distance = counterpartPosition.distance(bound.getPosition());
+            Point2D position = bound.getPosition();
+            if (position.equals(counterpartPosition)) {
+                closestBound = bound;
+                return closestBound;
+            }
+            double distance = counterpartPosition.distance(position);
             if (distance < closestDistance) {
                 closestBound = bound;
                 closestDistance = distance;
@@ -222,40 +227,39 @@ public final class BoundPointsPainter extends AbstractPointPainter {
         boolean mirrorMode = ControlPredicates.isMirrorModeEnabled();
         if (insertBoundHotkeyPressed) {
             if (boundPoints.size() >= 2) {
-                int precedingIndex = calculateInsertionIndex(position);
+                BoundPoint preceding = getInsertBefore(position);
                 BoundPoint wrapped = new BoundPoint(position, this.parentLayer);
-                EditDispatch.postPointInserted(this, wrapped, precedingIndex);
-                log.info(precedingIndex);
+                BoundPoint wrappedCounterpart = null;
+                BoundPoint precedingCounterpart = null;
                 if (mirrorMode) {
                     if (getMirroredCounterpart(wrapped) == null) {
                         Point2D counterpartPosition = createCounterpartPosition(position);
-                        int precedingCounterpartIndex = calculateInsertionIndex(counterpartPosition);
-                        if (precedingCounterpartIndex == precedingIndex && boundPoints.size() > 3) {
-                            precedingCounterpartIndex -= 1;
-                        }
-                        log.info(precedingCounterpartIndex);
-                        BoundPoint wrappedCounterpart = new BoundPoint(counterpartPosition, this.parentLayer);
-                        EditDispatch.postPointInserted(this, wrappedCounterpart, precedingCounterpartIndex);
+                        precedingCounterpart = getInsertBefore(counterpartPosition);
+                        wrappedCounterpart = new BoundPoint(counterpartPosition, this.parentLayer);
                     }
+                }
+                EditDispatch.postPointInserted(this, wrapped, boundPoints.indexOf(preceding));
+                if (wrappedCounterpart != null) {
+                    EditDispatch.postPointInserted(this, wrappedCounterpart,
+                            boundPoints.indexOf(precedingCounterpart));
                 }
             }
         } else if (appendBoundHotkeyPressed) {
             BoundPoint wrapped = new BoundPoint(position, this.parentLayer);
             EditDispatch.postPointAdded(this, wrapped);
+            if (mirrorMode) {
+                if (getMirroredCounterpart(wrapped) == null) {
+                    Point2D counterpartPosition = createCounterpartPosition(position);
+                    BoundPoint wrappedCounterpart = new BoundPoint(counterpartPosition, this.parentLayer);
+                    EditDispatch.postPointInserted(this, wrappedCounterpart, 0);
+                }
+            }
         }
     }
 
-    private int calculateInsertionIndex(Point2D position) {
+    private BoundPoint getInsertBefore(Point2D position) {
         List<BoundPoint> twoClosest = findClosestBoundPoints(position);
-        int index = getLowestBoundPointIndex(twoClosest);
-        if (index >= 0) index += 1;
-        if (index > boundPoints.size() - 1) index = 0;
-        if (getHighestBoundPointIndex(twoClosest) == boundPoints.size() - 1 &&
-                getLowestBoundPointIndex(twoClosest) == 0) {
-            index = 0;
-        }
-        BoundPoint preceding = boundPoints.get(index);
-        return boundPoints.indexOf(preceding);
+        return twoClosest.get(1);
     }
 
     @SuppressWarnings("unused")
@@ -280,41 +284,25 @@ public final class BoundPointsPainter extends AbstractPointPainter {
         }
     }
 
-    private List<BoundPoint> findClosestBoundPoints(Point2D cursor) {
-        List<BoundPoint> pointList = new ArrayList<>(this.boundPoints);
-        pointList.add(pointList.get(0)); // Add first point to end of list.
-        BoundPoint closestPoint1 = pointList.get(0);
-        BoundPoint closestPoint2 = pointList.get(1);
+    private List<BoundPoint> findClosestBoundPoints(Point2D point) {
         double minDist = Double.MAX_VALUE;
-        for (int i = 0; i < pointList.size() - 1; i++) {
-            BoundPoint currentPoint = pointList.get(i);
-            BoundPoint nextPoint = pointList.get(i+1);
+        List<BoundPoint> closestPoints = new ArrayList<>(2);
+        List<BoundPoint> bounds = this.boundPoints;
+        int numPoints = bounds.size();
+        for (int i = 0; i < numPoints; i++) {
+            BoundPoint currentPoint = bounds.get(i);
+            // Wrap around to the first point if it's the last segment.
+            BoundPoint nextPoint = bounds.get((i + 1) % numPoints);
             Line2D segment = new Line2D.Double(currentPoint.getPosition(), nextPoint.getPosition());
-            double dist = segment.ptSegDist(cursor);
+            double dist = segment.ptSegDist(point);
             if (dist < minDist) {
-                closestPoint1 = currentPoint;
-                closestPoint2 = nextPoint;
                 minDist = dist;
+                closestPoints.clear();
+                closestPoints.add(currentPoint);
+                closestPoints.add(nextPoint);
             }
         }
-        List<BoundPoint> closestPoints = new ArrayList<>(2);
-        closestPoints.add(closestPoint1);
-        closestPoints.add(closestPoint2);
         return closestPoints;
-    }
-
-    private int getLowestBoundPointIndex(List<BoundPoint> closestPoints) {
-        List<BoundPoint> points = boundPoints;
-        int index1 = points.indexOf(closestPoints.get(0));
-        int index2 = points.indexOf(closestPoints.get(1));
-        return Math.min(index1, index2);
-    }
-
-    private int getHighestBoundPointIndex(List<BoundPoint> closestPoints) {
-        List<BoundPoint> points = this.boundPoints;
-        int index1 = points.indexOf(closestPoints.get(0));
-        int index2 = points.indexOf(closestPoints.get(1));
-        return Math.max(index1, index2);
     }
 
     @Override
@@ -377,7 +365,6 @@ public final class BoundPointsPainter extends AbstractPointPainter {
             Utility.drawBorderedLine(g, adjustedScreenCursor, adjustedScreenCounterpart, Color.WHITE);
         }
     }
-
 
     private void paintCreationGuidelines(Graphics2D g, AffineTransform worldToScreen,
                                          Point2D prev, Point2D first) {
@@ -446,9 +433,9 @@ public final class BoundPointsPainter extends AbstractPointPainter {
 
         if (ControlPredicates.isMirrorModeEnabled()) {
             if (crossingEmerged) {
-                Utility.drawBorderedLine(g, preceding, transformed, Color.WHITE);
+                Utility.drawBorderedLine(g, subsequent, transformed, Color.WHITE);
                 Utility.drawBorderedLine(g, transformed, transformedCounterpart, Color.WHITE);
-                Utility.drawBorderedLine(g, transformedCounterpart, subsequent, Color.WHITE);
+                Utility.drawBorderedLine(g, transformedCounterpart, preceding, Color.WHITE);
             } else {
                 BoundPointsPainter.drawGuidelines(g, preceding, subsequent, transformed);
                 BoundPointsPainter.drawGuidelines(g, precedingTC, subsequentTC, transformedCounterpart);

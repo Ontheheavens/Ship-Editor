@@ -5,6 +5,7 @@ import de.javagl.viewer.Predicates;
 import lombok.Getter;
 import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.viewer.control.MirrorModeChange;
+import oth.shipeditor.communication.events.viewer.control.PointLinkageToleranceChanged;
 import oth.shipeditor.communication.events.viewer.control.PointSelectionModeChange;
 import oth.shipeditor.communication.events.viewer.layers.LayerShipDataInitialized;
 
@@ -23,6 +24,9 @@ public final class ControlPredicates {
     @Getter
     private static boolean mirrorModeEnabled = true;
 
+    @Getter
+    private static int mirrorPointLinkageTolerance = 0;
+
     public static void initSelectionModeListening() {
         EventBus.subscribe(event -> {
             if (event instanceof PointSelectionModeChange checked) {
@@ -32,6 +36,11 @@ public final class ControlPredicates {
         EventBus.subscribe(event -> {
             if (event instanceof MirrorModeChange checked) {
                 mirrorModeEnabled = checked.enabled();
+            }
+        });
+        EventBus.subscribe(event -> {
+            if (event instanceof PointLinkageToleranceChanged checked) {
+                mirrorPointLinkageTolerance = checked.changed();
             }
         });
     }

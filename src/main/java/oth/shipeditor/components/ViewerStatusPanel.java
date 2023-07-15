@@ -8,6 +8,7 @@ import org.kordamp.ikonli.fluentui.FluentUiRegularMZ;
 import org.kordamp.ikonli.swing.FontIcon;
 import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.viewer.ViewerRepaintQueued;
+import oth.shipeditor.communication.events.viewer.control.MirrorModeChange;
 import oth.shipeditor.communication.events.viewer.control.ViewerCursorMoved;
 import oth.shipeditor.communication.events.viewer.control.ViewerTransformRotated;
 import oth.shipeditor.communication.events.viewer.control.ViewerZoomChanged;
@@ -23,6 +24,9 @@ import oth.shipeditor.utility.Utility;
 
 import javax.swing.*;
 import javax.swing.border.Border;
+import javax.swing.border.EmptyBorder;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import java.awt.*;
 import java.awt.geom.Point2D;
 import java.awt.image.BufferedImage;
@@ -43,24 +47,60 @@ final class ViewerStatusPanel extends JPanel {
 
     private final ShipViewable viewer;
 
-    private final JLabel dimensions;
+    private JLabel dimensions;
 
-    private final JLabel cursorCoords;
+    private JLabel cursorCoords;
 
-    private final JLabel zoom;
+    private JLabel zoom;
 
-    private final JLabel rotation;
+    private JLabel rotation;
 
     private Point2D cursorPoint;
 
+    private JPanel leftsideContainer;
+
     ViewerStatusPanel(ShipViewable viewable) {
+        this.setLayout(new BorderLayout());
+
         this.viewer = viewable;
+        this.leftsideContainer = createLeftsidePanel();
+
+        this.initListeners();
+        this.setDimensionsLabel(null);
+        this.setZoomLabel(zoomLevel);
+        this.setRotationLabel(rotationDegrees);
+        this.cursorPoint = new Point2D.Double();
+        this.updateCursorCoordsLabel();
+
+        this.add(leftsideContainer, BorderLayout.LINE_START);
+
+        JPanel rightPanel = new JPanel(new GridBagLayout());
+
+        GridBagConstraints gbcRight = new GridBagConstraints();
+        gbcRight.gridx = 1;
+        gbcRight.gridy = 0;
+        gbcRight.weightx = 1;
+        gbcRight.insets = new Insets(0, 0, 0, 10);
+        gbcRight.anchor = GridBagConstraints.LINE_END;
+
+        JCheckBox mirrorModeCheckbox = new JCheckBox("Mirror mode");
+        mirrorModeCheckbox.addItemListener(e -> {
+            boolean mirrorModeOn = mirrorModeCheckbox.isSelected();
+            EventBus.publish(new MirrorModeChange(mirrorModeOn));
+        });
+        mirrorModeCheckbox.setSelected(true);
+        rightPanel.add(mirrorModeCheckbox, gbcRight);
+        this.add(rightPanel, BorderLayout.CENTER);
+        this.setBorder(BorderFactory.createMatteBorder(1, 0, 0, 0, Color.LIGHT_GRAY));
+    }
+
+    private JPanel createLeftsidePanel() {
+        leftsideContainer = new JPanel();
 
         FontIcon dimensionIcon = FontIcon.of(FluentUiRegularMZ.SLIDE_SIZE_24, 20);
         dimensions = new JLabel("", dimensionIcon, SwingConstants.TRAILING);
         dimensions.setToolTipText("Width / height of active layer");
-
-        this.add(dimensions);
+        leftsideContainer.add(dimensions);
 
         this.addSeparator();
 
@@ -70,37 +110,30 @@ final class ViewerStatusPanel extends JPanel {
         cursorCoords.setToolTipText("Right-click to change coordinate system");
         JPopupMenu popupMenu = this.createCoordsMenu();
         cursorCoords.addMouseListener(new MouseoverLabelListener(popupMenu, cursorCoords));
-        this.add(cursorCoords);
+        leftsideContainer.add(cursorCoords);
 
         this.addSeparator();
 
         FontIcon zoomIcon = FontIcon.of(FluentUiRegularMZ.ZOOM_IN_20, 20);
         this.zoom = new JLabel("", zoomIcon, SwingConstants.TRAILING);
         this.zoom.setToolTipText("Zoom level");
-        this.add(this.zoom);
+        leftsideContainer.add(this.zoom);
 
         this.addSeparator();
 
         FontIcon rotationIcon = FontIcon.of(FluentUiRegularAL.ARROW_ROTATE_CLOCKWISE_20, 20);
         this.rotation = new JLabel("", rotationIcon, SwingConstants.TRAILING);
         this.rotation.setToolTipText("Rotation degrees");
-        this.add(this.rotation);
+        leftsideContainer.add(this.rotation);
 
-        this.setBorder(BorderFactory.createMatteBorder(1, 0, 0, 0, Color.LIGHT_GRAY));
-
-        this.initListeners();
-        this.setDimensionsLabel(null);
-        this.setZoomLabel(zoomLevel);
-        this.setRotationLabel(rotationDegrees);
-        this.cursorPoint = new Point2D.Double();
-        this.updateCursorCoordsLabel();
+        return leftsideContainer;
     }
 
     private void addSeparator() {
         JSeparator separator = new JSeparator(SwingConstants.VERTICAL);
         separator.setPreferredSize(new Dimension(2, 24));
         separator.setForeground(Color.GRAY);
-        this.add(separator);
+        leftsideContainer.add(separator);
     }
 
     @SuppressWarnings("ChainOfInstanceofChecks")

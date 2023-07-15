@@ -4,6 +4,7 @@ import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
 import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.components.BoundsPanelRepaintQueued;
+import oth.shipeditor.communication.events.viewer.control.PointLinkageToleranceChanged;
 import oth.shipeditor.communication.events.viewer.layers.LayerWasSelected;
 import oth.shipeditor.communication.events.viewer.points.BoundInsertedConfirmed;
 import oth.shipeditor.communication.events.viewer.points.PointAddConfirmed;
@@ -37,10 +38,26 @@ public final class BoundPointsPanel extends JPanel {
         Dimension listSize = new Dimension(boundPointContainer.getPreferredSize().width + 30,
                 boundPointContainer.getPreferredSize().height);
         scrollableContainer.setPreferredSize(listSize);
+        this.add(BoundPointsPanel.createPointLinkageToleranceSpinner(), BorderLayout.PAGE_START);
         this.add(scrollableContainer, BorderLayout.CENTER);
 
         this.initPointListener();
         this.initLayerListeners();
+    }
+
+    private static JPanel createPointLinkageToleranceSpinner() {
+        JPanel container = new JPanel();
+        Integer[] numbers = {0, 1, 2, 3, 4, 5};
+        SpinnerListModel model =  new SpinnerListModel(numbers);
+        JSpinner spinner = new JSpinner(model);
+        JLabel toleranceLabel = new JLabel("Mirror linkage tolerance:");
+        container.add(toleranceLabel);
+        container.add(spinner);
+        spinner.addChangeListener(e -> {
+            Integer current = (Integer) model.getValue();
+            EventBus.publish(new PointLinkageToleranceChanged(current));
+        });
+        return container;
     }
 
     private void initPointListener() {
