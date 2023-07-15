@@ -20,14 +20,11 @@ import oth.shipeditor.components.viewer.entities.ShipCenterPoint;
 import oth.shipeditor.components.viewer.layers.LayerPainter;
 import oth.shipeditor.components.viewer.layers.ShipLayer;
 import oth.shipeditor.utility.MouseoverLabelListener;
-import oth.shipeditor.utility.Utility;
 
 import javax.swing.*;
 import javax.swing.border.Border;
-import javax.swing.border.EmptyBorder;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 import java.awt.*;
+import java.awt.event.KeyEvent;
 import java.awt.geom.Point2D;
 import java.awt.image.BufferedImage;
 
@@ -35,6 +32,7 @@ import java.awt.image.BufferedImage;
  * @author Ontheheavens
  * @since 01.05.2023
  */
+@SuppressWarnings("ClassWithTooManyFields")
 @Log4j2
 final class ViewerStatusPanel extends JPanel {
 
@@ -89,6 +87,15 @@ final class ViewerStatusPanel extends JPanel {
             EventBus.publish(new MirrorModeChange(mirrorModeOn));
         });
         mirrorModeCheckbox.setSelected(true);
+        KeyboardFocusManager.getCurrentKeyboardFocusManager().addKeyEventDispatcher(ke -> {
+            int keyCode = ke.getKeyCode();
+            if (ke.getID() == KeyEvent.KEY_RELEASED && keyCode == KeyEvent.VK_SPACE) {
+                mirrorModeCheckbox.setSelected(!mirrorModeCheckbox.isSelected());
+            }
+            return false;
+        });
+        mirrorModeCheckbox.setMnemonic(KeyEvent.VK_SPACE);
+        mirrorModeCheckbox.setToolTipText("Spacebar to toggle");
         rightPanel.add(mirrorModeCheckbox, gbcRight);
         this.add(rightPanel, BorderLayout.CENTER);
         this.setBorder(BorderFactory.createMatteBorder(1, 0, 0, 0, Color.LIGHT_GRAY));

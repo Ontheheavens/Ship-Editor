@@ -77,7 +77,7 @@ public final class ShipViewerControls implements ViewerControl {
     private void initKeyBinding() {
         InputMap inputMap = parentViewer.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW);
         String deleteKey = "Delete";
-        inputMap.put(KeyStroke.getKeyStroke((char)KeyEvent.VK_DELETE), deleteKey );
+        inputMap.put(KeyStroke.getKeyStroke((char)KeyEvent.VK_DELETE), deleteKey);
         ActionMap actionMap = parentViewer.getActionMap();
         actionMap.put(deleteKey, new AbstractAction() {
             @Override
@@ -132,7 +132,8 @@ public final class ShipViewerControls implements ViewerControl {
     }
 
     @Override
-    public void mouseClicked(MouseEvent e) {}
+    public void mouseClicked(MouseEvent e) {
+    }
 
     @Override
     public void mousePressed(MouseEvent e) {
@@ -149,7 +150,9 @@ public final class ShipViewerControls implements ViewerControl {
             this.layerDragPoint.setLocation(e.getX() - transformed.getX(), e.getY() - transformed.getY());
         }
         this.tryBoundCreation();
-
+        if (ControlPredicates.removePointPredicate.test(e)) {
+            EventBus.publish(new PointRemoveQueued());
+        }
         ShipViewerControls.handlePointSelection(e);
     }
 

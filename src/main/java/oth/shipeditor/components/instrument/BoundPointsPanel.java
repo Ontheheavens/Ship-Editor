@@ -4,6 +4,7 @@ import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
 import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.components.BoundsPanelRepaintQueued;
+import oth.shipeditor.communication.events.components.ViewerFocusRequestQueued;
 import oth.shipeditor.communication.events.viewer.control.PointLinkageToleranceChanged;
 import oth.shipeditor.communication.events.viewer.layers.LayerWasSelected;
 import oth.shipeditor.communication.events.viewer.points.BoundInsertedConfirmed;
@@ -16,6 +17,10 @@ import oth.shipeditor.components.viewer.painters.BoundPointsPainter;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.FocusAdapter;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 
 /**
@@ -38,14 +43,14 @@ public final class BoundPointsPanel extends JPanel {
         Dimension listSize = new Dimension(boundPointContainer.getPreferredSize().width + 30,
                 boundPointContainer.getPreferredSize().height);
         scrollableContainer.setPreferredSize(listSize);
-        this.add(BoundPointsPanel.createPointLinkageToleranceSpinner(), BorderLayout.PAGE_START);
+        this.add(this.createPointLinkageToleranceSpinner(), BorderLayout.PAGE_START);
         this.add(scrollableContainer, BorderLayout.CENTER);
 
         this.initPointListener();
         this.initLayerListeners();
     }
 
-    private static JPanel createPointLinkageToleranceSpinner() {
+    private JPanel createPointLinkageToleranceSpinner() {
         JPanel container = new JPanel();
         Integer[] numbers = {0, 1, 2, 3, 4, 5};
         SpinnerListModel model =  new SpinnerListModel(numbers);
@@ -56,6 +61,13 @@ public final class BoundPointsPanel extends JPanel {
         spinner.addChangeListener(e -> {
             Integer current = (Integer) model.getValue();
             EventBus.publish(new PointLinkageToleranceChanged(current));
+        });
+        spinner.setValue(1);
+        spinner.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseExited(MouseEvent e) {
+                EventBus.publish(new ViewerFocusRequestQueued());
+            }
         });
         return container;
     }

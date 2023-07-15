@@ -36,16 +36,21 @@ public class HotkeyHelpPainter implements Painter {
             case BOUNDS -> {
                 String insertHint = "Press X to insert bound";
                 String appendHint = "Press Z to append bound";
+                String removeHint = "Right-click + CTRL or DEL to remove bound";
                 Rectangle2D insertBounds = StringBoundsUtils.computeStringBounds(insertHint, hintFont, null);
                 Rectangle2D appendBounds = StringBoundsUtils.computeStringBounds(appendHint, hintFont, null);
+                Rectangle2D removeBounds = StringBoundsUtils.computeStringBounds(removeHint, hintFont, null);
 
                 int insertX = (int) (w - insertBounds.getWidth() - 10);
-                int insertY = (int) (h - insertBounds.getHeight() + 10);
+                int insertY = (int) (h - insertBounds.getHeight() - 40);
                 int appendX = (int) (w - appendBounds.getWidth() - 10);
                 int appendY = (int) (h - appendBounds.getHeight() - 15);
+                int removeX = (int) (w - removeBounds.getWidth() - 6);
+                int removeY = (int) (h - removeBounds.getHeight() + 10);
 
                 g.drawString(insertHint, insertX, insertY);
                 g.drawString(appendHint, appendX, appendY);
+                g.drawString(removeHint, removeX, removeY);
             }
             default -> {
 

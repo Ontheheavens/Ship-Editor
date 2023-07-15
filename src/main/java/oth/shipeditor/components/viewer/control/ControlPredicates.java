@@ -7,7 +7,6 @@ import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.viewer.control.MirrorModeChange;
 import oth.shipeditor.communication.events.viewer.control.PointLinkageToleranceChanged;
 import oth.shipeditor.communication.events.viewer.control.PointSelectionModeChange;
-import oth.shipeditor.communication.events.viewer.layers.LayerShipDataInitialized;
 
 import java.awt.event.MouseEvent;
 import java.util.function.Predicate;
@@ -25,7 +24,7 @@ public final class ControlPredicates {
     private static boolean mirrorModeEnabled = true;
 
     @Getter
-    private static int mirrorPointLinkageTolerance = 0;
+    private static int mirrorPointLinkageTolerance;
 
     public static void initSelectionModeListening() {
         EventBus.subscribe(event -> {
@@ -53,6 +52,11 @@ public final class ControlPredicates {
     static final Predicate<MouseEvent> layerMovePredicate = Predicates.and(
             InputEventPredicates.buttonDown(1),
             InputEventPredicates.shiftDown()
+    );
+
+    static final Predicate<MouseEvent> removePointPredicate = Predicates.and(
+            InputEventPredicates.buttonDown(3),
+            InputEventPredicates.controlDown()
     );
 
     static final Predicate<MouseEvent> selectPointPredicate = Predicates.and(

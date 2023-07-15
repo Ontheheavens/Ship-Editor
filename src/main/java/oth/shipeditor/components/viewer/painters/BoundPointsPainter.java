@@ -37,6 +37,7 @@ import java.util.List;
  * @author Ontheheavens
  * @since 06.05.2023
  */
+@SuppressWarnings("OverlyComplexClass")
 @Log4j2
 public final class BoundPointsPainter extends AbstractPointPainter {
 

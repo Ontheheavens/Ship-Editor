@@ -4,6 +4,7 @@ import de.javagl.viewer.Viewer;
 import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
 import oth.shipeditor.communication.EventBus;
+import oth.shipeditor.communication.events.components.ViewerFocusRequestQueued;
 import oth.shipeditor.communication.events.viewer.ViewerBackgroundChanged;
 import oth.shipeditor.communication.events.viewer.ViewerRepaintQueued;
 import oth.shipeditor.communication.events.viewer.control.ViewerGuidesToggled;
@@ -28,6 +29,8 @@ import java.awt.datatransfer.Transferable;
 import java.awt.dnd.DnDConstants;
 import java.awt.dnd.DropTarget;
 import java.awt.dnd.DropTargetDropEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Point2D;
 import java.io.File;
@@ -87,6 +90,12 @@ public final class PrimaryShipViewer extends Viewer implements ShipViewable {
 
         this.hotkeyPainter = new HotkeyHelpPainter();
         this.addPainter(this.hotkeyPainter, 903);
+        this.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseEntered(MouseEvent e) {
+                PrimaryShipViewer.this.requestFocusInWindow();
+            }
+        });
 
         this.controls = ShipViewerControls.create(this);
         this.setMouseControl(this.controls);
@@ -100,6 +109,11 @@ public final class PrimaryShipViewer extends Viewer implements ShipViewable {
         EventBus.subscribe(event -> {
             if(event instanceof ViewerRepaintQueued) {
                 this.repaint();
+            }
+        });
+        EventBus.subscribe(event -> {
+            if(event instanceof ViewerFocusRequestQueued) {
+                this.requestFocusInWindow();
             }
         });
         EventBus.subscribe(event -> {
