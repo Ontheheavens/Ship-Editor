@@ -343,7 +343,7 @@ public final class BoundPointsPainter extends AbstractPointPainter {
         if (selection != null) {
             BoundPointsPainter.paintPointDot(g, worldToScreen, selection.getPosition(), 2.0f);
             WorldPoint counterpart = this.getMirroredCounterpart(selection);
-            if (counterpart != null) {
+            if (counterpart != null && ControlPredicates.isMirrorModeEnabled()) {
                 BoundPointsPainter.paintPointDot(g, worldToScreen, counterpart.getPosition(), 2.0f);
             }
         }
