@@ -6,6 +6,8 @@ import lombok.extern.log4j.Log4j2;
 import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.Events;
 import oth.shipeditor.communication.events.viewer.ViewerRepaintQueued;
+import oth.shipeditor.communication.events.viewer.layers.PainterOpacityChangeQueued;
+import oth.shipeditor.communication.events.viewer.layers.PainterVisibilityChanged;
 import oth.shipeditor.communication.events.viewer.points.BoundCreationQueued;
 import oth.shipeditor.communication.events.viewer.points.BoundInsertedConfirmed;
 import oth.shipeditor.communication.events.viewer.points.InstrumentModeChanged;
@@ -37,12 +39,9 @@ import java.util.List;
  * @author Ontheheavens
  * @since 06.05.2023
  */
-@SuppressWarnings("OverlyComplexClass")
+@SuppressWarnings({"OverlyComplexClass", "OverlyCoupledClass"})
 @Log4j2
 public final class BoundPointsPainter extends AbstractPointPainter {
-
-    // TODO: implement always-show-points checkbox toggle and separate interaction access check.
-    //  Should be unable to interact with bounds unless bound tab is active.
 
     @Getter
     private final List<BoundPoint> boundPoints;
@@ -75,36 +74,6 @@ public final class BoundPointsPainter extends AbstractPointPainter {
     @Override
     public boolean isMirrorable() {
         return true;
-    }
-
-    @Override
-    protected void selectPointConditionally() {
-        PointSelectionMode current = ControlPredicates.getSelectionMode();
-        if (current == PointSelectionMode.STRICT) {
-            super.selectPointConditionally();
-            return;
-        }
-        Point2D correctedCursor = AbstractPointPainter.getCorrectedCursor();
-        WorldPoint toSelect = null;
-        double minDistance = Double.MAX_VALUE;
-        for (BoundPoint point : this.boundPoints) {
-            Point2D position = point.getPosition();
-            double distance = position.distance(correctedCursor);
-            if (distance < minDistance) {
-                minDistance = distance;
-                toSelect = point;
-            }
-        }
-        WorldPoint selected = this.getSelected();
-        if (selected != null) {
-            selected.setSelected(false);
-        }
-        this.setSelected(toSelect);
-        if (toSelect != null) {
-            toSelect.setSelected(true);
-        }
-        EventBus.publish(new PointSelectedConfirmed(toSelect));
-        EventBus.publish(new ViewerRepaintQueued());
     }
 
     @Override
@@ -149,7 +118,7 @@ public final class BoundPointsPainter extends AbstractPointPainter {
     }
 
     @Override
-    protected List<BoundPoint> getPointsIndex() {
+    public List<BoundPoint> getPointsIndex() {
         return boundPoints;
     }
 
@@ -204,10 +173,28 @@ public final class BoundPointsPainter extends AbstractPointPainter {
         });
     }
 
+    @SuppressWarnings("DuplicatedCode")
     private void initModeListener() {
         EventBus.subscribe(event -> {
             if (event instanceof InstrumentModeChanged checked) {
                 setInteractionEnabled(checked.newMode() == InstrumentMode.BOUNDS);
+            }
+        });
+        EventBus.subscribe(event -> {
+            if (event instanceof PainterVisibilityChanged checked) {
+                Class<? extends AbstractPointPainter> painterClass = checked.painterClass();
+                if (!painterClass.isInstance(this) || !parentLayer.isLayerActive()) return;
+                this.setVisibilityMode(checked.changed());
+                EventBus.publish(new ViewerRepaintQueued());
+            }
+        });
+        EventBus.subscribe(event -> {
+            if (event instanceof PainterOpacityChangeQueued checked) {
+                Class<? extends AbstractPointPainter> painterClass = checked.painterClass();
+                if (!painterClass.isInstance(this)) return;
+                if (!this.parentLayer.isLayerActive() || !this.isInteractionEnabled()) return;
+                this.setPaintOpacity(checked.change());
+                EventBus.publish(new ViewerRepaintQueued());
             }
         });
     }
@@ -307,10 +294,25 @@ public final class BoundPointsPainter extends AbstractPointPainter {
     }
 
     @Override
+    protected boolean checkVisibility() {
+        PainterVisibility visibilityMode = getVisibilityMode();
+        boolean parentCheck = super.checkVisibility();
+        if (visibilityMode == PainterVisibility.SHOWN_WHEN_SELECTED && !parentLayer.isLayerActive()) return false;
+        return parentCheck;
+    }
+
+    @Override
     public void paint(Graphics2D g, AffineTransform worldToScreen, double w, double h) {
-        if (!isShown()) return;
+        if (!checkVisibility()) return;
         Stroke origStroke = g.getStroke();
         Paint origPaint = g.getPaint();
+
+        int rule = AlphaComposite.SRC_OVER;
+        float alpha = this.getPaintOpacity();
+        Composite old = g.getComposite();
+        Composite opacity = AlphaComposite.getInstance(rule, alpha) ;
+        g.setComposite(opacity);
+
         List<BoundPoint> bPoints = this.boundPoints;
         if (bPoints.isEmpty()) {
             this.paintIfBoundsEmpty(g, worldToScreen);
@@ -337,11 +339,12 @@ public final class BoundPointsPainter extends AbstractPointPainter {
         g.setStroke(origStroke);
         g.setPaint(origPaint);
         super.paintDelegates(g, worldToScreen, w, h);
+        g.setComposite(old);
     }
 
     private void drawSelectionHighlight(Graphics2D g, AffineTransform worldToScreen) {
         WorldPoint selection = this.getSelected();
-        if (selection != null) {
+        if (selection != null && isInteractionEnabled()) {
             BoundPointsPainter.paintPointDot(g, worldToScreen, selection.getPosition(), 2.0f);
             WorldPoint counterpart = this.getMirroredCounterpart(selection);
             if (counterpart != null && ControlPredicates.isMirrorModeEnabled()) {

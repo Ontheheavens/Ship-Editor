@@ -1,5 +1,6 @@
 package oth.shipeditor.components.viewer;
 
+import de.javagl.viewer.Painter;
 import de.javagl.viewer.Viewer;
 import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
@@ -21,6 +22,7 @@ import oth.shipeditor.components.viewer.painters.GuidesPainter;
 import oth.shipeditor.components.viewer.painters.HotkeyHelpPainter;
 import oth.shipeditor.components.viewer.painters.WorldPointsPainter;
 import oth.shipeditor.menubar.FileUtilities;
+import oth.shipeditor.undo.UndoOverseer;
 
 import javax.swing.*;
 import java.awt.*;
@@ -58,6 +60,7 @@ public final class PrimaryShipViewer extends Viewer implements ShipViewable {
     @Getter
     private final GuidesPainter guidesPainter;
 
+    @Getter
     private final HotkeyHelpPainter hotkeyPainter;
 
     @Getter
@@ -107,7 +110,7 @@ public final class PrimaryShipViewer extends Viewer implements ShipViewable {
 
     private void initViewerStateListeners() {
         EventBus.subscribe(event -> {
-            if(event instanceof ViewerRepaintQueued) {
+            if(event instanceof ViewerRepaintQueued || event instanceof LayerWasSelected) {
                 this.repaint();
             }
         });
@@ -156,19 +159,9 @@ public final class PrimaryShipViewer extends Viewer implements ShipViewable {
                 LayerPainter source = checked.source();
                 ShipLayer activeLayer = this.layerManager.getActiveLayer();
                 if (source != activeLayer.getPainter()) return;
-                this.addPainter(source.getCenterPointsPainter(), checked.ordering());
-                this.addPainter(source.getBoundsPainter(), checked.ordering());
-            }
-        });
-        EventBus.subscribe(event -> {
-            if (event instanceof LayerWasSelected checked) {
-                if (checked.old() != null) {
-                    PrimaryShipViewer.hideLayerPainters(checked.old());
+                for (Painter painter : source.getAllPainters()) {
+                    this.addPainter(painter, checked.ordering());
                 }
-                if (checked.selected() != null) {
-                    PrimaryShipViewer.showLayerPainters(checked.selected());
-                }
-                this.repaint();
             }
         });
         EventBus.subscribe(event -> {
@@ -197,26 +190,6 @@ public final class PrimaryShipViewer extends Viewer implements ShipViewable {
         return activeLayer.getPainter();
     }
 
-    private static void showLayerPainters(ShipLayer layer) {
-        LayerPainter mainPainter = layer.getPainter();
-        if (mainPainter == null) return;
-        List<AbstractPointPainter> layerPainters = mainPainter.getAllPainters();
-        for (AbstractPointPainter iterated : layerPainters) {
-            iterated.setShown(true);
-            log.info("Shown to viewer:{}", iterated);
-        }
-    }
-
-    private static void hideLayerPainters(ShipLayer layer) {
-        LayerPainter mainPainter = layer.getPainter();
-        if (mainPainter == null) return;
-        List<AbstractPointPainter> layerPainters = mainPainter.getAllPainters();
-        for (AbstractPointPainter iterated : layerPainters) {
-            iterated.setShown(false);
-            log.info("Hidden from viewer:{}", iterated);
-        }
-    }
-
     @Override
     public void loadLayer(ShipLayer layer) {
         LayerPainter newPainter = new LayerPainter(layer, this, layerCount);
@@ -242,6 +215,7 @@ public final class PrimaryShipViewer extends Viewer implements ShipViewable {
                 }
             }
         }
+        UndoOverseer.cleanupRemovedLayer(mainPainter);
         this.removePainter(layer.getPainter());
         --layerCount;
     }

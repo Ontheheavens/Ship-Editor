@@ -3,6 +3,7 @@ package oth.shipeditor.undo.edits;
 import oth.shipeditor.communication.events.Events;
 import oth.shipeditor.components.viewer.entities.BaseWorldPoint;
 import oth.shipeditor.components.viewer.entities.BoundPoint;
+import oth.shipeditor.components.viewer.entities.WorldPoint;
 import oth.shipeditor.components.viewer.painters.AbstractPointPainter;
 import oth.shipeditor.components.viewer.painters.BoundPointsPainter;
 import oth.shipeditor.undo.AbstractEdit;
@@ -12,7 +13,7 @@ import oth.shipeditor.undo.AbstractEdit;
  * @author Ontheheavens
  * @since 17.06.2023
  */
-public class PointAdditionEdit extends AbstractEdit {
+public class PointAdditionEdit extends AbstractEdit implements PointEdit {
 
     private final AbstractPointPainter pointPainter;
     private final BaseWorldPoint point;
@@ -27,6 +28,12 @@ public class PointAdditionEdit extends AbstractEdit {
         this.point = toAdd;
         this.insertionIndex = index;
     }
+
+    @Override
+    public WorldPoint getPoint() {
+        return point;
+    }
+
 
     @Override
     public void undo() {

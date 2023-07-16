@@ -1,11 +1,10 @@
-package oth.shipeditor.parsing;
+package oth.shipeditor.parsing.loading;
 
 import lombok.extern.log4j.Log4j2;
 import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.files.HullFolderWalked;
 import oth.shipeditor.communication.events.files.HullTreeCleanupQueued;
 import oth.shipeditor.communication.events.files.HullTreeExpansionQueued;
-import oth.shipeditor.menubar.FileUtilities;
 import oth.shipeditor.persistence.Settings;
 import oth.shipeditor.persistence.SettingsManager;
 import oth.shipeditor.representation.GameDataRepository;
@@ -91,7 +90,7 @@ class LoadShipDataAction extends AbstractAction {
         Path shipDataPath = Paths.get(folderPath, "data", HULLS, SHIP_DATA_CSV);
 
         log.info("Parsing ship CSV data at: {}..", shipDataPath);
-        List<Map<String, String>> csvData = FileUtilities.parseCSVTable(shipDataPath);
+        List<Map<String, String>> csvData = FileLoading.parseCSVTable(shipDataPath);
         log.info("Ship CSV data at {} retrieved successfully.", shipDataPath);
 
         List<File> shipFiles = new ArrayList<>();
@@ -108,7 +107,7 @@ class LoadShipDataAction extends AbstractAction {
         }
         Map<String, Hull> mappedHulls = new HashMap<>();
         for (File hullFile : shipFiles) {
-            Hull mapped = FileUtilities.loadHullFile(hullFile);
+            Hull mapped = FileLoading.loadHullFile(hullFile);
 
             mappedHulls.put(hullFile.getName(), mapped);
         }
@@ -137,7 +136,7 @@ class LoadShipDataAction extends AbstractAction {
 
         Map<String, Skin> mappedSkins = new HashMap<>();
         for (File skinFile : skinFiles) {
-            Skin mapped = FileUtilities.loadSkinFile(skinFile);
+            Skin mapped = FileLoading.loadSkinFile(skinFile);
             mapped.setContainingPackage(skinFolder);
             mappedSkins.put(skinFile.getName(), mapped);
         }

@@ -1,18 +1,23 @@
 package oth.shipeditor.components.viewer.painters;
 
 import lombok.Getter;
-import lombok.extern.log4j.Log4j2;
 import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.components.CentersPanelRepaintQueued;
 import oth.shipeditor.communication.events.viewer.ViewerRepaintQueued;
 import oth.shipeditor.communication.events.viewer.points.InstrumentModeChanged;
 import oth.shipeditor.communication.events.viewer.points.RadiusDragQueued;
+import oth.shipeditor.components.instrument.InstrumentTabsPane;
+import oth.shipeditor.components.instrument.centers.CenterPointMode;
+import oth.shipeditor.components.instrument.centers.HullPointsPanel;
 import oth.shipeditor.components.viewer.InstrumentMode;
 import oth.shipeditor.components.viewer.entities.BaseWorldPoint;
-import oth.shipeditor.components.viewer.entities.ShipCenterPoint;
+import oth.shipeditor.components.viewer.entities.ShieldCenterPoint;
 import oth.shipeditor.components.viewer.entities.WorldPoint;
 import oth.shipeditor.components.viewer.layers.LayerPainter;
+import oth.shipeditor.persistence.SettingsManager;
+import oth.shipeditor.representation.GameDataRepository;
 import oth.shipeditor.representation.Hull;
+import oth.shipeditor.representation.HullStyle;
 import oth.shipeditor.undo.EditDispatch;
 
 import java.awt.*;
@@ -20,30 +25,40 @@ import java.awt.event.KeyEvent;
 import java.awt.geom.Point2D;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 /**
- * Also intended to handle collision and shield radii and their painting.
  * @author Ontheheavens
- * @since 09.06.2023
+ * @since 16.07.2023
  */
-@Log4j2
-public class CenterPointsPainter extends AbstractPointPainter {
+public class ShieldPointPainter extends AbstractPointPainter{
 
     private final List<BaseWorldPoint> points = new ArrayList<>();
 
     @Getter
-    private ShipCenterPoint centerPoint;
+    private ShieldCenterPoint shieldCenterPoint;
 
     private final LayerPainter parentLayer;
 
-    private final int dragCollisionRadiusHotkey = KeyEvent.VK_C;
+    private final int dragShieldRadiusHotkey = KeyEvent.VK_S;
 
-    private boolean collisionRadiusHotkeyPressed;
+    private boolean shieldRadiusHotkeyPressed;
 
-    public CenterPointsPainter(LayerPainter parent) {
+    public ShieldPointPainter(LayerPainter parent) {
         this.parentLayer = parent;
         this.initModeListening();
         this.initHotkeys();
+        this.setInteractionEnabled(InstrumentTabsPane.getCurrentMode() == InstrumentMode.CENTERS);
+    }
+
+    public void initShieldPoint(Point2D translated, Hull hull) {
+        String styleID = hull.getStyle();
+        GameDataRepository dataRepository = SettingsManager.getGameData();
+        Map<String, HullStyle> allHullStyles = dataRepository.getAllHullStyles();
+        HullStyle hullStyle = allHullStyles.get(styleID);
+        this.shieldCenterPoint = new ShieldCenterPoint(translated,
+                (float) hull.getShieldRadius(), this.parentLayer, hullStyle);
+        this.addPoint(shieldCenterPoint);
     }
 
     private void initModeListening() {
@@ -55,11 +70,11 @@ public class CenterPointsPainter extends AbstractPointPainter {
         });
         EventBus.subscribe(event -> {
             if (event instanceof RadiusDragQueued checked && isInteractionEnabled()) {
-                if (!collisionRadiusHotkeyPressed) return;
-                Point2D centerPointPosition = this.centerPoint.getPosition();
-                float radius = (float) centerPointPosition.distance(checked.location());
+                if (!shieldRadiusHotkeyPressed) return;
+                Point2D pointPosition = this.shieldCenterPoint.getPosition();
+                float radius = (float) pointPosition.distance(checked.location());
                 float rounded = Math.round(radius * 2) / 2.0f;
-                EditDispatch.postCollisionRadiusChanged(this.centerPoint, rounded);
+                EditDispatch.postShieldRadiusChanged(this.shieldCenterPoint, rounded);
             }
         });
     }
@@ -67,16 +82,16 @@ public class CenterPointsPainter extends AbstractPointPainter {
     private void initHotkeys() {
         KeyboardFocusManager.getCurrentKeyboardFocusManager().addKeyEventDispatcher(ke -> {
             int keyCode = ke.getKeyCode();
-            boolean isCollisionHotkey = (keyCode == dragCollisionRadiusHotkey);
+            boolean isShieldHotkey = (keyCode == dragShieldRadiusHotkey);
             switch (ke.getID()) {
                 case KeyEvent.KEY_PRESSED:
-                    if (isCollisionHotkey) {
-                        this.collisionRadiusHotkeyPressed = true;
+                    if (isShieldHotkey) {
+                        this.shieldRadiusHotkeyPressed = true;
                     }
                     break;
                 case KeyEvent.KEY_RELEASED:
-                    if (isCollisionHotkey) {
-                        this.collisionRadiusHotkeyPressed = false;
+                    if (isShieldHotkey) {
+                        this.shieldRadiusHotkeyPressed = false;
                     }
                     break;
             }
@@ -87,7 +102,8 @@ public class CenterPointsPainter extends AbstractPointPainter {
 
     @Override
     public boolean isInteractionEnabled() {
-        return super.isInteractionEnabled() && this.parentLayer.isLayerActive();
+        boolean basicCheck = super.isInteractionEnabled() && this.parentLayer.isLayerActive();
+        return basicCheck && HullPointsPanel.getMode() == CenterPointMode.SHIELD;
     }
 
     @Override
@@ -95,21 +111,9 @@ public class CenterPointsPainter extends AbstractPointPainter {
         return false;
     }
 
-    public void initCenterPoint(Point2D translatedCenter, Hull hull) {
-        this.centerPoint = new ShipCenterPoint(translatedCenter,
-                (float) hull.getCollisionRadius(), this.parentLayer);
-        this.addPoint(centerPoint);
-    }
-
     @Override
     public List<BaseWorldPoint> getPointsIndex() {
         return points;
-    }
-
-    @Override
-    public void removePoint(BaseWorldPoint point) {
-        if (point instanceof ShipCenterPoint) return;
-        super.removePoint(point);
     }
 
     @Override
@@ -127,17 +131,14 @@ public class CenterPointsPainter extends AbstractPointPainter {
         return points.indexOf(point);
     }
 
-    /**
-     * Conceptually irrelevant for center points.
-     * @return null.
-     */
     @Override
-    public BaseWorldPoint getMirroredCounterpart(WorldPoint point) {
-        throw new UnsupportedOperationException("Mirrored operations unsupported by CenterPointPainters!");
+    public WorldPoint getMirroredCounterpart(WorldPoint point) {
+        throw new UnsupportedOperationException("Mirrored operations unsupported by ShieldPointPainters!");
     }
 
     @Override
     protected BaseWorldPoint getTypeReference() {
         return new BaseWorldPoint();
     }
+
 }

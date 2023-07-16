@@ -12,11 +12,12 @@ import oth.shipeditor.components.viewer.ShipViewable;
 import oth.shipeditor.components.viewer.layers.LayerManager;
 import oth.shipeditor.components.viewer.layers.LayerPainter;
 import oth.shipeditor.components.viewer.layers.ShipLayer;
-import oth.shipeditor.menubar.FileUtilities;
+import oth.shipeditor.parsing.loading.FileLoading;
 import oth.shipeditor.persistence.Initializations;
 import oth.shipeditor.persistence.SettingsManager;
 import oth.shipeditor.representation.GameDataRepository;
 import oth.shipeditor.representation.Hull;
+import oth.shipeditor.representation.HullStyle;
 import oth.shipeditor.representation.Skin;
 
 import javax.swing.*;
@@ -44,11 +45,14 @@ public final class Main {
 
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> {
+            // First four method calls are initialization block; the order of said calls is important.
             Main.configureLaf();
             PrimaryWindow window = PrimaryWindow.create();
             Initializations.updateStateFromSettings(window);
             Initializations.loadGameData(window);
+
             Main.testFilesNew(window);
+
             window.showGUI();
         });
     }
@@ -124,7 +128,7 @@ public final class Main {
         File spriteFile;
         try {
             spriteFile = new File(spritePath.toURI());
-            BufferedImage sprite = FileUtilities.loadSprite(spriteFile);
+            BufferedImage sprite = FileLoading.loadSprite(spriteFile);
             EventBus.publish(new SpriteOpened(sprite, spriteFile.getName()));
         } catch (URISyntaxException e) {
             e.printStackTrace();
@@ -133,7 +137,7 @@ public final class Main {
         try {
             URI url = dataPath.toURI();
             File hullFile = new File(url);
-            Hull hull = FileUtilities.loadHullFile(hullFile);
+            Hull hull = FileLoading.loadHullFile(hullFile);
             EventBus.publish(new HullFileOpened(hull, hullFile.getName()));
         } catch (URISyntaxException e) {
             e.printStackTrace();

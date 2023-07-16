@@ -2,7 +2,7 @@ package oth.shipeditor.components.datafiles.entities;
 
 import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
-import oth.shipeditor.menubar.FileUtilities;
+import oth.shipeditor.parsing.loading.FileLoading;
 import oth.shipeditor.utility.StringConstants;
 
 import java.io.File;
@@ -56,7 +56,7 @@ public class HullmodCSVEntry {
             path = "graphics/icons/intel/investigation.png";
         }
         Path spritePath = Path.of(path);
-        fetchedSpriteFile = FileUtilities.fetchDataFile(spritePath, packageFolderPath);
+        fetchedSpriteFile = FileLoading.fetchDataFile(spritePath, packageFolderPath);
         return fetchedSpriteFile;
     }
 

@@ -1,12 +1,23 @@
 package oth.shipeditor.components.instrument;
 
+import oth.shipeditor.communication.BusEventListener;
 import oth.shipeditor.communication.EventBus;
+import oth.shipeditor.communication.events.BusEvent;
 import oth.shipeditor.communication.events.viewer.layers.LayerOpacityChangeQueued;
 import oth.shipeditor.communication.events.viewer.layers.LayerWasSelected;
 import oth.shipeditor.components.viewer.layers.LayerPainter;
 import oth.shipeditor.components.viewer.layers.ShipLayer;
+import oth.shipeditor.utility.Pair;
+import oth.shipeditor.utility.StringConstants;
+import oth.shipeditor.utility.Utility;
 
 import javax.swing.*;
+import javax.swing.border.Border;
+import javax.swing.border.CompoundBorder;
+import javax.swing.border.EmptyBorder;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
+import java.awt.*;
 import java.util.Dictionary;
 import java.util.Hashtable;
 
@@ -22,8 +33,9 @@ final class LayerPropertiesPanel extends JPanel {
     private JSlider opacitySlider;
 
     LayerPropertiesPanel() {
+        this.setLayout(new BorderLayout());
         JPanel layerSettingsPanel = this.createLayerPanel();
-        this.add(layerSettingsPanel);
+        this.add(layerSettingsPanel, BorderLayout.CENTER);
         this.initListeners();
     }
 
@@ -41,25 +53,31 @@ final class LayerPropertiesPanel extends JPanel {
 
     private JPanel createLayerPanel() {
         JPanel layerSettingsPanel = new JPanel();
-        layerSettingsPanel.setLayout(new BoxLayout(layerSettingsPanel, BoxLayout.Y_AXIS));
-        layerSettingsPanel.setBorder(BorderFactory.createTitledBorder("Properties"));
-        opacitySlider = new JSlider(SwingConstants.HORIZONTAL,
-                0, 100, 100);
-        opacitySlider.setAlignmentX(0.0f);
-        opacitySlider.setEnabled(false);
-        opacitySlider.setSnapToTicks(true);
-        opacitySlider.addChangeListener(e -> {
+        layerSettingsPanel.setLayout(new BoxLayout(layerSettingsPanel, BoxLayout.PAGE_AXIS));
+
+        Border titled = BorderFactory.createTitledBorder(StringConstants.LAYER_PROPERTIES);
+        Border outsideBorder = new EmptyBorder(0, 6, 6, 6);
+        CompoundBorder compoundBorder = BorderFactory.createCompoundBorder(outsideBorder, titled);
+        layerSettingsPanel.setBorder(compoundBorder);
+
+        this.addOpacityWidget(layerSettingsPanel);
+
+        return layerSettingsPanel;
+    }
+
+    private void addOpacityWidget(JPanel layerSettingsPanel) {
+        ChangeListener changeListener = e -> {
             JSlider source = (JSlider)e.getSource();
             int opacity = source.getValue();
-            this.updateOpacityLabel(opacity);
+            updateOpacityLabel(opacity);
             float changedValue = opacity / 100.0f;
             EventBus.publish(new LayerOpacityChangeQueued(changedValue));
-        });
-        EventBus.subscribe(event -> {
+        };
+        BusEventListener eventListener = event -> {
             if (event instanceof LayerWasSelected checked) {
                 ShipLayer selected = checked.selected();
                 if (selected == null) {
-                    this.updateOpacityLabel(100);
+                    updateOpacityLabel(100);
                     opacitySlider.setValue(100);
                     return;
                 }
@@ -70,28 +88,19 @@ final class LayerPropertiesPanel extends JPanel {
                 } else {
                     value = (int) (painter.getSpriteOpacity() * 100.0f);
                 }
-                this.updateOpacityLabel(value);
+                updateOpacityLabel(value);
                 opacitySlider.setValue(value);
             }
-        });
-        Dictionary<Integer, JLabel> labelTable = new Hashtable<>();
-        labelTable.put(0, new JLabel("0%"));
-        labelTable.put(50, new JLabel("50%"));
-        labelTable.put(100, new JLabel("100%"));
-        opacitySlider.setLabelTable(labelTable);
-        opacitySlider.setMajorTickSpacing(50);
-        opacitySlider.setMinorTickSpacing(10);
-        opacitySlider.setPaintTicks(true);
-        opacitySlider.setPaintLabels(true);
-        opacityLabel = new JLabel();
-        opacityLabel.setAlignmentX(0.0f);
+        };
+        Pair<JSlider, JLabel> widgetComponents = Utility.createOpacityWidget(changeListener, eventListener);
+
+        opacitySlider = widgetComponents.getFirst();
+        opacityLabel = widgetComponents.getSecond();
         opacityLabel.setBorder(BorderFactory.createEmptyBorder(0, 6, 0, 0));
         this.updateOpacityLabel(100);
 
         layerSettingsPanel.add(opacityLabel);
         layerSettingsPanel.add(opacitySlider);
-
-        return layerSettingsPanel;
     }
 
 }

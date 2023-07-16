@@ -4,6 +4,7 @@ import de.javagl.viewer.Painter;
 import de.javagl.viewer.painters.LabelPainter;
 import oth.shipeditor.components.viewer.InstrumentMode;
 import oth.shipeditor.components.viewer.layers.LayerPainter;
+import oth.shipeditor.utility.Utility;
 
 import javax.swing.*;
 import java.awt.*;
@@ -65,22 +66,13 @@ public class BoundPoint extends FeaturePoint{
     protected Painter createSecondaryPainter() {
         return (g, worldToScreen, w, h) -> {
             Point2D center = worldToScreen.transform(getPosition(), null);
-            int x = (int) center.getX(), y = (int) center.getY(), radius = 5;
 
-            int[] xPoints = new int[6];
-            int[] yPoints = new int[6];
-
-            // Calculate the coordinates of the six points of the hexagon.
-            for (int i = 0; i < 6; i++) {
-                double angle = 2 * Math.PI / 6 * i;
-                xPoints[i] = x + (int) (radius * Math.cos(angle));
-                yPoints[i] = y + (int) (radius * Math.sin(angle));
-            }
+            Polygon hexagon = Utility.createHexagon(center, 5);
 
             Paint old = g.getPaint();
             g.setPaint(createBaseColor());
-            // Draw the filled hexagon.
-            g.fillPolygon(xPoints, yPoints, 6);
+            g.fillPolygon(hexagon);
+
             g.setPaint(old);
 
             this.paintCoordsLabel(g, worldToScreen, w, h);

@@ -4,6 +4,7 @@ import com.formdev.flatlaf.ui.FlatLineBorder;
 import oth.shipeditor.components.datafiles.entities.HullmodCSVEntry;
 import oth.shipeditor.components.datafiles.entities.ShipCSVEntry;
 import oth.shipeditor.menubar.FileUtilities;
+import oth.shipeditor.parsing.loading.FileLoading;
 import oth.shipeditor.persistence.SettingsManager;
 import oth.shipeditor.representation.GameDataRepository;
 import oth.shipeditor.representation.Hull;
@@ -18,7 +19,6 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.border.MatteBorder;
 import javax.swing.border.TitledBorder;
 import java.awt.*;
-import java.awt.image.BufferedImage;
 import java.io.File;
 import java.nio.file.Path;
 import java.util.Collection;
@@ -124,7 +124,7 @@ class ShipFilesSubpanel extends JPanel {
 
         labelContainer.add(Box.createRigidArea(ShipFilesSubpanel.createPadding()));
 
-        File spriteFile = FileUtilities.fetchDataFile(Path.of(spriteFileName),
+        File spriteFile = FileLoading.fetchDataFile(Path.of(spriteFileName),
                 selected.getPackageFolder());
         JLabel spriteFileNameLabel = new JLabel("Sprite file: : " + spriteFile.getName());
         spriteFileNameLabel.setBorder(ShipFilesSubpanel.createLabelBorder());
@@ -193,7 +193,7 @@ class ShipFilesSubpanel extends JPanel {
             HullmodCSVEntry entry = allHullmods.get(id);
             Map<String, String> rowData = entry.getRowData();
             String name = rowData.get("name");
-            Image iconImage = FileUtilities.loadSprite(entry.fetchHullmodSpriteFile());
+            Image iconImage = FileLoading.loadSprite(entry.fetchHullmodSpriteFile());
             int iconSize = 32;
             if (iconImage.getWidth(null) > iconSize || iconImage.getHeight(null) > iconSize) {
                 iconImage = iconImage.getScaledInstance(iconSize, iconSize, Image.SCALE_DEFAULT);

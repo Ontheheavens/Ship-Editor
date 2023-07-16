@@ -5,15 +5,12 @@ import lombok.extern.log4j.Log4j2;
 import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.files.HullFileOpened;
 import oth.shipeditor.communication.events.files.SkinFileOpened;
-import oth.shipeditor.communication.events.files.SpriteOpened;
-import oth.shipeditor.communication.events.viewer.layers.LayerCreationQueued;
-import oth.shipeditor.communication.events.viewer.layers.LastLayerSelectQueued;
 import oth.shipeditor.menubar.FileUtilities;
+import oth.shipeditor.parsing.loading.FileLoading;
 import oth.shipeditor.representation.Hull;
 import oth.shipeditor.representation.Skin;
 import oth.shipeditor.utility.StringConstants;
 
-import java.awt.image.BufferedImage;
 import java.io.File;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -88,7 +85,7 @@ public class ShipCSVEntry {
         }
 
         Path spriteFilePath = Path.of(spriteName);
-        File spriteFile = FileUtilities.fetchDataFile(spriteFilePath, packagePath);
+        File spriteFile = FileLoading.fetchDataFile(spriteFilePath, packagePath);
 
         FileUtilities.createLayerWithSprite(spriteFile);
         EventBus.publish(new HullFileOpened(this.hullFile, this.getHullFileName()));

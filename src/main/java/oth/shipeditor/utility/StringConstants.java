@@ -78,4 +78,8 @@ public interface StringConstants {
 
     String FILE_LOADING_ERROR = "File loading error!";
 
+    String LAYER_PROPERTIES = "Layer properties";
+
+    String TOGGLED_ON_PER_LAYER_BASIS = "Toggled on per-layer basis";
+
 }

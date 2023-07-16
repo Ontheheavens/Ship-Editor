@@ -5,16 +5,10 @@ import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.BusEvent;
 import oth.shipeditor.communication.events.Events;
 import oth.shipeditor.communication.events.viewer.control.ViewerMouseReleased;
-import oth.shipeditor.components.viewer.entities.BaseWorldPoint;
-import oth.shipeditor.components.viewer.entities.BoundPoint;
-import oth.shipeditor.components.viewer.entities.ShipCenterPoint;
-import oth.shipeditor.components.viewer.entities.WorldPoint;
+import oth.shipeditor.components.viewer.entities.*;
 import oth.shipeditor.components.viewer.painters.AbstractPointPainter;
 import oth.shipeditor.components.viewer.painters.BoundPointsPainter;
-import oth.shipeditor.undo.edits.CollisionRadiusEdit;
-import oth.shipeditor.undo.edits.PointAdditionEdit;
-import oth.shipeditor.undo.edits.PointDragEdit;
-import oth.shipeditor.undo.edits.PointRemovalEdit;
+import oth.shipeditor.undo.edits.*;
 
 import java.awt.geom.Point2D;
 
@@ -96,6 +90,29 @@ public final class EditDispatch {
             UndoOverseer.post(radiusEdit);
         }
         point.setCollisionRadius(radius);
+        Events.repaintView();
+    }
+
+    public static void postShieldRadiusChanged(ShieldCenterPoint point, float radius) {
+        float oldRadius = point.getShieldRadius();
+        ShieldRadiusEdit radiusEdit = new ShieldRadiusEdit(point, oldRadius, radius);
+        Edit previousEdit = UndoOverseer.getNextUndoable();
+        if (previousEdit instanceof ShieldRadiusEdit checked && !checked.isFinished()) {
+            radiusEdit.setFinished(true);
+            checked.add(radiusEdit);
+        } else {
+            EventBus.subscribe(new BusEventListener() {
+                @Override
+                public void handleEvent(BusEvent event) {
+                    if (event instanceof ViewerMouseReleased && !radiusEdit.isFinished()) {
+                        radiusEdit.setFinished(true);
+                        EventBus.unsubscribe(this);
+                    }
+                }
+            });
+            UndoOverseer.post(radiusEdit);
+        }
+        point.setShieldRadius(radius);
         Events.repaintView();
     }
 

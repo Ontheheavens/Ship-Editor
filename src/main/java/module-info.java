@@ -23,6 +23,8 @@
     exports oth.shipeditor.components;
     exports oth.shipeditor.components.viewer.painters;
     exports oth.shipeditor.components.viewer.entities;
+    exports oth.shipeditor.communication;
+    exports oth.shipeditor.communication.events;
 
     opens oth.shipeditor.components;
     exports oth.shipeditor.components.viewer.control;

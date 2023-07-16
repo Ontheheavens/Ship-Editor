@@ -6,14 +6,14 @@ import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.components.InstrumentSplitterResized;
 import oth.shipeditor.communication.events.viewer.ViewerRepaintQueued;
 import oth.shipeditor.communication.events.viewer.points.InstrumentModeChanged;
+import oth.shipeditor.components.instrument.centers.HullPointsPanel;
 import oth.shipeditor.components.viewer.InstrumentMode;
 import oth.shipeditor.utility.MinimizeListener;
 import oth.shipeditor.utility.MinimizerWidget;
+import oth.shipeditor.utility.StringConstants;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -116,7 +116,7 @@ public final class InstrumentTabsPane extends JTabbedPane {
         if (minimizer.isMinimized()) {
             minimizePrompt = "(Left-click to expand panel)";
         }
-        String layerPanelLabel = "Layer properties";
+        String layerPanelLabel = StringConstants.LAYER_PROPERTIES;
         String centerPanelLabel = "Ship center, collision, shield center and radius";
         String boundPanelLabel = "Ship bound polygon";
         this.setToolTipTextAt(indexOfComponent(layerPanel),

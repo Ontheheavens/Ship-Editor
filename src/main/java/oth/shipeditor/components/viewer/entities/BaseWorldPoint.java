@@ -11,10 +11,11 @@ import oth.shipeditor.communication.events.viewer.control.ViewerCursorMoved;
 import oth.shipeditor.communication.events.viewer.layers.LayerShipDataInitialized;
 import oth.shipeditor.communication.events.viewer.layers.LayerWasSelected;
 import oth.shipeditor.communication.events.viewer.points.AnchorOffsetConfirmed;
-import oth.shipeditor.communication.events.viewer.points.InstrumentModeChanged;
 import oth.shipeditor.communication.events.viewer.points.AnchorOffsetQueued;
+import oth.shipeditor.communication.events.viewer.points.InstrumentModeChanged;
 import oth.shipeditor.communication.events.viewer.status.CoordsModeChanged;
 import oth.shipeditor.components.CoordsDisplayMode;
+import oth.shipeditor.components.instrument.InstrumentTabsPane;
 import oth.shipeditor.components.viewer.InstrumentMode;
 import oth.shipeditor.components.viewer.layers.LayerPainter;
 import oth.shipeditor.components.viewer.layers.ShipLayer;
@@ -22,7 +23,6 @@ import oth.shipeditor.utility.Utility;
 
 import java.awt.*;
 import java.awt.geom.AffineTransform;
-import java.awt.geom.Ellipse2D;
 import java.awt.geom.Point2D;
 import java.awt.geom.RectangularShape;
 
@@ -32,10 +32,6 @@ import java.awt.geom.RectangularShape;
  */
 @Log4j2
 public class BaseWorldPoint implements WorldPoint {
-
-    // TODO: Introduce some form of visual indication of whether the points are interactable or not.
-    //  Likely this needs to be based on whether the respective instrument pane is opened.
-
 
     private static Point2D viewerCursor = new Point2D.Double();
 
@@ -50,7 +46,7 @@ public class BaseWorldPoint implements WorldPoint {
     private LayerPainter parentLayer;
 
     @Getter
-    private static InstrumentMode instrumentationMode;
+    private static InstrumentMode instrumentationMode = InstrumentTabsPane.getCurrentMode();
 
     @Getter
     private final Point2D position;
@@ -167,8 +163,8 @@ public class BaseWorldPoint implements WorldPoint {
         return new Color(0xBF000000, true);
     }
 
-    private boolean isInteractable() {
-        return instrumentationMode == getAssociatedMode();
+    protected boolean isInteractable() {
+        return instrumentationMode == getAssociatedMode() && parentLayer.isLayerActive();
     }
 
     public Painter getPointPainter() {

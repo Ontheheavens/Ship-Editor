@@ -41,7 +41,7 @@ public abstract class FeaturePoint extends BaseWorldPoint {
 
     private class ComposedPointPainter implements Painter {
 
-        private final Painter pointPainter = FeaturePoint.super.getPointPainter();
+        private final Painter pointPainter = FeaturePoint.this.getPointPainter();
         private final Painter secondaryPainter = FeaturePoint.this.secondPainter;
         private final AffineTransform delegateWorldToScreen = new AffineTransform();
 
@@ -49,7 +49,7 @@ public abstract class FeaturePoint extends BaseWorldPoint {
         public void paint(Graphics2D g, AffineTransform worldToScreen, double w, double h) {
             delegateWorldToScreen.setTransform(worldToScreen);
             secondaryPainter.paint(g, delegateWorldToScreen, w, h);
-            pointPainter.paint(g, worldToScreen, w, h);
+            pointPainter.paint(g, delegateWorldToScreen, w, h);
         }
 
     }

@@ -5,11 +5,17 @@ import lombok.Getter;
 import lombok.Setter;
 import oth.shipeditor.components.viewer.InstrumentMode;
 import oth.shipeditor.components.viewer.layers.LayerPainter;
+import oth.shipeditor.components.viewer.painters.CenterPointPainter;
+import oth.shipeditor.components.viewer.painters.ShieldPointPainter;
+import oth.shipeditor.utility.Utility;
 
 import java.awt.*;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Ellipse2D;
+import java.awt.geom.GeneralPath;
 import java.awt.geom.Point2D;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @author Ontheheavens
@@ -20,11 +26,21 @@ public class ShipCenterPoint extends FeaturePoint{
     @Getter @Setter
     private float collisionRadius;
 
-    private final Paint collisionCircleColor = new Color(0x33DCDC40, true);
+    private final Paint collisionCircleColor = new Color(0xFFDCDC40, true);
+
+    private final AffineTransform delegateWorldToScreen;
 
     public ShipCenterPoint(Point2D position, float radius, LayerPainter layer) {
         super(position, layer);
         this.collisionRadius = radius;
+        this.delegateWorldToScreen = new AffineTransform();
+    }
+
+    @Override
+    protected boolean isInteractable() {
+        LayerPainter layerPainter = super.getParentLayer();
+        CenterPointPainter painter = layerPainter.getCenterPointPainter();
+        return BaseWorldPoint.getInstrumentationMode() == getAssociatedMode() && painter.isInteractionEnabled();
     }
 
     @Override
@@ -36,10 +52,35 @@ public class ShipCenterPoint extends FeaturePoint{
     protected Painter createSecondaryPainter() {
         return (g, worldToScreen, w, h) -> {
             this.paintCollisionCircle(g, worldToScreen);
-            Point2D center = worldToScreen.transform(getPosition(), null);
-            int x = (int) center.getX(), y = (int) center.getY(), radius = 15;
-            g.drawLine(x - radius, y - radius, x + radius, y + radius);
-            g.drawLine(x - radius, y + radius, x + radius, y - radius);
+            Point2D position = this.getPosition();
+
+            int rule = AlphaComposite.SRC_OVER;
+            Composite old = g.getComposite();
+            Composite opacity = AlphaComposite.getInstance(rule, 1.0f) ;
+            g.setComposite(opacity);
+
+            Paint oldPaint = g.getPaint();
+            g.setPaint(Color.BLACK);
+
+            g.draw(Utility.createHexagon(worldToScreen.transform(position, null), 10));
+
+            g.setPaint(oldPaint);
+            g.setComposite(old);
+        };
+    }
+
+    @Override
+    public Painter getPointPainter() {
+        return (g, worldToScreen, w, h) -> {
+            int rule = AlphaComposite.SRC_OVER;
+            Composite old = g.getComposite();
+            Composite opacity = AlphaComposite.getInstance(rule, 1.0f) ;
+            g.setComposite(opacity);
+
+            Painter superPointPainter = super.getPointPainter();
+            superPointPainter.paint(g, worldToScreen, w, h);
+
+            g.setComposite(old);
         };
     }
 

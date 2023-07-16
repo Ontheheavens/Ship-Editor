@@ -9,6 +9,7 @@ import oth.shipeditor.communication.events.viewer.ViewerRepaintQueued;
 import oth.shipeditor.communication.events.viewer.control.ViewerCursorMoved;
 import oth.shipeditor.communication.events.viewer.points.*;
 import oth.shipeditor.components.viewer.control.ControlPredicates;
+import oth.shipeditor.components.viewer.control.PointSelectionMode;
 import oth.shipeditor.components.viewer.entities.BaseWorldPoint;
 import oth.shipeditor.components.viewer.entities.WorldPoint;
 import oth.shipeditor.undo.EditDispatch;
@@ -27,8 +28,6 @@ import java.util.List;
 @Log4j2
 public abstract class AbstractPointPainter implements Painter {
 
-    // TODO: Implement mirror mode.
-
     @Getter
     protected final List<Painter> delegates;
 
@@ -37,6 +36,9 @@ public abstract class AbstractPointPainter implements Painter {
 
     @Getter @Setter
     private boolean shown = true;
+
+    @Getter @Setter
+    private PainterVisibility visibilityMode;
 
     @Setter
     private boolean interactionEnabled;
@@ -47,12 +49,17 @@ public abstract class AbstractPointPainter implements Painter {
     private final AffineTransform delegateWorldToScreen;
 
     @Getter
+    private float paintOpacity = 1.0f;
+
+    @Getter
     private static Point2D correctedCursor = new Point2D.Double();
 
     AbstractPointPainter() {
         this.delegates = new ArrayList<>();
         this.delegateWorldToScreen = new AffineTransform();
         this.initChangeListeners();
+        this.visibilityMode = PainterVisibility.SHOWN_WHEN_EDITED;
+        this.setPaintOpacity(1.0f);
     }
 
     public static void initCursorListening() {
@@ -65,6 +72,12 @@ public abstract class AbstractPointPainter implements Painter {
 
     public boolean isInteractionEnabled() {
         return interactionEnabled;
+    }
+
+    void setPaintOpacity(float opacity) {
+        if (opacity < 0.0f) {
+            this.paintOpacity = 0.0f;
+        } else this.paintOpacity = Math.min(opacity, 1.0f);
     }
 
     @SuppressWarnings("BooleanMethodIsAlwaysInverted")
@@ -140,7 +153,36 @@ public abstract class AbstractPointPainter implements Painter {
         }
     }
 
-    protected void selectPointConditionally() {
+    private void selectPointConditionally() {
+        PointSelectionMode current = ControlPredicates.getSelectionMode();
+        if (current == PointSelectionMode.STRICT) {
+            this.selectPointStrictly();
+            return;
+        }
+        Point2D cursor = AbstractPointPainter.getCorrectedCursor();
+        WorldPoint toSelect = null;
+        double minDistance = Double.MAX_VALUE;
+        for (WorldPoint point : this.getPointsIndex()) {
+            Point2D position = point.getPosition();
+            double distance = position.distance(cursor);
+            if (distance < minDistance) {
+                minDistance = distance;
+                toSelect = point;
+            }
+        }
+        WorldPoint selectedPoint = this.getSelected();
+        if (selectedPoint != null) {
+            selectedPoint.setSelected(false);
+        }
+        this.setSelected(toSelect);
+        if (toSelect != null) {
+            toSelect.setSelected(true);
+        }
+        EventBus.publish(new PointSelectedConfirmed(toSelect));
+        EventBus.publish(new ViewerRepaintQueued());
+    }
+
+    private void selectPointStrictly() {
         if (!this.isMousedOverPoint()) return;
         if (this.selected != null) {
             this.selected.setSelected(false);
@@ -153,7 +195,7 @@ public abstract class AbstractPointPainter implements Painter {
 
     }
 
-    protected abstract List<? extends BaseWorldPoint> getPointsIndex();
+    public abstract List<? extends BaseWorldPoint> getPointsIndex();
 
     protected abstract void addPointToIndex(BaseWorldPoint point);
 
@@ -218,19 +260,39 @@ public abstract class AbstractPointPainter implements Painter {
     }
 
     void paintDelegates(Graphics2D g, AffineTransform worldToScreen, double w, double h) {
-        this.delegates.forEach(painter -> {
-            if (painter != null) {
-                AffineTransform transform = this.delegateWorldToScreen;
-                transform.setTransform(worldToScreen);
-                painter.paint(g, transform, w, h);
-            }
-        });
+        this.delegates.forEach(painter -> paintDelegate(g, worldToScreen, w, h, painter));
+    }
+
+    @SuppressWarnings("WeakerAccess")
+    protected void paintDelegate(Graphics2D g, AffineTransform worldToScreen, double w, double h, Painter painter) {
+        if (painter != null) {
+            AffineTransform transform = this.delegateWorldToScreen;
+            transform.setTransform(worldToScreen);
+            painter.paint(g, transform, w, h);
+        }
     }
 
     @Override
     public void paint(Graphics2D g, AffineTransform worldToScreen, double w, double h) {
-        if (!shown) return;
+        if (!checkVisibility()) return;
+
+        int rule = AlphaComposite.SRC_OVER;
+        float alpha = this.getPaintOpacity();
+        Composite old = g.getComposite();
+        Composite opacity = AlphaComposite.getInstance(rule, alpha) ;
+        g.setComposite(opacity);
+
         paintDelegates(g, worldToScreen, w, h);
+
+        g.setComposite(old);
+    }
+
+    @SuppressWarnings("BooleanMethodIsAlwaysInverted")
+    protected boolean checkVisibility() {
+        PainterVisibility visibility = getVisibilityMode();
+        if (visibility == PainterVisibility.ALWAYS_HIDDEN) return false;
+        if (visibility == PainterVisibility.SHOWN_WHEN_EDITED && !this.isInteractionEnabled()) return false;
+        return isShown() || visibility == PainterVisibility.ALWAYS_SHOWN;
     }
 
     @Override

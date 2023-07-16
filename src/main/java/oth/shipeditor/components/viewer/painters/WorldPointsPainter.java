@@ -36,7 +36,7 @@ public final class WorldPointsPainter extends AbstractPointPainter {
     }
 
     @Override
-    protected List<BaseWorldPoint> getPointsIndex() {
+    public List<BaseWorldPoint> getPointsIndex() {
         return worldPoints;
     }
 
