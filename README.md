@@ -3,6 +3,25 @@ Visualizer and editor of object data in JSON and CSV format using GUI written wi
 
 Uses JavaGL library for low-level AffineTransform functionality, Jackson for JSON handling and Lombok for boilerplate code.
 
+## Development Note 17.07.23:
+
+![](showcase/history/Sample%203.png)
+
+### Implemented:
+
+- Game data panel, which holds entries for ship and hullmod entries. Ship entries encompass CSV data, Hull and Skin files.
+- UI components and all the deserialization support for game data panel. Handling of unconventional JSON and CSV features.
+- Optimized loading and caching for on-the-fly display of hullmod icons.
+- Extensive context menu options for data entries, support for fast layer loading via double-click and PNG drag-and-drop.
+- Trial runs for fat JAR packing with Maven-Shade: works as prototype, will need some tweaks at release.
+- Hotkey hints painting.
+- Bound mirroring support.
+- Centers panel, includes collision and shield parts. Deserialization of hull styles and their use for displayed shield colors.
+
+### Issues:
+
+- EventBus listener storage unresolved, bits of duplicated code multiply. Complexity grows steadily, but the framework base is still robust enough. 
+
 ## Development Note 17.06.23:
 
 ![](showcase/history/Sample%202.png)
