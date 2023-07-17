@@ -4,7 +4,9 @@ import com.formdev.flatlaf.ui.FlatArrowButton;
 import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
 import oth.shipeditor.communication.EventBus;
+import oth.shipeditor.communication.events.components.GameDataPanelResized;
 import oth.shipeditor.communication.events.components.InstrumentSplitterResized;
+import oth.shipeditor.communication.events.components.WindowGUIShowConfirmed;
 import oth.shipeditor.components.datafiles.GameDataPanel;
 import oth.shipeditor.components.instrument.InstrumentTabsPane;
 import oth.shipeditor.components.viewer.ShipViewable;
@@ -125,6 +127,20 @@ final class TripleSplitContainer extends JSplitPane {
                 }
                 instrumentPaneMinimized = minimize;
                 relocateDivider();
+            }
+        });
+        EventBus.subscribe(event -> {
+            if (event instanceof GameDataPanelResized checked) {
+                int newWidth = checked.newMinimum().width;
+                if (this.getDividerLocation() >= newWidth) return;
+                this.setDividerLocation(newWidth);
+            }
+        });
+        EventBus.subscribe(event -> {
+            if (event instanceof WindowGUIShowConfirmed ) {
+                this.minimizer.minimize();
+                int maximum = secondaryLevel.getMaximumDividerLocation();
+                secondaryLevel.setDividerLocation(maximum + 100);
             }
         });
     }

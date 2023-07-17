@@ -5,6 +5,7 @@ import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.files.HullmodFoldersWalked;
 import oth.shipeditor.components.datafiles.entities.HullmodCSVEntry;
 import oth.shipeditor.menubar.FileUtilities;
+import oth.shipeditor.parsing.loading.FileLoading;
 import oth.shipeditor.persistence.SettingsManager;
 import oth.shipeditor.representation.GameDataRepository;
 import oth.shipeditor.utility.Utility;
@@ -98,9 +99,9 @@ class HullmodsTreePanel extends DataTreePanel{
     }
 
     private static JPanel createHullmodIconPanel(HullmodCSVEntry selected) {
-        File spriteFile = selected.fetchSpriteFile();
+        File spriteFile = selected.fetchHullmodSpriteFile();
         JPanel iconPanel = new JPanel();
-        Icon icon = new ImageIcon(FileUtilities.loadSprite(spriteFile));
+        Icon icon = new ImageIcon(FileLoading.loadSprite(spriteFile));
         JLabel imageLabel = Utility.getIconLabelWithBorder(icon);
         iconPanel.add(imageLabel);
         return iconPanel;

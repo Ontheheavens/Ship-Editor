@@ -1,6 +1,7 @@
 package oth.shipeditor.components.viewer.entities;
 
 import de.javagl.viewer.Painter;
+import de.javagl.viewer.painters.LabelPainter;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
@@ -11,17 +12,18 @@ import oth.shipeditor.communication.events.viewer.control.ViewerCursorMoved;
 import oth.shipeditor.communication.events.viewer.layers.LayerShipDataInitialized;
 import oth.shipeditor.communication.events.viewer.layers.LayerWasSelected;
 import oth.shipeditor.communication.events.viewer.points.AnchorOffsetConfirmed;
-import oth.shipeditor.communication.events.viewer.points.InstrumentModeChanged;
 import oth.shipeditor.communication.events.viewer.points.AnchorOffsetQueued;
+import oth.shipeditor.communication.events.viewer.points.InstrumentModeChanged;
 import oth.shipeditor.communication.events.viewer.status.CoordsModeChanged;
 import oth.shipeditor.components.CoordsDisplayMode;
+import oth.shipeditor.components.instrument.InstrumentTabsPane;
 import oth.shipeditor.components.viewer.InstrumentMode;
 import oth.shipeditor.components.viewer.layers.LayerPainter;
 import oth.shipeditor.components.viewer.layers.ShipLayer;
+import oth.shipeditor.utility.Utility;
 
 import java.awt.*;
 import java.awt.geom.AffineTransform;
-import java.awt.geom.Ellipse2D;
 import java.awt.geom.Point2D;
 import java.awt.geom.RectangularShape;
 
@@ -29,12 +31,9 @@ import java.awt.geom.RectangularShape;
  * @author Ontheheavens
  * @since 30.04.2023
  */
+@SuppressWarnings("ClassWithTooManyFields")
 @Log4j2
 public class BaseWorldPoint implements WorldPoint {
-
-    // TODO: Introduce some form of visual indication of whether the points are interactable or not.
-    //  Likely this needs to be based on whether the respective instrument pane is opened.
-
 
     private static Point2D viewerCursor = new Point2D.Double();
 
@@ -49,13 +48,15 @@ public class BaseWorldPoint implements WorldPoint {
     private LayerPainter parentLayer;
 
     @Getter
-    private static InstrumentMode instrumentationMode;
+    private static InstrumentMode instrumentationMode = InstrumentTabsPane.getCurrentMode();
 
     @Getter
     private final Point2D position;
 
     @Getter
     private final Painter painter;
+
+    private final LabelPainter coordsLabel;
 
     @Getter
     private boolean cursorInBounds;
@@ -116,9 +117,36 @@ public class BaseWorldPoint implements WorldPoint {
         this.position = new Point2D.Double(pointPosition.getX(), pointPosition.getY());
         this.parentLayer = layer;
         this.painter = this.getPointPainter();
+        coordsLabel = createCoordsLabelPainter();
         if (layer != null) {
             this.initLayerListening();
         }
+    }
+
+    private LabelPainter createCoordsLabelPainter() {
+        LabelPainter labelPainter = new LabelPainter();
+        Point2D coords = this.getPosition();
+        labelPainter.setLabelLocation(coords.getX(), coords.getY());
+        Font font = Utility.getOrbitron(16).deriveFont(0.25f);
+        labelPainter.setFont(font);
+        this.adjustLabelPosition(labelPainter);
+        return labelPainter;
+    }
+
+    protected void adjustLabelPosition(LabelPainter labelPainter) {
+        labelPainter.setLabelAnchor(-0.25f, 0.55f);
+    }
+
+    void paintCoordsLabel(Graphics2D g, AffineTransform worldToScreen, double w, double h) {
+        Point2D coordsPoint = getPosition();
+        Point2D toDisplay = this.getCoordinatesForDisplay();
+        coordsLabel.setLabelLocation(coordsPoint.getX(), coordsPoint.getY());
+        String coords = getNameForLabel() + " (" + toDisplay.getX() + ", " + toDisplay.getY() + ")";
+        coordsLabel.paint(g, worldToScreen, w, h,coords);
+    }
+
+    public String getNameForLabel() {
+        return "Point";
     }
     
     private void initLayerListening() {
@@ -143,9 +171,7 @@ public class BaseWorldPoint implements WorldPoint {
     }
 
     private Shape createWorldConstantPaintPart(AffineTransform worldToScreen) {
-        float radius = 0.25f;
-        Shape dot = new Ellipse2D.Double(position.getX() - radius, position.getY() - radius,
-                2 * radius, 2 * radius);
+        Shape dot = Utility.createCircle(this.position, 0.25f);
         return worldToScreen.createTransformedShape(dot);
     }
 
@@ -153,10 +179,7 @@ public class BaseWorldPoint implements WorldPoint {
         Point2D point = new Point2D.Double(position.getX(), position.getY());
         Point2D dest = worldToScreen.transform(point, null);
         float radius = 6.0f;
-        double destX = dest.getX();
-        double destY = dest.getY();
-        return new Ellipse2D.Double((int) destX - radius, (int) destY - radius,
-                radius * 2, radius * 2);
+        return Utility.createCircle(dest, radius);
     }
 
     protected Color createHoverColor() {
@@ -171,8 +194,8 @@ public class BaseWorldPoint implements WorldPoint {
         return new Color(0xBF000000, true);
     }
 
-    private boolean isInteractable() {
-        return instrumentationMode == getAssociatedMode();
+    protected boolean isInteractable() {
+        return instrumentationMode == getAssociatedMode() && parentLayer.isLayerActive();
     }
 
     public Painter getPointPainter() {

@@ -2,11 +2,17 @@ package oth.shipeditor.undo;
 
 import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
+import oth.shipeditor.components.viewer.entities.WorldPoint;
+import oth.shipeditor.components.viewer.layers.LayerPainter;
 import oth.shipeditor.undo.edits.ListeningEdit;
+import oth.shipeditor.undo.edits.PointDragEdit;
+import oth.shipeditor.undo.edits.PointEdit;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.util.ArrayDeque;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Deque;
 
 /**
@@ -41,10 +47,10 @@ public final class UndoOverseer {
     private final Action redoAction = new AbstractAction("Redo") {
         @Override
         public void actionPerformed(ActionEvent e) {
-            Deque<Edit> redo = seer.getRedoStack();
+            Deque<Edit> redo = getRedoStack();
             Edit head = redo.pop();
             head.redo();
-            Deque<Edit> undo = seer.getUndoStack();
+            Deque<Edit> undo = getUndoStack();
             undo.push(head);
             updateActionState();
         }
@@ -55,7 +61,6 @@ public final class UndoOverseer {
 
     @Getter
     private final Deque<Edit> redoStack = new ArrayDeque<>();
-
 
     private void updateActionState() {
         Deque<Edit> undo = seer.getUndoStack();
@@ -121,6 +126,26 @@ public final class UndoOverseer {
                 checked.unregisterListeners();
             }
         });
+    }
+
+    public static void cleanupRemovedLayer(LayerPainter painter) {
+        UndoOverseer.cleanupStack(painter,  seer.undoStack);
+        UndoOverseer.cleanupStack(painter,  seer.redoStack);
+        seer.updateActionState();
+    }
+
+    private static void cleanupStack(LayerPainter painter, Collection<Edit> stack) {
+        Collection<Edit> toRemove = new ArrayList<>();
+        for (Edit edit : stack) {
+            if (!(edit instanceof PointEdit checked)) continue;
+            WorldPoint point = checked.getPoint();
+            if (point.getParentLayer() != painter) continue;
+            toRemove.add(edit);
+            if (checked instanceof ListeningEdit listeningEdit) {
+                listeningEdit.unregisterListeners();
+            }
+        }
+        stack.removeAll(toRemove);
     }
 
 }

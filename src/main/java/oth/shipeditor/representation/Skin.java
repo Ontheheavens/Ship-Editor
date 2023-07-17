@@ -20,7 +20,7 @@ import java.util.Map;
  * @since 29.06.2023
  */
 @Getter @Setter
-@SuppressWarnings("TransientFieldInNonSerializableClass")
+@SuppressWarnings({"TransientFieldInNonSerializableClass", "ClassWithTooManyFields", "ClassWithTooManyMethods"})
 public class Skin {
 
     @JsonIgnore

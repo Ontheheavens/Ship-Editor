@@ -4,6 +4,7 @@ import com.formdev.flatlaf.FlatClientProperties;
 import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
 import oth.shipeditor.communication.EventBus;
+import oth.shipeditor.communication.events.components.WindowGUIShowConfirmed;
 import oth.shipeditor.communication.events.components.WindowRepaintQueued;
 import oth.shipeditor.components.WindowContentPanes;
 import oth.shipeditor.components.viewer.ShipViewable;
@@ -61,7 +62,6 @@ public final class PrimaryWindow extends JFrame {
     private static void performStaticInits() {
         Initializations.initializeSettingsFile();
         Initializations.selectGameFolder();
-        FileUtilities.listenToLayerChange();
         StaticLayerController.init();
 
         ControlPredicates.initSelectionModeListening();
@@ -77,7 +77,9 @@ public final class PrimaryWindow extends JFrame {
     }
 
     private static void configureTooltips() {
-        ToolTipManager.sharedInstance().setInitialDelay(0);
+        ToolTipManager toolTipManager = ToolTipManager.sharedInstance();
+        toolTipManager.setInitialDelay(10);
+        toolTipManager.setDismissDelay(90000);
     }
 
     private void initListeners() {
@@ -90,6 +92,7 @@ public final class PrimaryWindow extends JFrame {
 
     void showGUI() {
         this.setVisible(true);
+        EventBus.publish(new WindowGUIShowConfirmed());
     }
 
 

@@ -7,6 +7,7 @@ import oth.shipeditor.PrimaryWindow;
 import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.viewer.ViewerBackgroundChanged;
 import oth.shipeditor.menubar.FileUtilities;
+import oth.shipeditor.representation.GameDataRepository;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
@@ -55,6 +56,8 @@ public final class Initializations {
         loadShipDataAction.actionPerformed(initEvent);
         Action loadHullmodDataAction = FileUtilities.getLoadHullmodDataAction();
         loadHullmodDataAction.actionPerformed(initEvent);
+
+        FileUtilities.loadHullStyles();
     }
 
     @SuppressWarnings("ProhibitedExceptionThrown")

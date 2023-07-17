@@ -2,13 +2,11 @@ package oth.shipeditor.components.datafiles.entities;
 
 import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
-import oth.shipeditor.menubar.FileUtilities;
-import oth.shipeditor.persistence.SettingsManager;
+import oth.shipeditor.parsing.loading.FileLoading;
 import oth.shipeditor.utility.StringConstants;
 
 import java.io.File;
 import java.nio.file.Path;
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -48,7 +46,7 @@ public class HullmodCSVEntry {
         return displayedName;
     }
 
-    public File fetchSpriteFile() {
+    public File fetchHullmodSpriteFile() {
         if (fetchedSpriteFile != null) {
             return fetchedSpriteFile;
         }
@@ -58,33 +56,7 @@ public class HullmodCSVEntry {
             path = "graphics/icons/intel/investigation.png";
         }
         Path spritePath = Path.of(path);
-        Path coreDataFolder = SettingsManager.getCoreFolderPath();
-        List<Path> otherModFolders = SettingsManager.getAllModFolders();
-        File result;
-
-        // Search in parent mod package.
-        result = FileUtilities.searchFileInFolder(spritePath, this.packageFolderPath);
-
-        // If not found, search in core folder.
-        if (result == null) {
-            result = FileUtilities.searchFileInFolder(spritePath, coreDataFolder);
-        }
-        if (result != null) {
-            fetchedSpriteFile = result;
-            return fetchedSpriteFile;
-        }
-
-        // If not found, search in other mods.
-        for (Path modFolder : otherModFolders) {
-            result = FileUtilities.searchFileInFolder(spritePath, modFolder);
-            if (result != null) {
-                break;
-            }
-        }
-        if (result == null) {
-            log.error("Failed to fetch sprite file for {}!", this.getHullmodID());
-        }
-        fetchedSpriteFile = result;
+        fetchedSpriteFile = FileLoading.fetchDataFile(spritePath, packageFolderPath);
         return fetchedSpriteFile;
     }
 

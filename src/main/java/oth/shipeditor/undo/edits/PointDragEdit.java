@@ -15,7 +15,7 @@ import java.util.Deque;
  * @author Ontheheavens
  * @since 16.06.2023
  */
-public final class PointDragEdit extends AbstractEdit implements ListeningEdit {
+public final class PointDragEdit extends AbstractEdit implements ListeningEdit, PointEdit {
 
     private final WorldPoint point;
     private final Point2D oldPosition;
@@ -71,6 +71,11 @@ public final class PointDragEdit extends AbstractEdit implements ListeningEdit {
         point.setPosition(newPosition);
         redoSubEdits();
         Events.repaintView();
+    }
+
+    @Override
+    public WorldPoint getPoint() {
+        return point;
     }
 
 }

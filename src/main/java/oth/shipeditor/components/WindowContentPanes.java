@@ -61,7 +61,6 @@ public final class WindowContentPanes {
         JPanel southPane = new JPanel();
         southPane.setLayout(new GridLayout());
         this.statusPanel = new ViewerStatusPanel(this.shipView);
-        this.statusPanel.setLayout(new FlowLayout(FlowLayout.LEADING));
         southPane.add(this.statusPanel);
         primaryContentPane.add(southPane, BorderLayout.PAGE_END);
         this.refreshContent();

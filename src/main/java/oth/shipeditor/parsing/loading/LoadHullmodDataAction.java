@@ -1,4 +1,4 @@
-package oth.shipeditor.parsing;
+package oth.shipeditor.parsing.loading;
 
 import lombok.extern.log4j.Log4j2;
 import oth.shipeditor.communication.EventBus;
@@ -6,7 +6,6 @@ import oth.shipeditor.communication.events.files.HullmodFoldersWalked;
 import oth.shipeditor.components.datafiles.entities.HullmodCSVEntry;
 import oth.shipeditor.persistence.Settings;
 import oth.shipeditor.persistence.SettingsManager;
-import oth.shipeditor.utility.Utility;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;
@@ -72,7 +71,7 @@ public class LoadHullmodDataAction extends AbstractAction {
         Path hullmodDataPath = Paths.get(folderPath, "data", HULLMODS, HULL_MODS_CSV);
 
         log.info("Parsing hullmod CSV data from: {}..", hullmodDataPath);
-        List<Map<String, String>> csvData = Utility.parseCSVTable(hullmodDataPath);
+        List<Map<String, String>> csvData = FileLoading.parseCSVTable(hullmodDataPath);
         log.info("Hullmod CSV data from {} retrieved successfully.", hullmodDataPath);
 
         List<HullmodCSVEntry> hullmodsList = new ArrayList<>(csvData.size());

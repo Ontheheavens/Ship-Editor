@@ -2,6 +2,7 @@ package oth.shipeditor.menubar;
 
 import lombok.Getter;
 import lombok.Setter;
+import org.kordamp.ikonli.boxicons.BoxiconsRegular;
 import org.kordamp.ikonli.fluentui.FluentUiRegularAL;
 import org.kordamp.ikonli.fluentui.FluentUiRegularMZ;
 import org.kordamp.ikonli.swing.FontIcon;
@@ -80,6 +81,7 @@ class ViewMenu extends JMenu {
 
     private JMenu createGuidesSubmenu() {
         JMenu guidesSubmenu = new JMenu("Toggle guides");
+        guidesSubmenu.setIcon(FontIcon.of(BoxiconsRegular.BORDER_INNER, 16));
 
         toggleCursorGuides = new JCheckBoxMenuItem("Enable cursor guides");
         toggleCursorGuides.setSelected(true);

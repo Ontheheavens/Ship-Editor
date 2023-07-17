@@ -3,6 +3,7 @@ package oth.shipeditor.components.viewer.painters;
 import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
 import oth.shipeditor.components.viewer.entities.BaseWorldPoint;
+import oth.shipeditor.components.viewer.entities.WorldPoint;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -23,6 +24,19 @@ public final class WorldPointsPainter extends AbstractPointPainter {
     }
 
     /**
+     * @return true, because World Points are always considered active.
+     */
+    @Override
+    protected boolean isParentLayerActive() {
+        return true;
+    }
+
+    @Override
+    public boolean isMirrorable() {
+        return false;
+    }
+
+    /**
      * @return instance of the painter from factory.
      */
     public static WorldPointsPainter create() {
@@ -30,7 +44,7 @@ public final class WorldPointsPainter extends AbstractPointPainter {
     }
 
     @Override
-    protected List<BaseWorldPoint> getPointsIndex() {
+    public List<BaseWorldPoint> getPointsIndex() {
         return worldPoints;
     }
 
@@ -42,6 +56,11 @@ public final class WorldPointsPainter extends AbstractPointPainter {
     @Override
     protected void removePointFromIndex(BaseWorldPoint point) {
         worldPoints.remove(point);
+    }
+
+    @Override
+    public BaseWorldPoint getMirroredCounterpart(WorldPoint point) {
+        return null;
     }
 
     @Override

@@ -2,22 +2,19 @@ package oth.shipeditor.menubar;
 
 import lombok.extern.log4j.Log4j2;
 import org.kordamp.ikonli.Ikon;
+import org.kordamp.ikonli.boxicons.BoxiconsRegular;
 import org.kordamp.ikonli.fluentui.FluentUiRegularAL;
-import org.kordamp.ikonli.fluentui.FluentUiRegularMZ;
 import org.kordamp.ikonli.swing.FontIcon;
 import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.viewer.control.PointSelectionModeChange;
-import oth.shipeditor.communication.events.viewer.control.ViewerRotationToggled;
-import oth.shipeditor.communication.events.viewer.layers.LayerCreationQueued;
 import oth.shipeditor.communication.events.viewer.layers.ActiveLayerRemovalQueued;
+import oth.shipeditor.communication.events.viewer.layers.LayerCreationQueued;
 import oth.shipeditor.components.viewer.control.PointSelectionMode;
 import oth.shipeditor.undo.UndoOverseer;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.KeyEvent;
 
 /**
  * @author Ontheheavens
@@ -64,6 +61,8 @@ public final class PrimaryMenuBar extends JMenuBar {
         redo.setAccelerator(keyStrokeToRedo);
         editMenu.add(redo);
 
+        editMenu.addSeparator();
+
         JMenuItem pointSelectionMode = PrimaryMenuBar.createPointSelectionModeOptions();
         editMenu.add(pointSelectionMode);
 
@@ -105,7 +104,7 @@ public final class PrimaryMenuBar extends JMenuBar {
         JMenu layersMenu = new JMenu("Layers");
 
         JMenuItem createLayer = new JMenuItem("Create new layer");
-        createLayer.setIcon(FontIcon.of(FluentUiRegularMZ.ROCKET_16, 16));
+        createLayer.setIcon(FontIcon.of(BoxiconsRegular.LAYER_PLUS, 16));
         createLayer.addActionListener(event -> SwingUtilities.invokeLater(
                         () -> EventBus.publish(new LayerCreationQueued())
                 )
@@ -113,6 +112,7 @@ public final class PrimaryMenuBar extends JMenuBar {
         layersMenu.add(createLayer);
 
         JMenuItem removeLayer = new JMenuItem("Remove selected layer");
+        removeLayer.setIcon(FontIcon.of(BoxiconsRegular.LAYER_MINUS, 16));
         removeLayer.addActionListener(event -> SwingUtilities.invokeLater(
                         () -> EventBus.publish(new ActiveLayerRemovalQueued())
                 )

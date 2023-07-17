@@ -60,6 +60,9 @@ public final class ShipViewerControls implements ViewerControl {
     @Getter
     private double zoomLevel = 1;
 
+    @Getter
+    private double rotationDegree = 0;
+
     /**
      * @param parent Viewer which is manipulated via this instance of controls class.
      */
@@ -74,7 +77,7 @@ public final class ShipViewerControls implements ViewerControl {
     private void initKeyBinding() {
         InputMap inputMap = parentViewer.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW);
         String deleteKey = "Delete";
-        inputMap.put(KeyStroke.getKeyStroke((char)KeyEvent.VK_DELETE), deleteKey );
+        inputMap.put(KeyStroke.getKeyStroke((char)KeyEvent.VK_DELETE), deleteKey);
         ActionMap actionMap = parentViewer.getActionMap();
         actionMap.put(deleteKey, new AbstractAction() {
             @Override
@@ -96,6 +99,8 @@ public final class ShipViewerControls implements ViewerControl {
         EventBus.subscribe(event -> {
             if (event instanceof ViewerTransformsReset) {
                 this.setZoomLevel(1);
+                this.rotationDegree = 0;
+                EventBus.publish(new ViewerTransformRotated(rotationDegree));
             }
         });
         EventBus.subscribe(event -> {
@@ -127,7 +132,8 @@ public final class ShipViewerControls implements ViewerControl {
     }
 
     @Override
-    public void mouseClicked(MouseEvent e) {}
+    public void mouseClicked(MouseEvent e) {
+    }
 
     @Override
     public void mousePressed(MouseEvent e) {
@@ -144,7 +150,9 @@ public final class ShipViewerControls implements ViewerControl {
             this.layerDragPoint.setLocation(e.getX() - transformed.getX(), e.getY() - transformed.getY());
         }
         this.tryBoundCreation();
-
+        if (ControlPredicates.removePointPredicate.test(e)) {
+            EventBus.publish(new PointRemoveQueued());
+        }
         ShipViewerControls.handlePointSelection(e);
     }
 
@@ -228,8 +236,12 @@ public final class ShipViewerControls implements ViewerControl {
         if (ControlPredicates.rotatePredicate.test(e) && this.rotationEnabled) {
             double toRadians = Math.toRadians(wheelRotation);
             Point2D midpoint = parentViewer.getViewerMidpoint();
+            double resultRadians = toRadians * ROTATION_SPEED;
             this.parentViewer.rotate(midpoint.getX(), midpoint.getY(),
-                    toRadians * ROTATION_SPEED);
+                    resultRadians);
+            this.rotationDegree += Math.toDegrees(resultRadians);
+            rotationDegree = (rotationDegree + 360) % 360;
+            EventBus.publish(new ViewerTransformRotated(rotationDegree));
         } else {
             // Calculate the zoom factor - sign of wheel rotation argument determines the direction.
             double d = Math.pow(1 + ZOOMING_SPEED, -wheelRotation) - 1;

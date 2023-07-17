@@ -2,6 +2,7 @@ package oth.shipeditor.components.viewer.layers;
 
 import de.javagl.viewer.Painter;
 import lombok.Getter;
+import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
 import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.Events;
@@ -17,7 +18,8 @@ import oth.shipeditor.components.viewer.entities.BoundPoint;
 import oth.shipeditor.components.viewer.entities.ShipCenterPoint;
 import oth.shipeditor.components.viewer.painters.AbstractPointPainter;
 import oth.shipeditor.components.viewer.painters.BoundPointsPainter;
-import oth.shipeditor.components.viewer.painters.CenterPointsPainter;
+import oth.shipeditor.components.viewer.painters.CenterPointPainter;
+import oth.shipeditor.components.viewer.painters.ShieldPointPainter;
 import oth.shipeditor.representation.Hull;
 import oth.shipeditor.representation.ShipData;
 
@@ -36,13 +38,20 @@ import java.util.stream.Stream;
  * @author Ontheheavens
  * @since 29.05.2023
  */
+@SuppressWarnings({"ClassWithTooManyFields", "OverlyCoupledClass"})
 @Log4j2
 public final class LayerPainter implements Painter {
+
+    @Getter @Setter
+    private int paintOrdering;
 
     @Getter
     private final BoundPointsPainter boundsPainter;
     @Getter
-    private final CenterPointsPainter centerPointsPainter;
+    private final CenterPointPainter centerPointPainter;
+
+    @Getter
+    private final ShieldPointPainter shieldPointPainter;
 
     /**
      * Convenience collection for bulk manipulation of layer painters.
@@ -70,14 +79,21 @@ public final class LayerPainter implements Painter {
     @Getter
     private boolean uninitialized = true;
 
-    public LayerPainter(ShipLayer layer, PrimaryShipViewer viewerPanel) {
+    @SuppressWarnings("ThisEscapedInObjectConstruction")
+    public LayerPainter(ShipLayer layer, PrimaryShipViewer viewerPanel, int order) {
+        this.paintOrdering = order;
         this.parentLayer = layer;
         this.viewer = viewerPanel;
-        this.centerPointsPainter = new CenterPointsPainter(this);
+
+        this.centerPointPainter = new CenterPointPainter(this);
+        this.shieldPointPainter = new ShieldPointPainter(this);
         this.boundsPainter = new BoundPointsPainter(viewerPanel, this);
+
         this.allPainters = new ArrayList<>();
-        allPainters.add(centerPointsPainter);
+        allPainters.add(centerPointPainter);
+        allPainters.add(shieldPointPainter);
         allPainters.add(boundsPainter);
+
         this.shipSprite = layer.getShipSprite();
         this.initPainterListeners(layer);
         this.initLayerListeners();
@@ -92,8 +108,9 @@ public final class LayerPainter implements Painter {
         EventBus.subscribe(event -> {
             if (event instanceof ShipLayerRemovalConfirmed checked) {
                 if (checked.removed() != this.parentLayer) return;
-                this.clearBoundPainter();
-                this.clearHullPainter();
+                for (AbstractPointPainter pointPainter : this.getAllPainters()) {
+                    LayerPainter.clearPointPainter(pointPainter);
+                }
             }
         });
         EventBus.subscribe(event -> {
@@ -110,17 +127,10 @@ public final class LayerPainter implements Painter {
         });
     }
 
-    private void clearHullPainter() {
-        Iterable<BaseWorldPoint> hullPoints = new ArrayList<>(centerPointsPainter.getPointsIndex());
-        for (BaseWorldPoint point : hullPoints) {
-            this.centerPointsPainter.removePoint(point);
-        }
-    }
-
-    private void clearBoundPainter() {
-        Iterable<BoundPoint> bounds = new ArrayList<>(this.boundsPainter.getBoundPoints());
-        for (BoundPoint point : bounds) {
-            this.boundsPainter.removePoint(point);
+    private static void clearPointPainter(AbstractPointPainter pointPainter) {
+        Iterable<BaseWorldPoint> points = new ArrayList<>(pointPainter.getPointsIndex());
+        for (BaseWorldPoint point : points) {
+            pointPainter.removePoint(point);
         }
     }
 
@@ -147,7 +157,7 @@ public final class LayerPainter implements Painter {
     }
 
     public ShipCenterPoint getShipCenter() {
-        return this.centerPointsPainter.getCenterPoint();
+        return this.centerPointPainter.getCenterPoint();
     }
 
     public Point2D getCenterAnchor() {
@@ -184,30 +194,40 @@ public final class LayerPainter implements Painter {
 
     private void initializeShipData(ShipData shipData) {
         Hull hull = shipData.getHull();
+
         Point2D anchor = this.getCenterAnchor();
-        Point2D.Double hullCenter = hull.getCenter();
         double anchorX = anchor.getX();
         double anchorY = anchor.getY();
+
+        Point2D.Double hullCenter = hull.getCenter();
         Point2D.Double translatedCenter = new Point2D.Double(hullCenter.x + anchorX,
                 -hullCenter.y + anchorY);
-        this.centerPointsPainter.initCenterPoint(translatedCenter, hull);
+
+        this.centerPointPainter.initCenterPoint(translatedCenter, hull);
+
+        Point2D shieldCenterTranslated = LayerPainter.translatePointByCenter(hull.getShieldCenter(), translatedCenter);
+        this.shieldPointPainter.initShieldPoint(shieldCenterTranslated, hull);
+
         Stream<Point2D> boundStream = Arrays.stream(hull.getBounds());
         boundStream.forEach(bound -> {
             BoundPoint boundPoint = this.createTranslatedBound(bound, translatedCenter);
             boundsPainter.addPoint(boundPoint);
         });
+
         this.uninitialized = false;
         log.info("{} initialized!", this);
-        EventBus.publish(new LayerShipDataInitialized(this, 4));
+        EventBus.publish(new LayerShipDataInitialized(this, this.paintOrdering));
         EventBus.publish(new ViewerRepaintQueued());
     }
 
-    // TODO: streamline translation methods. Probably make separate initializing class?
+    private static Point2D translatePointByCenter(Point2D input, Point2D translatedCenter) {
+        double translatedX = -input.getY() + translatedCenter.getX();
+        double translatedY = -input.getX() + translatedCenter.getY();
+        return new Point2D.Double(translatedX, translatedY);
+    }
 
     private BoundPoint createTranslatedBound(Point2D bound, Point2D translatedCenter) {
-        double translatedX = -bound.getY() + translatedCenter.getX();
-        double translatedY = -bound.getX() + translatedCenter.getY();
-        return new BoundPoint(new Point2D.Double(translatedX, translatedY), this);
+        return new BoundPoint(LayerPainter.translatePointByCenter(bound, translatedCenter), this);
     }
 
     @Override

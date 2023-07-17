@@ -20,7 +20,7 @@ import java.awt.geom.Point2D;
 @Log4j2
 final class BoundList extends JList<BoundPoint> {
 
-    private boolean propagationBlock = false;
+    private boolean propagationBlock;
 
     BoundList(ListModel<BoundPoint> model) {
         super(model);
@@ -28,7 +28,7 @@ final class BoundList extends JList<BoundPoint> {
             if (propagationBlock) {
                 propagationBlock = false;
                 return;
-            };
+            }
             int index = this.getSelectedIndex();
             if (index != -1) {
                 ListModel<BoundPoint> listModel = this.getModel();
@@ -52,7 +52,7 @@ final class BoundList extends JList<BoundPoint> {
         });
     }
 
-    private class BoundPointCellRenderer extends DefaultListCellRenderer{
+    private static class BoundPointCellRenderer extends DefaultListCellRenderer{
         @Override
         public Component getListCellRendererComponent(JList<?> list, Object value, int index,
                                                       boolean isSelected, boolean cellHasFocus) {

@@ -4,6 +4,7 @@ package oth.shipeditor.utility;
  * @author Ontheheavens
  * @since 26.06.2023
  */
+@SuppressWarnings("StaticMethodOnlyUsedInOneClass")
 public interface StringConstants {
 
     String SPRITE_NAME = "spriteName";
@@ -75,5 +76,16 @@ public interface StringConstants {
     String SPRITE_FILE = "Sprite file: ";
 
     String SEARCH = "Search";
+
+    String FILE_LOADING_ERROR = "File loading error!";
+
+    String LAYER_PROPERTIES = "Layer properties";
+
+    String TOGGLED_ON_PER_LAYER_BASIS = "Toggled on per-layer basis";
+
+    String OPEN_CONTAINING_FOLDER = "Open containing folder";
+
+    String NO_ENTRY_SELECTED = "No entry selected";
+    String OPEN_SOURCE_FILE = "Open source file";
 
 }

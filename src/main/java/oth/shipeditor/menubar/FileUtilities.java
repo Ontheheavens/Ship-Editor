@@ -1,25 +1,23 @@
 package oth.shipeditor.menubar;
 
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.core.json.JsonReadFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.type.TypeFactory;
 import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
 import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.files.HullFileOpened;
 import oth.shipeditor.communication.events.files.SpriteOpened;
-import oth.shipeditor.communication.events.viewer.layers.ActiveLayerUpdated;
-import oth.shipeditor.communication.events.viewer.layers.LayerWasSelected;
+import oth.shipeditor.communication.events.viewer.layers.LastLayerSelectQueued;
+import oth.shipeditor.communication.events.viewer.layers.LayerCreationQueued;
 import oth.shipeditor.components.viewer.layers.ShipLayer;
-import oth.shipeditor.parsing.JsonProcessor;
-import oth.shipeditor.parsing.LoadHullmodDataAction;
-import oth.shipeditor.parsing.LoadShipDataAction;
+import oth.shipeditor.parsing.loading.*;
+import oth.shipeditor.persistence.Settings;
+import oth.shipeditor.persistence.SettingsManager;
+import oth.shipeditor.representation.GameDataRepository;
 import oth.shipeditor.representation.Hull;
-import oth.shipeditor.representation.Skin;
-import oth.shipeditor.utility.ImageCache;
+import oth.shipeditor.representation.HullStyle;
 
 import javax.swing.*;
-import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.image.BufferedImage;
@@ -27,7 +25,10 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Optional;
+import java.nio.file.Paths;
+import java.util.*;
+import java.util.List;
+import java.util.stream.Stream;
 
 /**
  * @author Ontheheavens
@@ -36,14 +37,7 @@ import java.util.Optional;
 @Log4j2
 public final class FileUtilities {
 
-    private static final String OPEN_COMMAND_CANCELLED_BY_USER = "Open command cancelled by user.";
     public static final String STARSECTOR_CORE = "starsector-core";
-    private static final String OPENING_SKIN_FILE = "Opening skin file: {}.";
-    private static final String SKIN_FILE_LOADING_FAILED = "Skin file loading failed: {}";
-    private static final String TRIED_TO_RESOLVE_SKIN_FILE_WITH_INVALID_EXTENSION = "Tried to resolve skin file with invalid extension!";
-    private static File lastDirectory;
-
-    private static ShipLayer current;
 
     @Getter
     private static final Action loadShipDataAction = new LoadShipDataAction();
@@ -57,158 +51,101 @@ public final class FileUtilities {
     @Getter
     private static final Action openShipDataAction = new OpenHullAction();
 
-    private FileUtilities() {
-    }
+    @Getter
+    private static final Action loadHullAsLayerAction = new LoadHullAsLayer();
 
-    @SuppressWarnings("ChainOfInstanceofChecks")
-    public static void listenToLayerChange() {
-        EventBus.subscribe(event -> {
-            if (event instanceof LayerWasSelected checked) {
-                current = checked.selected();
-                FileUtilities.updateActionStates();
-            }
-            if (event instanceof ActiveLayerUpdated checked) {
-                current = checked.updated();
-                FileUtilities.updateActionStates();
-            }
-        });
-    }
+    private FileUtilities() {}
 
-    private static void updateActionStates() {
+    public static void updateActionStates(ShipLayer current) {
         boolean spriteState = (current != null) && current.getShipSprite() == null && current.getShipData() == null;
         boolean hullState = (current != null) && current.getShipSprite() != null && current.getShipData() == null;
         openSpriteAction.setEnabled(spriteState);
         openShipDataAction.setEnabled(hullState);
     }
 
-    public static File searchFileInFolder(Path filePath, Path folderPath) {
-        if (!Files.exists(folderPath) || !Files.isDirectory(folderPath)) {
-            return null;
-        }
-
-        String fileName = filePath.getFileName().toString();
-
-        try (var stream = Files.walk(folderPath)) {
-            Optional<File> first = stream
-                    .filter(Files::isRegularFile)
-                    .filter(file -> {
-                        String toString = file.getFileName().toString();
-                        return toString.equals(fileName);
-                    })
-                    .map(Path::toFile)
-                    .findFirst();
-            return first.orElse(null);
-        } catch (IOException e) {
-            e.printStackTrace();
-            return null;
-        }
-    }
-
     public static void openPathInDesktop(Path toOpen) {
+        FileUtilities.openPathInDesktop(toOpen.toFile());
+    }
+
+    private static void openPathInDesktop(File toOpen) {
         try {
-            Desktop.getDesktop().open(toOpen.toFile());
-        } catch (IOException ex) {
+            Desktop.getDesktop().open(toOpen);
+        } catch (IOException | IllegalArgumentException ex) {
             log.error("Failed to open {} in Explorer!", toOpen);
+            JOptionPane.showMessageDialog(null,
+                    "Failed to open file in Explorer, exception thrown at: " + toOpen,
+                    "File interaction error!",
+                    JOptionPane.ERROR_MESSAGE);
+            ex.printStackTrace();
         }
     }
 
-    public static BufferedImage loadSprite(File file) {
-        return ImageCache.loadImage(file);
-    }
-
-    private static ObjectMapper getConfigured() {
-        ObjectMapper objectMapper = new ObjectMapper();
-        objectMapper.configure(JsonParser.Feature.ALLOW_YAML_COMMENTS, true);
-        objectMapper.configure(JsonReadFeature.ALLOW_TRAILING_COMMA.mappedFeature(), true);
-        objectMapper.configure(JsonReadFeature.ALLOW_LEADING_DECIMAL_POINT_FOR_NUMBERS.mappedFeature(), true);
-        return objectMapper;
-    }
-
-    public static Hull loadHullFile(File file) {
-        String toString = file.getPath();
-        if (!toString.endsWith(".ship")) {
-            throw new IllegalArgumentException("Tried to resolve hull file with invalid extension!");
-        }
-        Hull hull = null;
-        try {
-            ObjectMapper objectMapper = FileUtilities.getConfigured();
-            hull = objectMapper.readValue(file, Hull.class);
-            hull.setShipFilePath(file.toPath());
-            log.info("Opening hull file: {}", file.getName());
-        } catch (IOException e) {
-            log.error("Hull file loading failed: {}", file.getName());
-            e.printStackTrace();
-        }
-        return hull;
-    }
-
-    public static Skin loadSkinFile(File file) {
-        String toString = file.getPath();
-        if (!toString.endsWith(".skin")) {
-            throw new IllegalArgumentException(TRIED_TO_RESOLVE_SKIN_FILE_WITH_INVALID_EXTENSION);
-        }
-        return FileUtilities.parseSkinAsJSON(file);
-    }
-
-    private static Skin parseSkinAsJSON(File file) {
-        Skin skin = null;
-        ObjectMapper objectMapper = FileUtilities.getConfigured();
-        String preprocessed = JsonProcessor.correctJSON(file);
-        try (JsonParser parser = objectMapper.createParser(preprocessed)) {
-            log.info(OPENING_SKIN_FILE, file.getName());
-            skin = objectMapper.readValue(parser, Skin.class);
-            skin.setSkinFilePath(file.toPath());
-        } catch (IOException e) {
-            log.error(SKIN_FILE_LOADING_FAILED, file.getName());
-            e.printStackTrace();
-        }
-        return skin;
+    public static void createLayerWithSprite(File spriteFile) {
+        EventBus.publish(new LayerCreationQueued());
+        EventBus.publish(new LastLayerSelectQueued());
+        BufferedImage sprite = FileLoading.loadSprite(spriteFile);
+        EventBus.publish(new SpriteOpened(sprite, spriteFile.getName()));
     }
 
     private static class OpenHullAction extends AbstractAction {
         @Override
         public void actionPerformed(ActionEvent e) {
-            JFileChooser shipDataChooser = new JFileChooser("C:\\Games\\Ship Editor\\src\\main\\resources");
-            if (lastDirectory != null) {
-                shipDataChooser.setCurrentDirectory(lastDirectory);
-            }
-            FileNameExtensionFilter shipDataFilter = new FileNameExtensionFilter(
-                    "JSON ship files", "ship");
-            shipDataChooser.setFileFilter(shipDataFilter);
-            int returnVal = shipDataChooser.showOpenDialog(null);
-            lastDirectory = shipDataChooser.getCurrentDirectory();
-            if (returnVal == JFileChooser.APPROVE_OPTION) {
-                File file = shipDataChooser.getSelectedFile();
-                Hull hull = FileUtilities.loadHullFile(file);
-                EventBus.publish(new HullFileOpened(hull, file.getName()));
-            } else {
-                log.info(OPEN_COMMAND_CANCELLED_BY_USER);
-            }
+            FileLoading.openHullAndDo(e1 -> {
+                    JFileChooser shipDataChooser = (JFileChooser) e1.getSource();
+                    File file = shipDataChooser.getSelectedFile();
+                    Hull hull = FileLoading.loadHullFile(file);
+                    EventBus.publish(new HullFileOpened(hull, file.getName()));
+            });
         }
     }
 
-    private static class OpenSpriteAction extends AbstractAction {
+    public static void loadHullStyles() {
+        Settings settings = SettingsManager.getSettings();
 
-        @Override
-        public void actionPerformed(ActionEvent e) {
-            JFileChooser spriteChooser = new JFileChooser("C:\\Games\\Ship Editor\\src\\main\\resources");
-            if (lastDirectory != null) {
-                spriteChooser.setCurrentDirectory(lastDirectory);
-            }
-            FileNameExtensionFilter spriteFilter = new FileNameExtensionFilter(
-                    "PNG Images", "png");
-            spriteChooser.setFileFilter(spriteFilter);
-            int returnVal = spriteChooser.showOpenDialog(null);
-            lastDirectory = spriteChooser.getCurrentDirectory();
-            if (returnVal == JFileChooser.APPROVE_OPTION) {
-                File file = spriteChooser.getSelectedFile();
-                BufferedImage sprite = FileUtilities.loadSprite(file);
-                EventBus.publish(new SpriteOpened(sprite, file.getName()));
-            } else {
-                log.info(OPEN_COMMAND_CANCELLED_BY_USER);
-            }
+        Path targetFile = Paths.get("data", "config", "hull_styles.json");
+
+        List<Path> allModFolders = SettingsManager.getAllModFolders();
+
+        Path coreFilePath = Paths.get(settings.getCoreFolderPath()).resolve(targetFile);
+
+        Collection<File> hullStyleFiles = new ArrayList<>();
+        hullStyleFiles.add(coreFilePath.toFile());
+
+        try (Stream<Path> childDirectories = allModFolders.stream()) {
+            childDirectories.forEach(childDir -> {
+                Path targetFilePath = childDir.resolve(targetFile);
+                if (Files.exists(targetFilePath)) {
+                    hullStyleFiles.add(targetFilePath.toFile());
+                }
+            });
         }
 
+        Map<String, HullStyle> collectedHullStyles = new HashMap<>();
+        for (File styleFile : hullStyleFiles) {
+            collectedHullStyles.putAll(FileUtilities.loadHullStyleFile(styleFile));
+        }
+        GameDataRepository gameData = SettingsManager.getGameData();
+        gameData.setAllHullStyles(collectedHullStyles);
+    }
+
+    private static Map<String, HullStyle> loadHullStyleFile(File styleFile) {
+        ObjectMapper mapper = FileLoading.getConfigured();
+        Map<String, HullStyle> hullStyles = null;
+        try {
+            TypeFactory typeFactory = mapper.getTypeFactory();
+            hullStyles = mapper.readValue(styleFile,
+                    typeFactory.constructMapType(HashMap.class, String.class, HullStyle.class));
+
+            for (Map.Entry<String, HullStyle> entry : hullStyles.entrySet()) {
+                String hullStyleID = entry.getKey();
+                HullStyle hullStyle = entry.getValue();
+                hullStyle.setHullStyleID(hullStyleID);
+            }
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return hullStyles;
     }
 
 }

@@ -25,8 +25,6 @@ import java.util.stream.StreamSupport;
 @Log4j2
 abstract class DataTreePanel extends JPanel {
 
-    private static final String NO_ENTRY_SELECTED = "No entry selected";
-
     @Getter
     private DefaultMutableTreeNode rootNode;
 
@@ -55,7 +53,7 @@ abstract class DataTreePanel extends JPanel {
 
     void resetInfoPanel() {
         rightPanel.removeAll();
-        rightPanel.add(new JLabel(NO_ENTRY_SELECTED));
+        rightPanel.add(new JLabel(StringConstants.NO_ENTRY_SELECTED));
     }
 
     private static JScrollPane createTableFromMap(Map<String, String> data) {
@@ -87,7 +85,7 @@ abstract class DataTreePanel extends JPanel {
 
     private JSplitPane createContentSplitter(JPanel treeContainer) {
         rightPanel = new JPanel(new GridBagLayout());
-        rightPanel.add(new JLabel(NO_ENTRY_SELECTED));
+        rightPanel.add(new JLabel(StringConstants.NO_ENTRY_SELECTED));
         JSplitPane treeSplitter = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
         treeSplitter.setOneTouchExpandable(true);
         treeSplitter.setResizeWeight(0.4f);
@@ -239,13 +237,14 @@ abstract class DataTreePanel extends JPanel {
 
     JPopupMenu getContextMenu() {
         JPopupMenu menu = new JPopupMenu();
-        JMenuItem collapsePackage = new JMenuItem("Collapse parent");
+        JMenuItem collapsePackage = new JMenuItem("Collapse package");
         collapsePackage.addActionListener(getCollapseAction());
         menu.add(collapsePackage);
-        JMenuItem openSourceFile = new JMenuItem("Open source file");
+        menu.addSeparator();
+        JMenuItem openSourceFile = new JMenuItem(StringConstants.OPEN_SOURCE_FILE);
         openSourceFile.addActionListener(e -> openEntryPath(OpenDataTarget.FILE));
         menu.add(openSourceFile);
-        JMenuItem openInExplorer = new JMenuItem("Open containing folder");
+        JMenuItem openInExplorer = new JMenuItem(StringConstants.OPEN_CONTAINING_FOLDER);
         openInExplorer.addActionListener(e -> openEntryPath(OpenDataTarget.CONTAINER));
         menu.add(openInExplorer);
         JMenuItem openPackage = new JMenuItem("Open data package");

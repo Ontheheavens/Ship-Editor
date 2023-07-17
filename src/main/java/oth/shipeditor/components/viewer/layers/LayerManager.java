@@ -47,6 +47,7 @@ public class LayerManager {
         EventBus.publish(new LayerWasSelected(old, newlySelected));
     }
 
+    @SuppressWarnings("OverlyCoupledMethod")
     private void initLayerListening() {
         EventBus.subscribe(event -> {
             if (event instanceof LayerCreationQueued) {
@@ -81,6 +82,12 @@ public class LayerManager {
                 if (painter == null) return;
                 painter.setSpriteOpacity(checked.changedValue());
                 EventBus.publish(new ViewerRepaintQueued());
+            }
+        });
+        EventBus.subscribe(event -> {
+            if (event instanceof LayerShipDataInitialized checked) {
+                LayerPainter source = checked.source();
+                this.setActiveLayer(source.getParentLayer());
             }
         });
     }

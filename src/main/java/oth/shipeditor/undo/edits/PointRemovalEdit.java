@@ -5,6 +5,7 @@ import lombok.extern.log4j.Log4j2;
 import oth.shipeditor.communication.events.Events;
 import oth.shipeditor.components.viewer.entities.BaseWorldPoint;
 import oth.shipeditor.components.viewer.entities.BoundPoint;
+import oth.shipeditor.components.viewer.entities.WorldPoint;
 import oth.shipeditor.components.viewer.painters.AbstractPointPainter;
 import oth.shipeditor.components.viewer.painters.BoundPointsPainter;
 import oth.shipeditor.undo.AbstractEdit;
@@ -15,7 +16,7 @@ import oth.shipeditor.undo.AbstractEdit;
  */
 @Log4j2
 @AllArgsConstructor
-public class PointRemovalEdit extends AbstractEdit {
+public class PointRemovalEdit extends AbstractEdit implements PointEdit {
     private final AbstractPointPainter painter;
     private final BaseWorldPoint removed;
     private final int indexOfRemoved;
@@ -29,6 +30,12 @@ public class PointRemovalEdit extends AbstractEdit {
         }
         Events.repaintView();
     }
+
+    @Override
+    public WorldPoint getPoint() {
+        return removed;
+    }
+
 
     @Override
     public void redo() {

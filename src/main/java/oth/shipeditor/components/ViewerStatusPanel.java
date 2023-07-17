@@ -8,7 +8,9 @@ import org.kordamp.ikonli.fluentui.FluentUiRegularMZ;
 import org.kordamp.ikonli.swing.FontIcon;
 import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.viewer.ViewerRepaintQueued;
+import oth.shipeditor.communication.events.viewer.control.MirrorModeChange;
 import oth.shipeditor.communication.events.viewer.control.ViewerCursorMoved;
+import oth.shipeditor.communication.events.viewer.control.ViewerTransformRotated;
 import oth.shipeditor.communication.events.viewer.control.ViewerZoomChanged;
 import oth.shipeditor.communication.events.viewer.layers.ActiveLayerUpdated;
 import oth.shipeditor.communication.events.viewer.layers.LayerWasSelected;
@@ -17,13 +19,12 @@ import oth.shipeditor.components.viewer.ShipViewable;
 import oth.shipeditor.components.viewer.entities.ShipCenterPoint;
 import oth.shipeditor.components.viewer.layers.LayerPainter;
 import oth.shipeditor.components.viewer.layers.ShipLayer;
-import oth.shipeditor.utility.Utility;
+import oth.shipeditor.utility.MouseoverLabelListener;
 
 import javax.swing.*;
 import javax.swing.border.Border;
 import java.awt.*;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
+import java.awt.event.KeyEvent;
 import java.awt.geom.Point2D;
 import java.awt.image.BufferedImage;
 
@@ -31,60 +32,126 @@ import java.awt.image.BufferedImage;
  * @author Ontheheavens
  * @since 01.05.2023
  */
+@SuppressWarnings("ClassWithTooManyFields")
 @Log4j2
 final class ViewerStatusPanel extends JPanel {
 
     private static double zoomLevel = 1.0f;
+
+    private static double rotationDegrees;
 
     @Getter
     private CoordsDisplayMode mode = CoordsDisplayMode.WORLD;
 
     private final ShipViewable viewer;
 
-    private final JLabel dimensions;
+    private JLabel dimensions;
 
-    private final JLabel cursorCoords;
+    private JLabel cursorCoords;
 
-    private final JLabel zoom;
+    private JLabel zoom;
+
+    private JLabel rotation;
 
     private Point2D cursorPoint;
 
-    ViewerStatusPanel(ShipViewable viewable) {
-        this.viewer = viewable;
-        FontIcon dimensionIcon = FontIcon.of(FluentUiRegularMZ.SLIDE_SIZE_24, 20);
-        dimensions = new JLabel("", dimensionIcon, SwingConstants.TRAILING);
-        dimensions.setToolTipText("Width / height of active layer");
-        this.add(dimensions);
-        JSeparator separator = new JSeparator(SwingConstants.VERTICAL);
-        separator.setPreferredSize(new Dimension(1, dimensionIcon.getIconHeight()));
-        this.add(separator);
-        FontIcon mouseIcon = FontIcon.of(FluentUiRegularAL.CURSOR_HOVER_20, 20);
-        cursorCoords = new JLabel("", mouseIcon, SwingConstants.TRAILING);
-        cursorCoords.setBorder(ViewerStatusPanel.createLabelBorder());
-        cursorCoords.setToolTipText("Click to change coordinate system");
-        JPopupMenu popupMenu = this.createCoordsMenu();
-        cursorCoords.addMouseListener(new MouseoverBorderListener(popupMenu));
-        this.add(cursorCoords);
-        this.add(Utility.clone(separator));
-        FontIcon zoomIcon = FontIcon.of(FluentUiRegularMZ.ZOOM_IN_20, 20);
-        this.zoom = new JLabel("", zoomIcon, SwingConstants.TRAILING);
-        this.zoom.setToolTipText("Zoom level");
-        this.add(this.zoom);
+    private JPanel leftsideContainer;
 
-        this.setBorder(BorderFactory.createMatteBorder(1, 0, 0, 0, Color.LIGHT_GRAY));
+    ViewerStatusPanel(ShipViewable viewable) {
+        this.setLayout(new BorderLayout());
+
+        this.viewer = viewable;
+        this.leftsideContainer = createLeftsidePanel();
 
         this.initListeners();
         this.setDimensionsLabel(null);
         this.setZoomLabel(zoomLevel);
+        this.setRotationLabel(rotationDegrees);
         this.cursorPoint = new Point2D.Double();
         this.updateCursorCoordsLabel();
+
+        this.add(leftsideContainer, BorderLayout.LINE_START);
+
+        JPanel rightPanel = new JPanel(new GridBagLayout());
+
+        GridBagConstraints gbcRight = new GridBagConstraints();
+        gbcRight.gridx = 1;
+        gbcRight.gridy = 0;
+        gbcRight.weightx = 1;
+        gbcRight.insets = new Insets(0, 0, 0, 10);
+        gbcRight.anchor = GridBagConstraints.LINE_END;
+
+        JCheckBox mirrorModeCheckbox = new JCheckBox("Mirror mode");
+        mirrorModeCheckbox.addItemListener(e -> {
+            boolean mirrorModeOn = mirrorModeCheckbox.isSelected();
+            EventBus.publish(new MirrorModeChange(mirrorModeOn));
+        });
+        mirrorModeCheckbox.setSelected(true);
+        KeyboardFocusManager.getCurrentKeyboardFocusManager().addKeyEventDispatcher(ke -> {
+            int keyCode = ke.getKeyCode();
+            if (ke.getID() == KeyEvent.KEY_RELEASED && keyCode == KeyEvent.VK_SPACE) {
+                mirrorModeCheckbox.setSelected(!mirrorModeCheckbox.isSelected());
+            }
+            return false;
+        });
+        mirrorModeCheckbox.setMnemonic(KeyEvent.VK_SPACE);
+        mirrorModeCheckbox.setToolTipText("Spacebar to toggle");
+        rightPanel.add(mirrorModeCheckbox, gbcRight);
+        this.add(rightPanel, BorderLayout.CENTER);
+        this.setBorder(BorderFactory.createMatteBorder(1, 0, 0, 0, Color.LIGHT_GRAY));
     }
 
+    private JPanel createLeftsidePanel() {
+        leftsideContainer = new JPanel();
+
+        FontIcon dimensionIcon = FontIcon.of(FluentUiRegularMZ.SLIDE_SIZE_24, 20);
+        dimensions = new JLabel("", dimensionIcon, SwingConstants.TRAILING);
+        dimensions.setToolTipText("Width / height of active layer");
+        leftsideContainer.add(dimensions);
+
+        this.addSeparator();
+
+        FontIcon mouseIcon = FontIcon.of(FluentUiRegularAL.CURSOR_HOVER_20, 20);
+        cursorCoords = new JLabel("", mouseIcon, SwingConstants.TRAILING);
+        cursorCoords.setBorder(ViewerStatusPanel.createLabelBorder());
+        cursorCoords.setToolTipText("Right-click to change coordinate system");
+        JPopupMenu popupMenu = this.createCoordsMenu();
+        cursorCoords.addMouseListener(new MouseoverLabelListener(popupMenu, cursorCoords));
+        leftsideContainer.add(cursorCoords);
+
+        this.addSeparator();
+
+        FontIcon zoomIcon = FontIcon.of(FluentUiRegularMZ.ZOOM_IN_20, 20);
+        this.zoom = new JLabel("", zoomIcon, SwingConstants.TRAILING);
+        this.zoom.setToolTipText("Zoom level");
+        leftsideContainer.add(this.zoom);
+
+        this.addSeparator();
+
+        FontIcon rotationIcon = FontIcon.of(FluentUiRegularAL.ARROW_ROTATE_CLOCKWISE_20, 20);
+        this.rotation = new JLabel("", rotationIcon, SwingConstants.TRAILING);
+        this.rotation.setToolTipText("Rotation degrees");
+        leftsideContainer.add(this.rotation);
+
+        return leftsideContainer;
+    }
+
+    private void addSeparator() {
+        JSeparator separator = new JSeparator(SwingConstants.VERTICAL);
+        separator.setPreferredSize(new Dimension(2, 24));
+        separator.setForeground(Color.GRAY);
+        leftsideContainer.add(separator);
+    }
+
+    @SuppressWarnings("ChainOfInstanceofChecks")
     private void initListeners() {
         EventBus.subscribe(event -> {
             if (event instanceof ViewerZoomChanged checked) {
                 zoomLevel = checked.newValue();
                 this.setZoomLabel(zoomLevel);
+            } else if (event instanceof ViewerTransformRotated checked) {
+                rotationDegrees = checked.degrees();
+                this.setRotationLabel(rotationDegrees);
             }
         });
         EventBus.subscribe(event -> {
@@ -222,38 +289,9 @@ final class ViewerStatusPanel extends JPanel {
         zoom.setText(rounded + "%");
     }
 
-    private class MouseoverBorderListener extends MouseAdapter {
-
-        private final JPopupMenu popupMenu;
-
-        MouseoverBorderListener(JPopupMenu menu) {
-            this.popupMenu = menu;
-        }
-
-        // Not entirely satisfied with the mismatch between background coloring bounds and border bounds;
-        // However, this is good enough for the time being.
-
-        @Override
-        public void mouseEntered(MouseEvent e) {
-            super.mouseEntered(e);
-            cursorCoords.setBackground(Color.LIGHT_GRAY);
-            cursorCoords.setOpaque(true);
-        }
-
-        @Override
-        public void mouseExited(MouseEvent e) {
-            super.mouseExited(e);
-            cursorCoords.setBackground(Color.WHITE);
-            cursorCoords.setOpaque(false);
-        }
-
-        @Override
-        public void mouseClicked(MouseEvent e) {
-            if (SwingUtilities.isLeftMouseButton(e)) {
-                popupMenu.show(cursorCoords, e.getX(), e.getY());
-            }
-        }
-
+    private void setRotationLabel(double newRotation) {
+        int rounded = (int) Math.round(newRotation);
+        rotation.setText(rounded + "°");
     }
 
 }
