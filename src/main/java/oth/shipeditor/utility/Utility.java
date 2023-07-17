@@ -47,6 +47,14 @@ public final class Utility {
         return new Polygon(xPoints, yPoints, 6);
     }
 
+    public static float getOpacityFromAlpha(int alpha) {
+        return alpha / 255.0f; // Convert alpha [0, 255] to opacity [0.0, 1.0].
+    }
+
+    public static Font getOrbitron(int size) {
+        return new Font("Orbitron", Font.BOLD, size);
+    }
+
     @SuppressWarnings("unused")
     public static Shape getScaledShape(Shape input, Point2D center,
                                        AffineTransform delegateWTS,

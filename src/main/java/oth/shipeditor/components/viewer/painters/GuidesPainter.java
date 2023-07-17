@@ -14,6 +14,7 @@ import oth.shipeditor.components.viewer.PrimaryShipViewer;
 import oth.shipeditor.components.viewer.entities.BaseWorldPoint;
 import oth.shipeditor.components.viewer.entities.WorldPoint;
 import oth.shipeditor.components.viewer.layers.LayerPainter;
+import oth.shipeditor.utility.Utility;
 
 import javax.swing.*;
 import java.awt.*;
@@ -177,8 +178,7 @@ public final class GuidesPainter implements Painter {
 
         private static LabelPainter createCenterLabelPainter() {
             LabelPainter painter = new LabelPainter();
-            MenuContainer fontExample = new JLabel();
-            Font font = fontExample.getFont().deriveFont(0.25f);
+            Font font = Utility.getOrbitron(16).deriveFont(0.25f);
             painter.setFont(font);
             painter.setLabelAnchor(-0.05f, 0.55f);
             return painter;

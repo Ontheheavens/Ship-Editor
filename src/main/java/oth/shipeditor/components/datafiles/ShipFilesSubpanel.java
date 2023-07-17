@@ -126,11 +126,19 @@ class ShipFilesSubpanel extends JPanel {
 
         File spriteFile = FileLoading.fetchDataFile(Path.of(spriteFileName),
                 selected.getPackageFolder());
-        JLabel spriteFileNameLabel = new JLabel("Sprite file: : " + spriteFile.getName());
+        JLabel spriteFileNameLabel;
+        if (spriteFile != null) {
+            spriteFileNameLabel = new JLabel("Sprite file: : " + spriteFile.getName());
+        } else {
+            spriteFileNameLabel = new JLabel("Sprite file: failed to fetch! ");
+        }
         spriteFileNameLabel.setBorder(ShipFilesSubpanel.createLabelBorder());
-        JPopupMenu spriteContextMenu = ShipFilesSubpanel.createPathContextMenu(spriteFile.toPath());
-        spriteFileNameLabel.addMouseListener(new MouseoverLabelListener(spriteContextMenu, spriteFileNameLabel));
-        spriteFileNameLabel.setToolTipText(spriteFile.toString());
+        JPopupMenu spriteContextMenu;
+        if (spriteFile != null) {
+            spriteContextMenu = ShipFilesSubpanel.createPathContextMenu(spriteFile.toPath());
+            spriteFileNameLabel.addMouseListener(new MouseoverLabelListener(spriteContextMenu, spriteFileNameLabel));
+            spriteFileNameLabel.setToolTipText(spriteFile.toString());
+        }
         labelContainer.add(spriteFileNameLabel);
 
         if (!skinFileName.isEmpty()) {
@@ -163,10 +171,10 @@ class ShipFilesSubpanel extends JPanel {
 
     private static JPopupMenu createPathContextMenu(Path filePath) {
         JPopupMenu openFileMenu = new JPopupMenu();
-        JMenuItem openSourceFile = new JMenuItem(DataTreePanel.OPEN_SOURCE_FILE);
+        JMenuItem openSourceFile = new JMenuItem(StringConstants.OPEN_SOURCE_FILE);
         openSourceFile.addActionListener(e -> FileUtilities.openPathInDesktop(filePath));
         openFileMenu.add(openSourceFile);
-        JMenuItem openContainingFolder = new JMenuItem(DataTreePanel.OPEN_CONTAINING_FOLDER);
+        JMenuItem openContainingFolder = new JMenuItem(StringConstants.OPEN_CONTAINING_FOLDER);
         openContainingFolder.addActionListener(e -> FileUtilities.openPathInDesktop(filePath.getParent()));
         openFileMenu.add(openContainingFolder);
 

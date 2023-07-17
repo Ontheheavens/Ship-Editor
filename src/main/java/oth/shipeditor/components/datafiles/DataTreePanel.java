@@ -25,10 +25,6 @@ import java.util.stream.StreamSupport;
 @Log4j2
 abstract class DataTreePanel extends JPanel {
 
-    private static final String NO_ENTRY_SELECTED = "No entry selected";
-    public static final String OPEN_CONTAINING_FOLDER = "Open containing folder";
-    public static final String OPEN_SOURCE_FILE = "Open source file";
-
     @Getter
     private DefaultMutableTreeNode rootNode;
 
@@ -57,7 +53,7 @@ abstract class DataTreePanel extends JPanel {
 
     void resetInfoPanel() {
         rightPanel.removeAll();
-        rightPanel.add(new JLabel(NO_ENTRY_SELECTED));
+        rightPanel.add(new JLabel(StringConstants.NO_ENTRY_SELECTED));
     }
 
     private static JScrollPane createTableFromMap(Map<String, String> data) {
@@ -89,7 +85,7 @@ abstract class DataTreePanel extends JPanel {
 
     private JSplitPane createContentSplitter(JPanel treeContainer) {
         rightPanel = new JPanel(new GridBagLayout());
-        rightPanel.add(new JLabel(NO_ENTRY_SELECTED));
+        rightPanel.add(new JLabel(StringConstants.NO_ENTRY_SELECTED));
         JSplitPane treeSplitter = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
         treeSplitter.setOneTouchExpandable(true);
         treeSplitter.setResizeWeight(0.4f);
@@ -245,10 +241,10 @@ abstract class DataTreePanel extends JPanel {
         collapsePackage.addActionListener(getCollapseAction());
         menu.add(collapsePackage);
         menu.addSeparator();
-        JMenuItem openSourceFile = new JMenuItem(OPEN_SOURCE_FILE);
+        JMenuItem openSourceFile = new JMenuItem(StringConstants.OPEN_SOURCE_FILE);
         openSourceFile.addActionListener(e -> openEntryPath(OpenDataTarget.FILE));
         menu.add(openSourceFile);
-        JMenuItem openInExplorer = new JMenuItem(OPEN_CONTAINING_FOLDER);
+        JMenuItem openInExplorer = new JMenuItem(StringConstants.OPEN_CONTAINING_FOLDER);
         openInExplorer.addActionListener(e -> openEntryPath(OpenDataTarget.CONTAINER));
         menu.add(openInExplorer);
         JMenuItem openPackage = new JMenuItem("Open data package");

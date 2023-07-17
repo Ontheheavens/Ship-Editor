@@ -5,18 +5,13 @@ import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
 import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.Events;
-import oth.shipeditor.communication.events.viewer.ViewerRepaintQueued;
-import oth.shipeditor.communication.events.viewer.layers.PainterOpacityChangeQueued;
-import oth.shipeditor.communication.events.viewer.layers.PainterVisibilityChanged;
 import oth.shipeditor.communication.events.viewer.points.BoundCreationQueued;
 import oth.shipeditor.communication.events.viewer.points.BoundInsertedConfirmed;
 import oth.shipeditor.communication.events.viewer.points.InstrumentModeChanged;
-import oth.shipeditor.communication.events.viewer.points.PointSelectedConfirmed;
 import oth.shipeditor.components.instrument.InstrumentTabsPane;
 import oth.shipeditor.components.viewer.InstrumentMode;
 import oth.shipeditor.components.viewer.PrimaryShipViewer;
 import oth.shipeditor.components.viewer.control.ControlPredicates;
-import oth.shipeditor.components.viewer.control.PointSelectionMode;
 import oth.shipeditor.components.viewer.control.ViewerControl;
 import oth.shipeditor.components.viewer.entities.BaseWorldPoint;
 import oth.shipeditor.components.viewer.entities.BoundPoint;
@@ -39,7 +34,7 @@ import java.util.List;
  * @author Ontheheavens
  * @since 06.05.2023
  */
-@SuppressWarnings({"OverlyComplexClass", "OverlyCoupledClass"})
+@SuppressWarnings("OverlyComplexClass")
 @Log4j2
 public final class BoundPointsPainter extends AbstractPointPainter {
 
@@ -180,23 +175,11 @@ public final class BoundPointsPainter extends AbstractPointPainter {
                 setInteractionEnabled(checked.newMode() == InstrumentMode.BOUNDS);
             }
         });
-        EventBus.subscribe(event -> {
-            if (event instanceof PainterVisibilityChanged checked) {
-                Class<? extends AbstractPointPainter> painterClass = checked.painterClass();
-                if (!painterClass.isInstance(this) || !parentLayer.isLayerActive()) return;
-                this.setVisibilityMode(checked.changed());
-                EventBus.publish(new ViewerRepaintQueued());
-            }
-        });
-        EventBus.subscribe(event -> {
-            if (event instanceof PainterOpacityChangeQueued checked) {
-                Class<? extends AbstractPointPainter> painterClass = checked.painterClass();
-                if (!painterClass.isInstance(this)) return;
-                if (!this.parentLayer.isLayerActive() || !this.isInteractionEnabled()) return;
-                this.setPaintOpacity(checked.change());
-                EventBus.publish(new ViewerRepaintQueued());
-            }
-        });
+    }
+
+    @Override
+    protected boolean isParentLayerActive() {
+        return this.parentLayer.isLayerActive();
     }
 
     private void initCreationListener() {

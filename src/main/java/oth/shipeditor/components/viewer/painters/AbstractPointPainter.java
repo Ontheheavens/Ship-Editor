@@ -7,6 +7,8 @@ import lombok.extern.log4j.Log4j2;
 import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.viewer.ViewerRepaintQueued;
 import oth.shipeditor.communication.events.viewer.control.ViewerCursorMoved;
+import oth.shipeditor.communication.events.viewer.layers.PainterOpacityChangeQueued;
+import oth.shipeditor.communication.events.viewer.layers.PainterVisibilityChanged;
 import oth.shipeditor.communication.events.viewer.points.*;
 import oth.shipeditor.components.viewer.control.ControlPredicates;
 import oth.shipeditor.components.viewer.control.PointSelectionMode;
@@ -24,7 +26,7 @@ import java.util.List;
  * @author Ontheheavens
  * @since 29.05.2023
  */
-@SuppressWarnings("ClassWithTooManyMethods")
+@SuppressWarnings({"ClassWithTooManyMethods", "OverlyComplexClass"})
 @Log4j2
 public abstract class AbstractPointPainter implements Painter {
 
@@ -132,7 +134,27 @@ public abstract class AbstractPointPainter implements Painter {
                 }
             }
         });
+        EventBus.subscribe(event -> {
+            if (event instanceof PainterOpacityChangeQueued checked) {
+                Class<? extends AbstractPointPainter> painterClass = checked.painterClass();
+                if (!painterClass.isInstance(this)) return;
+                if (!isParentLayerActive()) return;
+                this.setPaintOpacity(checked.change());
+                EventBus.publish(new ViewerRepaintQueued());
+            }
+        });
+        EventBus.subscribe(event -> {
+            if (event instanceof PainterVisibilityChanged checked) {
+                Class<? extends AbstractPointPainter> painterClass = checked.painterClass();
+                if (!painterClass.isInstance(this) || !isParentLayerActive()) return;
+                this.setVisibilityMode(checked.changed());
+                EventBus.publish(new ViewerRepaintQueued());
+            }
+        });
     }
+
+    @SuppressWarnings("BooleanMethodIsAlwaysInverted")
+    protected abstract boolean isParentLayerActive();
 
     protected Point2D createCounterpartPosition(Point2D toMirror) {
         throw new UnsupportedOperationException("Point mirroring supported only for specific point painters!");

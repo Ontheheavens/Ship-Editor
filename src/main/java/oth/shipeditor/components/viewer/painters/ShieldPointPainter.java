@@ -4,6 +4,7 @@ import lombok.Getter;
 import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.components.CentersPanelRepaintQueued;
 import oth.shipeditor.communication.events.viewer.ViewerRepaintQueued;
+import oth.shipeditor.communication.events.viewer.layers.PainterOpacityChangeQueued;
 import oth.shipeditor.communication.events.viewer.points.InstrumentModeChanged;
 import oth.shipeditor.communication.events.viewer.points.RadiusDragQueued;
 import oth.shipeditor.components.instrument.InstrumentTabsPane;
@@ -19,6 +20,8 @@ import oth.shipeditor.representation.GameDataRepository;
 import oth.shipeditor.representation.Hull;
 import oth.shipeditor.representation.HullStyle;
 import oth.shipeditor.undo.EditDispatch;
+import oth.shipeditor.utility.ApplicationDefaults;
+import oth.shipeditor.utility.Utility;
 
 import java.awt.*;
 import java.awt.event.KeyEvent;
@@ -57,8 +60,11 @@ public class ShieldPointPainter extends AbstractPointPainter{
         Map<String, HullStyle> allHullStyles = dataRepository.getAllHullStyles();
         HullStyle hullStyle = allHullStyles.get(styleID);
         this.shieldCenterPoint = new ShieldCenterPoint(translated,
-                (float) hull.getShieldRadius(), this.parentLayer, hullStyle);
+                (float) hull.getShieldRadius(), this.parentLayer, hullStyle, this);
         this.addPoint(shieldCenterPoint);
+        Color shieldInnerColor = hullStyle.getShieldInnerColor();
+        float styleInnerColorOpacity = Utility.getOpacityFromAlpha(shieldInnerColor.getAlpha());
+        this.setPaintOpacity(styleInnerColorOpacity);
     }
 
     private void initModeListening() {
@@ -77,6 +83,11 @@ public class ShieldPointPainter extends AbstractPointPainter{
                 EditDispatch.postShieldRadiusChanged(this.shieldCenterPoint, rounded);
             }
         });
+    }
+
+    @Override
+    protected boolean isParentLayerActive() {
+        return this.parentLayer.isLayerActive();
     }
 
     private void initHotkeys() {

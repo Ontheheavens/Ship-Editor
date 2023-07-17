@@ -12,15 +12,19 @@ import oth.shipeditor.communication.events.viewer.layers.PainterOpacityChangeQue
 import oth.shipeditor.components.viewer.entities.ShipCenterPoint;
 import oth.shipeditor.components.viewer.layers.LayerPainter;
 import oth.shipeditor.components.viewer.layers.ShipLayer;
+import oth.shipeditor.components.viewer.painters.AbstractPointPainter;
 import oth.shipeditor.components.viewer.painters.CenterPointPainter;
 import oth.shipeditor.components.viewer.painters.PainterVisibility;
+import oth.shipeditor.components.viewer.painters.ShieldPointPainter;
 import oth.shipeditor.utility.ApplicationDefaults;
 import oth.shipeditor.utility.Pair;
 import oth.shipeditor.utility.StringConstants;
 import oth.shipeditor.utility.Utility;
 
 import javax.swing.*;
+import javax.swing.border.Border;
 import javax.swing.border.EmptyBorder;
+import javax.swing.border.MatteBorder;
 import javax.swing.event.ChangeListener;
 import java.awt.*;
 import java.awt.event.ActionListener;
@@ -30,6 +34,7 @@ import java.awt.geom.Point2D;
  * @author Ontheheavens
  * @since 06.06.2023
  */
+@SuppressWarnings({"DuplicatedCode", "ClassWithTooManyFields"})
 @Log4j2
 public final class HullPointsPanel extends JPanel {
 
@@ -47,8 +52,10 @@ public final class HullPointsPanel extends JPanel {
 
     private JLabel collisionOpacityLabel;
     private JSlider collisionOpacitySlider;
-
     private JRadioButton collisionModeButton;
+
+    private JLabel shieldOpacityLabel;
+    private JSlider shieldOpacitySlider;
     private JRadioButton shieldModeButton;
 
     public HullPointsPanel() {
@@ -105,6 +112,7 @@ public final class HullPointsPanel extends JPanel {
                 this.refresh();
 
                 collisionOpacitySlider.setEnabled(enableSlider);
+                shieldOpacitySlider.setEnabled(enableSlider);
             }
         });
     }
@@ -133,36 +141,20 @@ public final class HullPointsPanel extends JPanel {
         JPanel hullCenterPanel = new JPanel();
         hullCenterPanel.setLayout(new BoxLayout(hullCenterPanel, BoxLayout.PAGE_AXIS));
 
-        JPanel visibilityWidgetContainer = new JPanel();
-        visibilityWidgetContainer.setLayout(new BoxLayout(visibilityWidgetContainer, BoxLayout.LINE_AXIS));
-
         JComboBox<PainterVisibility> visibilityList = new JComboBox<>(PainterVisibility.values());
-        visibilityList.setRenderer(PainterVisibility.createCellRenderer());
-        visibilityList.addActionListener(PainterVisibility.createActionListener(visibilityList,
-                CenterPointPainter.class));
         ActionListener selectionAction = e -> {
             LayerPainter painter = (LayerPainter) e.getSource();
             CenterPointPainter boundsPainter = painter.getCenterPointPainter();
             PainterVisibility valueOfLayer = boundsPainter.getVisibilityMode();
             visibilityList.setSelectedItem(valueOfLayer);
         };
-        EventBus.subscribe(PainterVisibility.createBusEventListener(visibilityList, selectionAction));
+        JPanel visibilityWidgetContainer = HullPointsPanel.createVisibilityWidget(visibilityList,
+                CenterPointPainter.class, selectionAction, "Collision visibility:");
 
-        visibilityList.setMaximumSize(visibilityList.getPreferredSize());
-
-        JLabel visibilityWidgetLabel = new JLabel("Collision visibility:");
-        visibilityWidgetLabel.setToolTipText(StringConstants.TOGGLED_ON_PER_LAYER_BASIS);
-
-        int sidePadding = 6;
-        visibilityWidgetContainer.add(Box.createRigidArea(new Dimension(sidePadding,0)));
-        visibilityWidgetContainer.add(visibilityWidgetLabel);
-        visibilityWidgetContainer.add(Box.createHorizontalGlue()); // Add glue to push components to opposite sides.
-        visibilityWidgetContainer.add(visibilityList);
-        visibilityWidgetContainer.add(Box.createRigidArea(new Dimension(sidePadding,0)));
-
-        collisionModeButton = new JRadioButton("Edit collision");
+        collisionModeButton = new JRadioButton("Edit hull collision parameters");
         collisionModeButton.addActionListener(e -> HullPointsPanel.setMode(CenterPointMode.COLLISION));
-        hullCenterPanel.add(collisionModeButton);
+
+        hullCenterPanel.add(HullPointsPanel.createToggleEditPanel(collisionModeButton));
 
         hullCenterPanel.add(createCollisionOpacityPanel());
 
@@ -174,23 +166,66 @@ public final class HullPointsPanel extends JPanel {
 //        hullCenterPanel.add(centerCoords);
 //        hullCenterPanel.add(collisionRadius);
 
-        // Collision panel needs to have a radio button that enables interaction with center point, which is otherwise locked.
-
         // TODO: Also - gotta beautify this, big time!
         hullCenterPanel.setBorder(BorderFactory.createTitledBorder("Collision"));
 
         return hullCenterPanel;
     }
 
+    private static JPanel createVisibilityWidget(JComboBox<PainterVisibility> visibilityList,
+                                                 Class<? extends AbstractPointPainter> painterClass,
+                                                 ActionListener selectionAction, String labelName) {
+        JPanel visibilityWidgetContainer = new JPanel();
+        visibilityWidgetContainer.setLayout(new BoxLayout(visibilityWidgetContainer, BoxLayout.LINE_AXIS));
+
+        visibilityList.setRenderer(PainterVisibility.createCellRenderer());
+        visibilityList.addActionListener(PainterVisibility.createActionListener(visibilityList, painterClass));
+        EventBus.subscribe(PainterVisibility.createBusEventListener(visibilityList, selectionAction));
+
+        visibilityList.setMaximumSize(visibilityList.getPreferredSize());
+
+        JLabel visibilityWidgetLabel = new JLabel(labelName);
+        visibilityWidgetLabel.setToolTipText(StringConstants.TOGGLED_ON_PER_LAYER_BASIS);
+        visibilityWidgetContainer.setBorder(new EmptyBorder(4, 0, 0, 0));
+
+        int sidePadding = 6;
+        visibilityWidgetContainer.add(Box.createRigidArea(new Dimension(sidePadding,0)));
+        visibilityWidgetContainer.add(visibilityWidgetLabel);
+        visibilityWidgetContainer.add(Box.createHorizontalGlue()); // Add glue to push components to opposite sides.
+        visibilityWidgetContainer.add(visibilityList);
+        visibilityWidgetContainer.add(Box.createRigidArea(new Dimension(sidePadding,0)));
+        return visibilityWidgetContainer;
+    }
+
+    private static JPanel createToggleEditPanel(JRadioButton modeToggleButton) {
+        JPanel container = new JPanel();
+        container.setLayout(new BoxLayout(container, BoxLayout.LINE_AXIS));
+        Border matteLine = new MatteBorder(0, 0, 1, 0, Color.LIGHT_GRAY);
+        container.setBorder(matteLine);
+
+        int sidePadding = 6;
+        modeToggleButton.setBorder(new EmptyBorder(4, 0, 8,0));
+
+        container.add(Box.createRigidArea(new Dimension(sidePadding,0)));
+        container.add(modeToggleButton);
+        container.add(Box.createHorizontalGlue());
+
+        return container;
+    }
+
     private void updateCollisionOpacityLabel(int opacity) {
         collisionOpacityLabel.setText("Collision opacity: " + opacity + "%");
     }
 
-    @SuppressWarnings("DuplicatedCode")
+    private void updateShieldOpacityLabel(int opacity) {
+        shieldOpacityLabel.setText("Shield opacity: " + opacity + "%");
+    }
+
     private JPanel createCollisionOpacityPanel() {
         JPanel container = new JPanel();
 
         container.setLayout(new BoxLayout(container, BoxLayout.LINE_AXIS));
+        container.setBorder(new EmptyBorder(4, 0, 0, 0));
 
         ChangeListener changeListener = e -> {
             JSlider source = (JSlider)e.getSource();
@@ -237,13 +272,80 @@ public final class HullPointsPanel extends JPanel {
         return container;
     }
 
+
+    private JPanel createShieldOpacityPanel() {
+        JPanel container = new JPanel();
+
+        container.setLayout(new BoxLayout(container, BoxLayout.LINE_AXIS));
+        container.setBorder(new EmptyBorder(4, 0, 0, 0));
+
+        ChangeListener changeListener = e -> {
+            JSlider source = (JSlider)e.getSource();
+            int opacity = source.getValue();
+            updateShieldOpacityLabel(opacity);
+            float changedValue = opacity / 100.0f;
+            EventBus.publish(new PainterOpacityChangeQueued(ShieldPointPainter.class, changedValue));
+        };
+        BusEventListener eventListener = event -> {
+            if (event instanceof LayerWasSelected checked) {
+                ShipLayer selected = checked.selected();
+                int defaultOpacity = (int) (ApplicationDefaults.DEFAULT_SHIELD_OPACITY * 100.0f);
+                if (selected == null) {
+                    updateShieldOpacityLabel(defaultOpacity);
+                    shieldOpacitySlider.setValue(defaultOpacity);
+                    return;
+                }
+                LayerPainter painter = selected.getPainter();
+                int value;
+                if (painter == null) {
+                    value = defaultOpacity;
+                } else {
+                    ShieldPointPainter shieldPointPainter = painter.getShieldPointPainter();
+                    value = (int) (shieldPointPainter.getPaintOpacity() * 100.0f);
+                }
+                updateShieldOpacityLabel(value);
+                shieldOpacitySlider.setValue(value);
+            }
+        };
+        Pair<JSlider, JLabel> widgetComponents = Utility.createOpacityWidget(changeListener, eventListener);
+
+        shieldOpacitySlider = widgetComponents.getFirst();
+        shieldOpacityLabel = widgetComponents.getSecond();
+        this.updateShieldOpacityLabel(100);
+
+        int sidePadding = 6;
+
+        container.add(Box.createRigidArea(new Dimension(sidePadding,0)));
+        container.add(shieldOpacityLabel);
+        container.add(Box.createHorizontalGlue());
+        container.add(shieldOpacitySlider);
+        container.add(Box.createRigidArea(new Dimension(sidePadding,0)));
+
+        return container;
+    }
+
     private JPanel createShieldPanel() {
         JPanel shieldPanel = new JPanel();
         shieldPanel.setLayout(new BoxLayout(shieldPanel, BoxLayout.PAGE_AXIS));
 
-        shieldModeButton = new JRadioButton("Edit shield");
+        shieldModeButton = new JRadioButton("Edit hull shield parameters");
         shieldModeButton.addActionListener(e -> HullPointsPanel.setMode(CenterPointMode.SHIELD));
-        shieldPanel.add(shieldModeButton);
+
+        shieldPanel.add(HullPointsPanel.createToggleEditPanel(shieldModeButton));
+
+        shieldPanel.add(createShieldOpacityPanel());
+
+        JComboBox<PainterVisibility> visibilityList = new JComboBox<>(PainterVisibility.values());
+        ActionListener selectionAction = e -> {
+            LayerPainter painter = (LayerPainter) e.getSource();
+            ShieldPointPainter shieldPointPainter = painter.getShieldPointPainter();
+            PainterVisibility valueOfLayer = shieldPointPainter.getVisibilityMode();
+            visibilityList.setSelectedItem(valueOfLayer);
+        };
+        JPanel visibilityWidgetContainer = HullPointsPanel.createVisibilityWidget(visibilityList,
+                ShieldPointPainter.class, selectionAction, "Shield visibility:");
+
+        shieldPanel.add(visibilityWidgetContainer);
 
         shieldPanel.setBorder(BorderFactory.createTitledBorder("Shield"));
         return shieldPanel;

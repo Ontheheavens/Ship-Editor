@@ -7,12 +7,12 @@ package oth.shipeditor.undo;
  */
 public interface Edit {
 
-    public void add(Edit edit);
+    void add(Edit edit);
 
-    public void undo();
+    void undo();
 
-    public void redo();
+    void redo();
 
-    public String getName();
+    String getName();
 
 }

@@ -4,8 +4,10 @@ import de.javagl.viewer.Painter;
 import de.javagl.viewer.painters.StringBoundsUtils;
 import lombok.extern.log4j.Log4j2;
 import oth.shipeditor.components.instrument.InstrumentTabsPane;
+import oth.shipeditor.components.instrument.centers.CenterPointMode;
+import oth.shipeditor.components.instrument.centers.HullPointsPanel;
 import oth.shipeditor.components.viewer.InstrumentMode;
-import oth.shipeditor.components.viewer.PrimaryShipViewer;
+import oth.shipeditor.utility.Utility;
 
 import java.awt.*;
 import java.awt.geom.AffineTransform;
@@ -20,18 +22,23 @@ public class HotkeyHelpPainter implements Painter {
 
     @Override
     public void paint(Graphics2D g, AffineTransform worldToScreen, double w, double h) {
-        Font hintFont = new Font("Orbitron", Font.BOLD, 16);
+        Font hintFont = Utility.getOrbitron(16);
         g.setFont(hintFont);
         InstrumentMode current = InstrumentTabsPane.getCurrentMode();
         // The hotkey values are hardcoded because the respective fields in control classes are int constants.
         switch (current) {
             case CENTERS -> {
-                String collisionHint = "Press C to alter collision circle";
-                Rectangle2D stringBounds = StringBoundsUtils.computeStringBounds(collisionHint, hintFont, null);
+                String radiusHint;
+                CenterPointMode mode = HullPointsPanel.getMode();
+                if (mode == CenterPointMode.COLLISION) {
+                    radiusHint = "Press C to alter collision radius";
+                } else {
+                    radiusHint = "Press S to alter shield radius";
+                }
+                Rectangle2D stringBounds = StringBoundsUtils.computeStringBounds(radiusHint, hintFont, null);
                 int x = (int) (w - stringBounds.getWidth() - 10);
                 int y = (int) (h - stringBounds.getHeight() + 10);
-
-                g.drawString(collisionHint, x, y);
+                g.drawString(radiusHint, x, y);
             }
             case BOUNDS -> {
                 String insertHint = "Press X to insert bound";

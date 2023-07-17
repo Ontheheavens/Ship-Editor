@@ -23,6 +23,14 @@ public final class WorldPointsPainter extends AbstractPointPainter {
         this.worldPoints = new ArrayList<>();
     }
 
+    /**
+     * @return true, because World Points are always considered active.
+     */
+    @Override
+    protected boolean isParentLayerActive() {
+        return true;
+    }
+
     @Override
     public boolean isMirrorable() {
         return false;

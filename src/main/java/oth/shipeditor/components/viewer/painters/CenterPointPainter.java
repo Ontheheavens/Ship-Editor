@@ -5,8 +5,6 @@ import lombok.extern.log4j.Log4j2;
 import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.components.CentersPanelRepaintQueued;
 import oth.shipeditor.communication.events.viewer.ViewerRepaintQueued;
-import oth.shipeditor.communication.events.viewer.layers.PainterOpacityChangeQueued;
-import oth.shipeditor.communication.events.viewer.layers.PainterVisibilityChanged;
 import oth.shipeditor.communication.events.viewer.points.InstrumentModeChanged;
 import oth.shipeditor.communication.events.viewer.points.RadiusDragQueued;
 import oth.shipeditor.components.instrument.InstrumentTabsPane;
@@ -54,7 +52,6 @@ public class CenterPointPainter extends AbstractPointPainter {
         this.setPaintOpacity(ApplicationDefaults.COLLISION_OPACITY);
     }
 
-    @SuppressWarnings("DuplicatedCode")
     private void initModeListening() {
         EventBus.subscribe(event -> {
             if (event instanceof InstrumentModeChanged checked) {
@@ -71,23 +68,11 @@ public class CenterPointPainter extends AbstractPointPainter {
                 EditDispatch.postCollisionRadiusChanged(this.centerPoint, rounded);
             }
         });
-        EventBus.subscribe(event -> {
-            if (event instanceof PainterVisibilityChanged checked) {
-                Class<? extends AbstractPointPainter> painterClass = checked.painterClass();
-                if (!painterClass.isInstance(this) || !parentLayer.isLayerActive()) return;
-                this.setVisibilityMode(checked.changed());
-                EventBus.publish(new ViewerRepaintQueued());
-            }
-        });
-        EventBus.subscribe(event -> {
-            if (event instanceof PainterOpacityChangeQueued checked) {
-                Class<? extends AbstractPointPainter> painterClass = checked.painterClass();
-                if (!painterClass.isInstance(this)) return;
-                if (!this.parentLayer.isLayerActive() || !this.isInteractionEnabled()) return;
-                this.setPaintOpacity(checked.change());
-                EventBus.publish(new ViewerRepaintQueued());
-            }
-        });
+    }
+
+    @Override
+    protected boolean isParentLayerActive() {
+        return this.parentLayer.isLayerActive();
     }
 
     private void initHotkeys() {

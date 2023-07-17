@@ -1,6 +1,7 @@
 package oth.shipeditor.components.viewer.entities;
 
 import de.javagl.viewer.Painter;
+import de.javagl.viewer.painters.LabelPainter;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
@@ -30,6 +31,7 @@ import java.awt.geom.RectangularShape;
  * @author Ontheheavens
  * @since 30.04.2023
  */
+@SuppressWarnings("ClassWithTooManyFields")
 @Log4j2
 public class BaseWorldPoint implements WorldPoint {
 
@@ -53,6 +55,8 @@ public class BaseWorldPoint implements WorldPoint {
 
     @Getter
     private final Painter painter;
+
+    private final LabelPainter coordsLabel;
 
     @Getter
     private boolean cursorInBounds;
@@ -113,9 +117,36 @@ public class BaseWorldPoint implements WorldPoint {
         this.position = new Point2D.Double(pointPosition.getX(), pointPosition.getY());
         this.parentLayer = layer;
         this.painter = this.getPointPainter();
+        coordsLabel = createCoordsLabelPainter();
         if (layer != null) {
             this.initLayerListening();
         }
+    }
+
+    private LabelPainter createCoordsLabelPainter() {
+        LabelPainter labelPainter = new LabelPainter();
+        Point2D coords = this.getPosition();
+        labelPainter.setLabelLocation(coords.getX(), coords.getY());
+        Font font = Utility.getOrbitron(16).deriveFont(0.25f);
+        labelPainter.setFont(font);
+        this.adjustLabelPosition(labelPainter);
+        return labelPainter;
+    }
+
+    protected void adjustLabelPosition(LabelPainter labelPainter) {
+        labelPainter.setLabelAnchor(-0.25f, 0.55f);
+    }
+
+    void paintCoordsLabel(Graphics2D g, AffineTransform worldToScreen, double w, double h) {
+        Point2D coordsPoint = getPosition();
+        Point2D toDisplay = this.getCoordinatesForDisplay();
+        coordsLabel.setLabelLocation(coordsPoint.getX(), coordsPoint.getY());
+        String coords = getNameForLabel() + " (" + toDisplay.getX() + ", " + toDisplay.getY() + ")";
+        coordsLabel.paint(g, worldToScreen, w, h,coords);
+    }
+
+    public String getNameForLabel() {
+        return "Point";
     }
     
     private void initLayerListening() {
