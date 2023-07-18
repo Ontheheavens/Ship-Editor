@@ -20,6 +20,7 @@ import oth.shipeditor.components.instrument.InstrumentTabsPane;
 import oth.shipeditor.components.viewer.InstrumentMode;
 import oth.shipeditor.components.viewer.layers.LayerPainter;
 import oth.shipeditor.components.viewer.layers.ShipLayer;
+import oth.shipeditor.utility.ApplicationDefaults;
 import oth.shipeditor.utility.Utility;
 
 import java.awt.*;
@@ -140,9 +141,17 @@ public class BaseWorldPoint implements WorldPoint {
     void paintCoordsLabel(Graphics2D g, AffineTransform worldToScreen, double w, double h) {
         Point2D coordsPoint = getPosition();
         Point2D toDisplay = this.getCoordinatesForDisplay();
+        this.adjustLabelPosition(coordsLabel);
         coordsLabel.setLabelLocation(coordsPoint.getX(), coordsPoint.getY());
+
         String coords = getNameForLabel() + " (" + toDisplay.getX() + ", " + toDisplay.getY() + ")";
+
+        Paint old = g.getPaint();
+        g.setPaint(ApplicationDefaults.VIEWER_FONT_COLOR);
+
         coordsLabel.paint(g, worldToScreen, w, h,coords);
+
+        g.setPaint(old);
     }
 
     public String getNameForLabel() {
@@ -186,7 +195,8 @@ public class BaseWorldPoint implements WorldPoint {
         return new Color(0xBFFFFFFF, true);
     }
 
-    private static Color createSelectColor() {
+    @SuppressWarnings({"MethodMayBeStatic", "WeakerAccess"})
+    protected Color createSelectColor() {
         return new Color(0xBFFF0000, true);
     }
 
@@ -198,6 +208,18 @@ public class BaseWorldPoint implements WorldPoint {
         return instrumentationMode == getAssociatedMode() && parentLayer.isLayerActive();
     }
 
+    protected Color getCurrentColor() {
+        Color result;
+        if (this.selected && isInteractable()) {
+            result = createSelectColor();
+        } else if (this.cursorInBounds && isInteractable()) {
+            result = createHoverColor();
+        } else {
+            result = createBaseColor();
+        }
+        return result;
+    }
+
     public Painter getPointPainter() {
         return (g, worldToScreen, w, h) -> {
             Paint old = g.getPaint();
@@ -205,20 +227,10 @@ public class BaseWorldPoint implements WorldPoint {
             RectangularShape outer = createScreenConstantPaintPart(worldToScreen);
 
             this.cursorInBounds = BaseWorldPoint.checkIsHovered(new Shape[]{inner, outer});
-            if (this.selected && isInteractable()) {
-                g.setPaint(BaseWorldPoint.createSelectColor());
-            } else if (this.cursorInBounds && isInteractable()) {
-                g.setPaint(createHoverColor());
-            } else {
-                g.setPaint(createBaseColor());
-            }
+            g.setPaint(getCurrentColor());
             g.fill(inner);
 
-            int x = (int) outer.getX();
-            int y = (int) outer.getY();
-            int width = (int) outer.getWidth();
-            int height = (int) outer.getHeight();
-            g.drawOval(x, y, width, height);
+            g.fill(outer);
             g.setPaint(old);
         };
     }

@@ -73,6 +73,10 @@ public final class InstrumentTabsPane extends JTabbedPane {
         layerPanel = new LayerPropertiesPanel();
         panelMode.put(layerPanel, InstrumentMode.LAYER);
         this.addTab("Layer",layerPanel);
+
+
+
+
         centerPointsPanel = new HullPointsPanel();
         panelMode.put(centerPointsPanel, InstrumentMode.CENTERS);
         this.addTab("Centers",centerPointsPanel);

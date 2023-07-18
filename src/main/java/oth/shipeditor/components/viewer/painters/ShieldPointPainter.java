@@ -58,7 +58,10 @@ public class ShieldPointPainter extends AbstractPointPainter{
         String styleID = hull.getStyle();
         GameDataRepository dataRepository = SettingsManager.getGameData();
         Map<String, HullStyle> allHullStyles = dataRepository.getAllHullStyles();
-        HullStyle hullStyle = allHullStyles.get(styleID);
+        HullStyle hullStyle = new HullStyle();
+        if (allHullStyles != null) {
+            hullStyle = allHullStyles.get(styleID);
+        }
         this.shieldCenterPoint = new ShieldCenterPoint(translated,
                 (float) hull.getShieldRadius(), this.parentLayer, hullStyle, this);
         this.addPoint(shieldCenterPoint);

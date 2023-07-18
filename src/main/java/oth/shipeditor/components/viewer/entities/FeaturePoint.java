@@ -48,8 +48,8 @@ public abstract class FeaturePoint extends BaseWorldPoint {
         @Override
         public void paint(Graphics2D g, AffineTransform worldToScreen, double w, double h) {
             delegateWorldToScreen.setTransform(worldToScreen);
-            secondaryPainter.paint(g, delegateWorldToScreen, w, h);
             pointPainter.paint(g, delegateWorldToScreen, w, h);
+            secondaryPainter.paint(g, delegateWorldToScreen, w, h);
         }
 
     }

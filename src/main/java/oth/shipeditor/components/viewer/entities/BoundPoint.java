@@ -44,11 +44,11 @@ public class BoundPoint extends FeaturePoint{
         return (g, worldToScreen, w, h) -> {
             Point2D center = worldToScreen.transform(getPosition(), null);
 
-            Polygon hexagon = Utility.createHexagon(center, 5);
+            Polygon hexagon = Utility.createHexagon(center, 7);
 
             Paint old = g.getPaint();
             g.setPaint(createBaseColor());
-            g.fillPolygon(hexagon);
+            g.drawPolygon(hexagon);
 
             g.setPaint(old);
 

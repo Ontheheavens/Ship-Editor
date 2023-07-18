@@ -7,10 +7,14 @@ import oth.shipeditor.components.instrument.InstrumentTabsPane;
 import oth.shipeditor.components.instrument.centers.CenterPointMode;
 import oth.shipeditor.components.instrument.centers.HullPointsPanel;
 import oth.shipeditor.components.viewer.InstrumentMode;
+import oth.shipeditor.utility.ApplicationDefaults;
 import oth.shipeditor.utility.Utility;
 
 import java.awt.*;
+import java.awt.font.FontRenderContext;
+import java.awt.font.TextLayout;
 import java.awt.geom.AffineTransform;
+import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 
 /**
@@ -24,6 +28,10 @@ public class HotkeyHelpPainter implements Painter {
     public void paint(Graphics2D g, AffineTransform worldToScreen, double w, double h) {
         Font hintFont = Utility.getOrbitron(16);
         g.setFont(hintFont);
+
+        Color old = g.getColor();
+        g.setColor(ApplicationDefaults.VIEWER_FONT_COLOR);
+
         InstrumentMode current = InstrumentTabsPane.getCurrentMode();
         // The hotkey values are hardcoded because the respective fields in control classes are int constants.
         switch (current) {
@@ -38,6 +46,8 @@ public class HotkeyHelpPainter implements Painter {
                 Rectangle2D stringBounds = StringBoundsUtils.computeStringBounds(radiusHint, hintFont, null);
                 int x = (int) (w - stringBounds.getWidth() - 10);
                 int y = (int) (h - stringBounds.getHeight() + 10);
+
+                // Outlined string draw proved to be far more a trouble than benefit. Better stay single-color for now.
                 g.drawString(radiusHint, x, y);
             }
             case BOUNDS -> {
@@ -60,9 +70,9 @@ public class HotkeyHelpPainter implements Painter {
                 g.drawString(removeHint, removeX, removeY);
             }
             default -> {
-
             }
         }
+        g.setColor(old);
     }
 
 }

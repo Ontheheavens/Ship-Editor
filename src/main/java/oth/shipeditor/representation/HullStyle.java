@@ -32,4 +32,10 @@ public class HullStyle {
     @JsonProperty("shieldInnerColor")
     private Color shieldInnerColor;
 
+    public HullStyle() {
+        hullStyleID = "DEFAULT";
+        shieldRingColor = Color.WHITE;
+        shieldInnerColor = new Color(0x4D00AFFA, true);
+    }
+
 }

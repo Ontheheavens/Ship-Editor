@@ -54,7 +54,7 @@ public class ShieldCenterPoint extends FeaturePoint{
 
     @Override
     protected void adjustLabelPosition(LabelPainter labelPainter) {
-        labelPainter.setLabelAnchor(-0.1f, 0.55f);
+        labelPainter.setLabelAnchor(-0.175f, 0.55f);
     }
 
     private Color getDisplayedShieldColor(Color base) {
@@ -85,7 +85,16 @@ public class ShieldCenterPoint extends FeaturePoint{
             Shape dot = Utility.createCircle(dest, 1.0f);
 
             g.fill(dot);
-            g.draw(Utility.createCircle(worldToScreen.transform(position, null), 8));
+
+            Shape outer = Utility.createCircle(worldToScreen.transform(position, null), 8);
+
+            Stroke oldStroke = g.getStroke();
+            g.setStroke(new BasicStroke(3));
+            g.draw(outer);
+            g.setStroke(oldStroke);
+            g.setPaint(Color.WHITE);
+
+            g.draw(outer);
 
             g.setPaint(oldPaint);
             this.paintCoordsLabel(g, worldToScreen, w, h);

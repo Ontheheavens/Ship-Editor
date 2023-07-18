@@ -49,7 +49,7 @@ public class ShipCenterPoint extends FeaturePoint{
 
     @Override
     protected void adjustLabelPosition(LabelPainter labelPainter) {
-        labelPainter.setLabelAnchor(-0.1f, 0.55f);
+        labelPainter.setLabelAnchor(-0.19f, 0.55f);
     }
 
     @Override
@@ -70,9 +70,17 @@ public class ShipCenterPoint extends FeaturePoint{
             Point2D dest = worldToScreen.transform(point, null);
             float radius = 1.0f;
             Shape dot = Utility.createCircle(dest, radius);
-
             g.fill(dot);
-            g.draw(Utility.createHexagon(worldToScreen.transform(position, null), 10));
+
+            Shape outer = Utility.createHexagon(worldToScreen.transform(position, null), 9);
+
+            Stroke oldStroke = g.getStroke();
+            g.setStroke(new BasicStroke(3));
+            g.draw(outer);
+            g.setStroke(oldStroke);
+            g.setPaint(Color.WHITE);
+
+            g.draw(outer);
 
             g.setPaint(oldPaint);
 
