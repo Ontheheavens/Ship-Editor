@@ -31,6 +31,7 @@ import java.awt.image.RenderedImage;
  * @author Ontheheavens
  * @since 29.05.2023
  */
+@SuppressWarnings("ClassWithTooManyFields")
 @Log4j2
 public final class GuidesPainters {
 

@@ -180,7 +180,7 @@ public class BaseWorldPoint implements WorldPoint {
     }
 
     private Shape createWorldConstantPaintPart(AffineTransform worldToScreen) {
-        Shape dot = Utility.createCircle(this.position, 0.25f);
+        Shape dot = Utility.createCircle(this.position, 0.20f);
         return worldToScreen.createTransformedShape(dot);
     }
 
@@ -208,6 +208,7 @@ public class BaseWorldPoint implements WorldPoint {
         return instrumentationMode == getAssociatedMode() && parentLayer.isLayerActive();
     }
 
+    @SuppressWarnings("WeakerAccess")
     protected Color getCurrentColor() {
         Color result;
         if (this.selected && isInteractable()) {

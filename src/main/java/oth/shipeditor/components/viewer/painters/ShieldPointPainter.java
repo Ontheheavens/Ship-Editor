@@ -4,7 +4,6 @@ import lombok.Getter;
 import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.components.CentersPanelRepaintQueued;
 import oth.shipeditor.communication.events.viewer.ViewerRepaintQueued;
-import oth.shipeditor.communication.events.viewer.layers.PainterOpacityChangeQueued;
 import oth.shipeditor.communication.events.viewer.points.InstrumentModeChanged;
 import oth.shipeditor.communication.events.viewer.points.RadiusDragQueued;
 import oth.shipeditor.components.instrument.InstrumentTabsPane;
@@ -20,7 +19,6 @@ import oth.shipeditor.representation.GameDataRepository;
 import oth.shipeditor.representation.Hull;
 import oth.shipeditor.representation.HullStyle;
 import oth.shipeditor.undo.EditDispatch;
-import oth.shipeditor.utility.ApplicationDefaults;
 import oth.shipeditor.utility.Utility;
 
 import java.awt.*;

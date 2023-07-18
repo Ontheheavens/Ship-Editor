@@ -303,7 +303,6 @@ public final class BoundPointsPainter extends AbstractPointPainter {
             g.setPaint(origPaint);
             return;
         }
-        drawSelectionHighlight(g, worldToScreen);
         BoundPoint boundPoint = bPoints.get(bPoints.size() - 1);
         Point2D prev = worldToScreen.transform(boundPoint.getPosition(), null);
         for (BoundPoint p : bPoints) {
@@ -319,6 +318,7 @@ public final class BoundPointsPainter extends AbstractPointPainter {
         if (isInteractionEnabled() && hotkeyPressed) {
             this.paintCreationGuidelines(g, worldToScreen, prev, first);
         }
+        drawSelectionHighlight(g, worldToScreen);
         g.setStroke(origStroke);
         g.setPaint(origPaint);
         super.paintDelegates(g, worldToScreen, w, h);
@@ -328,10 +328,11 @@ public final class BoundPointsPainter extends AbstractPointPainter {
     private void drawSelectionHighlight(Graphics2D g, AffineTransform worldToScreen) {
         WorldPoint selection = this.getSelected();
         if (selection != null && isInteractionEnabled()) {
-            BoundPointsPainter.paintPointDot(g, worldToScreen, selection.getPosition(), 2.0f);
+            float radius = 1.0f;
+            BoundPointsPainter.paintPointDot(g, worldToScreen, selection.getPosition(), radius);
             WorldPoint counterpart = this.getMirroredCounterpart(selection);
             if (counterpart != null && ControlPredicates.isMirrorModeEnabled()) {
-                BoundPointsPainter.paintPointDot(g, worldToScreen, counterpart.getPosition(), 2.0f);
+                BoundPointsPainter.paintPointDot(g, worldToScreen, counterpart.getPosition(), radius);
             }
         }
     }
@@ -386,10 +387,10 @@ public final class BoundPointsPainter extends AbstractPointPainter {
                                       Point2D point, float radiusMult) {
         Color originalColor = g.getColor();
         g.setColor(Color.WHITE);
-        Shape worldDot = Utility.createCircle(point, 0.25f * radiusMult);
+        Shape worldDot = Utility.createCircle(point, 0.35f * radiusMult);
         Shape screenDot = worldToScreen.createTransformedShape(worldDot);
         Point2D screenPoint = worldToScreen.transform(point, null);
-        RectangularShape screenOuterDot = Utility.createCircle(screenPoint, 6.0f * radiusMult);
+        RectangularShape screenOuterDot = Utility.createCircle(screenPoint, 12.0f * radiusMult);
         int x = (int) screenOuterDot.getX();
         int y = (int) screenOuterDot.getY();
         int width = (int) screenOuterDot.getWidth();
