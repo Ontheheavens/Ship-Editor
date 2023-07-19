@@ -1,6 +1,7 @@
 package oth.shipeditor.components.viewer.entities;
 
 import de.javagl.viewer.Painter;
+import lombok.Getter;
 import oth.shipeditor.components.viewer.layers.LayerPainter;
 
 import java.awt.*;
@@ -15,7 +16,8 @@ public abstract class FeaturePoint extends BaseWorldPoint {
 
     private final Painter composed;
 
-    private final Painter secondPainter;
+    @Getter
+    private final AffineTransform delegateWorldToScreen = new AffineTransform();
 
     @SuppressWarnings("unused")
     FeaturePoint(Point2D pointPosition) {
@@ -24,12 +26,17 @@ public abstract class FeaturePoint extends BaseWorldPoint {
 
     FeaturePoint(Point2D pointPosition, LayerPainter layer) {
         super(pointPosition, layer);
-        this.secondPainter = createSecondaryPainter();
         this.composed = createComposedPainter();
     }
 
-    private Painter createComposedPainter() {
-        return new ComposedPointPainter();
+    protected Painter createComposedPainter() {
+        Painter pointPainter = this.getPointPainter();
+        Painter secondaryPainter = this.createSecondaryPainter();
+        return (g, worldToScreen, w, h) -> {
+            delegateWorldToScreen.setTransform(worldToScreen);
+            pointPainter.paint(g, delegateWorldToScreen, w, h);
+            secondaryPainter.paint(g, delegateWorldToScreen, w, h);
+        };
     }
 
     protected abstract Painter createSecondaryPainter();
@@ -37,21 +44,6 @@ public abstract class FeaturePoint extends BaseWorldPoint {
     @Override
     public Painter getPainter() {
         return composed;
-    }
-
-    private class ComposedPointPainter implements Painter {
-
-        private final Painter pointPainter = FeaturePoint.this.getPointPainter();
-        private final Painter secondaryPainter = FeaturePoint.this.secondPainter;
-        private final AffineTransform delegateWorldToScreen = new AffineTransform();
-
-        @Override
-        public void paint(Graphics2D g, AffineTransform worldToScreen, double w, double h) {
-            delegateWorldToScreen.setTransform(worldToScreen);
-            pointPainter.paint(g, delegateWorldToScreen, w, h);
-            secondaryPainter.paint(g, delegateWorldToScreen, w, h);
-        }
-
     }
 
 }

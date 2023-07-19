@@ -4,14 +4,11 @@ import com.formdev.flatlaf.ui.FlatLineBorder;
 import lombok.extern.log4j.Log4j2;
 import oth.shipeditor.communication.BusEventListener;
 import oth.shipeditor.communication.EventBus;
-import oth.shipeditor.communication.events.viewer.ViewerRepaintQueued;
 
 import javax.swing.*;
 import javax.swing.event.ChangeListener;
 import java.awt.*;
 import java.awt.event.ActionListener;
-import java.awt.font.FontRenderContext;
-import java.awt.font.TextLayout;
 import java.awt.geom.*;
 import java.util.Dictionary;
 import java.util.Hashtable;
@@ -28,23 +25,35 @@ public final class Utility {
      */
     private Utility() {}
 
-    public static void drawBorderedLine(Graphics2D canvas, Point2D start, Point2D finish, Color inner) {
-        Utility.drawBorderedLine(canvas, start, finish, inner, Color.BLACK, 2.0f, 3.0f);
+    public static Composite setFullAlpha(Graphics2D g) {
+        int rule = AlphaComposite.SRC_OVER;
+        Composite old = g.getComposite();
+        Composite opacity = AlphaComposite.getInstance(rule, 1.0f) ;
+        g.setComposite(opacity);
+        return old;
     }
 
-    public static Polygon createHexagon(Point2D point, int radius) {
-        int x = (int) point.getX(), y = (int) point.getY();
+    @SuppressWarnings("unused")
+    public static AffineTransform getScreenToWorldRotation(AffineTransform worldToScreen, Point2D positionWorld) {
+        Point2D positionScreen = worldToScreen.transform(positionWorld, null);
 
-        int[] xPoints = new int[6];
-        int[] yPoints = new int[6];
+        double screenX = positionScreen.getX(), screenY = positionScreen.getY();
 
-        // Calculate the coordinates of the six points of the hexagon.
-        for (int i = 0; i < 6; i++) {
-            double angle = 2 * Math.PI / 6 * i;
-            xPoints[i] = x + (int) (radius * Math.cos(angle));
-            yPoints[i] = y + (int) (radius * Math.sin(angle));
-        }
-        return new Polygon(xPoints, yPoints, 6);
+        // Extracting the rotation component from the worldToScreen transform.
+        // I don't understand even half of it - bless my new machine overlords.
+        double[] matrix = new double[6];
+        worldToScreen.getMatrix(matrix);
+        double scaleX = Math.sqrt(matrix[0] * matrix[0] + matrix[1] * matrix[1]);
+        double rotationAngle = -Math.atan2(matrix[1] / scaleX, matrix[0] / scaleX);
+
+        AffineTransform rotationTransform = new AffineTransform();
+        // New AffineTransform by default is focused  on the 0,0 in screen coordinates.
+        // We have to center it on our point, do the rotation, then translate back.
+        rotationTransform.translate(screenX, screenY);
+        rotationTransform.rotate(-rotationAngle);
+        rotationTransform.translate(-screenX, -screenY);
+
+        return rotationTransform;
     }
 
     public static float getOpacityFromAlpha(int alpha) {
@@ -55,44 +64,11 @@ public final class Utility {
         return new Font("Orbitron", Font.BOLD, size);
     }
 
-    @SuppressWarnings("unused")
-    public static Shape getScaledShape(Shape input, Point2D center,
-                                       AffineTransform delegateWTS,
-                                       AffineTransform worldToScreen, float scale) {
-        AffineTransform scaleTX = new AffineTransform();
-        scaleTX.translate(center.getX(), center.getY());
-        scaleTX.scale(scale, scale);
-        scaleTX.translate(-center.getX(), -center.getY());
-        delegateWTS.setTransform(worldToScreen);
-        delegateWTS.concatenate(scaleTX);
-        return delegateWTS.createTransformedShape(input);
-    }
-
-    @SuppressWarnings({"SameParameterValue", "MethodWithTooManyParameters"})
-    private static void drawBorderedLine(Graphics2D canvas, Point2D start, Point2D finish,
-                                         Color innerColor, Color outerColor, float innerWidth, float outerWidth) {
-        Stroke originalStroke = canvas.getStroke();
-        Color originalColor = canvas.getColor();
-        canvas.setColor(outerColor);
-        canvas.setStroke(new BasicStroke(outerWidth));
-        canvas.drawLine((int) start.getX(), (int) start.getY(), (int) finish.getX(), (int) finish.getY());
-        canvas.setColor(innerColor);
-        canvas.setStroke(new BasicStroke(innerWidth));
-        canvas.drawLine((int) start.getX(), (int) start.getY(), (int) finish.getX(), (int) finish.getY());
-        canvas.setStroke(originalStroke);
-        canvas.setColor(originalColor);
-    }
-
     public static Point2D correctAdjustedCursor(Point2D adjustedCursor, AffineTransform screenToWorld) {
         Point2D wP = screenToWorld.transform(adjustedCursor, null);
         double roundedX = Math.round(wP.getX() * 2) / 2.0;
         double roundedY = Math.round(wP.getY() * 2) / 2.0;
         return new Point2D.Double(roundedX, roundedY);
-    }
-
-    public static RectangularShape createCircle(Point2D position, float radius) {
-        return new Ellipse2D.Double(position.getX() - radius, position.getY() - radius,
-                2 * radius, 2 * radius);
     }
 
     public static JLabel getIconLabelWithBorder(Icon icon) {
@@ -142,6 +118,28 @@ public final class Utility {
         JLabel opacityLabel = new JLabel();
         opacityLabel.setAlignmentX(0.0f);
         return new Pair<>(opacitySlider, opacityLabel);
+    }
+
+    public static Color darken(Color color, double factor) {
+        double darkenFactor = factor;
+        if (darkenFactor < 0) {
+            darkenFactor = 0;
+        } else if (darkenFactor > 1) {
+            darkenFactor = 1;
+        }
+        int red = color.getRed();
+        int green = color.getGreen();
+        int blue = color.getBlue();
+
+        red = (int) (red * (1 - darkenFactor));
+        green = (int) (green * (1 - darkenFactor));
+        blue = (int) (blue * (1 - darkenFactor));
+
+        red = Math.max(0, red);
+        green = Math.max(0, green);
+        blue = Math.max(0, blue);
+
+        return new Color(red, green, blue);
     }
 
 }

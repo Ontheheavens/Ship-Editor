@@ -7,6 +7,7 @@ import oth.shipeditor.communication.events.viewer.control.*;
 import oth.shipeditor.communication.events.viewer.points.*;
 import oth.shipeditor.components.viewer.PrimaryShipViewer;
 import oth.shipeditor.components.viewer.layers.LayerPainter;
+import oth.shipeditor.components.viewer.layers.StaticController;
 import oth.shipeditor.utility.Utility;
 
 import javax.swing.*;
@@ -23,6 +24,7 @@ import java.awt.geom.Point2D;
  * @since 29.04.2023
  */
 
+@SuppressWarnings("OverlyCoupledClass")
 @Log4j2
 public final class ShipViewerControls implements ViewerControl {
 
@@ -61,7 +63,7 @@ public final class ShipViewerControls implements ViewerControl {
     private double zoomLevel = 1;
 
     @Getter
-    private double rotationDegree = 0;
+    private double rotationDegree;
 
     /**
      * @param parent Viewer which is manipulated via this instance of controls class.
@@ -100,6 +102,7 @@ public final class ShipViewerControls implements ViewerControl {
             if (event instanceof ViewerTransformsReset) {
                 this.setZoomLevel(1);
                 this.rotationDegree = 0;
+                StaticController.setRotationRadians(0);
                 EventBus.publish(new ViewerTransformRotated(rotationDegree));
             }
         });
@@ -237,6 +240,7 @@ public final class ShipViewerControls implements ViewerControl {
             double toRadians = Math.toRadians(wheelRotation);
             Point2D midpoint = parentViewer.getViewerMidpoint();
             double resultRadians = toRadians * ROTATION_SPEED;
+            StaticController.updateRotationRadians(-resultRadians);
             this.parentViewer.rotate(midpoint.getX(), midpoint.getY(),
                     resultRadians);
             this.rotationDegree += Math.toDegrees(resultRadians);
@@ -270,6 +274,7 @@ public final class ShipViewerControls implements ViewerControl {
 
     private void setZoomLevel(double level) {
         this.zoomLevel = level;
+        StaticController.setZoomLevel(level);
         EventBus.publish(new ViewerZoomChanged(level));
     }
 

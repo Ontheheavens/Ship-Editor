@@ -20,7 +20,9 @@ import oth.shipeditor.components.instrument.InstrumentTabsPane;
 import oth.shipeditor.components.viewer.InstrumentMode;
 import oth.shipeditor.components.viewer.layers.LayerPainter;
 import oth.shipeditor.components.viewer.layers.ShipLayer;
+import oth.shipeditor.components.viewer.layers.StaticController;
 import oth.shipeditor.utility.ApplicationDefaults;
+import oth.shipeditor.utility.graphics.ShapeUtilities;
 import oth.shipeditor.utility.Utility;
 
 import java.awt.*;
@@ -141,7 +143,9 @@ public class BaseWorldPoint implements WorldPoint {
     void paintCoordsLabel(Graphics2D g, AffineTransform worldToScreen, double w, double h) {
         Point2D coordsPoint = getPosition();
         Point2D toDisplay = this.getCoordinatesForDisplay();
+
         this.adjustLabelPosition(coordsLabel);
+        coordsLabel.setAngle(StaticController.getRotationRadians());
         coordsLabel.setLabelLocation(coordsPoint.getX(), coordsPoint.getY());
 
         String coords = getNameForLabel() + " (" + toDisplay.getX() + ", " + toDisplay.getY() + ")";
@@ -180,15 +184,15 @@ public class BaseWorldPoint implements WorldPoint {
     }
 
     private Shape createWorldConstantPaintPart(AffineTransform worldToScreen) {
-        Shape dot = Utility.createCircle(this.position, 0.20f);
+        Shape dot = ShapeUtilities.createCircle(this.position, 0.20f);
         return worldToScreen.createTransformedShape(dot);
     }
 
-    private RectangularShape createScreenConstantPaintPart(AffineTransform worldToScreen) {
+    protected RectangularShape createScreenConstantPaintPart(AffineTransform worldToScreen) {
         Point2D point = new Point2D.Double(position.getX(), position.getY());
         Point2D dest = worldToScreen.transform(point, null);
         float radius = 6.0f;
-        return Utility.createCircle(dest, radius);
+        return ShapeUtilities.createCircle(dest, radius);
     }
 
     protected Color createHoverColor() {
@@ -228,10 +232,24 @@ public class BaseWorldPoint implements WorldPoint {
             RectangularShape outer = createScreenConstantPaintPart(worldToScreen);
 
             this.cursorInBounds = BaseWorldPoint.checkIsHovered(new Shape[]{inner, outer});
+
+            Stroke oldStroke = g.getStroke();
+            g.setStroke(new BasicStroke(3));
+            g.setPaint(Color.BLACK);
+            g.draw(inner);
+
+            g.setStroke(oldStroke);
             g.setPaint(getCurrentColor());
             g.fill(inner);
 
+            g.setStroke(new BasicStroke(3));
+            g.setPaint(Color.BLACK);
+            g.draw(outer);
+
+            g.setStroke(oldStroke);
+            g.setPaint(getCurrentColor());
             g.fill(outer);
+
             g.setPaint(old);
         };
     }

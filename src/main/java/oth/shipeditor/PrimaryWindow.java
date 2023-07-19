@@ -1,6 +1,5 @@
 package oth.shipeditor;
 
-import com.formdev.flatlaf.FlatClientProperties;
 import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
 import oth.shipeditor.communication.EventBus;
@@ -10,10 +9,9 @@ import oth.shipeditor.components.WindowContentPanes;
 import oth.shipeditor.components.viewer.ShipViewable;
 import oth.shipeditor.components.viewer.control.ControlPredicates;
 import oth.shipeditor.components.viewer.painters.AbstractPointPainter;
-import oth.shipeditor.menubar.FileUtilities;
 import oth.shipeditor.menubar.PrimaryMenuBar;
 import oth.shipeditor.persistence.Initializations;
-import oth.shipeditor.components.viewer.layers.StaticLayerController;
+import oth.shipeditor.components.viewer.layers.StaticController;
 
 import javax.swing.*;
 import java.awt.*;
@@ -62,7 +60,7 @@ public final class PrimaryWindow extends JFrame {
     private static void performStaticInits() {
         Initializations.initializeSettingsFile();
         Initializations.selectGameFolder();
-        StaticLayerController.init();
+        StaticController.init();
 
         ControlPredicates.initSelectionModeListening();
         AbstractPointPainter.initCursorListening();

@@ -17,8 +17,11 @@ import oth.shipeditor.components.viewer.PrimaryShipViewer;
 import oth.shipeditor.components.viewer.entities.BaseWorldPoint;
 import oth.shipeditor.components.viewer.entities.WorldPoint;
 import oth.shipeditor.components.viewer.layers.LayerPainter;
+import oth.shipeditor.components.viewer.layers.StaticController;
 import oth.shipeditor.utility.ApplicationDefaults;
+import oth.shipeditor.utility.graphics.DrawUtilities;
 import oth.shipeditor.utility.Utility;
+import oth.shipeditor.utility.graphics.DrawingParameters;
 
 import java.awt.*;
 import java.awt.geom.AffineTransform;
@@ -251,7 +254,7 @@ public final class GuidesPainters {
             LabelPainter painter = new LabelPainter();
             Font font = Utility.getOrbitron(16).deriveFont(0.25f);
             painter.setFont(font);
-            painter.setLabelAnchor(-0.115f, 0.55f);
+            painter.setLabelAnchor(-0.180f, 0.55f);
             return painter;
         }
 
@@ -266,7 +269,10 @@ public final class GuidesPainters {
                     (int) (anchor.getY() + (shipSprite.getHeight() / 2)));
             WorldPoint pointInput = new BaseWorldPoint(spriteCenter);
             Point2D toDisplay = pointInput.getCoordinatesForDisplay();
-            label.setLabelLocation(spriteCenter.getX() + 0.25, spriteCenter.getY());
+
+            label.setAngle(StaticController.getRotationRadians());
+            label.setLabelLocation(spriteCenter.getX(), spriteCenter.getY());
+
             // Draw two lines centered on the sprite center.
             SpriteCenterPainter.drawSpriteCenter(g, worldToScreen, spriteCenter);
             String spriteCenterCoords = "Sprite Center (" + toDisplay.getX() + ", " + toDisplay.getY() + ")";
@@ -279,61 +285,16 @@ public final class GuidesPainters {
 
         private static void drawSpriteCenter(Graphics2D g, AffineTransform worldToScreen,
                                              Point2D positionWorld) {
-            double size = 0.5;
+            double worldSize = 0.5;
             double thickness = 0.05;
-
-            double x = positionWorld.getX(), y = positionWorld.getY();
-
-            double horizontalX = x - size / 2;
-            double horizontalY = y - thickness / 2;
-
-            double verticalX = x - thickness / 2;
-            double verticalY = y - size / 2;
-
-            Shape horizontal = new Rectangle2D.Double(horizontalX, horizontalY, size, thickness);
-            Shape vertical = new Rectangle2D.Double(verticalX, verticalY, thickness, size);
-
-            Shape transformedH = worldToScreen.createTransformedShape(horizontal);
-            Shape transformedV = worldToScreen.createTransformedShape(vertical);
-
-            double screenSize = 4;
-
-            Point2D positionScreen = worldToScreen.transform(positionWorld, null);
-
-            double screenX = positionScreen.getX(), screenY = positionScreen.getY();
-
-            // Extracting the rotation component from the worldToScreen transform.
-            // I don't understand half of it - bless my new machine overlords.
-            double[] matrix = new double[6];
-            worldToScreen.getMatrix(matrix);
-            double scaleX = Math.sqrt(matrix[0] * matrix[0] + matrix[1] * matrix[1]);
-            double rotationAngle = -Math.atan2(matrix[1] / scaleX, matrix[0] / scaleX);
-
-            AffineTransform rotationTransform = new AffineTransform();
-            // New AffineTransform by default is focused  on the 0,0 in screen coordinates.
-            // We have to center it on our point, do the rotation, then translate back.
-            rotationTransform.translate(screenX, screenY);
-            rotationTransform.rotate(-rotationAngle);
-            rotationTransform.translate(-screenX, -screenY);
-
-            Shape crossLineX = new Line2D.Double(screenX - screenSize, screenY,
-                    screenX + screenSize, screenY);
-            Shape crossLineY = new Line2D.Double(screenX, screenY - screenSize,
-                    screenX, screenY + screenSize);
-
-            Shape transformedX = rotationTransform.createTransformedShape(crossLineX);
-            Shape transformedY = rotationTransform.createTransformedShape(crossLineY);
-
-            Paint old = g.getPaint();
-
-            g.setPaint(Color.BLACK);
-            g.fill(transformedH);
-            g.fill(transformedV);
-
-            g.draw(transformedX);
-            g.draw(transformedY);
-
-            g.setPaint(old);
+            double screenSize = 12;
+            DrawingParameters parameters = DrawingParameters.builder()
+                    .withWorldSize(worldSize)
+                    .withWorldThickness(thickness)
+                    .withScreenSize(screenSize)
+                    .withPaintColor(Color.BLACK)
+                    .build();
+            DrawUtilities.drawDynamicCross(g, worldToScreen, positionWorld, parameters);
         }
 
     }

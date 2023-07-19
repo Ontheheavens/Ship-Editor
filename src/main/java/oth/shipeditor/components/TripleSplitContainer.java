@@ -10,8 +10,8 @@ import oth.shipeditor.communication.events.components.WindowGUIShowConfirmed;
 import oth.shipeditor.components.datafiles.GameDataPanel;
 import oth.shipeditor.components.instrument.InstrumentTabsPane;
 import oth.shipeditor.components.viewer.ShipViewable;
-import oth.shipeditor.utility.MinimizeListener;
-import oth.shipeditor.utility.MinimizerWidget;
+import oth.shipeditor.utility.components.MinimizeListener;
+import oth.shipeditor.utility.components.MinimizerWidget;
 
 import javax.swing.*;
 import javax.swing.plaf.basic.BasicSplitPaneDivider;

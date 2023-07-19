@@ -9,7 +9,7 @@ import oth.shipeditor.persistence.SettingsManager;
 import oth.shipeditor.representation.GameDataRepository;
 import oth.shipeditor.representation.Hull;
 import oth.shipeditor.representation.Skin;
-import oth.shipeditor.utility.MouseoverLabelListener;
+import oth.shipeditor.utility.components.MouseoverLabelListener;
 import oth.shipeditor.utility.StringConstants;
 import oth.shipeditor.utility.Utility;
 

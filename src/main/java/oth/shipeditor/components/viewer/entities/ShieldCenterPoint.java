@@ -9,11 +9,11 @@ import oth.shipeditor.components.viewer.layers.LayerPainter;
 import oth.shipeditor.components.viewer.painters.ShieldPointPainter;
 import oth.shipeditor.representation.HullStyle;
 import oth.shipeditor.utility.Utility;
+import oth.shipeditor.utility.graphics.DrawUtilities;
+import oth.shipeditor.utility.graphics.ShapeUtilities;
 
 import java.awt.*;
-import java.awt.geom.AffineTransform;
-import java.awt.geom.Ellipse2D;
-import java.awt.geom.Point2D;
+import java.awt.geom.*;
 
 /**
  * @author Ontheheavens
@@ -67,41 +67,63 @@ public class ShieldCenterPoint extends FeaturePoint{
     }
 
     @Override
-    protected Painter createSecondaryPainter() {
+    protected Painter createComposedPainter() {
+        AffineTransform delegateWorldToScreen = getDelegateWorldToScreen();
         return (g, worldToScreen, w, h) -> {
-            this.paintShieldCircle(g, worldToScreen);
+            delegateWorldToScreen.setTransform(worldToScreen);
 
-            int rule = AlphaComposite.SRC_OVER;
-            Composite old = g.getComposite();
-            Composite opacity = AlphaComposite.getInstance(rule, 1.0f) ;
-            g.setComposite(opacity);
+            this.paintShieldCircle(g, delegateWorldToScreen);
 
-            Paint oldPaint = g.getPaint();
-            g.setPaint(Color.BLACK);
+            Composite old = null;
+            if (parentPainter.getPaintOpacity() != 0.0f) {
+                old = Utility.setFullAlpha(g);
+            }
 
-            Point2D position = this.getPosition();
-            Point2D point = new Point2D.Double(position.getX(), position.getY());
-            Point2D dest = worldToScreen.transform(point, null);
-            Shape dot = Utility.createCircle(dest, 1.0f);
+            this.paintShieldCenterCross(g, delegateWorldToScreen);
 
-            g.fill(dot);
+            this.paintCoordsLabel(g, delegateWorldToScreen, w, h);
 
-            Shape outer = Utility.createCircle(worldToScreen.transform(position, null), 8);
-
-            Stroke oldStroke = g.getStroke();
-            g.setStroke(new BasicStroke(3));
-            g.draw(outer);
-            g.setStroke(oldStroke);
-            g.setPaint(Color.WHITE);
-
-            g.draw(outer);
-
-            g.setPaint(oldPaint);
-            this.paintCoordsLabel(g, worldToScreen, w, h);
-
-            g.setComposite(old);
-
+            if (old != null) {
+                g.setComposite(old);
+            }
         };
+    }
+
+    @Override
+    protected Painter createSecondaryPainter() {
+        return null;
+    }
+
+    @Override
+    protected Color createBaseColor() {
+        return new Color(0xFF006E28, true);
+    }
+
+    @Override
+    protected Color createHoverColor() {
+        return new Color(0xFF009B37, true);
+    }
+
+    @Override
+    @SuppressWarnings({"WeakerAccess"})
+    protected Color createSelectColor() {
+        return new Color(0xFF00FF73, true);
+    }
+
+    private void paintShieldCenterCross(Graphics2D g, AffineTransform worldToScreen) {
+        Color crossColor = createHoverColor();
+        if (isSelected() && isInteractable()) {
+            crossColor = createSelectColor();
+        }
+
+        Point2D position = this.getPosition();
+
+        Shape diagonalCross = ShapeUtilities.createDiagonalCross(position, 0.4f);
+
+        Shape transformedCross = ShapeUtilities.ensureDynamicScaleShape(worldToScreen,
+                position, diagonalCross, 12);
+
+        DrawUtilities.drawCentroid(g, transformedCross, crossColor);
     }
 
     private void paintShieldCircle(Graphics2D g, AffineTransform worldToScreen) {

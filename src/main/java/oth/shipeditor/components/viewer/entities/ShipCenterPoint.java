@@ -7,11 +7,14 @@ import lombok.Setter;
 import oth.shipeditor.components.viewer.InstrumentMode;
 import oth.shipeditor.components.viewer.layers.LayerPainter;
 import oth.shipeditor.components.viewer.painters.CenterPointPainter;
+import oth.shipeditor.utility.graphics.DrawUtilities;
+import oth.shipeditor.utility.graphics.ShapeUtilities;
 import oth.shipeditor.utility.Utility;
 
 import java.awt.*;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Ellipse2D;
+import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
 
 /**
@@ -23,11 +26,14 @@ public class ShipCenterPoint extends FeaturePoint{
     @Getter @Setter
     private float collisionRadius;
 
+    private final CenterPointPainter parentPainter;
+
     private final Paint collisionCircleColor = new Color(0xFFDCDC40, true);
 
-    public ShipCenterPoint(Point2D position, float radius, LayerPainter layer) {
+    public ShipCenterPoint(Point2D position, float radius, LayerPainter layer, CenterPointPainter parent) {
         super(position, layer);
         this.collisionRadius = radius;
+        this.parentPainter = parent;
     }
 
     @Override
@@ -53,56 +59,57 @@ public class ShipCenterPoint extends FeaturePoint{
     }
 
     @Override
-    protected Painter createSecondaryPainter() {
+    protected Painter createComposedPainter() {
+        AffineTransform delegateWorldToScreen = getDelegateWorldToScreen();
         return (g, worldToScreen, w, h) -> {
-            this.paintCollisionCircle(g, worldToScreen);
-            Point2D position = this.getPosition();
+            delegateWorldToScreen.setTransform(worldToScreen);
 
-            int rule = AlphaComposite.SRC_OVER;
-            Composite old = g.getComposite();
-            Composite opacity = AlphaComposite.getInstance(rule, 1.0f) ;
-            g.setComposite(opacity);
+            this.paintCollisionCircle(g, delegateWorldToScreen);
 
-            Paint oldPaint = g.getPaint();
-            g.setPaint(Color.BLACK);
+            Composite old = null;
+            if (parentPainter.getPaintOpacity() != 0.0f) {
+                old = Utility.setFullAlpha(g);
+            }
 
-            Point2D point = new Point2D.Double(position.getX(), position.getY());
-            Point2D dest = worldToScreen.transform(point, null);
-            float radius = 1.0f;
-            Shape dot = Utility.createCircle(dest, radius);
-            g.fill(dot);
+            this.paintCenterCross(g, delegateWorldToScreen);
 
-            Shape outer = Utility.createHexagon(worldToScreen.transform(position, null), 9);
+            this.paintCoordsLabel(g, delegateWorldToScreen, w, h);
 
-            Stroke oldStroke = g.getStroke();
-            g.setStroke(new BasicStroke(3));
-            g.draw(outer);
-            g.setStroke(oldStroke);
-            g.setPaint(Color.WHITE);
-
-            g.draw(outer);
-
-            g.setPaint(oldPaint);
-
-            this.paintCoordsLabel(g, worldToScreen, w, h);
-
-            g.setComposite(old);
+            if (old != null) {
+                g.setComposite(old);
+            }
         };
     }
 
     @Override
-    public Painter getPointPainter() {
-        return (g, worldToScreen, w, h) -> {
-            int rule = AlphaComposite.SRC_OVER;
-            Composite old = g.getComposite();
-            Composite opacity = AlphaComposite.getInstance(rule, 1.0f) ;
-            g.setComposite(opacity);
+    protected Painter createSecondaryPainter() {
+        return null;
+    }
 
-            Painter superPointPainter = super.getPointPainter();
-            superPointPainter.paint(g, worldToScreen, w, h);
+    @Override
+    protected Color createHoverColor() {
+        return new Color(0xFF00329B, true);
+    }
 
-            g.setComposite(old);
-        };
+    @Override
+    @SuppressWarnings({"WeakerAccess"})
+    protected Color createSelectColor() {
+        return new Color(0xFF0087FF, true);
+    }
+
+    private void paintCenterCross(Graphics2D g, AffineTransform worldToScreen) {
+        Color crossColor = createHoverColor();
+        if (isSelected() && isInteractable()) {
+            crossColor = createSelectColor();
+        }
+
+        g.setPaint(crossColor);
+        Point2D position = this.getPosition();
+        Shape cross = ShapeUtilities.createPerpendicularCross(position, 0.4f);
+        Shape transformedCross = ShapeUtilities.ensureDynamicScaleShape(worldToScreen,
+                position, cross, 12);
+
+        DrawUtilities.drawCentroid(g, transformedCross, crossColor);
     }
 
     private void paintCollisionCircle(Graphics2D g, AffineTransform worldToScreen) {

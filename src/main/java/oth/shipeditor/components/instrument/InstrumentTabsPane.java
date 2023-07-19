@@ -8,8 +8,8 @@ import oth.shipeditor.communication.events.viewer.ViewerRepaintQueued;
 import oth.shipeditor.communication.events.viewer.points.InstrumentModeChanged;
 import oth.shipeditor.components.instrument.centers.HullPointsPanel;
 import oth.shipeditor.components.viewer.InstrumentMode;
-import oth.shipeditor.utility.MinimizeListener;
-import oth.shipeditor.utility.MinimizerWidget;
+import oth.shipeditor.utility.components.MinimizeListener;
+import oth.shipeditor.utility.components.MinimizerWidget;
 import oth.shipeditor.utility.StringConstants;
 
 import javax.swing.*;

@@ -19,7 +19,7 @@ import oth.shipeditor.components.viewer.ShipViewable;
 import oth.shipeditor.components.viewer.entities.ShipCenterPoint;
 import oth.shipeditor.components.viewer.layers.LayerPainter;
 import oth.shipeditor.components.viewer.layers.ShipLayer;
-import oth.shipeditor.utility.MouseoverLabelListener;
+import oth.shipeditor.utility.components.MouseoverLabelListener;
 
 import javax.swing.*;
 import javax.swing.border.Border;

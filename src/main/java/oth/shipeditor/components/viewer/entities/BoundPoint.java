@@ -3,7 +3,7 @@ package oth.shipeditor.components.viewer.entities;
 import de.javagl.viewer.Painter;
 import oth.shipeditor.components.viewer.InstrumentMode;
 import oth.shipeditor.components.viewer.layers.LayerPainter;
-import oth.shipeditor.utility.Utility;
+import oth.shipeditor.utility.graphics.ShapeUtilities;
 
 import java.awt.*;
 import java.awt.geom.Point2D;
@@ -44,7 +44,7 @@ public class BoundPoint extends FeaturePoint{
         return (g, worldToScreen, w, h) -> {
             Point2D center = worldToScreen.transform(getPosition(), null);
 
-            Polygon hexagon = Utility.createHexagon(center, 7);
+            Polygon hexagon = ShapeUtilities.createHexagon(center, 7);
 
             Paint old = g.getPaint();
             g.setPaint(createBaseColor());
