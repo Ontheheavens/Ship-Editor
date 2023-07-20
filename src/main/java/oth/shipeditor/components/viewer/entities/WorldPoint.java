@@ -25,9 +25,9 @@ public interface WorldPoint {
     void setPosition(Point2D input);
 
     /**
-     * @return Painter instance responsible for graphical representation of this point in Viewer.
+     * @return new Painter instance responsible for graphical representation of this point in Viewer.
      */
-    Painter getPointPainter();
+    Painter createPointPainter();
 
     /**
      * @return whether this point is selected, that is, active for some user input such as moving the point.

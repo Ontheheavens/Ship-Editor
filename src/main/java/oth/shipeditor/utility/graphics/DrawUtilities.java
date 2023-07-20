@@ -1,5 +1,7 @@
 package oth.shipeditor.utility.graphics;
 
+import oth.shipeditor.components.viewer.entities.BaseWorldPoint;
+
 import java.awt.*;
 import java.awt.geom.*;
 
@@ -13,20 +15,12 @@ public final class DrawUtilities {
     private DrawUtilities() {
     }
 
-    public static void drawBorderedLine(Graphics2D canvas, Point2D start, Point2D finish, Color inner) {
-        DrawUtilities.drawBorderedLine(canvas, start, finish, inner, Color.BLACK, 2.0f, 3.0f);
-    }
-
-    @SuppressWarnings({"SameParameterValue", "MethodWithTooManyParameters"})
-    private static void drawBorderedLine(Graphics2D canvas, Point2D start, Point2D finish,
-                                         Color innerColor, Color outerColor, float innerWidth, float outerWidth) {
+    public static void drawScreenLine(Graphics2D canvas, Point2D start, Point2D finish,
+                                         Color color, float thickness) {
         Stroke originalStroke = canvas.getStroke();
         Color originalColor = canvas.getColor();
-        canvas.setColor(outerColor);
-        canvas.setStroke(new BasicStroke(outerWidth));
-        canvas.drawLine((int) start.getX(), (int) start.getY(), (int) finish.getX(), (int) finish.getY());
-        canvas.setColor(innerColor);
-        canvas.setStroke(new BasicStroke(innerWidth));
+        canvas.setColor(color);
+        canvas.setStroke(new BasicStroke(thickness));
         canvas.drawLine((int) start.getX(), (int) start.getY(), (int) finish.getX(), (int) finish.getY());
         canvas.setStroke(originalStroke);
         canvas.setColor(originalColor);

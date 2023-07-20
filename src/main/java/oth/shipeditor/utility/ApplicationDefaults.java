@@ -15,4 +15,6 @@ public interface ApplicationDefaults {
 
     Color VIEWER_FONT_COLOR = Color.BLACK;
 
+    Color BOUND_LINE_COLOR = Color.WHITE;
+
 }

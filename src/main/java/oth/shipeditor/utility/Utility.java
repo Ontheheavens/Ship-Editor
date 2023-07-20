@@ -26,9 +26,13 @@ public final class Utility {
     private Utility() {}
 
     public static Composite setFullAlpha(Graphics2D g) {
+        return Utility.setAlphaComposite(g, 1.0f);
+    }
+
+    public static Composite setAlphaComposite(Graphics2D g, float alpha) {
         int rule = AlphaComposite.SRC_OVER;
         Composite old = g.getComposite();
-        Composite opacity = AlphaComposite.getInstance(rule, 1.0f) ;
+        Composite opacity = AlphaComposite.getInstance(rule, alpha) ;
         g.setComposite(opacity);
         return old;
     }
@@ -54,10 +58,6 @@ public final class Utility {
         rotationTransform.translate(-screenX, -screenY);
 
         return rotationTransform;
-    }
-
-    public static float getOpacityFromAlpha(int alpha) {
-        return alpha / 255.0f; // Convert alpha [0, 255] to opacity [0.0, 1.0].
     }
 
     public static Font getOrbitron(int size) {
@@ -118,28 +118,6 @@ public final class Utility {
         JLabel opacityLabel = new JLabel();
         opacityLabel.setAlignmentX(0.0f);
         return new Pair<>(opacitySlider, opacityLabel);
-    }
-
-    public static Color darken(Color color, double factor) {
-        double darkenFactor = factor;
-        if (darkenFactor < 0) {
-            darkenFactor = 0;
-        } else if (darkenFactor > 1) {
-            darkenFactor = 1;
-        }
-        int red = color.getRed();
-        int green = color.getGreen();
-        int blue = color.getBlue();
-
-        red = (int) (red * (1 - darkenFactor));
-        green = (int) (green * (1 - darkenFactor));
-        blue = (int) (blue * (1 - darkenFactor));
-
-        red = Math.max(0, red);
-        green = Math.max(0, green);
-        blue = Math.max(0, blue);
-
-        return new Color(red, green, blue);
     }
 
 }

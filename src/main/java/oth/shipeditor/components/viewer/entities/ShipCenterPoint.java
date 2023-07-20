@@ -21,7 +21,7 @@ import java.awt.geom.Point2D;
  * @author Ontheheavens
  * @since 30.05.2023
  */
-public class ShipCenterPoint extends FeaturePoint{
+public class ShipCenterPoint extends BaseWorldPoint {
 
     @Getter @Setter
     private float collisionRadius;
@@ -29,6 +29,8 @@ public class ShipCenterPoint extends FeaturePoint{
     private final CenterPointPainter parentPainter;
 
     private final Paint collisionCircleColor = new Color(0xFFDCDC40, true);
+
+
 
     public ShipCenterPoint(Point2D position, float radius, LayerPainter layer, CenterPointPainter parent) {
         super(position, layer);
@@ -59,7 +61,7 @@ public class ShipCenterPoint extends FeaturePoint{
     }
 
     @Override
-    protected Painter createComposedPainter() {
+    public Painter createPointPainter() {
         AffineTransform delegateWorldToScreen = getDelegateWorldToScreen();
         return (g, worldToScreen, w, h) -> {
             delegateWorldToScreen.setTransform(worldToScreen);
@@ -82,17 +84,12 @@ public class ShipCenterPoint extends FeaturePoint{
     }
 
     @Override
-    protected Painter createSecondaryPainter() {
-        return null;
-    }
-
-    @Override
     protected Color createHoverColor() {
         return new Color(0xFF00329B, true);
     }
 
     @Override
-    @SuppressWarnings({"WeakerAccess"})
+    @SuppressWarnings("WeakerAccess")
     protected Color createSelectColor() {
         return new Color(0xFF0087FF, true);
     }

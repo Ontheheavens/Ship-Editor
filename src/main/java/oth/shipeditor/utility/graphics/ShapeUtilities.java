@@ -13,22 +13,28 @@ public final class ShapeUtilities {
     private ShapeUtilities() {
     }
 
-    public static Polygon createHexagon(Point2D point, int radius) {
-        int x = (int) point.getX(), y = (int) point.getY();
+    public static Path2D createHexagon(Point2D point, double radius) {
+        double x = point.getX();
+        double y = point.getY();
 
-        int[] xPoints = new int[6];
-        int[] yPoints = new int[6];
+        Path2D path = new Path2D.Double();
 
-        // Calculate the coordinates of the six points of the hexagon.
-        for (int i = 0; i < 6; i++) {
-            double angle = 2 * Math.PI / 6 * i;
-            xPoints[i] = x + (int) (radius * Math.cos(angle));
-            yPoints[i] = y + (int) (radius * Math.sin(angle));
+        double angle = 0;
+        double xPos = x + radius * Math.cos(angle);
+        double yPos = y + radius * Math.sin(angle);
+        path.moveTo(xPos, yPos);
+
+        for (int i = 1; i < 6; i++) {
+            angle = 2 * Math.PI / 6 * i;
+            xPos = x + radius * Math.cos(angle);
+            yPos = y + radius * Math.sin(angle);
+            path.lineTo(xPos, yPos);
         }
-        return new Polygon(xPoints, yPoints, 6);
+        path.closePath();
+
+        return path;
     }
 
-    @SuppressWarnings("unused")
     public static AffineTransform getScaledTransform(Point2D center, AffineTransform worldToScreen,
                                                      double scale) {
         AffineTransform scaleTX = new AffineTransform();
@@ -81,7 +87,6 @@ public final class ShapeUtilities {
         return ShapeUtilities.combineShapes(crossLineX, crossLineY);
     }
 
-    @SuppressWarnings("WeakerAccess")
     public static Path2D combineShapes(Shape first, Shape second) {
         Path2D combinedPath = new Path2D.Double();
         combinedPath.append(first, false);

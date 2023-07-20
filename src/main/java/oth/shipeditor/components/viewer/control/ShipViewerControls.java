@@ -6,6 +6,7 @@ import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.viewer.control.*;
 import oth.shipeditor.communication.events.viewer.points.*;
 import oth.shipeditor.components.viewer.PrimaryShipViewer;
+import oth.shipeditor.components.viewer.entities.BaseWorldPoint;
 import oth.shipeditor.components.viewer.layers.LayerPainter;
 import oth.shipeditor.components.viewer.layers.StaticController;
 import oth.shipeditor.utility.Utility;

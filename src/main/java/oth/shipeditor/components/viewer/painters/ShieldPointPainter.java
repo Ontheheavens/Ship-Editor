@@ -19,7 +19,7 @@ import oth.shipeditor.representation.GameDataRepository;
 import oth.shipeditor.representation.Hull;
 import oth.shipeditor.representation.HullStyle;
 import oth.shipeditor.undo.EditDispatch;
-import oth.shipeditor.utility.Utility;
+import oth.shipeditor.utility.graphics.ColorUtilities;
 
 import java.awt.*;
 import java.awt.event.KeyEvent;
@@ -64,7 +64,7 @@ public class ShieldPointPainter extends AbstractPointPainter{
                 (float) hull.getShieldRadius(), this.parentLayer, hullStyle, this);
         this.addPoint(shieldCenterPoint);
         Color shieldInnerColor = hullStyle.getShieldInnerColor();
-        float styleInnerColorOpacity = Utility.getOpacityFromAlpha(shieldInnerColor.getAlpha());
+        float styleInnerColorOpacity = ColorUtilities.getOpacityFromAlpha(shieldInnerColor.getAlpha());
         this.setPaintOpacity(styleInnerColorOpacity);
     }
 

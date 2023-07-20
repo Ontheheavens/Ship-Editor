@@ -19,7 +19,7 @@ import java.awt.geom.*;
  * @author Ontheheavens
  * @since 16.07.2023
  */
-public class ShieldCenterPoint extends FeaturePoint{
+public class ShieldCenterPoint extends BaseWorldPoint{
 
     @Getter @Setter
     private float shieldRadius;
@@ -67,7 +67,7 @@ public class ShieldCenterPoint extends FeaturePoint{
     }
 
     @Override
-    protected Painter createComposedPainter() {
+    public Painter createPointPainter() {
         AffineTransform delegateWorldToScreen = getDelegateWorldToScreen();
         return (g, worldToScreen, w, h) -> {
             delegateWorldToScreen.setTransform(worldToScreen);
@@ -90,11 +90,6 @@ public class ShieldCenterPoint extends FeaturePoint{
     }
 
     @Override
-    protected Painter createSecondaryPainter() {
-        return null;
-    }
-
-    @Override
     protected Color createBaseColor() {
         return new Color(0xFF006E28, true);
     }
@@ -105,7 +100,7 @@ public class ShieldCenterPoint extends FeaturePoint{
     }
 
     @Override
-    @SuppressWarnings({"WeakerAccess"})
+    @SuppressWarnings("WeakerAccess")
     protected Color createSelectColor() {
         return new Color(0xFF00FF73, true);
     }

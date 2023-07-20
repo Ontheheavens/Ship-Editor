@@ -1,20 +1,26 @@
 package oth.shipeditor.components.viewer.entities;
 
 import de.javagl.viewer.Painter;
+import lombok.Getter;
+import lombok.Setter;
 import oth.shipeditor.components.viewer.InstrumentMode;
 import oth.shipeditor.components.viewer.layers.LayerPainter;
+import oth.shipeditor.components.viewer.layers.StaticController;
+import oth.shipeditor.utility.graphics.DrawUtilities;
 import oth.shipeditor.utility.graphics.ShapeUtilities;
 
 import java.awt.*;
+import java.awt.geom.AffineTransform;
 import java.awt.geom.Point2D;
 
 /**
  * @author Ontheheavens
  * @since 01.05.2023
  */
-public class BoundPoint extends FeaturePoint{
+public class BoundPoint extends BaseWorldPoint{
 
-
+    @Getter @Setter
+    private double paintSizeMultiplier = 1;
 
     public BoundPoint(Point2D position) {
         this(position, null);
@@ -29,28 +35,25 @@ public class BoundPoint extends FeaturePoint{
         return InstrumentMode.BOUNDS;
     }
 
-    @Override
-    protected Color createBaseColor() {
-        return super.createHoverColor();
+    public static Shape getShapeForPoint(AffineTransform worldToScreen, Point2D position, double sizeMult) {
+        Shape hexagon = ShapeUtilities.createHexagon(position, 0.10f * sizeMult);
+
+        return ShapeUtilities.ensureDynamicScaleShape(worldToScreen,
+                position, hexagon, 12 * sizeMult);
     }
 
     @Override
-    protected Color createHoverColor() {
-        return super.createBaseColor();
-    }
-
-    @Override
-    protected Painter createSecondaryPainter() {
+    public Painter createPointPainter() {
         return (g, worldToScreen, w, h) -> {
-            Point2D center = worldToScreen.transform(getPosition(), null);
+            Point2D position = getPosition();
 
-            Polygon hexagon = ShapeUtilities.createHexagon(center, 7);
+            Shape hexagon = BoundPoint.getShapeForPoint(worldToScreen, position, paintSizeMultiplier);
 
-            Paint old = g.getPaint();
-            g.setPaint(createBaseColor());
-            g.drawPolygon(hexagon);
+            boolean cursorInBounds = StaticController.checkIsHovered(hexagon);
+            this.setCursorInBounds(cursorInBounds);
 
-            g.setPaint(old);
+            DrawUtilities.outlineShape(g, hexagon, Color.BLACK, 2);
+            DrawUtilities.fillShape(g, hexagon, getCurrentColor());
 
             this.paintCoordsLabel(g, worldToScreen, w, h);
         };
