@@ -277,23 +277,22 @@ class HullsTreePanel extends DataTreePanel {
 
     private class DoubleClickLayerLoader extends MouseAdapter {
 
-        @SuppressWarnings({"ChainOfInstanceofChecks", "MethodWithMultipleReturnPoints"})
+        @SuppressWarnings("ChainOfInstanceofChecks")
         @Override
         public void mouseClicked(MouseEvent e) {
             // Check for double-click.
-            if(e.getButton() == MouseEvent.BUTTON1 && e.getClickCount() >= 2){
-                JTree tree = getTree();
-                Point eventPoint = e.getPoint();
-                TreePath pathForLocation = tree.getPathForLocation(eventPoint.x, eventPoint.y);
-                if (pathForLocation == null) return;
-                DefaultMutableTreeNode node = (DefaultMutableTreeNode) pathForLocation.getLastPathComponent();
-                TreePath selectionPath = tree.getSelectionPath();
-                if (selectionPath == null) return;
-                Object selected = selectionPath.getLastPathComponent();
-                if (node == null || !(selected instanceof DefaultMutableTreeNode checkedNode) || node != checkedNode) return;
-                if (node.getUserObject() instanceof ShipCSVEntry checked) {
-                    checked.loadLayerFromEntry();
-                }
+            if (e.getButton() != MouseEvent.BUTTON1 || e.getClickCount() < 2) return;
+            JTree tree = getTree();
+            Point eventPoint = e.getPoint();
+            TreePath pathForLocation = tree.getPathForLocation(eventPoint.x, eventPoint.y);
+            if (pathForLocation == null) return;
+            DefaultMutableTreeNode node = (DefaultMutableTreeNode) pathForLocation.getLastPathComponent();
+            TreePath selectionPath = tree.getSelectionPath();
+            if (selectionPath == null) return;
+            Object selected = selectionPath.getLastPathComponent();
+            if (node == null || !(selected instanceof DefaultMutableTreeNode checkedNode) || node != checkedNode) return;
+            if (node.getUserObject() instanceof ShipCSVEntry checked) {
+                checked.loadLayerFromEntry();
             }
         }
     }

@@ -1,4 +1,4 @@
-package oth.shipeditor.components.viewer.layers;
+package oth.shipeditor.utility;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -6,6 +6,7 @@ import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.viewer.control.ViewerCursorMoved;
 import oth.shipeditor.communication.events.viewer.layers.ActiveLayerUpdated;
 import oth.shipeditor.communication.events.viewer.layers.LayerWasSelected;
+import oth.shipeditor.components.viewer.layers.ShipLayer;
 import oth.shipeditor.menubar.FileUtilities;
 
 import java.awt.*;
@@ -28,7 +29,10 @@ public final class StaticController {
     private static double zoomLevel = 1;
 
     @Getter @Setter
-    private static Point2D viewerCursor = new Point2D.Double();
+    private static Point2D rawCursor = new Point2D.Double();
+
+    @Getter @Setter
+    private static Point2D adjustedCursor = new Point2D.Double();
 
     private StaticController() {
     }
@@ -38,7 +42,7 @@ public final class StaticController {
     }
 
     public static boolean checkIsHovered(Shape shape) {
-        return shape.contains(viewerCursor);
+        return shape.contains(rawCursor);
     }
 
     @SuppressWarnings("ChainOfInstanceofChecks")
@@ -55,7 +59,8 @@ public final class StaticController {
         });
         EventBus.subscribe(event -> {
             if (event instanceof ViewerCursorMoved checked) {
-                viewerCursor = checked.rawCursor();
+                rawCursor = checked.rawCursor();
+                adjustedCursor = checked.adjusted();
             }
         });
     }

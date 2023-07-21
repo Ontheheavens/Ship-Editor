@@ -17,7 +17,7 @@ import oth.shipeditor.components.instrument.InstrumentTabsPane;
 import oth.shipeditor.components.viewer.InstrumentMode;
 import oth.shipeditor.components.viewer.layers.LayerPainter;
 import oth.shipeditor.components.viewer.layers.ShipLayer;
-import oth.shipeditor.components.viewer.layers.StaticController;
+import oth.shipeditor.utility.StaticController;
 import oth.shipeditor.utility.ApplicationDefaults;
 import oth.shipeditor.utility.Utility;
 import oth.shipeditor.utility.graphics.ColorUtilities;

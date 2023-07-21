@@ -11,7 +11,7 @@ import oth.shipeditor.components.viewer.control.ControlPredicates;
 import oth.shipeditor.components.viewer.painters.AbstractPointPainter;
 import oth.shipeditor.menubar.PrimaryMenuBar;
 import oth.shipeditor.persistence.Initializations;
-import oth.shipeditor.components.viewer.layers.StaticController;
+import oth.shipeditor.utility.StaticController;
 
 import javax.swing.*;
 import java.awt.*;

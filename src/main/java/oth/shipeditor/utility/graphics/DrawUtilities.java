@@ -20,15 +20,21 @@ public final class DrawUtilities {
     private DrawUtilities() {
     }
 
-    public static void drawScreenLine(Graphics2D canvas, Point2D start, Point2D finish,
+    public static void drawScreenLine(Graphics2D g, Point2D start, Point2D finish,
                                          Color color, float thickness) {
-        Stroke originalStroke = canvas.getStroke();
-        Color originalColor = canvas.getColor();
-        canvas.setColor(color);
-        canvas.setStroke(new BasicStroke(thickness));
-        canvas.drawLine((int) start.getX(), (int) start.getY(), (int) finish.getX(), (int) finish.getY());
-        canvas.setStroke(originalStroke);
-        canvas.setColor(originalColor);
+        Stroke originalStroke = g.getStroke();
+        Color originalColor = g.getColor();
+        Object renderingHint = g.getRenderingHint(RenderingHints.KEY_STROKE_CONTROL);
+
+        g.setRenderingHint(RenderingHints.KEY_STROKE_CONTROL, RenderingHints.VALUE_STROKE_PURE);
+        
+        g.setColor(color);
+        g.setStroke(new BasicStroke(thickness, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
+        g.drawLine((int) start.getX(), (int) start.getY(), (int) finish.getX(), (int) finish.getY());
+
+        g.setRenderingHint(RenderingHints.KEY_STROKE_CONTROL, renderingHint);
+        g.setStroke(originalStroke);
+        g.setColor(originalColor);
     }
 
     public static void drawDynamicCross(Graphics2D g,
@@ -101,6 +107,7 @@ public final class DrawUtilities {
     }
 
     /**
+     * Note: this method is for painting in screen coordinates only.
      * @param screenPoint desired position of painted String.
      * @param fontInput if null, default value is Orbitron 14.
      * @param strokeInput if null, default value is 2.5f with rounded caps and joins.
@@ -108,7 +115,8 @@ public final class DrawUtilities {
      * E.g. if BOTTOM_RIGHT, the label will be painted to the upper left of screen point.
      * @return resulting {@link Shape} instance of the drawn text, from which bounding box positions can be retrieved.
      */
-    @SuppressWarnings({"WeakerAccess", "MethodWithTooManyParameters"})
+
+    @SuppressWarnings("MethodWithTooManyParameters")
     public static Shape paintScreenTextOutlined(Graphics2D g, String text, Font fontInput, Stroke strokeInput,
                                                 Point2D screenPoint, RectangleCorner corner) {
         Font font = fontInput;

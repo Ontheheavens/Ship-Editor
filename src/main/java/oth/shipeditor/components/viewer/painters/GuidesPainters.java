@@ -9,7 +9,6 @@ import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
 import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.viewer.ViewerRepaintQueued;
-import oth.shipeditor.communication.events.viewer.control.ViewerCursorMoved;
 import oth.shipeditor.communication.events.viewer.control.ViewerGuidesToggled;
 import oth.shipeditor.components.instrument.InstrumentTabsPane;
 import oth.shipeditor.components.viewer.InstrumentMode;
@@ -17,11 +16,11 @@ import oth.shipeditor.components.viewer.PrimaryShipViewer;
 import oth.shipeditor.components.viewer.entities.BaseWorldPoint;
 import oth.shipeditor.components.viewer.entities.WorldPoint;
 import oth.shipeditor.components.viewer.layers.LayerPainter;
-import oth.shipeditor.components.viewer.layers.StaticController;
+import oth.shipeditor.utility.StaticController;
 import oth.shipeditor.utility.ApplicationDefaults;
 import oth.shipeditor.utility.RectangleCorner;
-import oth.shipeditor.utility.graphics.DrawUtilities;
 import oth.shipeditor.utility.Utility;
+import oth.shipeditor.utility.graphics.DrawUtilities;
 import oth.shipeditor.utility.graphics.DrawingParameters;
 
 import java.awt.*;
@@ -35,13 +34,8 @@ import java.awt.image.RenderedImage;
  * @author Ontheheavens
  * @since 29.05.2023
  */
-@SuppressWarnings("ClassWithTooManyFields")
 @Log4j2
 public final class GuidesPainters {
-
-    private Point2D cursor;
-
-    private Point2D rawCursor;
 
     @Getter
     private final Painter guidesPaint;
@@ -61,8 +55,6 @@ public final class GuidesPainters {
 
     public GuidesPainters(PrimaryShipViewer viewer) {
         this.parent = viewer;
-        this.cursor = new Point2D.Double(0, 0);
-        this.initCursorListener();
         this.listenForToggling();
 
         this.guidesPaint = createGuidesPainter();
@@ -83,15 +75,6 @@ public final class GuidesPainters {
         });
     }
 
-    private void initCursorListener() {
-        EventBus.subscribe(event -> {
-            if (event instanceof ViewerCursorMoved checked) {
-                this.cursor = checked.adjusted();
-                this.rawCursor = checked.rawCursor();
-            }
-        });
-    }
-
     /**
      * Draws the guides to the viewer. The guides consist of two rectangles each 1 scaled pixel wide,
      * one along the x-axis and one along the y-axis,
@@ -106,7 +89,7 @@ public final class GuidesPainters {
             if (layer == null || layer.getShipSprite() == null) return;
             RenderedImage shipSprite = layer.getShipSprite();
 
-            Point2D mousePoint = this.cursor;
+            Point2D mousePoint = StaticController.getAdjustedCursor();
             AffineTransform screenToWorld = this.parent.getScreenToWorld();
             Point2D transformedMouse = screenToWorld.transform(mousePoint, null);
             double x = transformedMouse.getX();
@@ -132,19 +115,11 @@ public final class GuidesPainters {
             g.setPaint(new Color(0x40FFFFFF, true));
             g.fill(guideX); g.fill(guideY);
 
-
             Shape targetSquare = new Rectangle2D.Double(xGuide, yGuide, 1, 1);
             Shape transformed = worldToScreen.createTransformedShape(targetSquare);
 
-            g.setPaint(Color.BLACK);
-
-            Stroke oldStroke = g.getStroke();
-            g.setStroke(new BasicStroke(3));
-            g.draw(transformed);
-            g.setStroke(oldStroke);
-            g.setPaint(Color.WHITE);
-            g.draw(transformed);
-            g.setPaint(old);
+            DrawUtilities.outlineShape(g, transformed, Color.BLACK, 3);
+            DrawUtilities.outlineShape(g, transformed, Color.WHITE, 1);
 
             Point2D crossCenter = new Point2D.Double(xGuide + 0.5, yGuide + 0.5);
             double crossSize = 0.15;
@@ -163,16 +138,13 @@ public final class GuidesPainters {
             g.draw(transformedCrossY);
             g.setPaint(old);
 
-            GuidesPainters.drawPointPositionHint(g, this.rawCursor, layer);
+            GuidesPainters.drawPointPositionHint(g, StaticController.getRawCursor(), layer);
         };
     }
 
     private Painter createBordersPainter() {
         return (g, worldToScreen, w, h) -> {
             if (!drawBorders) return;
-
-            Paint old = g.getPaint();
-            g.setPaint(Color.BLACK);
 
             LayerPainter layer = parent.getSelectedLayer();
             if (layer == null || layer.getShipSprite() == null) return;
@@ -184,14 +156,15 @@ public final class GuidesPainters {
             Shape transformed = worldToScreen.createTransformedShape(spriteBorder);
 
             Stroke oldStroke = g.getStroke();
+            Paint oldPaint = g.getPaint();
+
             g.setStroke(new BasicStroke(3));
             g.draw(transformed);
             g.setStroke(oldStroke);
             g.setPaint(Color.WHITE);
-
             g.draw(transformed);
 
-            g.setPaint(old);
+            g.setPaint(oldPaint);
         };
     }
 
