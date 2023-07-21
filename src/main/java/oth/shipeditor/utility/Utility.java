@@ -37,29 +37,6 @@ public final class Utility {
         return old;
     }
 
-    @SuppressWarnings("unused")
-    public static AffineTransform getScreenToWorldRotation(AffineTransform worldToScreen, Point2D positionWorld) {
-        Point2D positionScreen = worldToScreen.transform(positionWorld, null);
-
-        double screenX = positionScreen.getX(), screenY = positionScreen.getY();
-
-        // Extracting the rotation component from the worldToScreen transform.
-        // I don't understand even half of it - bless my new machine overlords.
-        double[] matrix = new double[6];
-        worldToScreen.getMatrix(matrix);
-        double scaleX = Math.sqrt(matrix[0] * matrix[0] + matrix[1] * matrix[1]);
-        double rotationAngle = -Math.atan2(matrix[1] / scaleX, matrix[0] / scaleX);
-
-        AffineTransform rotationTransform = new AffineTransform();
-        // New AffineTransform by default is focused  on the 0,0 in screen coordinates.
-        // We have to center it on our point, do the rotation, then translate back.
-        rotationTransform.translate(screenX, screenY);
-        rotationTransform.rotate(-rotationAngle);
-        rotationTransform.translate(-screenX, -screenY);
-
-        return rotationTransform;
-    }
-
     public static Font getOrbitron(int size) {
         return new Font("Orbitron", Font.BOLD, size);
     }

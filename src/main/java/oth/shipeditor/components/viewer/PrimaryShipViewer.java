@@ -88,10 +88,12 @@ public final class PrimaryShipViewer extends Viewer implements ShipViewable {
 
         this.guidesPainters = new GuidesPainters(this);
 
+        // TODO: sort out the ordering with PaintOrderController later!
+
         this.addPainter(this.guidesPainters.getAxesPaint(), 0);
         this.addPainter(this.guidesPainters.getBordersPaint(), 0);
-        this.addPainter(this.guidesPainters.getGuidesPaint(), 902);
         this.addPainter(this.guidesPainters.getCenterPaint(), 902);
+        this.addPainter(this.guidesPainters.getGuidesPaint(), 902);
         EventBus.publish(new ViewerGuidesToggled(true, true, true, true));
 
         this.hotkeyPainter = new HotkeyHelpPainter();

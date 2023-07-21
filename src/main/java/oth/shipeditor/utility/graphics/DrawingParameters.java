@@ -50,9 +50,7 @@ public class DrawingParameters {
         private double worldThickness;
         private double screenSize;
 
-        private Builder() {
-            // Private constructor to enforce the use of builder().
-        }
+        private Builder() {}
 
         public Builder withPaintColor(Color paintColor) {
             this.paintColor = paintColor;

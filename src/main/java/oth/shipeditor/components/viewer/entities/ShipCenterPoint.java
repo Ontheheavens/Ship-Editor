@@ -7,14 +7,13 @@ import lombok.Setter;
 import oth.shipeditor.components.viewer.InstrumentMode;
 import oth.shipeditor.components.viewer.layers.LayerPainter;
 import oth.shipeditor.components.viewer.painters.CenterPointPainter;
+import oth.shipeditor.utility.Utility;
 import oth.shipeditor.utility.graphics.DrawUtilities;
 import oth.shipeditor.utility.graphics.ShapeUtilities;
-import oth.shipeditor.utility.Utility;
 
 import java.awt.*;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Ellipse2D;
-import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
 
 /**
@@ -100,7 +99,6 @@ public class ShipCenterPoint extends BaseWorldPoint {
             crossColor = createSelectColor();
         }
 
-        g.setPaint(crossColor);
         Point2D position = this.getPosition();
         Shape cross = ShapeUtilities.createPerpendicularCross(position, 0.4f);
         Shape transformedCross = ShapeUtilities.ensureDynamicScaleShape(worldToScreen,

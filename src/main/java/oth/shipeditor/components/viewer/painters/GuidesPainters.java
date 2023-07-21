@@ -19,6 +19,7 @@ import oth.shipeditor.components.viewer.entities.WorldPoint;
 import oth.shipeditor.components.viewer.layers.LayerPainter;
 import oth.shipeditor.components.viewer.layers.StaticController;
 import oth.shipeditor.utility.ApplicationDefaults;
+import oth.shipeditor.utility.RectangleCorner;
 import oth.shipeditor.utility.graphics.DrawUtilities;
 import oth.shipeditor.utility.Utility;
 import oth.shipeditor.utility.graphics.DrawingParameters;
@@ -156,6 +157,8 @@ public final class GuidesPainters {
             Shape transformedCrossX = worldToScreen.createTransformedShape(crossLineX);
             Shape transformedCrossY = worldToScreen.createTransformedShape(crossLineY);
 
+            g.setPaint(Color.BLACK);
+
             g.draw(transformedCrossX);
             g.draw(transformedCrossY);
             g.setPaint(old);
@@ -226,23 +229,20 @@ public final class GuidesPainters {
     private static void drawPointPositionHint(Graphics2D g, Point2D position, LayerPainter painter) {
         if (InstrumentTabsPane.getCurrentMode() == InstrumentMode.BOUNDS) {
             Font hintFont = Utility.getOrbitron(12);
-            g.setFont(hintFont);
 
-            Paint old = g.getPaint();
-
-            g.setPaint(ApplicationDefaults.VIEWER_FONT_COLOR);
             BoundPointsPainter boundsPainter = painter.getBoundsPainter();
             if (boundsPainter == null) return;
             WorldPoint selected = boundsPainter.getSelected();
             if (selected == null) return;
             Point2D boundPosition = selected.getCoordinatesForDisplay();
 
-            String toDraw = (int) Math.round(boundPosition.getX()) + "," + (int) Math.round(boundPosition.getY());
-            int x = (int) position.getX(), y = (int) position.getY();
+            String toDraw = (int) Math.round(boundPosition.getX()) + ", " + (int) Math.round(boundPosition.getY());
+            double x = position.getX(), y = position.getY();
 
-            g.drawString(toDraw, x + 10, y - 10);
+            Point2D.Double screenPosition = new Point2D.Double(x + 20, y + 14);
 
-            g.setPaint(old);
+            DrawUtilities.paintScreenTextOutlined(g, toDraw, hintFont, null,
+                    screenPosition, RectangleCorner.TOP_LEFT);
         }
     }
 

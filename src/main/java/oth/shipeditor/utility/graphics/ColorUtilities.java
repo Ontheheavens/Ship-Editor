@@ -35,7 +35,20 @@ public final class ColorUtilities {
     }
 
     public static Color setFullAlpha(Color color) {
-        return new Color(color.getRed(), color.getGreen(), color.getBlue(), 255);
+        return ColorUtilities.setColorAlpha(color, 255);
+    }
+
+    @SuppressWarnings("WeakerAccess")
+    public static Color setColorAlpha(Color color, int alpha) {
+        return new Color(color.getRed(), color.getGreen(), color.getBlue(), alpha);
+    }
+
+    @SuppressWarnings("WeakerAccess")
+    public static Color setHalfAlpha(Color color) {
+        int alpha = color.getAlpha();
+        alpha = alpha / 2;
+        alpha = Math.max(0, Math.min(255, alpha));
+        return ColorUtilities.setColorAlpha(color, alpha);
     }
 
     public static Color getBlendedColor(Color first, Color second, double ratio) {
