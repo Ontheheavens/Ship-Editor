@@ -55,7 +55,7 @@ public class BoundPoint extends BaseWorldPoint{
             DrawUtilities.outlineShape(g, hexagon, Color.BLACK, 2);
             DrawUtilities.fillShape(g, hexagon, getCurrentColor());
 
-            this.paintCoordsLabel(g, worldToScreen, w, h);
+            this.paintCoordsLabel(g, worldToScreen);
         };
     }
 

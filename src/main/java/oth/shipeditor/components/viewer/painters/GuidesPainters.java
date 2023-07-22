@@ -4,7 +4,6 @@ import de.javagl.geom.AffineTransforms;
 import de.javagl.geom.Lines;
 import de.javagl.geom.Rectangles;
 import de.javagl.viewer.Painter;
-import de.javagl.viewer.painters.LabelPainter;
 import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
 import oth.shipeditor.communication.EventBus;
@@ -16,9 +15,8 @@ import oth.shipeditor.components.viewer.PrimaryShipViewer;
 import oth.shipeditor.components.viewer.entities.BaseWorldPoint;
 import oth.shipeditor.components.viewer.entities.WorldPoint;
 import oth.shipeditor.components.viewer.layers.LayerPainter;
-import oth.shipeditor.utility.StaticController;
-import oth.shipeditor.utility.ApplicationDefaults;
 import oth.shipeditor.utility.RectangleCorner;
+import oth.shipeditor.utility.StaticController;
 import oth.shipeditor.utility.Utility;
 import oth.shipeditor.utility.graphics.DrawUtilities;
 import oth.shipeditor.utility.graphics.DrawingParameters;
@@ -221,15 +219,7 @@ public final class GuidesPainters {
 
     private class SpriteCenterPainter implements Painter {
 
-        final LabelPainter label = SpriteCenterPainter.createCenterLabelPainter();
-
-        private static LabelPainter createCenterLabelPainter() {
-            LabelPainter painter = new LabelPainter();
-            Font font = Utility.getOrbitron(16).deriveFont(0.25f);
-            painter.setFont(font);
-            painter.setLabelAnchor(-0.180f, 0.55f);
-            return painter;
-        }
+        final TextPainter label = new TextPainter();
 
         @Override
         public void paint(Graphics2D g, AffineTransform worldToScreen, double w, double h) {
@@ -243,17 +233,15 @@ public final class GuidesPainters {
             WorldPoint pointInput = new BaseWorldPoint(spriteCenter);
             Point2D toDisplay = pointInput.getCoordinatesForDisplay();
 
-            label.setAngle(StaticController.getRotationRadians());
-            label.setLabelLocation(spriteCenter.getX(), spriteCenter.getY());
-
             // Draw two lines centered on the sprite center.
             SpriteCenterPainter.drawSpriteCenter(g, worldToScreen, spriteCenter);
             String spriteCenterCoords = "Sprite Center (" + toDisplay.getX() + ", " + toDisplay.getY() + ")";
 
-            Paint old = label.getPaint();
-            label.setPaint(ApplicationDefaults.VIEWER_FONT_COLOR);
-            label.paint(g, worldToScreen, w, h, spriteCenterCoords);
-            label.setPaint(old);
+            DrawUtilities.drawWithConditionalOpacity(g, graphics2D -> {
+                label.setWorldPosition(spriteCenter);
+                label.setText(spriteCenterCoords);
+                label.paintText(graphics2D, worldToScreen);
+            });
         }
 
         private static void drawSpriteCenter(Graphics2D g, AffineTransform worldToScreen,

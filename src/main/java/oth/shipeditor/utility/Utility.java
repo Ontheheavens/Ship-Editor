@@ -29,10 +29,10 @@ public final class Utility {
         return Utility.setAlphaComposite(g, 1.0f);
     }
 
-    public static Composite setAlphaComposite(Graphics2D g, float alpha) {
+    public static Composite setAlphaComposite(Graphics2D g, double alpha) {
         int rule = AlphaComposite.SRC_OVER;
         Composite old = g.getComposite();
-        Composite opacity = AlphaComposite.getInstance(rule, alpha) ;
+        Composite opacity = AlphaComposite.getInstance(rule, (float) alpha) ;
         g.setComposite(opacity);
         return old;
     }

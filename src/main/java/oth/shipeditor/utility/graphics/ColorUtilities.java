@@ -38,9 +38,17 @@ public final class ColorUtilities {
         return ColorUtilities.setColorAlpha(color, 255);
     }
 
+
+    /**
+     * @param alpha The alpha value to set (0 to 255, where 0 is fully transparent and 255 is fully opaque).
+     */
     @SuppressWarnings("WeakerAccess")
     public static Color setColorAlpha(Color color, int alpha) {
-        return new Color(color.getRed(), color.getGreen(), color.getBlue(), alpha);
+        int red = color.getRed();
+        int green = color.getGreen();
+        int blue = color.getBlue();
+        int maxAlpha = Math.max(0, Math.min(alpha, 255));
+        return new Color(red, green, blue, maxAlpha);
     }
 
     @SuppressWarnings("WeakerAccess")

@@ -1,7 +1,6 @@
 package oth.shipeditor.components.viewer.entities;
 
 import de.javagl.viewer.Painter;
-import de.javagl.viewer.painters.LabelPainter;
 import lombok.Getter;
 import lombok.Setter;
 import oth.shipeditor.components.viewer.InstrumentMode;
@@ -52,11 +51,6 @@ public class ShieldCenterPoint extends BaseWorldPoint{
         return "Shield Center";
     }
 
-    @Override
-    protected void adjustLabelPosition(LabelPainter labelPainter) {
-        labelPainter.setLabelAnchor(-0.175f, 0.55f);
-    }
-
     private Color getDisplayedShieldColor(Color base) {
         float painterOpacity = parentPainter.getPaintOpacity();
         int alpha = Math.round(painterOpacity * 255); // Convert opacity [0.0, 1.0] to alpha [0, 255].
@@ -81,7 +75,7 @@ public class ShieldCenterPoint extends BaseWorldPoint{
 
             this.paintShieldCenterCross(g, delegateWorldToScreen);
 
-            this.paintCoordsLabel(g, delegateWorldToScreen, w, h);
+            this.paintCoordsLabel(g, delegateWorldToScreen);
 
             if (old != null) {
                 g.setComposite(old);

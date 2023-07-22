@@ -2,9 +2,11 @@ package oth.shipeditor.utility.graphics;
 
 import lombok.extern.log4j.Log4j2;
 import oth.shipeditor.utility.RectangleCorner;
+import oth.shipeditor.utility.StaticController;
 import oth.shipeditor.utility.Utility;
 
 import java.awt.*;
+import java.awt.font.GlyphVector;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
@@ -113,7 +115,7 @@ public final class DrawUtilities {
      * @param strokeInput if null, default value is 2.5f with rounded caps and joins.
      * @param corner determines what corner of painted text's bounding box will correspond to passed screen position.
      * E.g. if BOTTOM_RIGHT, the label will be painted to the upper left of screen point.
-     * @return resulting {@link Shape} instance of the drawn text, from which bounding box positions can be retrieved.
+     * @return resulting {@link Shape} instance of bounds of the drawn text, from which bounding box positions can be retrieved.
      */
 
     @SuppressWarnings("MethodWithTooManyParameters")
@@ -124,35 +126,73 @@ public final class DrawUtilities {
             font = Utility.getOrbitron(14);
         }
 
-        Stroke stroke = strokeInput;
-        if (stroke == null) {
-            stroke = new BasicStroke(2.5f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND);
-        }
-
-        Color outlineColor = Color.BLACK;
-        Color fillColor = Color.WHITE;
-
-        RenderingHints originalHints = g.getRenderingHints();
-        Shape textShape = ShapeUtilities.getTextShape(g, text, font);
-
-        g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-        g.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
+        GlyphVector glyphVector = font.createGlyphVector(g.getFontRenderContext(), text);
+        Shape textShape = glyphVector.getOutline();
 
         Rectangle2D bounds = textShape.getBounds2D();
         bounds.setRect(screenPoint.getX(), screenPoint.getY(), bounds.getWidth(), bounds.getHeight());
         Point2D delta = ShapeUtilities.calculateCornerCoordinates(bounds, corner);
         double x = delta.getX();
         double y = delta.getY();
-        Shape textShapeTranslated = ShapeUtilities.translateShape(textShape,x, y);
 
-        DrawUtilities.fillShape(g, textShapeTranslated.getBounds2D(),
-                ColorUtilities.setHalfAlpha(outlineColor));
-        DrawUtilities.outlineShape(g, textShapeTranslated, outlineColor, stroke);
-        DrawUtilities.fillShape(g,textShapeTranslated, fillColor);
+        Shape textShapeTranslated = ShapeUtilities.translateShape(textShape,x, y);
+        Shape translatedBounds = ShapeUtilities.translateShape(glyphVector.getLogicalBounds(),x, y);
+
+        DrawUtilities.paintOutlinedText(g, translatedBounds, textShapeTranslated, strokeInput);
+
+        return ShapeUtilities.translateShape(glyphVector.getVisualBounds(),x, y);
+    }
+
+    /**
+     * @param bounds will be used to draw shaded background of text.
+     * @param strokeInput if null, default BasicStroke of 2.5 will be used, with round caps and joins.
+     */
+    public static void paintOutlinedText(Graphics2D g, Shape bounds, Shape textShapeTransformed, Stroke strokeInput) {
+        Color outlineColor = Color.BLACK;
+        Color fillColor = Color.WHITE;
+
+        Stroke stroke = strokeInput;
+        if (stroke == null) {
+            stroke = new BasicStroke(2.5f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND);
+        }
+
+        RenderingHints originalHints = g.getRenderingHints();
+
+        g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+        g.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
+
+        DrawUtilities.fillShape(g, bounds, ColorUtilities.setColorAlpha(outlineColor, 50));
+        DrawUtilities.outlineShape(g, textShapeTransformed, outlineColor, stroke);
+        DrawUtilities.fillShape(g,textShapeTransformed, fillColor);
 
         g.setRenderingHints(originalHints);
+    }
 
-        return textShapeTranslated;
+    /**
+     * Draws the specified graphics action with conditional opacity based on the zoom level.
+     * The opacity of the graphics action is adjusted according to the zoom level,
+     * so that it is fully transparent (invisible) when the zoom level is 20 or below,
+     * and gradually becomes more opaque as the zoom level increases above 20 until it reaches
+     * fully opaque (alpha 1.0) when the zoom level exceeds 40.
+     *
+     * @param action The GraphicsAction object representing the graphics action to be drawn.
+     *               The drawing behavior should not rely on the current alpha composite settings,
+     *               as they will be temporarily adjusted within this method.
+     */
+    public static void drawWithConditionalOpacity(Graphics2D g, GraphicsAction action) {
+        double zoomLevel = StaticController.getZoomLevel();
+
+        double alpha;
+        if (zoomLevel > 20) {
+            alpha = (zoomLevel - 20.0) / 20.0;
+            alpha = Math.min(alpha, 1.0);
+        } else return;
+
+        Composite old = Utility.setAlphaComposite(g, alpha);
+
+        action.draw(g);
+
+        g.setComposite(old);
     }
 
 }

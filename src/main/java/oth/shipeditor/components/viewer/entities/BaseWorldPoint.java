@@ -1,7 +1,6 @@
 package oth.shipeditor.components.viewer.entities;
 
 import de.javagl.viewer.Painter;
-import de.javagl.viewer.painters.LabelPainter;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
@@ -17,9 +16,8 @@ import oth.shipeditor.components.instrument.InstrumentTabsPane;
 import oth.shipeditor.components.viewer.InstrumentMode;
 import oth.shipeditor.components.viewer.layers.LayerPainter;
 import oth.shipeditor.components.viewer.layers.ShipLayer;
+import oth.shipeditor.components.viewer.painters.TextPainter;
 import oth.shipeditor.utility.StaticController;
-import oth.shipeditor.utility.ApplicationDefaults;
-import oth.shipeditor.utility.Utility;
 import oth.shipeditor.utility.graphics.ColorUtilities;
 import oth.shipeditor.utility.graphics.DrawUtilities;
 import oth.shipeditor.utility.graphics.ShapeUtilities;
@@ -49,7 +47,7 @@ public class BaseWorldPoint implements WorldPoint {
     @Getter
     private final Painter painter;
 
-    private final LabelPainter coordsLabel;
+    private final TextPainter coordsLabel;
 
     @Getter @Setter
     private boolean cursorInBounds;
@@ -96,42 +94,23 @@ public class BaseWorldPoint implements WorldPoint {
         this.parentLayer = layer;
         this.delegateWorldToScreen = new AffineTransform();
         this.painter = this.createPointPainter();
-        this.coordsLabel = createCoordsLabelPainter();
+        this.coordsLabel = new TextPainter();
         if (layer != null) {
             this.initLayerListening();
         }
     }
 
-    private LabelPainter createCoordsLabelPainter() {
-        LabelPainter labelPainter = new LabelPainter();
-        Point2D coords = this.getPosition();
-        labelPainter.setLabelLocation(coords.getX(), coords.getY());
-        Font font = Utility.getOrbitron(16).deriveFont(0.25f);
-        labelPainter.setFont(font);
-        this.adjustLabelPosition(labelPainter);
-        return labelPainter;
-    }
-
-    protected void adjustLabelPosition(LabelPainter labelPainter) {
-        labelPainter.setLabelAnchor(-0.25f, 0.55f);
-    }
-
-    void paintCoordsLabel(Graphics2D g, AffineTransform worldToScreen, double w, double h) {
+    void paintCoordsLabel(Graphics2D g, AffineTransform worldToScreen) {
         Point2D coordsPoint = getPosition();
         Point2D toDisplay = this.getCoordinatesForDisplay();
 
-        this.adjustLabelPosition(coordsLabel);
-        coordsLabel.setAngle(StaticController.getRotationRadians());
-        coordsLabel.setLabelLocation(coordsPoint.getX(), coordsPoint.getY());
+        DrawUtilities.drawWithConditionalOpacity(g, graphics2D -> {
+            String coords = getNameForLabel() + " (" + toDisplay.getX() + ", " + toDisplay.getY() + ")";
 
-        String coords = getNameForLabel() + " (" + toDisplay.getX() + ", " + toDisplay.getY() + ")";
-
-        Paint old = g.getPaint();
-        g.setPaint(ApplicationDefaults.VIEWER_FONT_COLOR);
-
-        coordsLabel.paint(g, worldToScreen, w, h,coords);
-
-        g.setPaint(old);
+            coordsLabel.setWorldPosition(coordsPoint);
+            coordsLabel.setText(coords);
+            coordsLabel.paintText(graphics2D, worldToScreen);
+        });
     }
 
     public String getNameForLabel() {

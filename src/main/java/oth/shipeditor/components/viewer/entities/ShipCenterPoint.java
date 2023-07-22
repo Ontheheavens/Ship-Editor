@@ -1,7 +1,6 @@
 package oth.shipeditor.components.viewer.entities;
 
 import de.javagl.viewer.Painter;
-import de.javagl.viewer.painters.LabelPainter;
 import lombok.Getter;
 import lombok.Setter;
 import oth.shipeditor.components.viewer.InstrumentMode;
@@ -55,11 +54,6 @@ public class ShipCenterPoint extends BaseWorldPoint {
     }
 
     @Override
-    protected void adjustLabelPosition(LabelPainter labelPainter) {
-        labelPainter.setLabelAnchor(-0.19f, 0.55f);
-    }
-
-    @Override
     public Painter createPointPainter() {
         AffineTransform delegateWorldToScreen = getDelegateWorldToScreen();
         return (g, worldToScreen, w, h) -> {
@@ -74,7 +68,7 @@ public class ShipCenterPoint extends BaseWorldPoint {
 
             this.paintCenterCross(g, delegateWorldToScreen);
 
-            this.paintCoordsLabel(g, delegateWorldToScreen, w, h);
+            this.paintCoordsLabel(g, delegateWorldToScreen);
 
             if (old != null) {
                 g.setComposite(old);

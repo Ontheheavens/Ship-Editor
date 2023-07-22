@@ -3,7 +3,6 @@ package oth.shipeditor.utility.graphics;
 import oth.shipeditor.utility.RectangleCorner;
 
 import java.awt.*;
-import java.awt.font.GlyphVector;
 import java.awt.geom.*;
 
 /**
@@ -153,11 +152,6 @@ public final class ShapeUtilities {
             transformed = scaleTX.createTransformedShape(worldShape);
         }
         return transformed;
-    }
-
-    public static Shape getTextShape(Graphics2D g, String text, Font font) {
-        GlyphVector glyphVector = font.createGlyphVector(g.getFontRenderContext(), text);
-        return glyphVector.getOutline();
     }
 
     /**

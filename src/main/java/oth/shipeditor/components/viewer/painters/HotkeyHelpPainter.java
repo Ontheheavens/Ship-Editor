@@ -57,9 +57,21 @@ public class HotkeyHelpPainter implements Painter {
         double y = h - verticalPadding;
         Point2D anchor = new Point2D.Double(x, y);
         for (String hint : hints) {
+            // This is a bit of an unsightly hack, but we got more important matters to deal with.
+            // Perhaps refactor later.
+            boolean lastCharShort = hint.endsWith("l");
+            if (lastCharShort) {
+                anchor.setLocation(anchor.getX() + 1, anchor.getY());
+            }
+
             Shape drawResult = DrawUtilities.paintScreenTextOutlined(g, hint, anchor);
             Rectangle2D resultBounds = drawResult.getBounds2D();
             double topRightX = resultBounds.getX() + resultBounds.getWidth();
+
+            if (lastCharShort) {
+                topRightX -= 2;
+            }
+
             double topRightY = resultBounds.getY();
             anchor = new Point2D.Double(topRightX, topRightY - verticalPadding);
         }
