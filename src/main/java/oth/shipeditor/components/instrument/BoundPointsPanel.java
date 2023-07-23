@@ -19,7 +19,7 @@ import oth.shipeditor.components.viewer.painters.BoundPointsPainter;
 import oth.shipeditor.components.viewer.painters.PainterVisibility;
 import oth.shipeditor.utility.Pair;
 import oth.shipeditor.utility.StringConstants;
-import oth.shipeditor.utility.Utility;
+import oth.shipeditor.utility.components.ComponentUtilities;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -103,7 +103,7 @@ public final class BoundPointsPanel extends JPanel {
                 opacitySlider.setValue(value);
             }
         };
-        Pair<JSlider, JLabel> widgetComponents = Utility.createOpacityWidget(changeListener, eventListener);
+        Pair<JSlider, JLabel> widgetComponents = ComponentUtilities.createOpacityWidget(changeListener, eventListener);
 
         opacitySlider = widgetComponents.getFirst();
         opacityLabel = widgetComponents.getSecond();

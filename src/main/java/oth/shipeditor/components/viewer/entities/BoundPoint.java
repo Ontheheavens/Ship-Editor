@@ -67,8 +67,7 @@ public class BoundPoint extends BaseWorldPoint{
     @Override
     public String toString() {
         Class<? extends BoundPoint> identity = this.getClass();
-        Point2D location = this.getCoordinatesForDisplay();
-        return identity.getSimpleName() + " (" + location.getX() + "," + location.getY() + ")";
+        return identity.getSimpleName() + " " + getPositionText();
     }
 
 }

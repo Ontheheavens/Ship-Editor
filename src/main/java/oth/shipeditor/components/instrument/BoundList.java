@@ -5,13 +5,12 @@ import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.viewer.ViewerRepaintQueued;
 import oth.shipeditor.communication.events.viewer.points.PointSelectQueued;
 import oth.shipeditor.communication.events.viewer.points.PointSelectedConfirmed;
+import oth.shipeditor.components.viewer.entities.BaseWorldPoint;
 import oth.shipeditor.components.viewer.entities.BoundPoint;
-import oth.shipeditor.components.viewer.entities.WorldPoint;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
-import java.awt.geom.Point2D;
 
 /**
  * @author Ontheheavens
@@ -57,9 +56,8 @@ final class BoundList extends JList<BoundPoint> {
         public Component getListCellRendererComponent(JList<?> list, Object value, int index,
                                                       boolean isSelected, boolean cellHasFocus) {
             super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
-            WorldPoint checked = (WorldPoint) value;
-            Point2D position = checked.getCoordinatesForDisplay();
-            String displayText = "Bound #" + index + ": (X:" + position.getX() + ",Y:" + position.getY() + ")";
+            BaseWorldPoint checked = (BaseWorldPoint) value;
+            String displayText = "Bound #" + index + ": " + checked.getPositionText();
             setText(displayText);
             return this;
         }

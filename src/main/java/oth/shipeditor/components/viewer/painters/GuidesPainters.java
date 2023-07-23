@@ -15,7 +15,7 @@ import oth.shipeditor.components.viewer.PrimaryShipViewer;
 import oth.shipeditor.components.viewer.entities.BaseWorldPoint;
 import oth.shipeditor.components.viewer.entities.WorldPoint;
 import oth.shipeditor.components.viewer.layers.LayerPainter;
-import oth.shipeditor.utility.RectangleCorner;
+import oth.shipeditor.utility.graphics.RectangleCorner;
 import oth.shipeditor.utility.StaticController;
 import oth.shipeditor.utility.Utility;
 import oth.shipeditor.utility.graphics.DrawUtilities;
@@ -101,6 +101,8 @@ public final class GuidesPainters {
             double xGuide = Math.round((x - 0.5) * 2) / 2.0;
             double yGuide = Math.round((y - 0.5) * 2) / 2.0;
 
+            Point2D crossCenter = new Point2D.Double(xGuide + 0.5, yGuide + 0.5);
+
             Shape axisX = new Rectangle2D.Double(xLeft + 0.5, yGuide, spriteW, 1);
             Shape axisY = new Rectangle2D.Double(xGuide, yTop + 0.5, 1, spriteH);
 
@@ -119,7 +121,6 @@ public final class GuidesPainters {
             DrawUtilities.outlineShape(g, transformed, Color.BLACK, 3);
             DrawUtilities.outlineShape(g, transformed, Color.WHITE, 1);
 
-            Point2D crossCenter = new Point2D.Double(xGuide + 0.5, yGuide + 0.5);
             double crossSize = 0.15;
 
             Shape crossLineX = new Line2D.Double(crossCenter.getX() - crossSize, crossCenter.getY(),

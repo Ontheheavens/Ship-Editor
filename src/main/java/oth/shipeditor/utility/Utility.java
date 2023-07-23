@@ -1,17 +1,12 @@
 package oth.shipeditor.utility;
 
-import com.formdev.flatlaf.ui.FlatLineBorder;
 import lombok.extern.log4j.Log4j2;
-import oth.shipeditor.communication.BusEventListener;
-import oth.shipeditor.communication.EventBus;
+import oth.shipeditor.components.viewer.layers.LayerPainter;
 
 import javax.swing.*;
-import javax.swing.event.ChangeListener;
 import java.awt.*;
 import java.awt.event.ActionListener;
 import java.awt.geom.*;
-import java.util.Dictionary;
-import java.util.Hashtable;
 
 /**
  * @author Ontheheavens
@@ -48,12 +43,13 @@ public final class Utility {
         return new Point2D.Double(roundedX, roundedY);
     }
 
-    public static JLabel getIconLabelWithBorder(Icon icon) {
-        JLabel imageLabel = new JLabel(icon);
-        imageLabel.setOpaque(true);
-        imageLabel.setBorder(new FlatLineBorder(new Insets(2, 2, 2, 2), Color.GRAY));
-        imageLabel.setBackground(Color.LIGHT_GRAY);
-        return imageLabel;
+    public static Point2D correctAdjustedForPointDrag(AffineTransform screenToWorld) {
+        Point2D mousePoint = StaticController.getAdjustedCursor();
+        Point2D transformedMouse = screenToWorld.transform(mousePoint, null);
+        double xGuide = Math.round((transformedMouse.getX() - 0.5) * 2) / 2.0;
+        double yGuide = Math.round((transformedMouse.getY() - 0.5) * 2) / 2.0;
+
+        return new Point2D.Double(xGuide + 0.5, yGuide + 0.5);
     }
 
     public static ActionListener scheduleTask(int waitTime, ActionListener taskBeforeStart, ActionListener taskWhenDone) {
@@ -72,29 +68,6 @@ public final class Utility {
             };
             worker.execute();
         };
-    }
-
-    public static Pair<JSlider, JLabel> createOpacityWidget(ChangeListener change,
-                                  BusEventListener eventListener) {
-        JSlider opacitySlider = new JSlider(SwingConstants.HORIZONTAL,
-                0, 100, 100);
-        opacitySlider.setAlignmentX(0.0f);
-        opacitySlider.setEnabled(false);
-        opacitySlider.setSnapToTicks(true);
-        opacitySlider.addChangeListener(change);
-        EventBus.subscribe(eventListener);
-        Dictionary<Integer, JLabel> labelTable = new Hashtable<>();
-        labelTable.put(0, new JLabel("0%"));
-        labelTable.put(50, new JLabel("50%"));
-        labelTable.put(100, new JLabel("100%"));
-        opacitySlider.setLabelTable(labelTable);
-        opacitySlider.setMajorTickSpacing(50);
-        opacitySlider.setMinorTickSpacing(10);
-        opacitySlider.setPaintTicks(true);
-        opacitySlider.setPaintLabels(true);
-        JLabel opacityLabel = new JLabel();
-        opacityLabel.setAlignmentX(0.0f);
-        return new Pair<>(opacitySlider, opacityLabel);
     }
 
 }

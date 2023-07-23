@@ -24,11 +24,14 @@ public class TextPainter {
 
     private String text;
 
+    private boolean constantScreenShape;
+
     private final AffineTransform delegateTransform;
 
     public TextPainter() {
         this.worldPosition = new Point2D.Double();
         this.delegateTransform = new AffineTransform();
+        this.constantScreenShape = true;
     }
 
     public void paintText(Graphics2D g, AffineTransform worldToScreen) {
@@ -36,20 +39,28 @@ public class TextPainter {
 
         Font font = Utility.getOrbitron(16);
 
-        double textScale = 0.025;
+        double anchorOffsetX = 25;
+        if (constantScreenShape) {
+            delegateTransform.setToIdentity();
+            Point2D screenPosition = worldToScreen.transform(worldPosition, null);
+            delegateTransform.translate(screenPosition.getX(), screenPosition.getY());
+            anchorOffsetX += (StaticController.getZoomLevel() * 0.25);
+        } else {
+            double textScale = 0.025;
 
-        delegateTransform.setTransform(worldToScreen);
-        delegateTransform.translate(worldPosition.getX(), worldPosition.getY());
-        delegateTransform.scale(textScale, textScale);
-        delegateTransform.rotate(StaticController.getRotationRadians());
+            delegateTransform.setTransform(worldToScreen);
+            delegateTransform.translate(worldPosition.getX(), worldPosition.getY());
+            delegateTransform.scale(textScale, textScale);
+            delegateTransform.rotate(StaticController.getRotationRadians());
+        }
 
         GlyphVector glyphVector = font.createGlyphVector(g.getFontRenderContext(), text);
         Shape textShape = glyphVector.getOutline();
 
         Rectangle2D textBounds = textShape.getBounds2D();
-        double heightOffset = textBounds.getHeight() * 0.37;
+        double anchorOffsetY = textBounds.getHeight() * 0.37;
 
-        delegateTransform.translate(25,heightOffset);
+        delegateTransform.translate(anchorOffsetX,anchorOffsetY);
 
         Shape transformedText = delegateTransform.createTransformedShape(textShape);
 

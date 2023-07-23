@@ -109,7 +109,6 @@ public final class PrimaryShipViewer extends Viewer implements ShipViewable {
         this.setMouseControl(this.controls);
         this.initViewerStateListeners();
         this.initLayerListening();
-
         this.setDropTarget(new SpriteDropReceiver());
     }
 

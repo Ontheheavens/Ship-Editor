@@ -116,6 +116,11 @@ public class BaseWorldPoint implements WorldPoint {
     public String getNameForLabel() {
         return "Point";
     }
+
+    public String getPositionText() {
+        Point2D location = this.getCoordinatesForDisplay();
+        return "[" + location.getX() + "," + location.getY() + "]";
+    }
     
     private void initLayerListening() {
         EventBus.subscribe(event -> {
@@ -200,7 +205,7 @@ public class BaseWorldPoint implements WorldPoint {
             return result;
         }
         LayerPainter layerPainter = activeLayer.getPainter();
-        if (layerPainter == null) {
+        if (layerPainter == null || layerPainter.isUninitialized()) {
             return result;
         }
         double positionX = pointPosition.getX();

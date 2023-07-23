@@ -9,9 +9,9 @@ import oth.shipeditor.persistence.SettingsManager;
 import oth.shipeditor.representation.GameDataRepository;
 import oth.shipeditor.representation.Hull;
 import oth.shipeditor.representation.Skin;
+import oth.shipeditor.utility.components.ComponentUtilities;
 import oth.shipeditor.utility.components.MouseoverLabelListener;
 import oth.shipeditor.utility.StringConstants;
-import oth.shipeditor.utility.Utility;
 
 import javax.swing.*;
 import javax.swing.border.Border;
@@ -206,7 +206,7 @@ class ShipFilesSubpanel extends JPanel {
             if (iconImage.getWidth(null) > iconSize || iconImage.getHeight(null) > iconSize) {
                 iconImage = iconImage.getScaledInstance(iconSize, iconSize, Image.SCALE_DEFAULT);
             }
-            JLabel imageLabel = Utility.getIconLabelWithBorder(new ImageIcon(iconImage));
+            JLabel imageLabel = ComponentUtilities.getIconLabelWithBorder(new ImageIcon(iconImage));
             imageLabel.setToolTipText(name);
             hullmodsPanel.add(imageLabel);
         }

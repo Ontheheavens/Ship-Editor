@@ -1,7 +1,5 @@
 package oth.shipeditor.utility.graphics;
 
-import oth.shipeditor.utility.RectangleCorner;
-
 import java.awt.*;
 import java.awt.geom.*;
 

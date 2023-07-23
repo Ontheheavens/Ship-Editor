@@ -9,6 +9,7 @@ import oth.shipeditor.parsing.loading.FileLoading;
 import oth.shipeditor.persistence.SettingsManager;
 import oth.shipeditor.representation.GameDataRepository;
 import oth.shipeditor.utility.Utility;
+import oth.shipeditor.utility.components.ComponentUtilities;
 
 import javax.swing.*;
 import javax.swing.tree.DefaultMutableTreeNode;
@@ -102,7 +103,7 @@ class HullmodsTreePanel extends DataTreePanel{
         File spriteFile = selected.fetchHullmodSpriteFile();
         JPanel iconPanel = new JPanel();
         Icon icon = new ImageIcon(FileLoading.loadSprite(spriteFile));
-        JLabel imageLabel = Utility.getIconLabelWithBorder(icon);
+        JLabel imageLabel = ComponentUtilities.getIconLabelWithBorder(icon);
         iconPanel.add(imageLabel);
         return iconPanel;
     }

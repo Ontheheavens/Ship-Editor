@@ -330,8 +330,8 @@ public final class BoundPointsPainter extends AbstractPointPainter {
 
     @SuppressWarnings("MethodMayBeStatic")
     private void drawBoundLine(Graphics2D g, Point2D start, Point2D finish, Color color) {
-        DrawUtilities.drawScreenLine(g, start, finish, Color.BLACK, 3.5f);
-        DrawUtilities.drawScreenLine(g, start, finish, color, 1.5f);
+        DrawUtilities.drawScreenLine(g, start, finish, Color.BLACK, 5.0f);
+        DrawUtilities.drawScreenLine(g, start, finish, color, 3.0f);
     }
 
     private void handleSelectionHighlight() {

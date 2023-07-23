@@ -88,4 +88,6 @@ public interface StringConstants {
     String NO_ENTRY_SELECTED = "No entry selected";
     String OPEN_SOURCE_FILE = "Open source file";
 
+    String NOT_INITIALIZED = "Not initialized";
+
 }

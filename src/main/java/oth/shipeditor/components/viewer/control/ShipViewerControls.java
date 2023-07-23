@@ -120,12 +120,12 @@ public final class ShipViewerControls implements ViewerControl {
             switch (ke.getID()) {
                 case KeyEvent.KEY_PRESSED:
                     if (isLayerDragHotkey) {
-                        this.parentViewer.setCursor(new Cursor(Cursor.MOVE_CURSOR));
+                        this.parentViewer.setCursor(Cursor.getPredefinedCursor(Cursor.MOVE_CURSOR));
                     }
                     break;
                 case KeyEvent.KEY_RELEASED:
                     if (isLayerDragHotkey) {
-                        this.parentViewer.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+                        this.parentViewer.setCursor(Cursor.getDefaultCursor());
                     }
                     break;
             }
@@ -199,10 +199,6 @@ public final class ShipViewerControls implements ViewerControl {
             int dy = y - this.previousPoint.y;
             this.parentViewer.translate(dx, dy);
             EventBus.publish(new ViewerTransformChanged());
-        } else if (ControlPredicates.selectPointPredicate.test(e)) {
-            AffineTransform screenToWorld = this.parentViewer.getScreenToWorld();
-            Point2D adjustedCursor = this.getAdjustedCursor();
-            EventBus.publish(new PointDragQueued(screenToWorld, adjustedCursor));
         } else if (ControlPredicates.layerMovePredicate.test(e)) {
             int dx = x - this.layerDragPoint.x;
             int dy = y - this.layerDragPoint.y;
@@ -312,6 +308,9 @@ public final class ShipViewerControls implements ViewerControl {
         Point2D adjusted = this.getAdjustedCursor();
         Point2D corrected = Utility.correctAdjustedCursor(adjusted, screenToWorld);
         EventBus.publish(new ViewerCursorMoved(this.mousePoint, adjusted, corrected));
+        if (ControlPredicates.selectPointPredicate.test(event)) {
+            EventBus.publish(new PointDragQueued(screenToWorld, adjusted));
+        }
     }
 
 }
