@@ -5,8 +5,8 @@ import lombok.extern.log4j.Log4j2;
 import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.files.HullFileOpened;
 import oth.shipeditor.communication.events.files.SpriteOpened;
-import oth.shipeditor.communication.events.viewer.layers.LayerCreationQueued;
 import oth.shipeditor.communication.events.viewer.layers.LastLayerSelectQueued;
+import oth.shipeditor.communication.events.viewer.layers.LayerCreationQueued;
 import oth.shipeditor.components.datafiles.entities.ShipCSVEntry;
 import oth.shipeditor.components.viewer.ShipViewable;
 import oth.shipeditor.components.viewer.layers.LayerManager;
@@ -17,7 +17,6 @@ import oth.shipeditor.persistence.Initializations;
 import oth.shipeditor.persistence.SettingsManager;
 import oth.shipeditor.representation.GameDataRepository;
 import oth.shipeditor.representation.Hull;
-import oth.shipeditor.representation.HullStyle;
 import oth.shipeditor.representation.Skin;
 
 import javax.swing.*;

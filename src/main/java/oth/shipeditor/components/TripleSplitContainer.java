@@ -10,14 +10,16 @@ import oth.shipeditor.communication.events.components.WindowGUIShowConfirmed;
 import oth.shipeditor.components.datafiles.GameDataPanel;
 import oth.shipeditor.components.instrument.InstrumentTabsPane;
 import oth.shipeditor.components.viewer.ShipViewable;
-import oth.shipeditor.utility.MinimizeListener;
-import oth.shipeditor.utility.MinimizerWidget;
+import oth.shipeditor.utility.components.MinimizeListener;
+import oth.shipeditor.utility.components.MinimizerWidget;
 
 import javax.swing.*;
 import javax.swing.plaf.basic.BasicSplitPaneDivider;
+import javax.swing.plaf.basic.BasicSplitPaneUI;
 import java.awt.*;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
+import java.awt.event.MouseAdapter;
 import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.Map;
@@ -26,7 +28,7 @@ import java.util.Map;
  * @author Ontheheavens
  * @since 23.06.2023
  */
-@SuppressWarnings("FieldCanBeLocal")
+@SuppressWarnings({"FieldCanBeLocal", "ClassWithTooManyFields"})
 @Log4j2
 final class TripleSplitContainer extends JSplitPane {
 
@@ -54,6 +56,8 @@ final class TripleSplitContainer extends JSplitPane {
     private final Map<LeftsideTabType, JPanel> leftsidePanels;
 
     private final Map<Component, Integer> dividerLocations;
+
+    private MouseAdapter cachedDividerHandler;
 
     TripleSplitContainer(JTabbedPane westPane) {
         super((JSplitPane.HORIZONTAL_SPLIT));
@@ -152,13 +156,35 @@ final class TripleSplitContainer extends JSplitPane {
         if (secondaryLevel == null) return;
         if (instrumentPaneMinimized) {
             secondaryLevel.setDividerLocation(secondaryLevel.getWidth() - 70);
-            secondaryLevel.setEnabled(false);
+            this.toggleSecondarySplitterOff();
         } else {
             int maximum = secondaryLevel.getMaximumDividerLocation();
             secondaryLevel.setDividerLocation(Math.min(cachedDividerLocation, maximum));
-            secondaryLevel.setEnabled(true);
+            this.toggleSecondarySplitterOn();
         }
         this.repaint();
+    }
+
+    private void toggleSecondarySplitterOff() {
+        if (secondaryLevel.getMouseListeners().length == 0) return;
+        cachedDividerHandler = (MouseAdapter) secondaryLevel.getMouseListeners()[0];
+        secondaryLevel.removeMouseListener(cachedDividerHandler);
+        secondaryLevel.removeMouseMotionListener(cachedDividerHandler);
+        BasicSplitPaneUI splitPaneUI = (BasicSplitPaneUI) secondaryLevel.getUI();
+        BasicSplitPaneDivider divider = splitPaneUI.getDivider();
+        divider.removeMouseListener(cachedDividerHandler);
+        divider.removeMouseMotionListener(cachedDividerHandler);
+        divider.setEnabled(false);
+    }
+
+    private void toggleSecondarySplitterOn() {
+        secondaryLevel.addMouseListener(cachedDividerHandler);
+        secondaryLevel.addMouseMotionListener(cachedDividerHandler);
+        BasicSplitPaneUI splitPaneUI = (BasicSplitPaneUI) secondaryLevel.getUI();
+        BasicSplitPaneDivider divider = splitPaneUI.getDivider();
+        divider.addMouseListener(cachedDividerHandler);
+        divider.addMouseMotionListener(cachedDividerHandler);
+        divider.setEnabled(true);
     }
 
     void loadContentPanes(ShipViewable shipView) {

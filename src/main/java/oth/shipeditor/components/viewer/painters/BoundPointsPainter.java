@@ -19,6 +19,8 @@ import oth.shipeditor.components.viewer.entities.ShipCenterPoint;
 import oth.shipeditor.components.viewer.entities.WorldPoint;
 import oth.shipeditor.components.viewer.layers.LayerPainter;
 import oth.shipeditor.undo.EditDispatch;
+import oth.shipeditor.utility.ApplicationDefaults;
+import oth.shipeditor.utility.graphics.DrawUtilities;
 import oth.shipeditor.utility.Utility;
 
 import java.awt.*;
@@ -26,7 +28,6 @@ import java.awt.event.KeyEvent;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
-import java.awt.geom.RectangularShape;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -37,6 +38,8 @@ import java.util.List;
 @SuppressWarnings("OverlyComplexClass")
 @Log4j2
 public final class BoundPointsPainter extends AbstractPointPainter {
+
+    private static final Color BOUND_LINE = ApplicationDefaults.BOUND_LINE_COLOR;
 
     @Getter
     private final List<BoundPoint> boundPoints;
@@ -287,52 +290,64 @@ public final class BoundPointsPainter extends AbstractPointPainter {
     @Override
     public void paint(Graphics2D g, AffineTransform worldToScreen, double w, double h) {
         if (!checkVisibility()) return;
-        Stroke origStroke = g.getStroke();
-        Paint origPaint = g.getPaint();
 
-        int rule = AlphaComposite.SRC_OVER;
         float alpha = this.getPaintOpacity();
-        Composite old = g.getComposite();
-        Composite opacity = AlphaComposite.getInstance(rule, alpha) ;
-        g.setComposite(opacity);
+        Composite old = Utility.setAlphaComposite(g, alpha);
 
         List<BoundPoint> bPoints = this.boundPoints;
         if (bPoints.isEmpty()) {
             this.paintIfBoundsEmpty(g, worldToScreen);
-            g.setStroke(origStroke);
-            g.setPaint(origPaint);
             return;
         }
-        drawSelectionHighlight(g, worldToScreen);
         BoundPoint boundPoint = bPoints.get(bPoints.size() - 1);
         Point2D prev = worldToScreen.transform(boundPoint.getPosition(), null);
         for (BoundPoint p : bPoints) {
             Point2D curr = worldToScreen.transform(p.getPosition(), null);
-            Utility.drawBorderedLine(g, prev, curr, Color.LIGHT_GRAY);
+            this.drawBoundLine(g, prev, curr, BOUND_LINE);
             prev = curr;
         }
-        // Set the color to white for visual convenience.
         BoundPoint anotherBoundPoint = bPoints.get(0);
         Point2D first = worldToScreen.transform(anotherBoundPoint.getPosition(), null);
-        Utility.drawBorderedLine(g, prev, first, Color.GREEN);
+
+        this.drawBoundLine(g, prev, first, Color.GREEN);
+
         boolean hotkeyPressed = appendBoundHotkeyPressed || insertBoundHotkeyPressed;
         if (isInteractionEnabled() && hotkeyPressed) {
             this.paintCreationGuidelines(g, worldToScreen, prev, first);
         }
-        g.setStroke(origStroke);
-        g.setPaint(origPaint);
-        super.paintDelegates(g, worldToScreen, w, h);
+        this.handleSelectionHighlight();
+        this.paintDelegates(g, worldToScreen, w, h);
         g.setComposite(old);
     }
 
-    private void drawSelectionHighlight(Graphics2D g, AffineTransform worldToScreen) {
+    @Override
+    void paintDelegates(Graphics2D g, AffineTransform worldToScreen, double w, double h) {
+        super.paintDelegates(g, worldToScreen, w, h);
+        for (BoundPoint bound : boundPoints) {
+            bound.setPaintSizeMultiplier(1);
+        }
+    }
+
+    @SuppressWarnings("MethodMayBeStatic")
+    private void drawBoundLine(Graphics2D g, Point2D start, Point2D finish, Color color) {
+        DrawUtilities.drawScreenLine(g, start, finish, Color.BLACK, 5.0f);
+        DrawUtilities.drawScreenLine(g, start, finish, color, 3.0f);
+    }
+
+    private void handleSelectionHighlight() {
         WorldPoint selection = this.getSelected();
         if (selection != null && isInteractionEnabled()) {
-            BoundPointsPainter.paintPointDot(g, worldToScreen, selection.getPosition(), 2.0f);
+            BoundPointsPainter.enlargeBound(selection);
             WorldPoint counterpart = this.getMirroredCounterpart(selection);
             if (counterpart != null && ControlPredicates.isMirrorModeEnabled()) {
-                BoundPointsPainter.paintPointDot(g, worldToScreen, counterpart.getPosition(), 2.0f);
+                BoundPointsPainter.enlargeBound(counterpart);
             }
+        }
+    }
+
+    private static void enlargeBound(WorldPoint bound) {
+        if (bound instanceof BoundPoint checked) {
+            checked.setPaintSizeMultiplier(1.5);
         }
     }
 
@@ -344,13 +359,13 @@ public final class BoundPointsPainter extends AbstractPointPainter {
         Point2D worldCounterpart = this.createCounterpartPosition(adjustedWorldCursor);
         boolean hotkeyPressed = appendBoundHotkeyPressed || insertBoundHotkeyPressed;
         if (!isInteractionEnabled() || !hotkeyPressed) return;
-        BoundPointsPainter.paintPointDot(g, worldToScreen, adjustedWorldCursor, 1.0f);
         if (ControlPredicates.isMirrorModeEnabled()) {
             Point2D adjustedScreenCursor = worldToScreen.transform(adjustedWorldCursor, null);
             Point2D adjustedScreenCounterpart = worldToScreen.transform(worldCounterpart, null);
-            BoundPointsPainter.paintPointDot(g, worldToScreen, worldCounterpart, 1.0f);
-            Utility.drawBorderedLine(g, adjustedScreenCursor, adjustedScreenCounterpart, Color.WHITE);
+            this.drawBoundLine(g, adjustedScreenCursor, adjustedScreenCounterpart, BOUND_LINE);
+            BoundPointsPainter.paintProspectiveBound(g, worldToScreen, worldCounterpart);
         }
+        BoundPointsPainter.paintProspectiveBound(g, worldToScreen, adjustedWorldCursor);
     }
 
     private void paintCreationGuidelines(Graphics2D g, AffineTransform worldToScreen,
@@ -365,38 +380,27 @@ public final class BoundPointsPainter extends AbstractPointPainter {
         boolean mirrorMode = ControlPredicates.isMirrorModeEnabled();
         if (appendBoundHotkeyPressed) {
             if (mirrorMode) {
-                Utility.drawBorderedLine(g, prev, adjustedScreenCursor, Color.WHITE);
-                Utility.drawBorderedLine(g, adjustedScreenCursor, adjustedScreenCounterpart, Color.WHITE);
-                Utility.drawBorderedLine(g, adjustedScreenCounterpart, first, Color.WHITE);
+                this.drawBoundLine(g, prev, adjustedScreenCursor, BOUND_LINE);
+                this.drawBoundLine(g, adjustedScreenCursor, adjustedScreenCounterpart, BOUND_LINE);
+                this.drawBoundLine(g, adjustedScreenCounterpart, first, BOUND_LINE);
             } else {
-                BoundPointsPainter.drawGuidelines(g, prev, first, adjustedScreenCursor);
+                this.drawGuidelines(g, prev, first, adjustedScreenCursor);
             }
         } else if (insertBoundHotkeyPressed) {
             this.handleInsertionGuides(g, worldToScreen,
                     adjustedWorldCursor, worldCounterpart);
         }
         // Also paint dots where the points would be placed.
-        BoundPointsPainter.paintPointDot(g, worldToScreen, adjustedWorldCursor, 1.0f);
+        BoundPointsPainter.paintProspectiveBound(g, worldToScreen, adjustedWorldCursor);
         if (mirrorMode) {
-            BoundPointsPainter.paintPointDot(g, worldToScreen, worldCounterpart, 1.0f);
+            BoundPointsPainter.paintProspectiveBound(g, worldToScreen, worldCounterpart);
         }
     }
 
-    private static void paintPointDot(Graphics2D g, AffineTransform worldToScreen,
-                                      Point2D point, float radiusMult) {
-        Color originalColor = g.getColor();
-        g.setColor(Color.WHITE);
-        Shape worldDot = Utility.createCircle(point, 0.25f * radiusMult);
-        Shape screenDot = worldToScreen.createTransformedShape(worldDot);
-        Point2D screenPoint = worldToScreen.transform(point, null);
-        RectangularShape screenOuterDot = Utility.createCircle(screenPoint, 6.0f * radiusMult);
-        int x = (int) screenOuterDot.getX();
-        int y = (int) screenOuterDot.getY();
-        int width = (int) screenOuterDot.getWidth();
-        int height = (int) screenOuterDot.getHeight();
-        g.fill(screenDot);
-        g.drawOval(x, y, width, height);
-        g.setColor(originalColor);
+    private static void paintProspectiveBound(Graphics2D g, AffineTransform worldToScreen, Point2D position) {
+        Shape hexagon = BoundPoint.getShapeForPoint(worldToScreen, position, 1);
+        DrawUtilities.outlineShape(g, hexagon, Color.BLACK, 3);
+        DrawUtilities.fillShape(g, hexagon, Color.WHITE);
     }
 
     @SuppressWarnings("DuplicatedCode")
@@ -420,21 +424,21 @@ public final class BoundPointsPainter extends AbstractPointPainter {
 
         if (ControlPredicates.isMirrorModeEnabled()) {
             if (crossingEmerged) {
-                Utility.drawBorderedLine(g, subsequent, transformed, Color.WHITE);
-                Utility.drawBorderedLine(g, transformed, transformedCounterpart, Color.WHITE);
-                Utility.drawBorderedLine(g, transformedCounterpart, preceding, Color.WHITE);
+                this.drawBoundLine(g, subsequent, transformed, BOUND_LINE);
+                this.drawBoundLine(g, transformed, transformedCounterpart, BOUND_LINE);
+                this.drawBoundLine(g, transformedCounterpart, preceding, BOUND_LINE);
             } else {
-                BoundPointsPainter.drawGuidelines(g, preceding, subsequent, transformed);
-                BoundPointsPainter.drawGuidelines(g, precedingTC, subsequentTC, transformedCounterpart);
+                this.drawGuidelines(g, preceding, subsequent, transformed);
+                this.drawGuidelines(g, precedingTC, subsequentTC, transformedCounterpart);
             }
         } else {
-            BoundPointsPainter.drawGuidelines(g, preceding, subsequent, transformed);
+            this.drawGuidelines(g, preceding, subsequent, transformed);
         }
     }
 
-    private static void drawGuidelines(Graphics2D g, Point2D preceding, Point2D subsequent, Point2D cursor) {
-        Utility.drawBorderedLine(g, preceding, cursor, Color.WHITE);
-        Utility.drawBorderedLine(g, subsequent, cursor, Color.WHITE);
+    private void drawGuidelines(Graphics2D g, Point2D preceding, Point2D subsequent, Point2D cursor) {
+        this.drawBoundLine(g, preceding, cursor, BOUND_LINE);
+        this.drawBoundLine(g, subsequent, cursor, BOUND_LINE);
     }
 
 }

@@ -72,11 +72,25 @@ public final class WindowContentPanes {
     }
 
     public void loadEditingPanes() {
+        JPanel westPanelsContainer = new JPanel();
+
+        LayoutManager layout = new GridLayout(2, 1);
+        westPanelsContainer.setLayout(layout);
+
         JTabbedPane westTabsPane = new JTabbedPane();
         westTabsPane.setTabPlacement(SwingConstants.LEFT);
         westTabsPane.addTab("Game data", new LeftsidePanelTab(LeftsideTabType.GAME_DATA));
         westTabsPane.addTab(DEFAULT_LEFTSIDE_PANE, new LeftsidePanelTab(LeftsideTabType.DEFAULT));
-        this.primaryContentPane.add(westTabsPane, BorderLayout.LINE_START);
+
+        // TODO: sort out later.
+
+        JPanel placeholder = new JPanel();
+        placeholder.setBackground(Color.LIGHT_GRAY);
+
+        westPanelsContainer.add(westTabsPane);
+        westPanelsContainer.add(placeholder);
+
+        this.primaryContentPane.add(westPanelsContainer, BorderLayout.LINE_START);
 
         tripleSplitter = new TripleSplitContainer(westTabsPane);
         tripleSplitter.loadContentPanes(shipView);

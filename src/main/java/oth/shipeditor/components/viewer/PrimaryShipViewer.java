@@ -18,7 +18,7 @@ import oth.shipeditor.components.viewer.layers.LayerManager;
 import oth.shipeditor.components.viewer.layers.LayerPainter;
 import oth.shipeditor.components.viewer.layers.ShipLayer;
 import oth.shipeditor.components.viewer.painters.AbstractPointPainter;
-import oth.shipeditor.components.viewer.painters.GuidesPainter;
+import oth.shipeditor.components.viewer.painters.GuidesPainters;
 import oth.shipeditor.components.viewer.painters.HotkeyHelpPainter;
 import oth.shipeditor.components.viewer.painters.WorldPointsPainter;
 import oth.shipeditor.menubar.FileUtilities;
@@ -58,7 +58,7 @@ public final class PrimaryShipViewer extends Viewer implements ShipViewable {
     private final WorldPointsPainter miscPointsPainter;
 
     @Getter
-    private final GuidesPainter guidesPainter;
+    private final GuidesPainters guidesPainters;
 
     @Getter
     private final HotkeyHelpPainter hotkeyPainter;
@@ -86,10 +86,15 @@ public final class PrimaryShipViewer extends Viewer implements ShipViewable {
         this.miscPointsPainter = WorldPointsPainter.create();
         this.addPainter(this.miscPointsPainter, 901);
 
-        this.guidesPainter = new GuidesPainter(this);
-        EventBus.publish(new ViewerGuidesToggled(true,
-                true, true, true));
-        this.addPainter(this.guidesPainter, 902);
+        this.guidesPainters = new GuidesPainters(this);
+
+        // TODO: sort out the ordering with PaintOrderController later!
+
+        this.addPainter(this.guidesPainters.getAxesPaint(), 0);
+        this.addPainter(this.guidesPainters.getBordersPaint(), 0);
+        this.addPainter(this.guidesPainters.getCenterPaint(), 902);
+        this.addPainter(this.guidesPainters.getGuidesPaint(), 902);
+        EventBus.publish(new ViewerGuidesToggled(true, true, true, true));
 
         this.hotkeyPainter = new HotkeyHelpPainter();
         this.addPainter(this.hotkeyPainter, 903);
@@ -104,7 +109,6 @@ public final class PrimaryShipViewer extends Viewer implements ShipViewable {
         this.setMouseControl(this.controls);
         this.initViewerStateListeners();
         this.initLayerListening();
-
         this.setDropTarget(new SpriteDropReceiver());
     }
 

@@ -7,6 +7,7 @@ import oth.shipeditor.communication.events.viewer.control.*;
 import oth.shipeditor.communication.events.viewer.points.*;
 import oth.shipeditor.components.viewer.PrimaryShipViewer;
 import oth.shipeditor.components.viewer.layers.LayerPainter;
+import oth.shipeditor.utility.StaticController;
 import oth.shipeditor.utility.Utility;
 
 import javax.swing.*;
@@ -23,6 +24,7 @@ import java.awt.geom.Point2D;
  * @since 29.04.2023
  */
 
+@SuppressWarnings("OverlyCoupledClass")
 @Log4j2
 public final class ShipViewerControls implements ViewerControl {
 
@@ -61,7 +63,7 @@ public final class ShipViewerControls implements ViewerControl {
     private double zoomLevel = 1;
 
     @Getter
-    private double rotationDegree = 0;
+    private double rotationDegree;
 
     /**
      * @param parent Viewer which is manipulated via this instance of controls class.
@@ -100,6 +102,7 @@ public final class ShipViewerControls implements ViewerControl {
             if (event instanceof ViewerTransformsReset) {
                 this.setZoomLevel(1);
                 this.rotationDegree = 0;
+                StaticController.setRotationRadians(0);
                 EventBus.publish(new ViewerTransformRotated(rotationDegree));
             }
         });
@@ -117,12 +120,12 @@ public final class ShipViewerControls implements ViewerControl {
             switch (ke.getID()) {
                 case KeyEvent.KEY_PRESSED:
                     if (isLayerDragHotkey) {
-                        this.parentViewer.setCursor(new Cursor(Cursor.MOVE_CURSOR));
+                        this.parentViewer.setCursor(Cursor.getPredefinedCursor(Cursor.MOVE_CURSOR));
                     }
                     break;
                 case KeyEvent.KEY_RELEASED:
                     if (isLayerDragHotkey) {
-                        this.parentViewer.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+                        this.parentViewer.setCursor(Cursor.getDefaultCursor());
                     }
                     break;
             }
@@ -196,10 +199,6 @@ public final class ShipViewerControls implements ViewerControl {
             int dy = y - this.previousPoint.y;
             this.parentViewer.translate(dx, dy);
             EventBus.publish(new ViewerTransformChanged());
-        } else if (ControlPredicates.selectPointPredicate.test(e)) {
-            AffineTransform screenToWorld = this.parentViewer.getScreenToWorld();
-            Point2D adjustedCursor = this.getAdjustedCursor();
-            EventBus.publish(new PointDragQueued(screenToWorld, adjustedCursor));
         } else if (ControlPredicates.layerMovePredicate.test(e)) {
             int dx = x - this.layerDragPoint.x;
             int dy = y - this.layerDragPoint.y;
@@ -237,6 +236,7 @@ public final class ShipViewerControls implements ViewerControl {
             double toRadians = Math.toRadians(wheelRotation);
             Point2D midpoint = parentViewer.getViewerMidpoint();
             double resultRadians = toRadians * ROTATION_SPEED;
+            StaticController.updateRotationRadians(-resultRadians);
             this.parentViewer.rotate(midpoint.getX(), midpoint.getY(),
                     resultRadians);
             this.rotationDegree += Math.toDegrees(resultRadians);
@@ -270,6 +270,7 @@ public final class ShipViewerControls implements ViewerControl {
 
     private void setZoomLevel(double level) {
         this.zoomLevel = level;
+        StaticController.setZoomLevel(level);
         EventBus.publish(new ViewerZoomChanged(level));
     }
 
@@ -307,6 +308,9 @@ public final class ShipViewerControls implements ViewerControl {
         Point2D adjusted = this.getAdjustedCursor();
         Point2D corrected = Utility.correctAdjustedCursor(adjusted, screenToWorld);
         EventBus.publish(new ViewerCursorMoved(this.mousePoint, adjusted, corrected));
+        if (ControlPredicates.selectPointPredicate.test(event)) {
+            EventBus.publish(new PointDragQueued(screenToWorld, adjusted));
+        }
     }
 
 }

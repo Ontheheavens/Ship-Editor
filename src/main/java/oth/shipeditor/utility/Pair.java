@@ -7,11 +7,12 @@ import lombok.Getter;
  * @since 15.07.2023
  */
 @Getter
-public class Pair<T, U> {
-    private final T first;
-    private final U second;
+public class Pair<A, B> {
+    private final A first;
+    private final B second;
 
-    public Pair(T firstInput, U secondInput) {
+    @SuppressWarnings("WeakerAccess")
+    public Pair(A firstInput, B secondInput) {
         this.first = firstInput;
         this.second = secondInput;
     }

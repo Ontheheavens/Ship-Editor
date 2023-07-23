@@ -15,6 +15,7 @@ import oth.shipeditor.components.viewer.control.PointSelectionMode;
 import oth.shipeditor.components.viewer.entities.BaseWorldPoint;
 import oth.shipeditor.components.viewer.entities.WorldPoint;
 import oth.shipeditor.undo.EditDispatch;
+import oth.shipeditor.utility.Utility;
 
 import java.awt.*;
 import java.awt.geom.AffineTransform;
@@ -297,12 +298,8 @@ public abstract class AbstractPointPainter implements Painter {
     @Override
     public void paint(Graphics2D g, AffineTransform worldToScreen, double w, double h) {
         if (!checkVisibility()) return;
-
-        int rule = AlphaComposite.SRC_OVER;
         float alpha = this.getPaintOpacity();
-        Composite old = g.getComposite();
-        Composite opacity = AlphaComposite.getInstance(rule, alpha) ;
-        g.setComposite(opacity);
+        Composite old = Utility.setAlphaComposite(g, alpha);
 
         paintDelegates(g, worldToScreen, w, h);
 

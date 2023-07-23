@@ -1,4 +1,4 @@
-package oth.shipeditor.utility;
+package oth.shipeditor.utility.components;
 
 import lombok.Getter;
 import lombok.Setter;

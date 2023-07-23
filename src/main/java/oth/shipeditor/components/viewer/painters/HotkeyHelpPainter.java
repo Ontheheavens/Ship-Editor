@@ -1,17 +1,19 @@
 package oth.shipeditor.components.viewer.painters;
 
 import de.javagl.viewer.Painter;
-import de.javagl.viewer.painters.StringBoundsUtils;
 import lombok.extern.log4j.Log4j2;
 import oth.shipeditor.components.instrument.InstrumentTabsPane;
 import oth.shipeditor.components.instrument.centers.CenterPointMode;
 import oth.shipeditor.components.instrument.centers.HullPointsPanel;
 import oth.shipeditor.components.viewer.InstrumentMode;
-import oth.shipeditor.utility.Utility;
+import oth.shipeditor.utility.graphics.DrawUtilities;
 
 import java.awt.*;
 import java.awt.geom.AffineTransform;
+import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
+import java.util.ArrayList;
+import java.util.Collection;
 
 /**
  * @author Ontheheavens
@@ -22,46 +24,56 @@ public class HotkeyHelpPainter implements Painter {
 
     @Override
     public void paint(Graphics2D g, AffineTransform worldToScreen, double w, double h) {
-        Font hintFont = Utility.getOrbitron(16);
-        g.setFont(hintFont);
         InstrumentMode current = InstrumentTabsPane.getCurrentMode();
+
+        Collection<String> hints = new ArrayList<>();
         // The hotkey values are hardcoded because the respective fields in control classes are int constants.
         switch (current) {
             case CENTERS -> {
                 String radiusHint;
                 CenterPointMode mode = HullPointsPanel.getMode();
                 if (mode == CenterPointMode.COLLISION) {
-                    radiusHint = "Press C to alter collision radius";
+                    radiusHint = "Alter collision radius: C";
                 } else {
-                    radiusHint = "Press S to alter shield radius";
+                    radiusHint = "Alter shield radius: S";
                 }
-                Rectangle2D stringBounds = StringBoundsUtils.computeStringBounds(radiusHint, hintFont, null);
-                int x = (int) (w - stringBounds.getWidth() - 10);
-                int y = (int) (h - stringBounds.getHeight() + 10);
-                g.drawString(radiusHint, x, y);
+                hints.add(radiusHint);
             }
             case BOUNDS -> {
-                String insertHint = "Press X to insert bound";
-                String appendHint = "Press Z to append bound";
-                String removeHint = "Right-click + CTRL or DEL to remove bound";
-                Rectangle2D insertBounds = StringBoundsUtils.computeStringBounds(insertHint, hintFont, null);
-                Rectangle2D appendBounds = StringBoundsUtils.computeStringBounds(appendHint, hintFont, null);
-                Rectangle2D removeBounds = StringBoundsUtils.computeStringBounds(removeHint, hintFont, null);
-
-                int insertX = (int) (w - insertBounds.getWidth() - 10);
-                int insertY = (int) (h - insertBounds.getHeight() - 40);
-                int appendX = (int) (w - appendBounds.getWidth() - 10);
-                int appendY = (int) (h - appendBounds.getHeight() - 15);
-                int removeX = (int) (w - removeBounds.getWidth() - 6);
-                int removeY = (int) (h - removeBounds.getHeight() + 10);
-
-                g.drawString(insertHint, insertX, insertY);
-                g.drawString(appendHint, appendX, appendY);
-                g.drawString(removeHint, removeX, removeY);
+                String insertHint = "Insert bound: X";
+                String appendHint = "Append bound: Z";
+                String removeHint = "Remove bound: Del";
+                hints.add(removeHint);
+                hints.add(appendHint);
+                hints.add(insertHint);
             }
             default -> {
-
             }
+        }
+
+        if (hints.isEmpty()) return;
+        double verticalPadding = 0;
+        double x = w - 10;
+        double y = h - verticalPadding;
+        Point2D anchor = new Point2D.Double(x, y);
+        for (String hint : hints) {
+            // This is a bit of an unsightly hack, but we got more important matters to deal with.
+            // Perhaps refactor later.
+            boolean lastCharShort = hint.endsWith("l");
+            if (lastCharShort) {
+                anchor.setLocation(anchor.getX() + 1, anchor.getY());
+            }
+
+            Shape drawResult = DrawUtilities.paintScreenTextOutlined(g, hint, anchor);
+            Rectangle2D resultBounds = drawResult.getBounds2D();
+            double topRightX = resultBounds.getX() + resultBounds.getWidth();
+
+            if (lastCharShort) {
+                topRightX -= 2;
+            }
+
+            double topRightY = resultBounds.getY();
+            anchor = new Point2D.Double(topRightX, topRightY - verticalPadding);
         }
     }
 

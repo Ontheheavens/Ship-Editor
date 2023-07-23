@@ -22,7 +22,7 @@ public final class JsonProcessor {
     private JsonProcessor() {
     }
 
-    @SuppressWarnings("NestedAssignment")
+    @SuppressWarnings({"NestedAssignment", "RegExpSimplifiable"})
     public static String correctJSON(File malformed) {
         StringBuilder jsonString = new StringBuilder();
         try (BufferedReader reader = new BufferedReader(new FileReader(malformed, StandardCharsets.UTF_8))) {
@@ -34,7 +34,6 @@ public final class JsonProcessor {
             e.printStackTrace();
         }
         // Pattern to match unquoted values (non-numeric and non-boolean) excluding already quoted values.
-        // This marvel of Regex magic is made by ChatGPT, my new machine overlord.
         Pattern pattern = Pattern.compile("(?<![\"])\\b(?!true|false|null|\\d+(?:\\.\\d+)?)([a-zA-Z_][\\w]*)\\b(?![\"])(?![^\"]*\"(?:[^\"]*\"[^\"]*\")*[^\"]*$)");
         Matcher matcher = pattern.matcher(jsonString);
         StringBuilder preprocessedJson = new StringBuilder();

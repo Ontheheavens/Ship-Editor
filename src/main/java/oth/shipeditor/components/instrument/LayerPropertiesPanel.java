@@ -2,24 +2,20 @@ package oth.shipeditor.components.instrument;
 
 import oth.shipeditor.communication.BusEventListener;
 import oth.shipeditor.communication.EventBus;
-import oth.shipeditor.communication.events.BusEvent;
 import oth.shipeditor.communication.events.viewer.layers.LayerOpacityChangeQueued;
 import oth.shipeditor.communication.events.viewer.layers.LayerWasSelected;
 import oth.shipeditor.components.viewer.layers.LayerPainter;
 import oth.shipeditor.components.viewer.layers.ShipLayer;
 import oth.shipeditor.utility.Pair;
 import oth.shipeditor.utility.StringConstants;
-import oth.shipeditor.utility.Utility;
+import oth.shipeditor.utility.components.ComponentUtilities;
 
 import javax.swing.*;
 import javax.swing.border.Border;
 import javax.swing.border.CompoundBorder;
 import javax.swing.border.EmptyBorder;
-import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import java.awt.*;
-import java.util.Dictionary;
-import java.util.Hashtable;
 
 /**
  * @author Ontheheavens
@@ -92,7 +88,7 @@ final class LayerPropertiesPanel extends JPanel {
                 opacitySlider.setValue(value);
             }
         };
-        Pair<JSlider, JLabel> widgetComponents = Utility.createOpacityWidget(changeListener, eventListener);
+        Pair<JSlider, JLabel> widgetComponents = ComponentUtilities.createOpacityWidget(changeListener, eventListener);
 
         opacitySlider = widgetComponents.getFirst();
         opacityLabel = widgetComponents.getSecond();

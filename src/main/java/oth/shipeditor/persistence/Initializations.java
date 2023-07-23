@@ -7,7 +7,6 @@ import oth.shipeditor.PrimaryWindow;
 import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.viewer.ViewerBackgroundChanged;
 import oth.shipeditor.menubar.FileUtilities;
-import oth.shipeditor.representation.GameDataRepository;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
@@ -27,8 +26,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Objects;
 import java.util.function.Function;
-
-import static java.awt.event.ActionEvent.ACTION_PERFORMED;
 
 /**
  * @author Ontheheavens
@@ -51,7 +48,7 @@ public final class Initializations {
      * To be called only after all components and settings have been initialized.
      */
     public static void loadGameData(PrimaryWindow window) {
-        ActionEvent initEvent = new ActionEvent(window, ACTION_PERFORMED, null);
+        ActionEvent initEvent = new ActionEvent(window, ActionEvent.ACTION_PERFORMED, null);
         Action loadShipDataAction = FileUtilities.getLoadShipDataAction();
         loadShipDataAction.actionPerformed(initEvent);
         Action loadHullmodDataAction = FileUtilities.getLoadHullmodDataAction();

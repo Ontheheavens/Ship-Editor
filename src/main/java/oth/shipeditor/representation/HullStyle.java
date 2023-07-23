@@ -1,5 +1,6 @@
 package oth.shipeditor.representation;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
@@ -10,14 +11,22 @@ import oth.shipeditor.parsing.deserialize.ColorArrayRGBADeserializer;
 import oth.shipeditor.parsing.serialize.ColorArrayRGBASerializer;
 
 import java.awt.*;
+import java.nio.file.Path;
 
 /**
  * @author Ontheheavens
  * @since 16.07.2023
  */
+@SuppressWarnings("TransientFieldInNonSerializableClass")
 @JsonIgnoreProperties(ignoreUnknown = true)
 @Getter
 public class HullStyle {
+
+    @JsonIgnore @Setter
+    private transient Path filePath;
+
+    @JsonIgnore @Setter
+    private transient Path containingPackage;
 
     @Setter
     private String hullStyleID;
@@ -31,5 +40,11 @@ public class HullStyle {
     @JsonSerialize(using = ColorArrayRGBASerializer.class)
     @JsonProperty("shieldInnerColor")
     private Color shieldInnerColor;
+
+    public HullStyle() {
+        hullStyleID = "DEFAULT";
+        shieldRingColor = Color.WHITE;
+        shieldInnerColor = new Color(0x4D00AFFA, true);
+    }
 
 }

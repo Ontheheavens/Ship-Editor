@@ -5,8 +5,6 @@ import lombok.extern.log4j.Log4j2;
 import oth.shipeditor.communication.BusEventListener;
 import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.components.BoundsPanelRepaintQueued;
-import oth.shipeditor.communication.events.components.ViewerFocusRequestQueued;
-import oth.shipeditor.communication.events.viewer.control.PointLinkageToleranceChanged;
 import oth.shipeditor.communication.events.viewer.layers.LayerWasSelected;
 import oth.shipeditor.communication.events.viewer.layers.PainterOpacityChangeQueued;
 import oth.shipeditor.communication.events.viewer.points.BoundInsertedConfirmed;
@@ -19,15 +17,13 @@ import oth.shipeditor.components.viewer.painters.BoundPointsPainter;
 import oth.shipeditor.components.viewer.painters.PainterVisibility;
 import oth.shipeditor.utility.Pair;
 import oth.shipeditor.utility.StringConstants;
-import oth.shipeditor.utility.Utility;
+import oth.shipeditor.utility.components.ComponentUtilities;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.event.ChangeListener;
 import java.awt.*;
 import java.awt.event.ActionListener;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
 
 /**
  * @author Ontheheavens
@@ -58,8 +54,7 @@ public final class BoundPointsPanel extends JPanel {
         northContainer.setLayout(new BoxLayout(northContainer, BoxLayout.PAGE_AXIS));
         northContainer.add(this.createPainterOpacityPanel());
         northContainer.add(this.createPainterVisibilityPanel());
-        northContainer.add(Box.createRigidArea(new Dimension(0,10)));
-        northContainer.add(this.createPointLinkageToleranceSpinner());
+        northContainer.add(Box.createRigidArea(new Dimension(0,6)));
         this.add(northContainer, BorderLayout.PAGE_START);
         this.add(scrollableContainer, BorderLayout.CENTER);
 
@@ -103,7 +98,7 @@ public final class BoundPointsPanel extends JPanel {
                 opacitySlider.setValue(value);
             }
         };
-        Pair<JSlider, JLabel> widgetComponents = Utility.createOpacityWidget(changeListener, eventListener);
+        Pair<JSlider, JLabel> widgetComponents = ComponentUtilities.createOpacityWidget(changeListener, eventListener);
 
         opacitySlider = widgetComponents.getFirst();
         opacityLabel = widgetComponents.getSecond();
@@ -144,43 +139,6 @@ public final class BoundPointsPanel extends JPanel {
         container.add(Box.createHorizontalGlue()); // Add glue to push components to opposite sides.
         container.add(visibilityList);
         container.add(Box.createRigidArea(new Dimension(sidePadding,0)));
-
-        return container;
-    }
-
-    @SuppressWarnings("MethodMayBeStatic")
-    private JPanel createPointLinkageToleranceSpinner() {
-        JPanel container = new JPanel();
-        container.setLayout(new BoxLayout(container, BoxLayout.LINE_AXIS));
-
-        Integer[] numbers = {0, 1, 2, 3, 4, 5};
-        SpinnerListModel spinnerListModel = new SpinnerListModel(numbers);
-        JSpinner spinner = new JSpinner(spinnerListModel);
-
-        Component spinnerEditor = spinner.getEditor();
-        JFormattedTextField textField = ((JSpinner.DefaultEditor) spinnerEditor).getTextField();
-        textField.setColumns(10);
-
-        JLabel toleranceLabel = new JLabel("Linkage tolerance:");
-        toleranceLabel.setToolTipText("Determines maximum distance at which mirrored points link for interaction");
-
-        container.add(Box.createRigidArea(new Dimension(sidePadding,0)));
-        container.add(toleranceLabel);
-        container.add(Box.createHorizontalGlue()); // Add glue to push components to opposite sides.
-        container.add(spinner);
-        container.add(Box.createRigidArea(new Dimension(sidePadding,0)));
-
-        spinner.addChangeListener(e -> {
-            Integer current = (Integer) spinnerListModel.getValue();
-            EventBus.publish(new PointLinkageToleranceChanged(current));
-        });
-        spinner.setValue(1);
-        spinner.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseExited(MouseEvent e) {
-                EventBus.publish(new ViewerFocusRequestQueued());
-            }
-        });
 
         return container;
     }

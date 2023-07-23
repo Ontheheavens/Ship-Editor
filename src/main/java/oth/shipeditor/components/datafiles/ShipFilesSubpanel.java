@@ -1,17 +1,15 @@
 package oth.shipeditor.components.datafiles;
 
-import com.formdev.flatlaf.ui.FlatLineBorder;
 import oth.shipeditor.components.datafiles.entities.HullmodCSVEntry;
 import oth.shipeditor.components.datafiles.entities.ShipCSVEntry;
-import oth.shipeditor.menubar.FileUtilities;
 import oth.shipeditor.parsing.loading.FileLoading;
 import oth.shipeditor.persistence.SettingsManager;
 import oth.shipeditor.representation.GameDataRepository;
 import oth.shipeditor.representation.Hull;
 import oth.shipeditor.representation.Skin;
-import oth.shipeditor.utility.MouseoverLabelListener;
+import oth.shipeditor.utility.components.ComponentUtilities;
+import oth.shipeditor.utility.components.MouseoverLabelListener;
 import oth.shipeditor.utility.StringConstants;
-import oth.shipeditor.utility.Utility;
 
 import javax.swing.*;
 import javax.swing.border.Border;
@@ -117,8 +115,8 @@ class ShipFilesSubpanel extends JPanel {
 
         JLabel hullFileNameLabel = new JLabel("Hull file : " + hullFileName);
         hullFileNameLabel.setToolTipText(shipFilePathName);
-        hullFileNameLabel.setBorder(ShipFilesSubpanel.createLabelBorder());
-        JPopupMenu hullContextMenu = ShipFilesSubpanel.createPathContextMenu(shipFilePath);
+        hullFileNameLabel.setBorder(ComponentUtilities.createLabelSimpleBorder(ShipFilesSubpanel.createLabelInsets()));
+        JPopupMenu hullContextMenu = ComponentUtilities.createPathContextMenu(shipFilePath);
         hullFileNameLabel.addMouseListener(new MouseoverLabelListener(hullContextMenu, hullFileNameLabel));
         labelContainer.add(hullFileNameLabel);
 
@@ -132,10 +130,10 @@ class ShipFilesSubpanel extends JPanel {
         } else {
             spriteFileNameLabel = new JLabel("Sprite file: failed to fetch! ");
         }
-        spriteFileNameLabel.setBorder(ShipFilesSubpanel.createLabelBorder());
+        spriteFileNameLabel.setBorder(ComponentUtilities.createLabelSimpleBorder(ShipFilesSubpanel.createLabelInsets()));
         JPopupMenu spriteContextMenu;
         if (spriteFile != null) {
-            spriteContextMenu = ShipFilesSubpanel.createPathContextMenu(spriteFile.toPath());
+            spriteContextMenu = ComponentUtilities.createPathContextMenu(spriteFile.toPath());
             spriteFileNameLabel.addMouseListener(new MouseoverLabelListener(spriteContextMenu, spriteFileNameLabel));
             spriteFileNameLabel.setToolTipText(spriteFile.toString());
         }
@@ -145,8 +143,8 @@ class ShipFilesSubpanel extends JPanel {
             labelContainer.add(Box.createRigidArea(ShipFilesSubpanel.createPadding()));
 
             JLabel skinFileNameLabel = new JLabel("Skin file: " + skinFileName);
-            skinFileNameLabel.setBorder(ShipFilesSubpanel.createLabelBorder());
-            JPopupMenu skinContextMenu = ShipFilesSubpanel.createPathContextMenu(skinFilePath);
+            skinFileNameLabel.setBorder(ComponentUtilities.createLabelSimpleBorder(ShipFilesSubpanel.createLabelInsets()));
+            JPopupMenu skinContextMenu = ComponentUtilities.createPathContextMenu(skinFilePath);
             skinFileNameLabel.addMouseListener(new MouseoverLabelListener(skinContextMenu, skinFileNameLabel));
             skinFileNameLabel.setToolTipText(skinFilePath.toString());
             labelContainer.add(skinFileNameLabel);
@@ -161,24 +159,8 @@ class ShipFilesSubpanel extends JPanel {
         return new Dimension(0,2);
     }
 
-    private static Border createLabelBorder() {
-        return new FlatLineBorder(ShipFilesSubpanel.createLabelInsets(), Color.LIGHT_GRAY);
-    }
-
     private static Insets createLabelInsets() {
         return new Insets(0, 3, 2, 4);
-    }
-
-    private static JPopupMenu createPathContextMenu(Path filePath) {
-        JPopupMenu openFileMenu = new JPopupMenu();
-        JMenuItem openSourceFile = new JMenuItem(StringConstants.OPEN_SOURCE_FILE);
-        openSourceFile.addActionListener(e -> FileUtilities.openPathInDesktop(filePath));
-        openFileMenu.add(openSourceFile);
-        JMenuItem openContainingFolder = new JMenuItem(StringConstants.OPEN_CONTAINING_FOLDER);
-        openContainingFolder.addActionListener(e -> FileUtilities.openPathInDesktop(filePath.getParent()));
-        openFileMenu.add(openContainingFolder);
-
-        return openFileMenu;
     }
 
     private static void addHullmodPanel(JPanel panel, ShipCSVEntry selected) {
@@ -206,7 +188,7 @@ class ShipFilesSubpanel extends JPanel {
             if (iconImage.getWidth(null) > iconSize || iconImage.getHeight(null) > iconSize) {
                 iconImage = iconImage.getScaledInstance(iconSize, iconSize, Image.SCALE_DEFAULT);
             }
-            JLabel imageLabel = Utility.getIconLabelWithBorder(new ImageIcon(iconImage));
+            JLabel imageLabel = ComponentUtilities.createIconLabelWithBorder(new ImageIcon(iconImage));
             imageLabel.setToolTipText(name);
             hullmodsPanel.add(imageLabel);
         }

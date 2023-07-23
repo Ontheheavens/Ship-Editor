@@ -1,17 +1,14 @@
 package oth.shipeditor.components;
 
-import com.formdev.flatlaf.ui.FlatRoundBorder;
 import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
 import org.kordamp.ikonli.fluentui.FluentUiRegularAL;
 import org.kordamp.ikonli.fluentui.FluentUiRegularMZ;
 import org.kordamp.ikonli.swing.FontIcon;
 import oth.shipeditor.communication.EventBus;
+import oth.shipeditor.communication.events.components.ViewerFocusRequestQueued;
 import oth.shipeditor.communication.events.viewer.ViewerRepaintQueued;
-import oth.shipeditor.communication.events.viewer.control.MirrorModeChange;
-import oth.shipeditor.communication.events.viewer.control.ViewerCursorMoved;
-import oth.shipeditor.communication.events.viewer.control.ViewerTransformRotated;
-import oth.shipeditor.communication.events.viewer.control.ViewerZoomChanged;
+import oth.shipeditor.communication.events.viewer.control.*;
 import oth.shipeditor.communication.events.viewer.layers.ActiveLayerUpdated;
 import oth.shipeditor.communication.events.viewer.layers.LayerWasSelected;
 import oth.shipeditor.communication.events.viewer.status.CoordsModeChanged;
@@ -19,12 +16,14 @@ import oth.shipeditor.components.viewer.ShipViewable;
 import oth.shipeditor.components.viewer.entities.ShipCenterPoint;
 import oth.shipeditor.components.viewer.layers.LayerPainter;
 import oth.shipeditor.components.viewer.layers.ShipLayer;
-import oth.shipeditor.utility.MouseoverLabelListener;
+import oth.shipeditor.utility.components.ComponentUtilities;
+import oth.shipeditor.utility.components.MouseoverLabelListener;
 
 import javax.swing.*;
-import javax.swing.border.Border;
 import java.awt.*;
 import java.awt.event.KeyEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.awt.geom.Point2D;
 import java.awt.image.BufferedImage;
 
@@ -81,6 +80,27 @@ final class ViewerStatusPanel extends JPanel {
         gbcRight.insets = new Insets(0, 0, 0, 10);
         gbcRight.anchor = GridBagConstraints.LINE_END;
 
+        rightPanel.add(ViewerStatusPanel.createMirrorModePanel(), gbcRight);
+
+        this.add(rightPanel, BorderLayout.CENTER);
+        this.setBorder(BorderFactory.createMatteBorder(1, 0, 0, 0, Color.LIGHT_GRAY));
+    }
+
+    private static JPanel createMirrorModePanel() {
+        JPanel container = new JPanel();
+        container.setLayout(new BoxLayout(container, BoxLayout.LINE_AXIS));
+
+        Integer[] numbers = {0, 1, 2, 3, 4, 5};
+        SpinnerListModel spinnerListModel = new SpinnerListModel(numbers);
+        JSpinner spinner = new JSpinner(spinnerListModel);
+
+        Component spinnerEditor = spinner.getEditor();
+        JFormattedTextField textField = ((JSpinner.DefaultEditor) spinnerEditor).getTextField();
+        textField.setColumns(1);
+
+        JLabel toleranceLabel = new JLabel("Linkage tolerance:");
+        toleranceLabel.setToolTipText("Determines maximum distance at which mirrored points link for interaction");
+
         JCheckBox mirrorModeCheckbox = new JCheckBox("Mirror mode");
         mirrorModeCheckbox.addItemListener(e -> {
             boolean mirrorModeOn = mirrorModeCheckbox.isSelected();
@@ -96,9 +116,34 @@ final class ViewerStatusPanel extends JPanel {
         });
         mirrorModeCheckbox.setMnemonic(KeyEvent.VK_SPACE);
         mirrorModeCheckbox.setToolTipText("Spacebar to toggle");
-        rightPanel.add(mirrorModeCheckbox, gbcRight);
-        this.add(rightPanel, BorderLayout.CENTER);
-        this.setBorder(BorderFactory.createMatteBorder(1, 0, 0, 0, Color.LIGHT_GRAY));
+
+        int margin = 6;
+
+        container.add(mirrorModeCheckbox);
+        container.add(Box.createRigidArea(new Dimension(margin,0)));
+        JSeparator separator = new JSeparator(SwingConstants.VERTICAL);
+        separator.setPreferredSize(new Dimension(2, 24));
+        separator.setForeground(Color.GRAY);
+        container.add(separator);
+        container.add(Box.createRigidArea(new Dimension(margin,0)));
+        container.add(toleranceLabel);
+        container.add(Box.createRigidArea(new Dimension(margin,0)));
+        container.add(spinner);
+        container.add(Box.createRigidArea(new Dimension(margin,0)));
+
+        spinner.addChangeListener(e -> {
+            Integer current = (Integer) spinnerListModel.getValue();
+            EventBus.publish(new PointLinkageToleranceChanged(current));
+        });
+        spinner.setValue(5);
+        spinner.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseExited(MouseEvent e) {
+                EventBus.publish(new ViewerFocusRequestQueued());
+            }
+        });
+
+        return container;
     }
 
     private JPanel createLeftsidePanel() {
@@ -113,7 +158,7 @@ final class ViewerStatusPanel extends JPanel {
 
         FontIcon mouseIcon = FontIcon.of(FluentUiRegularAL.CURSOR_HOVER_20, 20);
         cursorCoords = new JLabel("", mouseIcon, SwingConstants.TRAILING);
-        cursorCoords.setBorder(ViewerStatusPanel.createLabelBorder());
+        cursorCoords.setBorder(ComponentUtilities.createRoundCompoundBorder(new Insets(2, 6, 2, 7)));
         cursorCoords.setToolTipText("Right-click to change coordinate system");
         JPopupMenu popupMenu = this.createCoordsMenu();
         cursorCoords.addMouseListener(new MouseoverLabelListener(popupMenu, cursorCoords));
@@ -179,12 +224,6 @@ final class ViewerStatusPanel extends JPanel {
                 }
             }
         });
-    }
-
-    private static Border createLabelBorder() {
-        Border empty = BorderFactory.createEmptyBorder(2, 6, 2, 7);
-        Border lineBorder = new FlatRoundBorder();
-        return BorderFactory.createCompoundBorder(lineBorder, empty);
     }
 
     private JRadioButtonMenuItem createCoordsOption(String text, ButtonGroup group,

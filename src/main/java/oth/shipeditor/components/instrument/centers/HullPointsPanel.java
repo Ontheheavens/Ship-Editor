@@ -6,9 +6,9 @@ import oth.shipeditor.communication.BusEventListener;
 import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.components.CentersPanelRepaintQueued;
 import oth.shipeditor.communication.events.viewer.ViewerRepaintQueued;
-import oth.shipeditor.communication.events.viewer.layers.LayerShipDataInitialized;
 import oth.shipeditor.communication.events.viewer.layers.LayerWasSelected;
 import oth.shipeditor.communication.events.viewer.layers.PainterOpacityChangeQueued;
+import oth.shipeditor.components.viewer.entities.ShieldCenterPoint;
 import oth.shipeditor.components.viewer.entities.ShipCenterPoint;
 import oth.shipeditor.components.viewer.layers.LayerPainter;
 import oth.shipeditor.components.viewer.layers.ShipLayer;
@@ -19,16 +19,13 @@ import oth.shipeditor.components.viewer.painters.ShieldPointPainter;
 import oth.shipeditor.utility.ApplicationDefaults;
 import oth.shipeditor.utility.Pair;
 import oth.shipeditor.utility.StringConstants;
-import oth.shipeditor.utility.Utility;
+import oth.shipeditor.utility.components.ComponentUtilities;
 
 import javax.swing.*;
-import javax.swing.border.Border;
 import javax.swing.border.EmptyBorder;
-import javax.swing.border.MatteBorder;
 import javax.swing.event.ChangeListener;
 import java.awt.*;
 import java.awt.event.ActionListener;
-import java.awt.geom.Point2D;
 
 /**
  * @author Ontheheavens
@@ -38,17 +35,22 @@ import java.awt.geom.Point2D;
 @Log4j2
 public final class HullPointsPanel extends JPanel {
 
+    private static final String PIXELS = "pixels";
     @Getter
     private static CenterPointMode mode = CenterPointMode.COLLISION;
 
     /**
      * Reference to the hull center painter of the currently active layer.
      */
-    private CenterPointPainter centersPainter;
+    private CenterPointPainter centerPainter;
+
+    private ShieldPointPainter shieldPainter;
 
     private JLabel centerCoords;
-
     private JLabel collisionRadius;
+
+    private JLabel shieldCenterCoords;
+    private JLabel shieldRadiusLabel;
 
     private JLabel collisionOpacityLabel;
     private JSlider collisionOpacitySlider;
@@ -92,22 +94,17 @@ public final class HullPointsPanel extends JPanel {
 
     private void initLayerListeners() {
         EventBus.subscribe(event -> {
-            if (event instanceof LayerShipDataInitialized checked) {
-                LayerPainter selectedLayerPainter = checked.source();
-                this.centersPainter = selectedLayerPainter.getCenterPointPainter();
-                this.refresh();
-            }
-        });
-        EventBus.subscribe(event -> {
             if (event instanceof LayerWasSelected checked) {
                 ShipLayer selected = checked.selected();
                 boolean enableSlider = false;
                 if (selected != null && selected.getPainter() != null) {
                     LayerPainter selectedLayerPainter = selected.getPainter();
-                    this.centersPainter = selectedLayerPainter.getCenterPointPainter();
+                    this.centerPainter = selectedLayerPainter.getCenterPointPainter();
+                    this.shieldPainter = selectedLayerPainter.getShieldPointPainter();
                     enableSlider = true;
                 } else {
-                    this.centersPainter = null;
+                    this.centerPainter = null;
+                    this.shieldPainter = null;
                 }
                 this.refresh();
 
@@ -118,23 +115,39 @@ public final class HullPointsPanel extends JPanel {
     }
 
     private void refresh() {
-        this.updateLabels();
+        this.updateHullLabels();
+        this.updateShieldLabels();
         this.repaint();
     }
 
-    private void updateLabels() {
-        String centerPosition = "Center not initialized";
-        String collisionValue = "Collision not initialized";
-        if (this.centersPainter != null) {
-            ShipCenterPoint center = this.centersPainter.getCenterPoint();
+    private void updateHullLabels() {
+        String noInit = StringConstants.NOT_INITIALIZED;
+        String centerPosition = noInit;
+        String collisionValue = noInit;
+        if (this.centerPainter != null) {
+            ShipCenterPoint center = this.centerPainter.getCenterPoint();
             if (center != null) {
-                Point2D position = center.getCoordinatesForDisplay();
-                centerPosition = position.toString();
-                collisionValue = String.valueOf(center.getCollisionRadius());
+                centerPosition = center.getPositionText();
+                collisionValue = center.getCollisionRadius() + " " + PIXELS;
             }
         }
         centerCoords.setText(centerPosition);
         collisionRadius.setText(collisionValue);
+    }
+
+    private void updateShieldLabels() {
+        String noInit = StringConstants.NOT_INITIALIZED;
+        String shieldPosition = noInit;
+        String shieldRadius = noInit;
+        if (this.centerPainter != null) {
+            ShieldCenterPoint center = this.shieldPainter.getShieldCenterPoint();
+            if (center != null) {
+                shieldPosition = center.getPositionText();
+                shieldRadius = center.getShieldRadius() + " " + PIXELS;
+            }
+        }
+        shieldCenterCoords.setText(shieldPosition);
+        shieldRadiusLabel.setText(shieldRadius);
     }
 
     private JPanel createCollisionPanel() {
@@ -156,27 +169,55 @@ public final class HullPointsPanel extends JPanel {
 
         hullCenterPanel.add(HullPointsPanel.createToggleEditPanel(collisionModeButton));
 
+        ComponentUtilities.addSeparatorToBoxPanel(hullCenterPanel);
+
         hullCenterPanel.add(createCollisionOpacityPanel());
 
         hullCenterPanel.add(visibilityWidgetContainer);
 
-        centerCoords = new JLabel();
-        collisionRadius = new JLabel();
+        ComponentUtilities.addSeparatorToBoxPanel(hullCenterPanel);
 
-//        hullCenterPanel.add(centerCoords);
-//        hullCenterPanel.add(collisionRadius);
+        hullCenterPanel.add(createShipCenterInfo());
+        hullCenterPanel.add(createCollisionInfo());
 
-        // TODO: Also - gotta beautify this, big time!
         hullCenterPanel.setBorder(BorderFactory.createTitledBorder("Collision"));
 
         return hullCenterPanel;
     }
 
+    private JPanel createShipCenterInfo() {
+        centerCoords = new JLabel();
+        JPanel panel = ComponentUtilities.createBoxLabelPanel("Ship center position:", centerCoords);
+        panel.setBorder(new EmptyBorder(12, 0, 0, 0));
+        return panel;
+    }
+
+    private JPanel createCollisionInfo() {
+        collisionRadius = new JLabel();
+        JPanel panel = ComponentUtilities.createBoxLabelPanel("Collision radius:", collisionRadius);
+        panel.setBorder(new EmptyBorder(16, 0, 0, 0));
+        return panel;
+    }
+
+    private JPanel createShieldCenterInfo() {
+        shieldCenterCoords = new JLabel();
+        JPanel panel = ComponentUtilities.createBoxLabelPanel("Shield center position:", shieldCenterCoords);
+        panel.setBorder(new EmptyBorder(12, 0, 0, 0));
+        return panel;
+    }
+
+    private JPanel createShieldRadiusInfo() {
+        shieldRadiusLabel = new JLabel();
+        JPanel panel = ComponentUtilities.createBoxLabelPanel("Shield radius:", shieldRadiusLabel);
+        panel.setBorder(new EmptyBorder(16, 0, 0, 0));
+        return panel;
+    }
+
     private static JPanel createVisibilityWidget(JComboBox<PainterVisibility> visibilityList,
                                                  Class<? extends AbstractPointPainter> painterClass,
                                                  ActionListener selectionAction, String labelName) {
-        JPanel visibilityWidgetContainer = new JPanel();
-        visibilityWidgetContainer.setLayout(new BoxLayout(visibilityWidgetContainer, BoxLayout.LINE_AXIS));
+        JPanel widgetPanel = new JPanel();
+        widgetPanel.setLayout(new BoxLayout(widgetPanel, BoxLayout.LINE_AXIS));
 
         visibilityList.setRenderer(PainterVisibility.createCellRenderer());
         visibilityList.addActionListener(PainterVisibility.createActionListener(visibilityList, painterClass));
@@ -186,22 +227,18 @@ public final class HullPointsPanel extends JPanel {
 
         JLabel visibilityWidgetLabel = new JLabel(labelName);
         visibilityWidgetLabel.setToolTipText(StringConstants.TOGGLED_ON_PER_LAYER_BASIS);
-        visibilityWidgetContainer.setBorder(new EmptyBorder(4, 0, 0, 0));
+        widgetPanel.setBorder(new EmptyBorder(4, 0, 4, 0));
 
         int sidePadding = 6;
-        visibilityWidgetContainer.add(Box.createRigidArea(new Dimension(sidePadding,0)));
-        visibilityWidgetContainer.add(visibilityWidgetLabel);
-        visibilityWidgetContainer.add(Box.createHorizontalGlue()); // Add glue to push components to opposite sides.
-        visibilityWidgetContainer.add(visibilityList);
-        visibilityWidgetContainer.add(Box.createRigidArea(new Dimension(sidePadding,0)));
-        return visibilityWidgetContainer;
+        ComponentUtilities.layoutAsOpposites(widgetPanel, visibilityWidgetLabel,
+                visibilityList, sidePadding);
+
+        return widgetPanel;
     }
 
     private static JPanel createToggleEditPanel(JRadioButton modeToggleButton) {
         JPanel container = new JPanel();
         container.setLayout(new BoxLayout(container, BoxLayout.LINE_AXIS));
-        Border matteLine = new MatteBorder(0, 0, 1, 0, Color.LIGHT_GRAY);
-        container.setBorder(matteLine);
 
         int sidePadding = 6;
         modeToggleButton.setBorder(new EmptyBorder(4, 0, 8,0));
@@ -255,19 +292,15 @@ public final class HullPointsPanel extends JPanel {
                 collisionOpacitySlider.setValue(value);
             }
         };
-        Pair<JSlider, JLabel> widgetComponents = Utility.createOpacityWidget(changeListener, eventListener);
+        Pair<JSlider, JLabel> widgetComponents = ComponentUtilities.createOpacityWidget(changeListener, eventListener);
 
         collisionOpacitySlider = widgetComponents.getFirst();
         collisionOpacityLabel = widgetComponents.getSecond();
         this.updateCollisionOpacityLabel(100);
 
         int sidePadding = 6;
-
-        container.add(Box.createRigidArea(new Dimension(sidePadding,0)));
-        container.add(collisionOpacityLabel);
-        container.add(Box.createHorizontalGlue());
-        container.add(collisionOpacitySlider);
-        container.add(Box.createRigidArea(new Dimension(sidePadding,0)));
+        ComponentUtilities.layoutAsOpposites(container, collisionOpacityLabel,
+                collisionOpacitySlider, sidePadding);
 
         return container;
     }
@@ -307,19 +340,15 @@ public final class HullPointsPanel extends JPanel {
                 shieldOpacitySlider.setValue(value);
             }
         };
-        Pair<JSlider, JLabel> widgetComponents = Utility.createOpacityWidget(changeListener, eventListener);
+        Pair<JSlider, JLabel> widgetComponents = ComponentUtilities.createOpacityWidget(changeListener, eventListener);
 
         shieldOpacitySlider = widgetComponents.getFirst();
         shieldOpacityLabel = widgetComponents.getSecond();
         this.updateShieldOpacityLabel(100);
 
         int sidePadding = 6;
-
-        container.add(Box.createRigidArea(new Dimension(sidePadding,0)));
-        container.add(shieldOpacityLabel);
-        container.add(Box.createHorizontalGlue());
-        container.add(shieldOpacitySlider);
-        container.add(Box.createRigidArea(new Dimension(sidePadding,0)));
+        ComponentUtilities.layoutAsOpposites(container, shieldOpacityLabel,
+                shieldOpacitySlider, sidePadding);
 
         return container;
     }
@@ -332,6 +361,8 @@ public final class HullPointsPanel extends JPanel {
         shieldModeButton.addActionListener(e -> HullPointsPanel.setMode(CenterPointMode.SHIELD));
 
         shieldPanel.add(HullPointsPanel.createToggleEditPanel(shieldModeButton));
+
+        ComponentUtilities.addSeparatorToBoxPanel(shieldPanel);
 
         shieldPanel.add(createShieldOpacityPanel());
 
@@ -346,6 +377,11 @@ public final class HullPointsPanel extends JPanel {
                 ShieldPointPainter.class, selectionAction, "Shield visibility:");
 
         shieldPanel.add(visibilityWidgetContainer);
+
+        ComponentUtilities.addSeparatorToBoxPanel(shieldPanel);
+
+        shieldPanel.add(createShieldCenterInfo());
+        shieldPanel.add(createShieldRadiusInfo());
 
         shieldPanel.setBorder(BorderFactory.createTitledBorder("Shield"));
         return shieldPanel;

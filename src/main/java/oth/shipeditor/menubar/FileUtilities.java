@@ -6,6 +6,7 @@ import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
 import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.files.HullFileOpened;
+import oth.shipeditor.communication.events.files.HullStylesLoaded;
 import oth.shipeditor.communication.events.files.SpriteOpened;
 import oth.shipeditor.communication.events.viewer.layers.LastLayerSelectQueued;
 import oth.shipeditor.communication.events.viewer.layers.LayerCreationQueued;
@@ -106,26 +107,34 @@ public final class FileUtilities {
 
         List<Path> allModFolders = SettingsManager.getAllModFolders();
 
-        Path coreFilePath = Paths.get(settings.getCoreFolderPath()).resolve(targetFile);
+        Path coreFolderPath = Path.of(settings.getCoreFolderPath());
+        Path coreFilePath = coreFolderPath.resolve(targetFile);
 
-        Collection<File> hullStyleFiles = new ArrayList<>();
-        hullStyleFiles.add(coreFilePath.toFile());
+        Map<Path, File> hullStyleFiles = new LinkedHashMap<>();
+        hullStyleFiles.put(coreFolderPath, coreFilePath.toFile());
 
-        try (Stream<Path> childDirectories = allModFolders.stream()) {
-            childDirectories.forEach(childDir -> {
-                Path targetFilePath = childDir.resolve(targetFile);
+        try (Stream<Path> modDirectories = allModFolders.stream()) {
+            modDirectories.forEach(modDir -> {
+                Path targetFilePath = modDir.resolve(targetFile);
                 if (Files.exists(targetFilePath)) {
-                    hullStyleFiles.add(targetFilePath.toFile());
+                    hullStyleFiles.put(modDir, targetFilePath.toFile());
                 }
             });
         }
 
-        Map<String, HullStyle> collectedHullStyles = new HashMap<>();
-        for (File styleFile : hullStyleFiles) {
-            collectedHullStyles.putAll(FileUtilities.loadHullStyleFile(styleFile));
+        Map<String, HullStyle> collectedHullStyles = new LinkedHashMap<>();
+        for (Map.Entry<Path, File> entry : hullStyleFiles.entrySet()) {
+            File styleFile = entry.getValue();
+
+            Map<String, HullStyle> stylesFromFile = FileUtilities.loadHullStyleFile(styleFile);
+            for (HullStyle style : stylesFromFile.values()) {
+                style.setContainingPackage(entry.getKey());
+            }
+            collectedHullStyles.putAll(stylesFromFile);
         }
         GameDataRepository gameData = SettingsManager.getGameData();
         gameData.setAllHullStyles(collectedHullStyles);
+        EventBus.publish(new HullStylesLoaded(collectedHullStyles));
     }
 
     private static Map<String, HullStyle> loadHullStyleFile(File styleFile) {
@@ -140,6 +149,7 @@ public final class FileUtilities {
                 String hullStyleID = entry.getKey();
                 HullStyle hullStyle = entry.getValue();
                 hullStyle.setHullStyleID(hullStyleID);
+                hullStyle.setFilePath(styleFile.toPath());
             }
 
         } catch (IOException e) {

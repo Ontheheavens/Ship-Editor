@@ -4,83 +4,73 @@ import de.javagl.geom.AffineTransforms;
 import de.javagl.geom.Lines;
 import de.javagl.geom.Rectangles;
 import de.javagl.viewer.Painter;
-import de.javagl.viewer.painters.LabelPainter;
+import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
 import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.viewer.ViewerRepaintQueued;
-import oth.shipeditor.communication.events.viewer.control.ViewerCursorMoved;
 import oth.shipeditor.communication.events.viewer.control.ViewerGuidesToggled;
+import oth.shipeditor.components.instrument.InstrumentTabsPane;
+import oth.shipeditor.components.viewer.InstrumentMode;
 import oth.shipeditor.components.viewer.PrimaryShipViewer;
 import oth.shipeditor.components.viewer.entities.BaseWorldPoint;
 import oth.shipeditor.components.viewer.entities.WorldPoint;
 import oth.shipeditor.components.viewer.layers.LayerPainter;
+import oth.shipeditor.utility.graphics.RectangleCorner;
+import oth.shipeditor.utility.StaticController;
 import oth.shipeditor.utility.Utility;
+import oth.shipeditor.utility.graphics.DrawUtilities;
+import oth.shipeditor.utility.graphics.DrawingParameters;
 
-import javax.swing.*;
 import java.awt.*;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.RenderedImage;
-import java.util.Optional;
 
 /**
  * @author Ontheheavens
  * @since 29.05.2023
  */
 @Log4j2
-public final class GuidesPainter implements Painter {
+public final class GuidesPainters {
 
-    private Point2D cursor;
+    @Getter
+    private final Painter guidesPaint;
+    @Getter
+    private final Painter bordersPaint;
+    @Getter
+    private final Painter centerPaint;
+    @Getter
+    private final Painter axesPaint;
 
-    private Painter guidesPaint;
-
-    private Painter bordersPaint;
-
-    private Painter centerPaint;
-
-    private Painter axesPaint;
-
-    private final AffineTransform delegateWorldToScreen;
+    private boolean drawGuides;
+    private boolean drawBorders;
+    private boolean drawCenter;
+    private boolean drawAxes;
 
     private final PrimaryShipViewer parent;
 
-    public GuidesPainter(PrimaryShipViewer viewer) {
+    public GuidesPainters(PrimaryShipViewer viewer) {
         this.parent = viewer;
-        this.delegateWorldToScreen = new AffineTransform();
-        this.cursor = new Point2D.Double(0, 0);
-        this.initCursorListener();
         this.listenForToggling();
+
+        this.guidesPaint = createGuidesPainter();
+        this.bordersPaint = createBordersPainter();
+        this.centerPaint = createSpriteCenterPainter();
+        this.axesPaint = createAxesPainter();
     }
 
     private void listenForToggling() {
         EventBus.subscribe(event -> {
             if (event instanceof ViewerGuidesToggled checked) {
-                this.guidesPaint = checked.guidesEnabled() ? createGuidesPainter() : null;
-                this.bordersPaint = checked.bordersEnabled() ? createBordersPainter() : null;
-                this.centerPaint = checked.centerEnabled() ? createSpriteCenterPainter() : null;
-                this.axesPaint = checked.axesEnabled() ? GuidesPainter.createAxesPainter() : null;
+                this.drawGuides = checked.guidesEnabled();
+                this.drawBorders = checked.bordersEnabled();
+                this.drawCenter = checked.centerEnabled();
+                this.drawAxes = checked.axesEnabled();
                 EventBus.publish(new ViewerRepaintQueued());
             }
         });
-    }
-
-    private void initCursorListener() {
-        EventBus.subscribe(event -> {
-            if (event instanceof ViewerCursorMoved checked) {
-                this.cursor = checked.adjusted();
-            }
-        });
-    }
-
-    @Override
-    public void paint(Graphics2D g, AffineTransform worldToScreen, double w, double h) {
-        this.delegateWorldToScreen.setTransform(worldToScreen);
-        Optional.ofNullable(this.axesPaint).ifPresent(p -> p.paint(g, delegateWorldToScreen, w, h));
-        Optional.ofNullable(this.guidesPaint).ifPresent(p -> p.paint(g, delegateWorldToScreen, w, h));
-        Optional.ofNullable(this.bordersPaint).ifPresent(p -> p.paint(g, delegateWorldToScreen, w, h));
-        Optional.ofNullable(this.centerPaint).ifPresent(p -> p.paint(g, delegateWorldToScreen, w, h));
     }
 
     /**
@@ -89,17 +79,15 @@ public final class GuidesPainter implements Painter {
      * both of which intersect at the current cursor position.
      * The size and position of the rectangles are determined based
      * on the current ship sprite and zoom level.
-     ** <br>
-     * Note: considerable size of implementation is necessary due to the Viewer rotating functionality
-     * and 0.5 scaled pixel snapping.
      */
     private Painter createGuidesPainter() {
         return (g, worldToScreen, w, h) -> {
+            if (!drawGuides) return;
             LayerPainter layer = parent.getSelectedLayer();
             if (layer == null || layer.getShipSprite() == null) return;
             RenderedImage shipSprite = layer.getShipSprite();
 
-            Point2D mousePoint = this.cursor;
+            Point2D mousePoint = StaticController.getAdjustedCursor();
             AffineTransform screenToWorld = this.parent.getScreenToWorld();
             Point2D transformedMouse = screenToWorld.transform(mousePoint, null);
             double x = transformedMouse.getX();
@@ -113,6 +101,8 @@ public final class GuidesPainter implements Painter {
             double xGuide = Math.round((x - 0.5) * 2) / 2.0;
             double yGuide = Math.round((y - 0.5) * 2) / 2.0;
 
+            Point2D crossCenter = new Point2D.Double(xGuide + 0.5, yGuide + 0.5);
+
             Shape axisX = new Rectangle2D.Double(xLeft + 0.5, yGuide, spriteW, 1);
             Shape axisY = new Rectangle2D.Double(xGuide, yTop + 0.5, 1, spriteH);
 
@@ -124,12 +114,37 @@ public final class GuidesPainter implements Painter {
             g.draw(guideX); g.draw(guideY);
             g.setPaint(new Color(0x40FFFFFF, true));
             g.fill(guideX); g.fill(guideY);
+
+            Shape targetSquare = new Rectangle2D.Double(xGuide, yGuide, 1, 1);
+            Shape transformed = worldToScreen.createTransformedShape(targetSquare);
+
+            DrawUtilities.outlineShape(g, transformed, Color.BLACK, 3);
+            DrawUtilities.outlineShape(g, transformed, Color.WHITE, 1);
+
+            double crossSize = 0.15;
+
+            Shape crossLineX = new Line2D.Double(crossCenter.getX() - crossSize, crossCenter.getY(),
+                    crossCenter.getX() + crossSize, crossCenter.getY());
+            Shape crossLineY = new Line2D.Double(crossCenter.getX(), crossCenter.getY() - crossSize,
+                    crossCenter.getX(), crossCenter.getY() + crossSize);
+
+            Shape transformedCrossX = worldToScreen.createTransformedShape(crossLineX);
+            Shape transformedCrossY = worldToScreen.createTransformedShape(crossLineY);
+
+            g.setPaint(Color.BLACK);
+
+            g.draw(transformedCrossX);
+            g.draw(transformedCrossY);
             g.setPaint(old);
+
+            GuidesPainters.drawPointPositionHint(g, StaticController.getRawCursor(), layer);
         };
     }
 
     private Painter createBordersPainter() {
         return (g, worldToScreen, w, h) -> {
+            if (!drawBorders) return;
+
             LayerPainter layer = parent.getSelectedLayer();
             if (layer == null || layer.getShipSprite() == null) return;
             RenderedImage shipSprite = layer.getShipSprite();
@@ -138,7 +153,17 @@ public final class GuidesPainter implements Painter {
             Point2D layerAnchor = layer.getAnchorOffset();
             Shape spriteBorder = new Rectangle((int) layerAnchor.getX(), (int) layerAnchor.getY(), width, height);
             Shape transformed = worldToScreen.createTransformedShape(spriteBorder);
+
+            Stroke oldStroke = g.getStroke();
+            Paint oldPaint = g.getPaint();
+
+            g.setStroke(new BasicStroke(3));
             g.draw(transformed);
+            g.setStroke(oldStroke);
+            g.setPaint(Color.WHITE);
+            g.draw(transformed);
+
+            g.setPaint(oldPaint);
         };
     }
 
@@ -146,8 +171,9 @@ public final class GuidesPainter implements Painter {
         return new SpriteCenterPainter();
     }
 
-    private static Painter createAxesPainter() {
+    private Painter createAxesPainter() {
         return (g, worldToScreen, w, h) -> {
+            if (!drawAxes) return;
             AffineTransform worldToScreenCopy = new AffineTransform(worldToScreen);
 
             Rectangle2D worldBounds = new Rectangle2D.Double();
@@ -172,20 +198,33 @@ public final class GuidesPainter implements Painter {
         };
     }
 
+    private static void drawPointPositionHint(Graphics2D g, Point2D position, LayerPainter painter) {
+        if (InstrumentTabsPane.getCurrentMode() == InstrumentMode.BOUNDS) {
+            Font hintFont = Utility.getOrbitron(12);
+
+            BoundPointsPainter boundsPainter = painter.getBoundsPainter();
+            if (boundsPainter == null) return;
+            WorldPoint selected = boundsPainter.getSelected();
+            if (selected == null) return;
+            Point2D boundPosition = selected.getCoordinatesForDisplay();
+
+            String toDraw = (int) Math.round(boundPosition.getX()) + ", " + (int) Math.round(boundPosition.getY());
+            double x = position.getX(), y = position.getY();
+
+            Point2D.Double screenPosition = new Point2D.Double(x + 20, y + 14);
+
+            DrawUtilities.paintScreenTextOutlined(g, toDraw, hintFont, null,
+                    screenPosition, RectangleCorner.TOP_LEFT);
+        }
+    }
+
     private class SpriteCenterPainter implements Painter {
 
-        final LabelPainter label = SpriteCenterPainter.createCenterLabelPainter();
-
-        private static LabelPainter createCenterLabelPainter() {
-            LabelPainter painter = new LabelPainter();
-            Font font = Utility.getOrbitron(16).deriveFont(0.25f);
-            painter.setFont(font);
-            painter.setLabelAnchor(-0.05f, 0.55f);
-            return painter;
-        }
+        final TextPainter label = new TextPainter();
 
         @Override
         public void paint(Graphics2D g, AffineTransform worldToScreen, double w, double h) {
+            if (!drawCenter) return;
             LayerPainter layer = parent.getSelectedLayer();
             if (layer == null || layer.getShipSprite() == null) return;
             RenderedImage shipSprite = layer.getShipSprite();
@@ -194,30 +233,30 @@ public final class GuidesPainter implements Painter {
                     (int) (anchor.getY() + (shipSprite.getHeight() / 2)));
             WorldPoint pointInput = new BaseWorldPoint(spriteCenter);
             Point2D toDisplay = pointInput.getCoordinatesForDisplay();
-            Point2D center = worldToScreen.transform(spriteCenter, null);
-            label.setLabelLocation(spriteCenter.getX(), spriteCenter.getY());
-            // Draw the two diagonal lines centered on the sprite center.
-            SpriteCenterPainter.drawCrossPoint(g, center);
+
+            // Draw two lines centered on the sprite center.
+            SpriteCenterPainter.drawSpriteCenter(g, worldToScreen, spriteCenter);
             String spriteCenterCoords = "Sprite Center (" + toDisplay.getX() + ", " + toDisplay.getY() + ")";
-            label.paint(g, worldToScreen, w, h, spriteCenterCoords);
+
+            DrawUtilities.drawWithConditionalOpacity(g, graphics2D -> {
+                label.setWorldPosition(spriteCenter);
+                label.setText(spriteCenterCoords);
+                label.paintText(graphics2D, worldToScreen);
+            });
         }
 
-        private static void drawCrossPoint(Graphics2D g, Point2D position) {
-            int x = (int) position.getX(), y = (int) position.getY();
-            int size = 5 * 2;
-            int thickness = 5 / 2;
-
-            Paint old = g.getPaint();
-            g.setPaint(Color.DARK_GRAY);
-
-            int horizontalX = x - size / 2;
-            int horizontalY = y - thickness / 2;
-            g.fillRect(horizontalX, horizontalY, size, thickness);
-            int verticalX = x - thickness / 2;
-            int verticalY = y - size / 2;
-            g.fillRect(verticalX, verticalY, thickness, size);
-
-            g.setPaint(old);
+        private static void drawSpriteCenter(Graphics2D g, AffineTransform worldToScreen,
+                                             Point2D positionWorld) {
+            double worldSize = 0.5;
+            double thickness = 0.05;
+            double screenSize = 12;
+            DrawingParameters parameters = DrawingParameters.builder()
+                    .withWorldSize(worldSize)
+                    .withWorldThickness(thickness)
+                    .withScreenSize(screenSize)
+                    .withPaintColor(Color.BLACK)
+                    .build();
+            DrawUtilities.drawDynamicCross(g, worldToScreen, positionWorld, parameters);
         }
 
     }
