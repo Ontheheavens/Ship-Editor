@@ -79,4 +79,17 @@ public final class ColorUtilities {
         return alpha / 255.0f; // Convert alpha [0, 255] to opacity [0.0, 1.0].
     }
 
+    public static String getColorBreakdown(Color color) {
+        int colorRed = color.getRed();
+        int colorGreen = color.getGreen();
+        int colorBlue = color.getBlue();
+        int colorAlpha = color.getAlpha();
+        return "<html>" +
+                "<p>" + "Red: " + colorRed + "</p>" +
+                "<p>" + "Green: " + colorGreen + "</p>" +
+                "<p>" + "Blue: " + colorBlue + "</p>" +
+                "<p>" + "Alpha: " + colorAlpha + "</p>" +
+                "</html>";
+    }
+
 }

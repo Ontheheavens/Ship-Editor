@@ -103,7 +103,7 @@ class HullmodsTreePanel extends DataTreePanel{
         File spriteFile = selected.fetchHullmodSpriteFile();
         JPanel iconPanel = new JPanel();
         Icon icon = new ImageIcon(FileLoading.loadSprite(spriteFile));
-        JLabel imageLabel = ComponentUtilities.getIconLabelWithBorder(icon);
+        JLabel imageLabel = ComponentUtilities.createIconLabelWithBorder(icon);
         iconPanel.add(imageLabel);
         return iconPanel;
     }

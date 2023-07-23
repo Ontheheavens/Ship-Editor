@@ -205,8 +205,10 @@ public final class LayerPainter implements Painter {
 
         this.centerPointPainter.initCenterPoint(translatedCenter, hull);
 
+        shipData.initHullStyle();
+
         Point2D shieldCenterTranslated = LayerPainter.translatePointByCenter(hull.getShieldCenter(), translatedCenter);
-        this.shieldPointPainter.initShieldPoint(shieldCenterTranslated, hull);
+        this.shieldPointPainter.initShieldPoint(shieldCenterTranslated, shipData);
 
         Stream<Point2D> boundStream = Arrays.stream(hull.getBounds());
         boundStream.forEach(bound -> {

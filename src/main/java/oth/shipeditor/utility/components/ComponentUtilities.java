@@ -1,13 +1,21 @@
 package oth.shipeditor.utility.components;
 
 import com.formdev.flatlaf.ui.FlatLineBorder;
+import com.formdev.flatlaf.ui.FlatRoundBorder;
 import oth.shipeditor.communication.BusEventListener;
 import oth.shipeditor.communication.EventBus;
+import oth.shipeditor.menubar.FileUtilities;
 import oth.shipeditor.utility.Pair;
+import oth.shipeditor.utility.StringConstants;
+import oth.shipeditor.utility.graphics.ColorUtilities;
 
 import javax.swing.*;
+import javax.swing.border.Border;
+import javax.swing.border.EmptyBorder;
 import javax.swing.event.ChangeListener;
 import java.awt.*;
+import java.awt.image.BufferedImage;
+import java.nio.file.Path;
 import java.util.Dictionary;
 import java.util.Hashtable;
 
@@ -53,7 +61,7 @@ public final class ComponentUtilities {
         panel.add(separator);
     }
 
-    public static JLabel getIconLabelWithBorder(Icon icon) {
+    public static JLabel createIconLabelWithBorder(Icon icon) {
         JLabel imageLabel = new JLabel(icon);
         imageLabel.setOpaque(true);
         imageLabel.setBorder(new FlatLineBorder(new Insets(2, 2, 2, 2), Color.GRAY));
@@ -82,6 +90,63 @@ public final class ComponentUtilities {
         JLabel opacityLabel = new JLabel();
         opacityLabel.setAlignmentX(0.0f);
         return new Pair<>(opacitySlider, opacityLabel);
+    }
+
+    public static JPopupMenu createPathContextMenu(Path filePath) {
+        JPopupMenu openFileMenu = new JPopupMenu();
+        JMenuItem openSourceFile = new JMenuItem(StringConstants.OPEN_SOURCE_FILE);
+        openSourceFile.addActionListener(e -> FileUtilities.openPathInDesktop(filePath));
+        openFileMenu.add(openSourceFile);
+        JMenuItem openContainingFolder = new JMenuItem(StringConstants.OPEN_CONTAINING_FOLDER);
+        openContainingFolder.addActionListener(e -> FileUtilities.openPathInDesktop(filePath.getParent()));
+        openFileMenu.add(openContainingFolder);
+
+        return openFileMenu;
+    }
+
+    public static Border createRoundCompoundBorder(Insets insets) {
+        return ComponentUtilities.createRoundCompoundBorder(insets, false);
+    }
+
+    @SuppressWarnings("BooleanParameter")
+    public static Border createRoundCompoundBorder(Insets insets, boolean reversed) {
+        Border empty = new EmptyBorder(insets);
+        Border lineBorder = new FlatRoundBorder();
+        if (reversed) {
+            return BorderFactory.createCompoundBorder(empty, lineBorder);
+        } else return BorderFactory.createCompoundBorder(lineBorder, empty);
+    }
+
+    public static Border createLabelSimpleBorder(Insets insets) {
+        return new FlatLineBorder(insets, Color.LIGHT_GRAY);
+    }
+
+    @SuppressWarnings({"unused", "WeakerAccess"})
+    public static ImageIcon createIconFromColor(Color color, int width, int height) {
+        BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
+        Graphics2D graphics = image.createGraphics();
+        graphics.setColor(color);
+        graphics.fillRect (0, 0, width, height);
+        return new ImageIcon(image);
+    }
+
+    public static JLabel createColorIconLabel(Color color) {
+        ImageIcon colorIcon = ComponentUtilities.createIconFromColor(color, 10, 10);
+        return ComponentUtilities.createIconLabelWithBorder(colorIcon);
+    }
+
+    public static JPanel createColorPropertyPanel(String name, Color color) {
+        JPanel container = new JPanel();
+
+        container.setLayout(new BoxLayout(container, BoxLayout.LINE_AXIS));
+        container.setBorder(new EmptyBorder(4, 0, 0, 0));
+
+        JLabel colorLabel = new JLabel(name);
+        JLabel colorIcon = ComponentUtilities.createColorIconLabel(color);
+        colorIcon.setToolTipText(ColorUtilities.getColorBreakdown(color));
+
+        ComponentUtilities.layoutAsOpposites(container, colorLabel, colorIcon, 0);
+        return container;
     }
 
 }

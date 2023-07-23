@@ -14,10 +14,9 @@ import oth.shipeditor.components.viewer.entities.BaseWorldPoint;
 import oth.shipeditor.components.viewer.entities.ShieldCenterPoint;
 import oth.shipeditor.components.viewer.entities.WorldPoint;
 import oth.shipeditor.components.viewer.layers.LayerPainter;
-import oth.shipeditor.persistence.SettingsManager;
-import oth.shipeditor.representation.GameDataRepository;
 import oth.shipeditor.representation.Hull;
 import oth.shipeditor.representation.HullStyle;
+import oth.shipeditor.representation.ShipData;
 import oth.shipeditor.undo.EditDispatch;
 import oth.shipeditor.utility.graphics.ColorUtilities;
 
@@ -26,7 +25,6 @@ import java.awt.event.KeyEvent;
 import java.awt.geom.Point2D;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 /**
  * @author Ontheheavens
@@ -52,18 +50,16 @@ public class ShieldPointPainter extends AbstractPointPainter{
         this.setInteractionEnabled(InstrumentTabsPane.getCurrentMode() == InstrumentMode.CENTERS);
     }
 
-    public void initShieldPoint(Point2D translated, Hull hull) {
-        String styleID = hull.getStyle();
-        GameDataRepository dataRepository = SettingsManager.getGameData();
-        Map<String, HullStyle> allHullStyles = dataRepository.getAllHullStyles();
-        HullStyle hullStyle = new HullStyle();
-        if (allHullStyles != null) {
-            hullStyle = allHullStyles.get(styleID);
+    public void initShieldPoint(Point2D translated, ShipData data) {
+        Hull hull = data.getHull();
+        HullStyle style = data.getHullStyle();
+        if (style == null) {
+            style = new HullStyle();
         }
         this.shieldCenterPoint = new ShieldCenterPoint(translated,
-                (float) hull.getShieldRadius(), this.parentLayer, hullStyle, this);
+                (float) hull.getShieldRadius(), this.parentLayer, style, this);
         this.addPoint(shieldCenterPoint);
-        Color shieldInnerColor = hullStyle.getShieldInnerColor();
+        Color shieldInnerColor = style.getShieldInnerColor();
         float styleInnerColorOpacity = ColorUtilities.getOpacityFromAlpha(shieldInnerColor.getAlpha());
         this.setPaintOpacity(styleInnerColorOpacity);
     }

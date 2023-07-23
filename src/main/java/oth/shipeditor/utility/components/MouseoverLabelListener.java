@@ -15,18 +15,23 @@ public class MouseoverLabelListener extends MouseAdapter {
 
     private final JPopupMenu popupMenu;
 
+    private final Color highlight;
+
     public MouseoverLabelListener(JPopupMenu menu, JLabel inputLabel) {
-        this.label = inputLabel;
-        this.popupMenu = menu;
+        this(menu, inputLabel, Color.LIGHT_GRAY);
+
     }
 
-    // Not entirely satisfied with the mismatch between background coloring bounds and border bounds;
-    // However, this is good enough for the time being.
+    public MouseoverLabelListener(JPopupMenu menu, JLabel inputLabel, Color color) {
+        this.label = inputLabel;
+        this.popupMenu = menu;
+        this.highlight = color;
+    }
 
     @Override
     public void mouseEntered(MouseEvent e) {
         super.mouseEntered(e);
-        label.setBackground(Color.LIGHT_GRAY);
+        label.setBackground(highlight);
         label.setOpaque(true);
     }
 

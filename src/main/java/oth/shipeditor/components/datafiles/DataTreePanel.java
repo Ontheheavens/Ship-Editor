@@ -247,7 +247,7 @@ abstract class DataTreePanel extends JPanel {
         JMenuItem openInExplorer = new JMenuItem(StringConstants.OPEN_CONTAINING_FOLDER);
         openInExplorer.addActionListener(e -> openEntryPath(OpenDataTarget.CONTAINER));
         menu.add(openInExplorer);
-        JMenuItem openPackage = new JMenuItem("Open data package");
+        JMenuItem openPackage = new JMenuItem(StringConstants.OPEN_DATA_PACKAGE);
         openPackage.addActionListener(e -> openEntryPath(OpenDataTarget.PACKAGE));
         menu.add(openPackage);
         return menu;

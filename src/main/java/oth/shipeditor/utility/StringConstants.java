@@ -90,4 +90,6 @@ public interface StringConstants {
 
     String NOT_INITIALIZED = "Not initialized";
 
+    String OPEN_DATA_PACKAGE = "Open data package";
+
 }
