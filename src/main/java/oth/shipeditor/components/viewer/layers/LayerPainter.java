@@ -42,9 +42,6 @@ import java.util.stream.Stream;
 @Log4j2
 public final class LayerPainter implements Painter {
 
-    @Getter @Setter
-    private int paintOrdering;
-
     @Getter
     private final BoundPointsPainter boundsPainter;
     @Getter
@@ -80,8 +77,7 @@ public final class LayerPainter implements Painter {
     private boolean uninitialized = true;
 
     @SuppressWarnings("ThisEscapedInObjectConstruction")
-    public LayerPainter(ShipLayer layer, PrimaryShipViewer viewerPanel, int order) {
-        this.paintOrdering = order;
+    public LayerPainter(ShipLayer layer, PrimaryShipViewer viewerPanel) {
         this.parentLayer = layer;
         this.viewer = viewerPanel;
 
@@ -218,7 +214,7 @@ public final class LayerPainter implements Painter {
 
         this.uninitialized = false;
         log.info("{} initialized!", this);
-        EventBus.publish(new LayerShipDataInitialized(this, this.paintOrdering));
+        EventBus.publish(new LayerShipDataInitialized(this));
         EventBus.publish(new ViewerRepaintQueued());
     }
 

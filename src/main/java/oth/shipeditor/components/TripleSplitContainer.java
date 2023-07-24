@@ -1,6 +1,5 @@
 package oth.shipeditor.components;
 
-import com.formdev.flatlaf.ui.FlatArrowButton;
 import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
 import oth.shipeditor.communication.EventBus;
@@ -14,6 +13,7 @@ import oth.shipeditor.utility.components.MinimizeListener;
 import oth.shipeditor.utility.components.MinimizerWidget;
 
 import javax.swing.*;
+import javax.swing.plaf.basic.BasicArrowButton;
 import javax.swing.plaf.basic.BasicSplitPaneDivider;
 import javax.swing.plaf.basic.BasicSplitPaneUI;
 import java.awt.*;
@@ -47,9 +47,9 @@ final class TripleSplitContainer extends JSplitPane {
      */
     private InstrumentTabsPane instrumentPane;
 
-    private FlatArrowButton dividerLeftButton;
+    private BasicArrowButton dividerLeftButton;
 
-    private FlatArrowButton dividerRightButton;
+    private BasicArrowButton dividerRightButton;
 
     private final MinimizerWidget minimizer;
 
@@ -69,8 +69,6 @@ final class TripleSplitContainer extends JSplitPane {
         leftsidePanels = new EnumMap<>(LeftsideTabType.class);
 
         leftsidePanels.put(LeftsideTabType.DEFAULT, new JPanel());
-        JPanel panel = leftsidePanels.get(LeftsideTabType.DEFAULT);
-        panel.add(new JLabel(WindowContentPanes.DEFAULT_LEFTSIDE_PANE));
         this.initDividerListeners(westPane);
     }
 
@@ -208,7 +206,7 @@ final class TripleSplitContainer extends JSplitPane {
         int buttonCount = 0;
         for (Component child : casted.getComponents()) {
             buttonCount++;
-            if (child instanceof FlatArrowButton checked) {
+            if (child instanceof BasicArrowButton checked) {
                 if (buttonCount == 1) {
                     dividerLeftButton = checked;
                 } else {
@@ -216,8 +214,12 @@ final class TripleSplitContainer extends JSplitPane {
                 }
             }
         }
-        dividerLeftButton.addActionListener(e -> minimizer.setMinimized(true));
-        dividerRightButton.addActionListener(e -> minimizer.setMinimized(false));
+        if (dividerLeftButton != null) {
+            dividerLeftButton.addActionListener(e -> minimizer.setMinimized(true));
+        }
+        if (dividerRightButton != null) {
+            dividerRightButton.addActionListener(e -> minimizer.setMinimized(false));
+        }
         leftsidePanels.put(LeftsideTabType.GAME_DATA, new GameDataPanel());
         secondaryLevel.setMinimumSize(new Dimension(480, this.getHeight()));
         this.setLeftComponent(leftsidePanels.get(LeftsideTabType.GAME_DATA));

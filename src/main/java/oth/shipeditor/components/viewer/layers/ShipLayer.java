@@ -46,4 +46,12 @@ public class ShipLayer {
         this.shipData = data;
     }
 
+    @Override
+    public String toString() {
+        if (!spriteFileName.isEmpty()) {
+            return spriteFileName;
+        }
+        return super.toString();
+    }
+
 }

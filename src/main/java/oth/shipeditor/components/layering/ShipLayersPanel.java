@@ -14,21 +14,22 @@ import oth.shipeditor.representation.Hull;
 import oth.shipeditor.representation.ShipData;
 import oth.shipeditor.representation.Skin;
 import oth.shipeditor.utility.StringConstants;
+import oth.shipeditor.utility.components.SortableTabbedPane;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.image.BufferedImage;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
+import java.util.List;
 import java.util.function.IntConsumer;
+import java.util.function.ToIntFunction;
 
 /**
  * @author Ontheheavens
  * @since 01.06.2023
  */
 @Log4j2
-public final class ShipLayersPanel extends JTabbedPane {
+public final class ShipLayersPanel extends SortableTabbedPane {
 
     /**
      * Expected to be the same instance that is originally created and assigned in viewer;
@@ -117,6 +118,15 @@ public final class ShipLayersPanel extends JTabbedPane {
                 this.setSelectedIndex(indexOfComponent(tabIndex.get(newlySelected)));
             }
         });
+    }
+
+    @Override
+    protected void sortTabObjects() {
+        List<ShipLayer> layers = new ArrayList<>(tabIndex.keySet());
+
+        ToIntFunction<ShipLayer> intFunction = layer -> indexOfComponent(tabIndex.get(layer));
+        layers.sort(Comparator.comparingInt(intFunction));
+        layerManager.setLayers(layers);
     }
 
     private void closeLayer(ShipLayer layer) {

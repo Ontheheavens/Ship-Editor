@@ -130,6 +130,7 @@ public final class ComponentUtilities {
         return new ImageIcon(image);
     }
 
+    @SuppressWarnings("WeakerAccess")
     public static JLabel createColorIconLabel(Color color) {
         ImageIcon colorIcon = ComponentUtilities.createIconFromColor(color, 10, 10);
         return ComponentUtilities.createIconLabelWithBorder(colorIcon);

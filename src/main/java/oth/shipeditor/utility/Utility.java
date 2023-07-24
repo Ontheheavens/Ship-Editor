@@ -1,12 +1,12 @@
 package oth.shipeditor.utility;
 
 import lombok.extern.log4j.Log4j2;
-import oth.shipeditor.components.viewer.layers.LayerPainter;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionListener;
-import java.awt.geom.*;
+import java.awt.geom.AffineTransform;
+import java.awt.geom.Point2D;
 
 /**
  * @author Ontheheavens
@@ -41,15 +41,6 @@ public final class Utility {
         double roundedX = Math.round(wP.getX() * 2) / 2.0;
         double roundedY = Math.round(wP.getY() * 2) / 2.0;
         return new Point2D.Double(roundedX, roundedY);
-    }
-
-    public static Point2D correctAdjustedForPointDrag(AffineTransform screenToWorld) {
-        Point2D mousePoint = StaticController.getAdjustedCursor();
-        Point2D transformedMouse = screenToWorld.transform(mousePoint, null);
-        double xGuide = Math.round((transformedMouse.getX() - 0.5) * 2) / 2.0;
-        double yGuide = Math.round((transformedMouse.getY() - 0.5) * 2) / 2.0;
-
-        return new Point2D.Double(xGuide + 0.5, yGuide + 0.5);
     }
 
     public static ActionListener scheduleTask(int waitTime, ActionListener taskBeforeStart, ActionListener taskWhenDone) {

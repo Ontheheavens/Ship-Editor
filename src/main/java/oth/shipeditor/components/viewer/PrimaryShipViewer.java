@@ -1,6 +1,5 @@
 package oth.shipeditor.components.viewer;
 
-import de.javagl.viewer.Painter;
 import de.javagl.viewer.Viewer;
 import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
@@ -17,10 +16,6 @@ import oth.shipeditor.components.viewer.entities.BaseWorldPoint;
 import oth.shipeditor.components.viewer.layers.LayerManager;
 import oth.shipeditor.components.viewer.layers.LayerPainter;
 import oth.shipeditor.components.viewer.layers.ShipLayer;
-import oth.shipeditor.components.viewer.painters.AbstractPointPainter;
-import oth.shipeditor.components.viewer.painters.GuidesPainters;
-import oth.shipeditor.components.viewer.painters.HotkeyHelpPainter;
-import oth.shipeditor.components.viewer.painters.WorldPointsPainter;
 import oth.shipeditor.menubar.FileUtilities;
 import oth.shipeditor.undo.UndoOverseer;
 
@@ -36,7 +31,6 @@ import java.awt.event.MouseEvent;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Point2D;
 import java.io.File;
-import java.util.List;
 import java.util.Locale;
 
 /**
@@ -55,18 +49,10 @@ public final class PrimaryShipViewer extends Viewer implements ShipViewable {
     private final LayerManager layerManager;
 
     @Getter
-    private final WorldPointsPainter miscPointsPainter;
-
-    @Getter
-    private final GuidesPainters guidesPainters;
-
-    @Getter
-    private final HotkeyHelpPainter hotkeyPainter;
+    private final PaintOrderController paintOrderController;
 
     @Getter
     private final ViewerControl controls;
-
-    private int layerCount;
 
     /**
      * Usage of self as an argument is a suboptimal practice, but in this case it did not prove to be an issue.
@@ -83,21 +69,12 @@ public final class PrimaryShipViewer extends Viewer implements ShipViewable {
         this.layerManager = new LayerManager();
         this.layerManager.initListeners();
 
-        this.miscPointsPainter = WorldPointsPainter.create();
-        this.addPainter(this.miscPointsPainter, 901);
+        this.paintOrderController = new PaintOrderController(layerManager, this);
+        this.addPainter(this.paintOrderController);
 
-        this.guidesPainters = new GuidesPainters(this);
+        EventBus.publish(new ViewerGuidesToggled(true, true,
+                true, true));
 
-        // TODO: sort out the ordering with PaintOrderController later!
-
-        this.addPainter(this.guidesPainters.getAxesPaint(), 0);
-        this.addPainter(this.guidesPainters.getBordersPaint(), 0);
-        this.addPainter(this.guidesPainters.getCenterPaint(), 902);
-        this.addPainter(this.guidesPainters.getGuidesPaint(), 902);
-        EventBus.publish(new ViewerGuidesToggled(true, true, true, true));
-
-        this.hotkeyPainter = new HotkeyHelpPainter();
-        this.addPainter(this.hotkeyPainter, 903);
         this.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseEntered(MouseEvent e) {
@@ -159,18 +136,8 @@ public final class PrimaryShipViewer extends Viewer implements ShipViewable {
             }
         });
         EventBus.subscribe(event -> {
-            if (event instanceof LayerShipDataInitialized checked) {
-                LayerPainter source = checked.source();
-                ShipLayer activeLayer = this.layerManager.getActiveLayer();
-                if (source != activeLayer.getPainter()) return;
-                for (Painter painter : source.getAllPainters()) {
-                    this.addPainter(painter, checked.ordering());
-                }
-            }
-        });
-        EventBus.subscribe(event -> {
             if (event instanceof ShipLayerRemovalConfirmed checked) {
-                this.unloadLayer(checked.removed());
+                PrimaryShipViewer.unloadLayer(checked.removed());
                 this.repaint();
             }
         });
@@ -196,32 +163,19 @@ public final class PrimaryShipViewer extends Viewer implements ShipViewable {
 
     @Override
     public void loadLayer(ShipLayer layer) {
-        LayerPainter newPainter = new LayerPainter(layer, this, layerCount);
+        LayerPainter newPainter = new LayerPainter(layer, this);
         ShipLayer activeLayer = this.layerManager.getActiveLayer();
         activeLayer.setPainter(newPainter);
         // Main sprite painter and said painter children point painters are distinct conceptually.
         // Layer might be selected and deselected, in which case children painters are loaded/unloaded.
         // At the same time main sprite painter remains loaded until layer is explicitly removed.
-        this.addPainter(newPainter, layerCount);
-        ++layerCount;
         this.centerViewpoint();
         EventBus.publish(new ShipLayerLoadConfirmed(layer));
     }
 
-    private void unloadLayer(ShipLayer layer) {
+    private static void unloadLayer(ShipLayer layer) {
         LayerPainter mainPainter = layer.getPainter();
-        if (mainPainter != null) {
-            List<AbstractPointPainter> layerPainters = mainPainter.getAllPainters();
-            for (AbstractPointPainter iterated : layerPainters) {
-                boolean removed = this.removePainter(iterated);
-                if (removed) {
-                    log.info("Removed from viewer:{}", iterated);
-                }
-            }
-        }
         UndoOverseer.cleanupRemovedLayer(mainPainter);
-        this.removePainter(layer.getPainter());
-        --layerCount;
     }
 
     public void centerViewpoint() {

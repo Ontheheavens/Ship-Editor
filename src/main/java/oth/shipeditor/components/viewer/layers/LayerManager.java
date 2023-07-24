@@ -1,6 +1,7 @@
 package oth.shipeditor.components.viewer.layers;
 
 import lombok.Getter;
+import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
 import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.files.HullFileOpened;
@@ -24,8 +25,8 @@ import java.util.List;
 @Log4j2
 public class LayerManager {
 
-    @Getter
-    private final List<ShipLayer> layers = new ArrayList<>();
+    @Getter @Setter
+    private List<ShipLayer> layers = new ArrayList<>();
 
     @Getter
     private ShipLayer activeLayer;
