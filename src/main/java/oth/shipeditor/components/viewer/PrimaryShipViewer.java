@@ -2,6 +2,7 @@ package oth.shipeditor.components.viewer;
 
 import de.javagl.viewer.Viewer;
 import lombok.Getter;
+import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
 import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.components.ViewerFocusRequestQueued;
@@ -55,6 +56,9 @@ public final class PrimaryShipViewer extends Viewer implements ShipViewable {
     @Getter
     private ViewerControl controls;
 
+    @Getter
+    private boolean cursorInViewer;
+
     public PrimaryShipViewer() {
         this.setMinimumSize(minimumPanelSize);
         this.setBackground(Color.GRAY);
@@ -77,6 +81,14 @@ public final class PrimaryShipViewer extends Viewer implements ShipViewable {
             @Override
             public void mouseEntered(MouseEvent e) {
                 PrimaryShipViewer.this.requestFocusInWindow();
+                cursorInViewer = true;
+                repaint();
+            }
+
+            @Override
+            public void mouseExited(MouseEvent e) {
+                cursorInViewer = false;
+                repaint();
             }
         });
 

@@ -4,9 +4,12 @@ import com.formdev.flatlaf.ui.FlatLineBorder;
 import com.formdev.flatlaf.ui.FlatRoundBorder;
 import oth.shipeditor.communication.BusEventListener;
 import oth.shipeditor.communication.EventBus;
+import oth.shipeditor.communication.events.Events;
+import oth.shipeditor.components.viewer.entities.WorldPoint;
 import oth.shipeditor.components.viewer.painters.points.AbstractPointPainter;
 import oth.shipeditor.components.viewer.painters.PainterVisibility;
 import oth.shipeditor.menubar.FileUtilities;
+import oth.shipeditor.undo.EditDispatch;
 import oth.shipeditor.utility.Pair;
 import oth.shipeditor.utility.StringConstants;
 import oth.shipeditor.utility.graphics.ColorUtilities;
@@ -17,6 +20,7 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.event.ChangeListener;
 import java.awt.*;
 import java.awt.event.ActionListener;
+import java.awt.geom.Point2D;
 import java.awt.image.BufferedImage;
 import java.nio.file.Path;
 import java.util.Dictionary;
@@ -49,10 +53,15 @@ public final class ComponentUtilities {
     }
 
     public static JPanel createBoxLabelPanel(String leftName, JLabel rightValue) {
+        int sidePadding = 6;
+        return ComponentUtilities.createBoxLabelPanel(leftName, rightValue, sidePadding);
+    }
+
+    @SuppressWarnings("WeakerAccess")
+    public static JPanel createBoxLabelPanel(String leftName, JLabel rightValue, int sidePadding) {
         JPanel infoContainer = new JPanel();
         infoContainer.setLayout(new BoxLayout(infoContainer, BoxLayout.LINE_AXIS));
         JLabel label = new JLabel(leftName);
-        int sidePadding = 6;
         ComponentUtilities.layoutAsOpposites(infoContainer, label, rightValue, sidePadding);
         return infoContainer;
     }
@@ -180,6 +189,18 @@ public final class ComponentUtilities {
                 visibilityList, sidePadding);
 
         return widgetPanel;
+    }
+
+    public static void showAdjustPointDialog(WorldPoint point) {
+        PointChangeDialog dialog = new PointChangeDialog(point.getPosition());
+        int option = JOptionPane.showConfirmDialog(null, dialog,
+                "Change Point Position", JOptionPane.OK_CANCEL_OPTION,
+                JOptionPane.PLAIN_MESSAGE);
+        if (option == JOptionPane.OK_OPTION) {
+            Point2D newPosition = dialog.getUpdatedPosition();
+            EditDispatch.postPointDragged(point, newPosition);
+            Events.repaintView();
+        }
     }
 
 }

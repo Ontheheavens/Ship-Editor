@@ -1,11 +1,13 @@
 package oth.shipeditor.components.viewer.painters.points;
 
 import de.javagl.viewer.Painter;
+import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
 import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.Events;
 import oth.shipeditor.communication.events.viewer.points.BoundCreationQueued;
 import oth.shipeditor.communication.events.viewer.points.BoundInsertedConfirmed;
+import oth.shipeditor.communication.events.viewer.points.BoundPointsSorted;
 import oth.shipeditor.communication.events.viewer.points.InstrumentModeChanged;
 import oth.shipeditor.components.instrument.InstrumentTabsPane;
 import oth.shipeditor.components.viewer.InstrumentMode;
@@ -37,12 +39,11 @@ public final class BoundPointsPainter extends MirrorablePointPainter {
 
     private static final Color BOUND_LINE = ApplicationDefaults.BOUND_LINE_COLOR;
 
-    private final List<BoundPoint> boundPoints;
+    @Setter
+    private List<BoundPoint> boundPoints;
 
     private boolean appendBoundHotkeyPressed;
     private boolean insertBoundHotkeyPressed;
-
-
 
     private final int appendBoundHotkey = KeyEvent.VK_Z;
     private final int insertBoundHotkey = KeyEvent.VK_X;
@@ -52,7 +53,7 @@ public final class BoundPointsPainter extends MirrorablePointPainter {
         this.boundPoints = new ArrayList<>();
         this.initHotkeys();
         this.initModeListener();
-        this.initCreationListener();
+        this.initPointListening();
         this.setInteractionEnabled(InstrumentTabsPane.getCurrentMode() == InstrumentMode.BOUNDS);
     }
 
@@ -126,13 +127,19 @@ public final class BoundPointsPainter extends MirrorablePointPainter {
         });
     }
 
-    private void initCreationListener() {
+    private void initPointListening() {
         EventBus.subscribe(event -> {
             if (event instanceof BoundCreationQueued checked) {
                 if (!isInteractionEnabled()) return;
                 if (!hasPointAtCoords(checked.position())) {
                     createBound(checked);
                 }
+            }
+        });
+        EventBus.subscribe(event -> {
+            if (event instanceof BoundPointsSorted checked) {
+                if (!isInteractionEnabled()) return;
+                EditDispatch.postBoundsRearranged(this, this.boundPoints, checked.rearranged());
             }
         });
     }

@@ -89,23 +89,14 @@ public abstract class AbstractPointPainter implements Painter {
     @SuppressWarnings("OverlyComplexMethod")
     private void initChangeListeners() {
         EventBus.subscribe(event -> {
-            if (event instanceof PointRemoveQueued && this.isInteractionEnabled()) {
-                if (selected == null) return;
-                boolean mirroringEnabled = ControlPredicates.isMirrorModeEnabled();
-                WorldPoint counterpart = null;
-                if (isMirrorable() && mirroringEnabled) {
-                    counterpart = getMirroredCounterpart(selected);
-                }
-                EditDispatch.postPointRemoved(this, (BaseWorldPoint) selected);
-                if (counterpart != null) {
-                    EditDispatch.postPointRemoved(this, (BaseWorldPoint) counterpart);
-                }
+            if (event instanceof PointRemoveQueued checked && this.isInteractionEnabled()) {
+                this.handlePointRemovalEvent(checked.point(), checked.fromList());
             }
         });
         EventBus.subscribe(event -> {
             if (event instanceof PointSelectQueued checked && this.isPointEligible(checked.point())) {
                 if (!this.isInteractionEnabled()) return;
-                this.handlePointSelectionEvent(checked.point());
+                this.handlePointSelectionEvent((BaseWorldPoint) checked.point());
             }
         });
         EventBus.subscribe(event -> {
@@ -154,14 +145,39 @@ public abstract class AbstractPointPainter implements Painter {
         });
     }
 
+    private void handlePointRemovalEvent(BaseWorldPoint point, boolean removalViaListPanel) {
+        Class<? extends BaseWorldPoint> typeReference = getTypeReference();
+        if (typeReference.isInstance(point) && removalViaListPanel) {
+            this.commencePointRemoval(point);
+        } else if (selected != null && !removalViaListPanel) {
+            this.commencePointRemoval((BaseWorldPoint) selected);
+        }
+    }
+
+    private void commencePointRemoval(BaseWorldPoint point) {
+        List<? extends BaseWorldPoint> pointsIndex = getPointsIndex();
+        if (!pointsIndex.contains(point)) {
+            throw new IllegalArgumentException("Point passed for removal is not present in the point painter!");
+        }
+        boolean mirroringEnabled = ControlPredicates.isMirrorModeEnabled();
+        WorldPoint counterpart = null;
+        if (isMirrorable() && mirroringEnabled) {
+            counterpart = getMirroredCounterpart(point);
+        }
+        EditDispatch.postPointRemoved(this, point);
+        if (counterpart != null) {
+            EditDispatch.postPointRemoved(this, (BaseWorldPoint) counterpart);
+        }
+    }
+
     protected abstract boolean isParentLayerActive();
 
     protected Point2D createCounterpartPosition(Point2D toMirror) {
         throw new UnsupportedOperationException("Point mirroring supported only for specific point painters!");
     }
 
-    @SuppressWarnings({"WeakerAccess", "SuspiciousMethodCalls"})
-    protected void handlePointSelectionEvent(WorldPoint point) {
+    @SuppressWarnings("WeakerAccess")
+    protected void handlePointSelectionEvent(BaseWorldPoint point) {
         if (point != null) {
             List<? extends BaseWorldPoint> pointsIndex = getPointsIndex();
             if (!pointsIndex.contains(point)) return;
@@ -267,6 +283,7 @@ public abstract class AbstractPointPainter implements Painter {
             this.setSelected(null);
         }
         this.delegates.remove(painter);
+        point.setPointSelected(false);
     }
 
     boolean hasPointAtCoords(Point2D point2D) {

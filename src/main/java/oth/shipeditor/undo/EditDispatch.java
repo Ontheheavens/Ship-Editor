@@ -11,6 +11,7 @@ import oth.shipeditor.components.viewer.painters.points.BoundPointsPainter;
 import oth.shipeditor.undo.edits.*;
 
 import java.awt.geom.Point2D;
+import java.util.List;
 
 /**
  * Convenience class meant to free viewer classes from burden of also implementing all the edit dispatch methods.
@@ -26,6 +27,15 @@ public final class EditDispatch {
         Edit addEdit = new PointAdditionEdit(pointPainter, point, index);
         UndoOverseer.post(addEdit);
         pointPainter.insertPoint(point, index);
+        Events.repaintView();
+    }
+
+    public static void postBoundsRearranged(BoundPointsPainter pointPainter,
+                                            List<BoundPoint> old,
+                                            List<BoundPoint> changed) {
+        Edit rearrangeEdit = new BoundsSortEdit(pointPainter, old, changed);
+        UndoOverseer.post(rearrangeEdit);
+        pointPainter.setBoundPoints(changed);
         Events.repaintView();
     }
 

@@ -54,7 +54,9 @@ public class PaintOrderController implements Painter {
 
         this.paintIfPresent(g, worldToScreen, w, h, guidesPainters.getBordersPaint());
         this.paintIfPresent(g, worldToScreen, w, h, guidesPainters.getCenterPaint());
-        this.paintIfPresent(g, worldToScreen, w, h, guidesPainters.getGuidesPaint());
+        if (parent.isCursorInViewer()) {
+            this.paintIfPresent(g, worldToScreen, w, h, guidesPainters.getGuidesPaint());
+        }
 
         this.paintIfPresent(g, worldToScreen, w, h, miscPointsPainter);
 

@@ -20,6 +20,7 @@ import oth.shipeditor.representation.Hull;
 import oth.shipeditor.representation.Skin;
 
 import javax.swing.*;
+import javax.swing.border.TitledBorder;
 import java.awt.*;
 import java.awt.geom.Point2D;
 import java.awt.image.BufferedImage;
@@ -58,6 +59,7 @@ public final class Main {
 
     private static void configureLaf() {
         FlatIntelliJLaf.setup();
+
         UIManager.put("TabbedPane.showTabSeparators", true);
         UIManager.put("TabbedPane.tabSeparatorsFullHeight", true);
         UIManager.put("TabbedPane.selectedBackground", Color.WHITE);
@@ -67,6 +69,9 @@ public final class Main {
         UIManager.put("SplitPane.background", Color.LIGHT_GRAY);
         UIManager.put("SplitPaneDivider.gripColor", Color.DARK_GRAY);
         UIManager.put("SplitPaneDivider.draggingColor", Color.BLACK);
+
+        UIManager.put("TitlePane.background", Color.LIGHT_GRAY);
+        UIManager.put("TitlePane.useWindowDecorations", true);
 
         UIManager.put("Tree.paintLines", true);
         UIManager.put("Tree.showDefaultIcons", true);

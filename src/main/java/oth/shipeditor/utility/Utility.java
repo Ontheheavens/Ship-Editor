@@ -7,6 +7,8 @@ import java.awt.*;
 import java.awt.event.ActionListener;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Point2D;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 
 /**
  * @author Ontheheavens
@@ -59,6 +61,19 @@ public final class Utility {
             };
             worker.execute();
         };
+    }
+
+    public static Point2D roundPointCoordinates(Point2D point, int decimalPlaces) {
+        double roundedX = Utility.round(point.getX(), decimalPlaces);
+        double roundedY = Utility.round(point.getY(), decimalPlaces);
+        return new Point2D.Double(roundedX, roundedY);
+    }
+
+    public static double round(double value, int decimalPlaces) {
+        if (decimalPlaces < 0) throw new IllegalArgumentException("Decimal places cannot be negative.");
+        BigDecimal bigDecimal = BigDecimal.valueOf(value);
+        bigDecimal = bigDecimal.setScale(decimalPlaces, RoundingMode.HALF_UP);
+        return bigDecimal.doubleValue();
     }
 
 }

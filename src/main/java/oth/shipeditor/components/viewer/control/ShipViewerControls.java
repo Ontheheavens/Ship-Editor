@@ -84,7 +84,7 @@ public final class ShipViewerControls implements ViewerControl {
         actionMap.put(deleteKey, new AbstractAction() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                EventBus.publish(new PointRemoveQueued());
+                EventBus.publish(new PointRemoveQueued(null, false));
             }
         });
     }
@@ -153,7 +153,7 @@ public final class ShipViewerControls implements ViewerControl {
         }
         this.tryBoundCreation();
         if (ControlPredicates.removePointPredicate.test(e)) {
-            EventBus.publish(new PointRemoveQueued());
+            EventBus.publish(new PointRemoveQueued(null, false));
         }
         if (!ControlPredicates.selectPointPredicate.test(e)) return;
         if (ControlPredicates.getSelectionMode() == PointSelectionMode.STRICT) {

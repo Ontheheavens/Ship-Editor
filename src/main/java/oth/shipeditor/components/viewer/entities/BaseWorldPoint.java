@@ -18,6 +18,7 @@ import oth.shipeditor.components.viewer.layers.LayerPainter;
 import oth.shipeditor.components.viewer.layers.ShipLayer;
 import oth.shipeditor.components.viewer.painters.TextPainter;
 import oth.shipeditor.utility.StaticController;
+import oth.shipeditor.utility.Utility;
 import oth.shipeditor.utility.graphics.ColorUtilities;
 import oth.shipeditor.utility.graphics.DrawUtilities;
 import oth.shipeditor.utility.graphics.ShapeUtilities;
@@ -217,6 +218,7 @@ public class BaseWorldPoint implements WorldPoint {
                 double centerX = center.getX();
                 double centerY = center.getY();
                 result = new Point2D.Double(positionX - centerX, positionY - centerY);
+
             }
             case SHIPCENTER_ANCHOR -> {
                 Point2D center = layerPainter.getCenterAnchor();
@@ -234,12 +236,7 @@ public class BaseWorldPoint implements WorldPoint {
                 result = new Point2D.Double(-(positionY - centerY), -(positionX - centerX));
             }
         }
-        if (result.getX() == -0.0) {
-            result.setLocation(0, result.getY());
-        }
-        if (result.getY() == -0.0) {
-            result.setLocation(result.getX(), 0);
-        }
+        result = Utility.roundPointCoordinates(result, 5);
         return result;
     }
 

@@ -13,14 +13,14 @@ import oth.shipeditor.communication.events.viewer.points.PointRemovedConfirmed;
 import oth.shipeditor.components.viewer.entities.BoundPoint;
 import oth.shipeditor.components.viewer.layers.LayerPainter;
 import oth.shipeditor.components.viewer.layers.ShipLayer;
-import oth.shipeditor.components.viewer.painters.points.BoundPointsPainter;
-import oth.shipeditor.components.viewer.painters.points.CenterPointPainter;
 import oth.shipeditor.components.viewer.painters.PainterVisibility;
+import oth.shipeditor.components.viewer.painters.points.BoundPointsPainter;
 import oth.shipeditor.utility.Pair;
 import oth.shipeditor.utility.StringConstants;
 import oth.shipeditor.utility.components.ComponentUtilities;
 
 import javax.swing.*;
+import javax.swing.border.EmptyBorder;
 import javax.swing.event.ChangeListener;
 import java.awt.*;
 import java.awt.event.ActionListener;
@@ -52,7 +52,10 @@ public final class BoundPointsPanel extends JPanel {
         northContainer.setLayout(new BoxLayout(northContainer, BoxLayout.PAGE_AXIS));
         northContainer.add(this.createPainterOpacityPanel());
         northContainer.add(this.createPainterVisibilityPanel());
-        northContainer.add(Box.createRigidArea(new Dimension(0,6)));
+
+        ComponentUtilities.addSeparatorToBoxPanel(northContainer);
+
+        northContainer.add(this.createReorderCheckboxPanel());
 
         this.add(northContainer, BorderLayout.PAGE_START);
 
@@ -65,6 +68,23 @@ public final class BoundPointsPanel extends JPanel {
     private void updateOpacityLabel(int opacity) {
         opacityLabel.setText(StringConstants.PAINTER_OPACITY);
         opacityLabel.setToolTipText(StringConstants.CURRENT_VALUE + opacity + "%");
+    }
+
+    private JPanel createReorderCheckboxPanel() {
+        JPanel container = new JPanel();
+        container.setLayout(new BoxLayout(container, BoxLayout.LINE_AXIS));
+        container.setBorder(new EmptyBorder(2, 0, 2, 0));
+
+        JCheckBox reorderCheckbox = new JCheckBox("Reorder by drag");
+        reorderCheckbox.addItemListener(e -> {
+            boolean reorderOn = reorderCheckbox.isSelected();
+            boundPointContainer.setDragEnabled(reorderOn);
+        });
+        container.add(Box.createRigidArea(new Dimension(sidePadding,0)));
+        container.add(reorderCheckbox);
+        container.add(Box.createHorizontalGlue());
+
+        return container;
     }
 
     private JPanel createPainterOpacityPanel() {
@@ -122,7 +142,7 @@ public final class BoundPointsPanel extends JPanel {
         EventBus.subscribe(PainterVisibility.createBusEventListener(visibilityList, selectionAction));
 
         return ComponentUtilities.createVisibilityWidget(visibilityList,
-                CenterPointPainter.class, selectionAction, "");
+                BoundPointsPainter.class, selectionAction, "");
     }
 
     private void initPointListener() {

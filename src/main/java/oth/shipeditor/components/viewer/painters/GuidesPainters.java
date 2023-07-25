@@ -209,7 +209,7 @@ public final class GuidesPainters {
             if (selected == null) return;
             Point2D boundPosition = selected.getCoordinatesForDisplay();
 
-            String toDraw = (int) Math.round(boundPosition.getX()) + ", " + (int) Math.round(boundPosition.getY());
+            String toDraw = boundPosition.getX() + ", " + boundPosition.getY();
             double x = position.getX(), y = position.getY();
 
             Point2D.Double screenPosition = new Point2D.Double(x + 20, y + 14);
