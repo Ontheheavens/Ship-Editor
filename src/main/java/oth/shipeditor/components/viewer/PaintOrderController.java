@@ -5,10 +5,10 @@ import lombok.Getter;
 import oth.shipeditor.components.viewer.layers.LayerManager;
 import oth.shipeditor.components.viewer.layers.LayerPainter;
 import oth.shipeditor.components.viewer.layers.ShipLayer;
-import oth.shipeditor.components.viewer.painters.AbstractPointPainter;
+import oth.shipeditor.components.viewer.painters.points.AbstractPointPainter;
 import oth.shipeditor.components.viewer.painters.GuidesPainters;
 import oth.shipeditor.components.viewer.painters.HotkeyHelpPainter;
-import oth.shipeditor.components.viewer.painters.WorldPointsPainter;
+import oth.shipeditor.components.viewer.painters.points.MarkPointsPainter;
 
 import java.awt.*;
 import java.awt.geom.AffineTransform;
@@ -23,10 +23,10 @@ import java.util.Optional;
  */
 public class PaintOrderController implements Painter {
 
-    private final LayerManager layerManager;
+    private final PrimaryShipViewer parent;
 
     @Getter
-    private final WorldPointsPainter miscPointsPainter;
+    private final MarkPointsPainter miscPointsPainter;
 
     @Getter
     private final GuidesPainters guidesPainters;
@@ -34,10 +34,10 @@ public class PaintOrderController implements Painter {
     @Getter
     private final HotkeyHelpPainter hotkeyPainter;
 
-    PaintOrderController(LayerManager manager, PrimaryShipViewer viewer) {
-        this.layerManager = manager;
+    PaintOrderController(PrimaryShipViewer viewer) {
+        this.parent = viewer;
 
-        this.miscPointsPainter = WorldPointsPainter.create();
+        this.miscPointsPainter = MarkPointsPainter.create();
         this.guidesPainters = new GuidesPainters(viewer);
         this.hotkeyPainter = new HotkeyHelpPainter();
     }
@@ -46,6 +46,7 @@ public class PaintOrderController implements Painter {
     public void paint(Graphics2D g, AffineTransform worldToScreen, double w, double h) {
         this.paintIfPresent(g, worldToScreen, w, h, guidesPainters.getAxesPaint());
 
+        LayerManager layerManager = parent.getLayerManager();
         List<ShipLayer> layers = layerManager.getLayers();
         for (ShipLayer layer : layers) {
             PaintOrderController.paintLayer(g, worldToScreen, w, h, layer);

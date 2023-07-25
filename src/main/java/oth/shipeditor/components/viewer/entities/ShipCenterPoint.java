@@ -5,7 +5,7 @@ import lombok.Getter;
 import lombok.Setter;
 import oth.shipeditor.components.viewer.InstrumentMode;
 import oth.shipeditor.components.viewer.layers.LayerPainter;
-import oth.shipeditor.components.viewer.painters.CenterPointPainter;
+import oth.shipeditor.components.viewer.painters.points.CenterPointPainter;
 import oth.shipeditor.utility.Utility;
 import oth.shipeditor.utility.graphics.DrawUtilities;
 import oth.shipeditor.utility.graphics.ShapeUtilities;
@@ -45,7 +45,7 @@ public class ShipCenterPoint extends BaseWorldPoint {
 
     @Override
     public InstrumentMode getAssociatedMode() {
-        return InstrumentMode.CENTERS;
+        return InstrumentMode.COLLISION;
     }
 
     @Override
@@ -89,7 +89,7 @@ public class ShipCenterPoint extends BaseWorldPoint {
 
     private void paintCenterCross(Graphics2D g, AffineTransform worldToScreen) {
         Color crossColor = createHoverColor();
-        if (isSelected() && isInteractable()) {
+        if (this.isPointSelected() && isInteractable()) {
             crossColor = createSelectColor();
         }
 

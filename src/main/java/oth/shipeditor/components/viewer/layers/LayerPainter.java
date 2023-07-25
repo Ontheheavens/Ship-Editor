@@ -2,7 +2,6 @@ package oth.shipeditor.components.viewer.layers;
 
 import de.javagl.viewer.Painter;
 import lombok.Getter;
-import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
 import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.Events;
@@ -16,12 +15,13 @@ import oth.shipeditor.components.viewer.PrimaryShipViewer;
 import oth.shipeditor.components.viewer.entities.BaseWorldPoint;
 import oth.shipeditor.components.viewer.entities.BoundPoint;
 import oth.shipeditor.components.viewer.entities.ShipCenterPoint;
-import oth.shipeditor.components.viewer.painters.AbstractPointPainter;
-import oth.shipeditor.components.viewer.painters.BoundPointsPainter;
-import oth.shipeditor.components.viewer.painters.CenterPointPainter;
-import oth.shipeditor.components.viewer.painters.ShieldPointPainter;
+import oth.shipeditor.components.viewer.painters.points.AbstractPointPainter;
+import oth.shipeditor.components.viewer.painters.points.BoundPointsPainter;
+import oth.shipeditor.components.viewer.painters.points.CenterPointPainter;
+import oth.shipeditor.components.viewer.painters.points.ShieldPointPainter;
 import oth.shipeditor.representation.Hull;
 import oth.shipeditor.representation.ShipData;
+import oth.shipeditor.utility.CoordinateUtilities;
 
 import java.awt.*;
 import java.awt.geom.AffineTransform;
@@ -83,13 +83,12 @@ public final class LayerPainter implements Painter {
 
         this.centerPointPainter = new CenterPointPainter(this);
         this.shieldPointPainter = new ShieldPointPainter(this);
-        this.boundsPainter = new BoundPointsPainter(viewerPanel, this);
+        this.boundsPainter = new BoundPointsPainter(this);
 
         this.allPainters = new ArrayList<>();
         allPainters.add(centerPointPainter);
         allPainters.add(shieldPointPainter);
         allPainters.add(boundsPainter);
-
         this.shipSprite = layer.getShipSprite();
         this.initPainterListeners(layer);
         this.initLayerListeners();
@@ -192,23 +191,23 @@ public final class LayerPainter implements Painter {
         Hull hull = shipData.getHull();
 
         Point2D anchor = this.getCenterAnchor();
-        double anchorX = anchor.getX();
-        double anchorY = anchor.getY();
+        Point2D hullCenter = hull.getCenter();
 
-        Point2D.Double hullCenter = hull.getCenter();
-        Point2D.Double translatedCenter = new Point2D.Double(hullCenter.x + anchorX,
-                -hullCenter.y + anchorY);
+        Point2D translatedCenter = CoordinateUtilities.rotateHullCenter(hullCenter, anchor);
 
         this.centerPointPainter.initCenterPoint(translatedCenter, hull);
 
         shipData.initHullStyle();
 
-        Point2D shieldCenterTranslated = LayerPainter.translatePointByCenter(hull.getShieldCenter(), translatedCenter);
+        Point2D shieldCenter = hull.getShieldCenter();
+
+        Point2D shieldCenterTranslated = CoordinateUtilities.rotatePointByCenter(shieldCenter, translatedCenter);
         this.shieldPointPainter.initShieldPoint(shieldCenterTranslated, shipData);
 
         Stream<Point2D> boundStream = Arrays.stream(hull.getBounds());
         boundStream.forEach(bound -> {
-            BoundPoint boundPoint = this.createTranslatedBound(bound, translatedCenter);
+            Point2D rotatedPosition = CoordinateUtilities.rotatePointByCenter(bound, translatedCenter);
+            BoundPoint boundPoint = new BoundPoint(rotatedPosition, this);
             boundsPainter.addPoint(boundPoint);
         });
 
@@ -216,16 +215,6 @@ public final class LayerPainter implements Painter {
         log.info("{} initialized!", this);
         EventBus.publish(new LayerShipDataInitialized(this));
         EventBus.publish(new ViewerRepaintQueued());
-    }
-
-    private static Point2D translatePointByCenter(Point2D input, Point2D translatedCenter) {
-        double translatedX = -input.getY() + translatedCenter.getX();
-        double translatedY = -input.getX() + translatedCenter.getY();
-        return new Point2D.Double(translatedX, translatedY);
-    }
-
-    private BoundPoint createTranslatedBound(Point2D bound, Point2D translatedCenter) {
-        return new BoundPoint(LayerPainter.translatePointByCenter(bound, translatedCenter), this);
     }
 
     @Override

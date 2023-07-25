@@ -22,10 +22,6 @@ public class BoundPoint extends BaseWorldPoint{
     @Getter @Setter
     private double paintSizeMultiplier = 1;
 
-    public BoundPoint(Point2D position) {
-        this(position, null);
-    }
-
     public BoundPoint(Point2D pointPosition, LayerPainter layer) {
         super(pointPosition, layer);
     }

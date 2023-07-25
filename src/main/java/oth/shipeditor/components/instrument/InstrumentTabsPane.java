@@ -6,7 +6,8 @@ import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.components.InstrumentSplitterResized;
 import oth.shipeditor.communication.events.viewer.ViewerRepaintQueued;
 import oth.shipeditor.communication.events.viewer.points.InstrumentModeChanged;
-import oth.shipeditor.components.instrument.centers.HullPointsPanel;
+import oth.shipeditor.components.instrument.centers.CollisionPanel;
+import oth.shipeditor.components.instrument.centers.ShieldPanel;
 import oth.shipeditor.components.viewer.InstrumentMode;
 import oth.shipeditor.utility.components.MinimizeListener;
 import oth.shipeditor.utility.components.MinimizerWidget;
@@ -39,13 +40,17 @@ public final class InstrumentTabsPane extends JTabbedPane {
     @Getter
     private BoundPointsPanel boundsPanel;
 
-    private HullPointsPanel centerPointsPanel;
+    private CollisionPanel collisionPanel;
+
+    private ShieldPanel shieldPanel;
 
     private LayerPropertiesPanel layerPanel;
 
     private final Map<JPanel, InstrumentMode> panelMode;
 
     private final MinimizerWidget minimizer;
+
+    private final Dimension maximumPanelSize = new Dimension(300, Integer.MAX_VALUE);
 
     public InstrumentTabsPane() {
         panelMode = new HashMap<>();
@@ -54,6 +59,8 @@ public final class InstrumentTabsPane extends JTabbedPane {
         this.initListeners();
         this.setTabPlacement(SwingConstants.LEFT);
         this.createTabs();
+        this.setMinimumSize(maximumPanelSize);
+        this.setMaximumSize(maximumPanelSize);
         this.dispatchModeChange((JPanel) getSelectedComponent());
     }
 
@@ -74,15 +81,26 @@ public final class InstrumentTabsPane extends JTabbedPane {
         panelMode.put(layerPanel, InstrumentMode.LAYER);
         this.addTab("Layer",layerPanel);
 
+        collisionPanel = new CollisionPanel();
+        panelMode.put(collisionPanel, InstrumentMode.COLLISION);
+        this.addTab(StringConstants.COLLISION, collisionPanel);
 
+        shieldPanel = new ShieldPanel();
+        panelMode.put(shieldPanel, InstrumentMode.SHIELD);
+        this.addTab(StringConstants.SHIELD, shieldPanel);
 
-
-        centerPointsPanel = new HullPointsPanel();
-        panelMode.put(centerPointsPanel, InstrumentMode.CENTERS);
-        this.addTab("Centers",centerPointsPanel);
         boundsPanel = new BoundPointsPanel();
         panelMode.put(boundsPanel, InstrumentMode.BOUNDS);
         this.addTab("Bounds", boundsPanel);
+
+        JPanel weaponSlotsPanel = new JPanel();
+        panelMode.put(weaponSlotsPanel, InstrumentMode.WEAPON_SLOTS);
+        this.addTab("Weapon Slots", weaponSlotsPanel);
+
+        JPanel engineSlotsPanel = new JPanel();
+        panelMode.put(engineSlotsPanel, InstrumentMode.ENGINES);
+        this.addTab("Engines", engineSlotsPanel);
+
         updateTooltipText();
     }
 
@@ -97,7 +115,7 @@ public final class InstrumentTabsPane extends JTabbedPane {
         return () -> {
             minimizer.setMinimized(true);
             Dimension preferred = this.getPreferredSize();
-            Dimension minimizedSize = new Dimension(10, preferred.height);
+            Dimension minimizedSize = new Dimension(0, preferred.height);
             this.setMinimumSize(minimizedSize);
             this.setMaximumSize(minimizedSize);
             updateTooltipText();
@@ -108,8 +126,8 @@ public final class InstrumentTabsPane extends JTabbedPane {
     private Runnable restoreTabbedPane() {
         return () -> {
             minimizer.setMinimized(false);
-            this.setMinimumSize(null);
-            this.setMaximumSize(null);
+            this.setMinimumSize(maximumPanelSize);
+            this.setMaximumSize(maximumPanelSize);
             updateTooltipText();
             EventBus.publish(new InstrumentSplitterResized(false));
         };
@@ -121,12 +139,15 @@ public final class InstrumentTabsPane extends JTabbedPane {
             minimizePrompt = "(Left-click to expand panel)";
         }
         String layerPanelLabel = StringConstants.LAYER_PROPERTIES;
-        String centerPanelLabel = "Ship center, collision, shield center and radius";
+        String collisionPanelLabel = "Ship center and collision";
+        String shieldPanelLabel = "Shield center and radius";
         String boundPanelLabel = "Ship bound polygon";
         this.setToolTipTextAt(indexOfComponent(layerPanel),
                 "<html>" + layerPanelLabel + "<br>" + minimizePrompt + "</html>");
-        this.setToolTipTextAt(indexOfComponent(centerPointsPanel),
-                "<html>" + centerPanelLabel + "<br>" + minimizePrompt + "</html>");
+        this.setToolTipTextAt(indexOfComponent(collisionPanel),
+                "<html>" + collisionPanelLabel + "<br>" + minimizePrompt + "</html>");
+        this.setToolTipTextAt(indexOfComponent(shieldPanel),
+                "<html>" + shieldPanelLabel + "<br>" + minimizePrompt + "</html>");
         this.setToolTipTextAt(indexOfComponent(boundsPanel),
                 "<html>" + boundPanelLabel + "<br>" + minimizePrompt + "</html>");
     }

@@ -1,15 +1,13 @@
-package oth.shipeditor.components.viewer.painters;
+package oth.shipeditor.components.viewer.painters.points;
 
 import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
 import oth.shipeditor.communication.EventBus;
-import oth.shipeditor.communication.events.components.CentersPanelRepaintQueued;
+import oth.shipeditor.communication.events.components.CenterPanelsRepaintQueued;
 import oth.shipeditor.communication.events.viewer.ViewerRepaintQueued;
 import oth.shipeditor.communication.events.viewer.points.InstrumentModeChanged;
 import oth.shipeditor.communication.events.viewer.points.RadiusDragQueued;
 import oth.shipeditor.components.instrument.InstrumentTabsPane;
-import oth.shipeditor.components.instrument.centers.CenterPointMode;
-import oth.shipeditor.components.instrument.centers.HullPointsPanel;
 import oth.shipeditor.components.viewer.InstrumentMode;
 import oth.shipeditor.components.viewer.entities.BaseWorldPoint;
 import oth.shipeditor.components.viewer.entities.ShipCenterPoint;
@@ -26,7 +24,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Also intended to handle collision and shield radii and their painting.
+ * Also intended to handle collision radii and their painting.
  * @author Ontheheavens
  * @since 09.06.2023
  */
@@ -48,15 +46,15 @@ public class CenterPointPainter extends AbstractPointPainter {
         this.parentLayer = parent;
         this.initModeListening();
         this.initHotkeys();
-        this.setInteractionEnabled(InstrumentTabsPane.getCurrentMode() == InstrumentMode.CENTERS);
+        this.setInteractionEnabled(InstrumentTabsPane.getCurrentMode() == InstrumentMode.COLLISION);
         this.setPaintOpacity(ApplicationDefaults.COLLISION_OPACITY);
     }
 
     private void initModeListening() {
         EventBus.subscribe(event -> {
             if (event instanceof InstrumentModeChanged checked) {
-                this.setInteractionEnabled(checked.newMode() == InstrumentMode.CENTERS);
-                EventBus.publish(new CentersPanelRepaintQueued());
+                this.setInteractionEnabled(checked.newMode() == InstrumentMode.COLLISION);
+                EventBus.publish(new CenterPanelsRepaintQueued());
             }
         });
         EventBus.subscribe(event -> {
@@ -94,12 +92,6 @@ public class CenterPointPainter extends AbstractPointPainter {
             EventBus.publish(new ViewerRepaintQueued());
             return false;
         });
-    }
-
-    @Override
-    public boolean isInteractionEnabled() {
-        boolean basicCheck = super.isInteractionEnabled() && this.parentLayer.isLayerActive();
-        return basicCheck && HullPointsPanel.getMode() == CenterPointMode.COLLISION;
     }
 
     @Override
@@ -144,12 +136,12 @@ public class CenterPointPainter extends AbstractPointPainter {
      * @return null.
      */
     @Override
-    public BaseWorldPoint getMirroredCounterpart(WorldPoint point) {
+    public BaseWorldPoint getMirroredCounterpart(WorldPoint inputPoint) {
         throw new UnsupportedOperationException("Mirrored operations unsupported by CenterPointPainters!");
     }
 
     @Override
-    protected BaseWorldPoint getTypeReference() {
-        return new BaseWorldPoint();
+    protected Class<ShipCenterPoint> getTypeReference() {
+        return ShipCenterPoint.class;
     }
 }

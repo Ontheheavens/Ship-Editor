@@ -11,6 +11,9 @@ import oth.shipeditor.components.viewer.entities.BoundPoint;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 
 /**
  * @author Ontheheavens
@@ -19,23 +22,12 @@ import java.awt.*;
 @Log4j2
 final class BoundList extends JList<BoundPoint> {
 
-    private boolean propagationBlock;
-
     BoundList(ListModel<BoundPoint> model) {
         super(model);
-        this.addListSelectionListener(e -> {
-            if (propagationBlock) {
-                propagationBlock = false;
-                return;
-            }
-            int index = this.getSelectedIndex();
-            if (index != -1) {
-                ListModel<BoundPoint> listModel = this.getModel();
-                BoundPoint point = listModel.getElementAt(index);
-                EventBus.publish(new PointSelectQueued(point));
-                EventBus.publish(new ViewerRepaintQueued());
-            }
-        });
+
+        MouseListener selectionListener = new ListSelectionListener();
+        this.addMouseListener(selectionListener);
+
         this.setCellRenderer(new BoundPointCellRenderer());
         int margin = 3;
         this.setBorder(new EmptyBorder(margin, margin, margin, margin));
@@ -45,7 +37,6 @@ final class BoundList extends JList<BoundPoint> {
     private void initListeners() {
         EventBus.subscribe(event -> {
             if (event instanceof PointSelectedConfirmed checked && checked.point() instanceof BoundPoint) {
-                propagationBlock = true;
                 this.setSelectedValue(checked.point(), true);
             }
         });
@@ -60,6 +51,23 @@ final class BoundList extends JList<BoundPoint> {
             String displayText = "Bound #" + index + ": " + checked.getPositionText();
             setText(displayText);
             return this;
+        }
+
+    }
+
+    private class ListSelectionListener extends MouseAdapter {
+
+        @Override
+        public void mouseClicked(MouseEvent e) {
+            if (SwingUtilities.isLeftMouseButton(e) && e.getClickCount() == 1) {
+                if (getSelectedIndex() != -1) {
+                    int index = locationToIndex(e.getPoint());
+                    ListModel<BoundPoint> listModel = getModel();
+                    BoundPoint point = listModel.getElementAt(index);
+                    EventBus.publish(new PointSelectQueued(point));
+                    EventBus.publish(new ViewerRepaintQueued());
+                }
+            }
         }
 
     }

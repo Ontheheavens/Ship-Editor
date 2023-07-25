@@ -35,6 +35,9 @@ public class EngineSlot {
     @JsonProperty(StringConstants.STYLE)
     private String style;
 
+    /**
+     * This field is used to specify a custom style if style field is set to CUSTOM.
+     */
     @JsonProperty("styleId")
     private String styleId;
 

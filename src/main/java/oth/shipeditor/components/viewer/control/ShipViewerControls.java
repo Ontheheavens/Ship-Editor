@@ -135,8 +135,7 @@ public final class ShipViewerControls implements ViewerControl {
     }
 
     @Override
-    public void mouseClicked(MouseEvent e) {
-    }
+    public void mouseClicked(MouseEvent e) {}
 
     @Override
     public void mousePressed(MouseEvent e) {
@@ -156,15 +155,8 @@ public final class ShipViewerControls implements ViewerControl {
         if (ControlPredicates.removePointPredicate.test(e)) {
             EventBus.publish(new PointRemoveQueued());
         }
-        ShipViewerControls.handlePointSelection(e);
-    }
-
-    private static void handlePointSelection(MouseEvent e) {
-        PointSelectionMode current = ControlPredicates.getSelectionMode();
-        if (current == PointSelectionMode.STRICT) {
-            if (!ControlPredicates.selectPointPredicate.test(e)) return;
-            EventBus.publish(new PointSelectQueued(null));
-        } else if (current == PointSelectionMode.CLOSEST) {
+        if (!ControlPredicates.selectPointPredicate.test(e)) return;
+        if (ControlPredicates.getSelectionMode() == PointSelectionMode.STRICT) {
             EventBus.publish(new PointSelectQueued(null));
         }
     }
@@ -225,8 +217,10 @@ public final class ShipViewerControls implements ViewerControl {
         this.tryRadiusDrag();
         this.previousPoint.setLocation(x, y);
         this.parentViewer.repaint();
+        if (ControlPredicates.getSelectionMode() == PointSelectionMode.CLOSEST) {
+            EventBus.publish(new PointSelectQueued(null));
+        }
         this.refreshCursorPosition(e);
-        ShipViewerControls.handlePointSelection(e);
     }
 
     @Override

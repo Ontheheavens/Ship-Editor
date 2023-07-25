@@ -32,7 +32,7 @@ public interface WorldPoint {
     /**
      * @return whether this point is selected, that is, active for some user input such as moving the point.
      */
-    boolean isSelected();
+    boolean isPointSelected();
 
 
     /**
@@ -43,7 +43,7 @@ public interface WorldPoint {
     /**
      * @param selected whether this point should be selected.
      */
-    void setSelected(boolean selected);
+    void setPointSelected(boolean selected);
 
     Point2D getCoordinatesForDisplay();
 

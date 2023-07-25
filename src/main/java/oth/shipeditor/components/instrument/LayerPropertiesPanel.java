@@ -44,24 +44,24 @@ final class LayerPropertiesPanel extends JPanel {
     }
 
     private void updateOpacityLabel(int opacity) {
-        opacityLabel.setText("Sprite opacity: " + opacity + "%");
+        opacityLabel.setText("Sprite opacity: ");
+        opacityLabel.setToolTipText(StringConstants.CURRENT_VALUE + opacity + "%");
     }
 
     private JPanel createLayerPanel() {
         JPanel layerSettingsPanel = new JPanel();
         layerSettingsPanel.setLayout(new BoxLayout(layerSettingsPanel, BoxLayout.PAGE_AXIS));
 
-        Border titled = BorderFactory.createTitledBorder(StringConstants.LAYER_PROPERTIES);
-        Border outsideBorder = new EmptyBorder(0, 6, 6, 6);
-        CompoundBorder compoundBorder = BorderFactory.createCompoundBorder(outsideBorder, titled);
-        layerSettingsPanel.setBorder(compoundBorder);
-
-        this.addOpacityWidget(layerSettingsPanel);
+        JPanel opacityWidget = this.createOpacityWidget();
+        layerSettingsPanel.add(opacityWidget);
 
         return layerSettingsPanel;
     }
 
-    private void addOpacityWidget(JPanel layerSettingsPanel) {
+    private JPanel createOpacityWidget() {
+        JPanel container = new JPanel();
+        container.setLayout(new BoxLayout(container, BoxLayout.LINE_AXIS));
+
         ChangeListener changeListener = e -> {
             JSlider source = (JSlider)e.getSource();
             int opacity = source.getValue();
@@ -92,11 +92,11 @@ final class LayerPropertiesPanel extends JPanel {
 
         opacitySlider = widgetComponents.getFirst();
         opacityLabel = widgetComponents.getSecond();
-        opacityLabel.setBorder(BorderFactory.createEmptyBorder(0, 6, 0, 0));
         this.updateOpacityLabel(100);
 
-        layerSettingsPanel.add(opacityLabel);
-        layerSettingsPanel.add(opacitySlider);
+        ComponentUtilities.layoutAsOpposites(container, opacityLabel, opacitySlider, 6);
+
+        return container;
     }
 
 }

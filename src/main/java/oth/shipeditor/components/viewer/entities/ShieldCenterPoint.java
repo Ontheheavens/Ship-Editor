@@ -5,7 +5,7 @@ import lombok.Getter;
 import lombok.Setter;
 import oth.shipeditor.components.viewer.InstrumentMode;
 import oth.shipeditor.components.viewer.layers.LayerPainter;
-import oth.shipeditor.components.viewer.painters.ShieldPointPainter;
+import oth.shipeditor.components.viewer.painters.points.ShieldPointPainter;
 import oth.shipeditor.representation.HullStyle;
 import oth.shipeditor.utility.Utility;
 import oth.shipeditor.utility.graphics.DrawUtilities;
@@ -43,7 +43,7 @@ public class ShieldCenterPoint extends BaseWorldPoint{
 
     @Override
     public InstrumentMode getAssociatedMode() {
-        return InstrumentMode.CENTERS;
+        return InstrumentMode.SHIELD;
     }
 
     @Override
@@ -101,7 +101,7 @@ public class ShieldCenterPoint extends BaseWorldPoint{
 
     private void paintShieldCenterCross(Graphics2D g, AffineTransform worldToScreen) {
         Color crossColor = createHoverColor();
-        if (isSelected() && isInteractable()) {
+        if (this.isPointSelected() && isInteractable()) {
             crossColor = createSelectColor();
         }
 

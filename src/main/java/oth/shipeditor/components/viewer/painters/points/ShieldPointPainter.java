@@ -1,14 +1,12 @@
-package oth.shipeditor.components.viewer.painters;
+package oth.shipeditor.components.viewer.painters.points;
 
 import lombok.Getter;
 import oth.shipeditor.communication.EventBus;
-import oth.shipeditor.communication.events.components.CentersPanelRepaintQueued;
+import oth.shipeditor.communication.events.components.CenterPanelsRepaintQueued;
 import oth.shipeditor.communication.events.viewer.ViewerRepaintQueued;
 import oth.shipeditor.communication.events.viewer.points.InstrumentModeChanged;
 import oth.shipeditor.communication.events.viewer.points.RadiusDragQueued;
 import oth.shipeditor.components.instrument.InstrumentTabsPane;
-import oth.shipeditor.components.instrument.centers.CenterPointMode;
-import oth.shipeditor.components.instrument.centers.HullPointsPanel;
 import oth.shipeditor.components.viewer.InstrumentMode;
 import oth.shipeditor.components.viewer.entities.BaseWorldPoint;
 import oth.shipeditor.components.viewer.entities.ShieldCenterPoint;
@@ -47,7 +45,7 @@ public class ShieldPointPainter extends AbstractPointPainter{
         this.parentLayer = parent;
         this.initModeListening();
         this.initHotkeys();
-        this.setInteractionEnabled(InstrumentTabsPane.getCurrentMode() == InstrumentMode.CENTERS);
+        this.setInteractionEnabled(InstrumentTabsPane.getCurrentMode() == InstrumentMode.SHIELD);
     }
 
     public void initShieldPoint(Point2D translated, ShipData data) {
@@ -67,8 +65,8 @@ public class ShieldPointPainter extends AbstractPointPainter{
     private void initModeListening() {
         EventBus.subscribe(event -> {
             if (event instanceof InstrumentModeChanged checked) {
-                this.setInteractionEnabled(checked.newMode() == InstrumentMode.CENTERS);
-                EventBus.publish(new CentersPanelRepaintQueued());
+                this.setInteractionEnabled(checked.newMode() == InstrumentMode.SHIELD);
+                EventBus.publish(new CenterPanelsRepaintQueued());
             }
         });
         EventBus.subscribe(event -> {
@@ -109,12 +107,6 @@ public class ShieldPointPainter extends AbstractPointPainter{
     }
 
     @Override
-    public boolean isInteractionEnabled() {
-        boolean basicCheck = super.isInteractionEnabled() && this.parentLayer.isLayerActive();
-        return basicCheck && HullPointsPanel.getMode() == CenterPointMode.SHIELD;
-    }
-
-    @Override
     public boolean isMirrorable() {
         return false;
     }
@@ -140,13 +132,13 @@ public class ShieldPointPainter extends AbstractPointPainter{
     }
 
     @Override
-    public WorldPoint getMirroredCounterpart(WorldPoint point) {
+    public WorldPoint getMirroredCounterpart(WorldPoint inputPoint) {
         throw new UnsupportedOperationException("Mirrored operations unsupported by ShieldPointPainters!");
     }
 
     @Override
-    protected BaseWorldPoint getTypeReference() {
-        return new BaseWorldPoint();
+    protected Class<ShieldCenterPoint> getTypeReference() {
+        return ShieldCenterPoint.class;
     }
 
 }

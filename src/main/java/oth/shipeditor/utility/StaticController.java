@@ -6,10 +6,12 @@ import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.viewer.control.ViewerCursorMoved;
 import oth.shipeditor.communication.events.viewer.layers.ActiveLayerUpdated;
 import oth.shipeditor.communication.events.viewer.layers.LayerWasSelected;
+import oth.shipeditor.components.viewer.PrimaryShipViewer;
 import oth.shipeditor.components.viewer.layers.ShipLayer;
 import oth.shipeditor.menubar.FileUtilities;
 
 import java.awt.*;
+import java.awt.geom.AffineTransform;
 import java.awt.geom.Point2D;
 
 /**
@@ -18,6 +20,9 @@ import java.awt.geom.Point2D;
  * @since 09.07.2023
  */
 public final class StaticController {
+
+    @Setter
+    private static PrimaryShipViewer shipViewer;
 
     @Getter @Setter
     private static ShipLayer activeLayer;
@@ -35,6 +40,10 @@ public final class StaticController {
     private static Point2D adjustedCursor = new Point2D.Double();
 
     private StaticController() {
+    }
+
+    public static AffineTransform getScreenToWorld() {
+        return shipViewer.getScreenToWorld();
     }
 
     public static void updateRotationRadians(double input) {

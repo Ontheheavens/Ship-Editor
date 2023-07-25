@@ -7,6 +7,7 @@ import oth.shipeditor.communication.events.viewer.layers.LayerWasSelected;
 import oth.shipeditor.communication.events.viewer.layers.PainterVisibilityChanged;
 import oth.shipeditor.components.viewer.layers.LayerPainter;
 import oth.shipeditor.components.viewer.layers.ShipLayer;
+import oth.shipeditor.components.viewer.painters.points.AbstractPointPainter;
 
 import javax.swing.*;
 import java.awt.*;
@@ -19,8 +20,8 @@ import java.awt.event.ActionListener;
  */
 public enum PainterVisibility {
     ALWAYS_HIDDEN("Always hidden"),
-    SHOWN_WHEN_SELECTED("Shown when selected"),
-    SHOWN_WHEN_EDITED("Shown when edited"),
+    SHOWN_WHEN_SELECTED("When selected"),
+    SHOWN_WHEN_EDITED("When edited"),
     ALWAYS_SHOWN("Always shown");
 
     @Getter

@@ -6,8 +6,8 @@ import oth.shipeditor.communication.events.BusEvent;
 import oth.shipeditor.communication.events.Events;
 import oth.shipeditor.communication.events.viewer.control.ViewerMouseReleased;
 import oth.shipeditor.components.viewer.entities.*;
-import oth.shipeditor.components.viewer.painters.AbstractPointPainter;
-import oth.shipeditor.components.viewer.painters.BoundPointsPainter;
+import oth.shipeditor.components.viewer.painters.points.AbstractPointPainter;
+import oth.shipeditor.components.viewer.painters.points.BoundPointsPainter;
 import oth.shipeditor.undo.edits.*;
 
 import java.awt.geom.Point2D;

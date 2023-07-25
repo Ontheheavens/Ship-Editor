@@ -4,6 +4,8 @@ import com.formdev.flatlaf.ui.FlatLineBorder;
 import com.formdev.flatlaf.ui.FlatRoundBorder;
 import oth.shipeditor.communication.BusEventListener;
 import oth.shipeditor.communication.EventBus;
+import oth.shipeditor.components.viewer.painters.points.AbstractPointPainter;
+import oth.shipeditor.components.viewer.painters.PainterVisibility;
 import oth.shipeditor.menubar.FileUtilities;
 import oth.shipeditor.utility.Pair;
 import oth.shipeditor.utility.StringConstants;
@@ -14,6 +16,7 @@ import javax.swing.border.Border;
 import javax.swing.border.EmptyBorder;
 import javax.swing.event.ChangeListener;
 import java.awt.*;
+import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
 import java.nio.file.Path;
 import java.util.Dictionary;
@@ -89,6 +92,7 @@ public final class ComponentUtilities {
         opacitySlider.setPaintLabels(true);
         JLabel opacityLabel = new JLabel();
         opacityLabel.setAlignmentX(0.0f);
+
         return new Pair<>(opacitySlider, opacityLabel);
     }
 
@@ -148,6 +152,34 @@ public final class ComponentUtilities {
 
         ComponentUtilities.layoutAsOpposites(container, colorLabel, colorIcon, 0);
         return container;
+    }
+
+    public static JPanel createVisibilityWidget(JComboBox<PainterVisibility> visibilityList,
+                                                Class<? extends AbstractPointPainter> painterClass,
+                                                ActionListener selectionAction, String labelName) {
+        String widgetLabel = labelName;
+        JPanel widgetPanel = new JPanel();
+        widgetPanel.setLayout(new BoxLayout(widgetPanel, BoxLayout.LINE_AXIS));
+
+        visibilityList.setRenderer(PainterVisibility.createCellRenderer());
+        visibilityList.addActionListener(PainterVisibility.createActionListener(visibilityList, painterClass));
+        EventBus.subscribe(PainterVisibility.createBusEventListener(visibilityList, selectionAction));
+
+        visibilityList.setMaximumSize(visibilityList.getPreferredSize());
+
+        if (widgetLabel.isEmpty()) {
+            widgetLabel = StringConstants.PAINTER_VIEW;
+        }
+
+        JLabel visibilityWidgetLabel = new JLabel(widgetLabel);
+        visibilityWidgetLabel.setToolTipText(StringConstants.TOGGLED_ON_PER_LAYER_BASIS);
+        widgetPanel.setBorder(new EmptyBorder(4, 0, 4, 0));
+
+        int sidePadding = 6;
+        ComponentUtilities.layoutAsOpposites(widgetPanel, visibilityWidgetLabel,
+                visibilityList, sidePadding);
+
+        return widgetPanel;
     }
 
 }

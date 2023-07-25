@@ -17,7 +17,7 @@ import java.awt.*;
 @Log4j2
 public final class WindowContentPanes {
 
-    static final String DEFAULT_LEFTSIDE_PANE = StringConstants.DEFAULT;
+    private static final String DEFAULT_LEFTSIDE_PANE = StringConstants.DEFAULT;
 
     /**
      * Complex component responsible for ship layers display.
@@ -57,7 +57,7 @@ public final class WindowContentPanes {
     }
 
     public void loadShipView() {
-        this.shipView = new PrimaryShipViewer();
+        this.shipView = new PrimaryShipViewer().commenceInitialization();
         JPanel southPane = new JPanel();
         southPane.setLayout(new GridLayout());
         this.statusPanel = new ViewerStatusPanel(this.shipView);

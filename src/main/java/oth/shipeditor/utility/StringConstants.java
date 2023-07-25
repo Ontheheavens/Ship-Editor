@@ -92,4 +92,16 @@ public interface StringConstants {
 
     String OPEN_DATA_PACKAGE = "Open data package";
 
+    String PIXELS = "pixels";
+
+    String COLLISION = "Collision";
+
+    String SHIELD = "Shield";
+
+    String PAINTER_VIEW = "Painter view: ";
+
+    String PAINTER_OPACITY = "Painter opacity: ";
+
+    String CURRENT_VALUE = "Current value: ";
+
 }

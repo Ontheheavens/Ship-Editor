@@ -18,6 +18,7 @@ import oth.shipeditor.components.viewer.layers.LayerPainter;
 import oth.shipeditor.components.viewer.layers.ShipLayer;
 import oth.shipeditor.menubar.FileUtilities;
 import oth.shipeditor.undo.UndoOverseer;
+import oth.shipeditor.utility.StaticController;
 
 import javax.swing.*;
 import java.awt.*;
@@ -43,24 +44,19 @@ import java.util.Locale;
 @Log4j2
 public final class PrimaryShipViewer extends Viewer implements ShipViewable {
 
-    private static final Dimension panelSize = new Dimension(240, 120);
+    private static final Dimension minimumPanelSize = new Dimension(240, 120);
 
     @Getter
     private final LayerManager layerManager;
 
     @Getter
-    private final PaintOrderController paintOrderController;
+    private PaintOrderController paintOrderController;
 
     @Getter
-    private final ViewerControl controls;
+    private ViewerControl controls;
 
-    /**
-     * Usage of self as an argument is a suboptimal practice, but in this case it did not prove to be an issue.
-     * However, keep this constructor in mind for future refactors.
-     */
-    @SuppressWarnings("ThisEscapedInObjectConstruction")
     public PrimaryShipViewer() {
-        this.setMinimumSize(panelSize);
+        this.setMinimumSize(minimumPanelSize);
         this.setBackground(Color.GRAY);
 
         // Required for early initializing of base coordinate systems functionality.
@@ -68,8 +64,10 @@ public final class PrimaryShipViewer extends Viewer implements ShipViewable {
 
         this.layerManager = new LayerManager();
         this.layerManager.initListeners();
+    }
 
-        this.paintOrderController = new PaintOrderController(layerManager, this);
+    public PrimaryShipViewer commenceInitialization() {
+        this.paintOrderController = new PaintOrderController(this);
         this.addPainter(this.paintOrderController);
 
         EventBus.publish(new ViewerGuidesToggled(true, true,
@@ -87,6 +85,8 @@ public final class PrimaryShipViewer extends Viewer implements ShipViewable {
         this.initViewerStateListeners();
         this.initLayerListening();
         this.setDropTarget(new SpriteDropReceiver());
+        StaticController.setShipViewer(this);
+        return this;
     }
 
     private void initViewerStateListeners() {

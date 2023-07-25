@@ -2,7 +2,7 @@ package oth.shipeditor.communication.events;
 
 import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.components.BoundsPanelRepaintQueued;
-import oth.shipeditor.communication.events.components.CentersPanelRepaintQueued;
+import oth.shipeditor.communication.events.components.CenterPanelsRepaintQueued;
 import oth.shipeditor.communication.events.viewer.ViewerRepaintQueued;
 
 /**
@@ -18,7 +18,7 @@ public final class Events {
     public static void repaintView() {
         EventBus.publish(new ViewerRepaintQueued());
         EventBus.publish(new BoundsPanelRepaintQueued());
-        EventBus.publish(new CentersPanelRepaintQueued());
+        EventBus.publish(new CenterPanelsRepaintQueued());
     }
 
 }

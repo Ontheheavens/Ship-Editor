@@ -3,20 +3,26 @@
 * @since 08.05.2023
 */module oth.shipeditor {
 
-    requires viewer.core;
+    // These packages are integral for the editor functionality.
     requires java.desktop;
-    requires lombok;
-    requires org.kordamp.ikonli.core;
-    requires org.kordamp.ikonli.swing;
-    requires org.kordamp.ikonli.fluentui;
-    requires org.apache.logging.log4j;
+    requires geom;
+    requires viewer.core;
     requires com.fasterxml.jackson.core;
     requires com.fasterxml.jackson.annotation;
     requires com.fasterxml.jackson.databind;
     requires com.fasterxml.jackson.dataformat.csv;
+
+    // These packages are tightly intertwined with the app and are important, but can be removed with some work.
+    requires lombok;
     requires com.formdev.flatlaf;
-    requires geom;
+    requires org.apache.logging.log4j;
+
+    // These packages are mostly cosmetic.
+    requires org.kordamp.ikonli.core;
+    requires org.kordamp.ikonli.swing;
+    requires org.kordamp.ikonli.fluentui;
     requires org.kordamp.ikonli.boxicons;
+    requires filters;
 
     exports oth.shipeditor;
     exports oth.shipeditor.representation;
@@ -46,5 +52,6 @@
     exports oth.shipeditor.components.datafiles.entities;
     exports oth.shipeditor.utility;
     exports oth.shipeditor.utility.graphics;
+    exports oth.shipeditor.components.viewer.painters.points;
 
 }

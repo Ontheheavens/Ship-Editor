@@ -1,7 +1,6 @@
-package oth.shipeditor.components.viewer.painters;
+package oth.shipeditor.components.viewer.painters.points;
 
 import de.javagl.viewer.Painter;
-import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
 import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.Events;
@@ -10,18 +9,16 @@ import oth.shipeditor.communication.events.viewer.points.BoundInsertedConfirmed;
 import oth.shipeditor.communication.events.viewer.points.InstrumentModeChanged;
 import oth.shipeditor.components.instrument.InstrumentTabsPane;
 import oth.shipeditor.components.viewer.InstrumentMode;
-import oth.shipeditor.components.viewer.PrimaryShipViewer;
 import oth.shipeditor.components.viewer.control.ControlPredicates;
-import oth.shipeditor.components.viewer.control.ViewerControl;
 import oth.shipeditor.components.viewer.entities.BaseWorldPoint;
 import oth.shipeditor.components.viewer.entities.BoundPoint;
-import oth.shipeditor.components.viewer.entities.ShipCenterPoint;
 import oth.shipeditor.components.viewer.entities.WorldPoint;
 import oth.shipeditor.components.viewer.layers.LayerPainter;
 import oth.shipeditor.undo.EditDispatch;
 import oth.shipeditor.utility.ApplicationDefaults;
-import oth.shipeditor.utility.graphics.DrawUtilities;
+import oth.shipeditor.utility.StaticController;
 import oth.shipeditor.utility.Utility;
+import oth.shipeditor.utility.graphics.DrawUtilities;
 
 import java.awt.*;
 import java.awt.event.KeyEvent;
@@ -35,28 +32,23 @@ import java.util.List;
  * @author Ontheheavens
  * @since 06.05.2023
  */
-@SuppressWarnings("OverlyComplexClass")
 @Log4j2
-public final class BoundPointsPainter extends AbstractPointPainter {
+public final class BoundPointsPainter extends MirrorablePointPainter {
 
     private static final Color BOUND_LINE = ApplicationDefaults.BOUND_LINE_COLOR;
 
-    @Getter
     private final List<BoundPoint> boundPoints;
 
     private boolean appendBoundHotkeyPressed;
     private boolean insertBoundHotkeyPressed;
 
-    private final PrimaryShipViewer viewerPanel;
 
-    private final LayerPainter parentLayer;
 
     private final int appendBoundHotkey = KeyEvent.VK_Z;
     private final int insertBoundHotkey = KeyEvent.VK_X;
 
-    public BoundPointsPainter(PrimaryShipViewer viewer, LayerPainter associatedLayer) {
-        this.viewerPanel = viewer;
-        this.parentLayer = associatedLayer;
+    public BoundPointsPainter(LayerPainter parent) {
+        super(parent);
         this.boundPoints = new ArrayList<>();
         this.initHotkeys();
         this.initModeListener();
@@ -65,54 +57,8 @@ public final class BoundPointsPainter extends AbstractPointPainter {
     }
 
     @Override
-    public boolean isInteractionEnabled() {
-        return super.isInteractionEnabled() && this.parentLayer.isLayerActive();
-    }
-
-    @Override
-    public boolean isMirrorable() {
-        return true;
-    }
-
-    @Override
-    public BaseWorldPoint getMirroredCounterpart(WorldPoint point) {
-        List<BoundPoint> bounds = this.getBoundPoints();
-        Point2D pointPosition = point.getPosition();
-        Point2D counterpartPosition = this.createCounterpartPosition(pointPosition);
-        double threshold = ControlPredicates.getMirrorPointLinkageTolerance();
-        BoundPoint closestBound = null;
-        double closestDistance = Double.MAX_VALUE;
-        for (BoundPoint bound : bounds) {
-            Point2D position = bound.getPosition();
-            if (position.equals(counterpartPosition)) {
-                closestBound = bound;
-                return closestBound;
-            }
-            double distance = counterpartPosition.distance(position);
-            if (distance < closestDistance) {
-                closestBound = bound;
-                closestDistance = distance;
-            }
-        }
-        if (closestDistance <= threshold) {
-            return closestBound; // Found the mirrored counterpart within the threshold.
-        } else {
-            return null; // Mirrored counterpart not found.
-        }
-    }
-
-    @Override
-    protected Point2D createCounterpartPosition(Point2D toMirror) {
-        ShipCenterPoint shipCenter = parentLayer.getShipCenter();
-        Point2D centerPosition = shipCenter.getPosition();
-        double counterpartX = 2 * centerPosition.getX() - toMirror.getX();
-        double counterpartY = toMirror.getY(); // Y-coordinate remains the same.
-        return new Point2D.Double(counterpartX, counterpartY);
-    }
-
-    @Override
-    protected BoundPoint getTypeReference() {
-        return new BoundPoint(new Point2D.Double());
+    protected Class<BoundPoint> getTypeReference() {
+        return BoundPoint.class;
     }
 
     @Override
@@ -180,11 +126,6 @@ public final class BoundPointsPainter extends AbstractPointPainter {
         });
     }
 
-    @Override
-    protected boolean isParentLayerActive() {
-        return this.parentLayer.isLayerActive();
-    }
-
     private void initCreationListener() {
         EventBus.subscribe(event -> {
             if (event instanceof BoundCreationQueued checked) {
@@ -197,19 +138,20 @@ public final class BoundPointsPainter extends AbstractPointPainter {
     }
 
     private void createBound(BoundCreationQueued event) {
+        LayerPainter parentLayer = this.getParentLayer();
         Point2D position = event.position();
         boolean mirrorMode = ControlPredicates.isMirrorModeEnabled();
         if (insertBoundHotkeyPressed) {
             if (boundPoints.size() >= 2) {
                 BoundPoint preceding = getInsertBefore(position);
-                BoundPoint wrapped = new BoundPoint(position, this.parentLayer);
+                BoundPoint wrapped = new BoundPoint(position, parentLayer);
                 BoundPoint wrappedCounterpart = null;
                 BoundPoint precedingCounterpart = null;
                 if (mirrorMode) {
                     if (getMirroredCounterpart(wrapped) == null) {
                         Point2D counterpartPosition = createCounterpartPosition(position);
                         precedingCounterpart = getInsertBefore(counterpartPosition);
-                        wrappedCounterpart = new BoundPoint(counterpartPosition, this.parentLayer);
+                        wrappedCounterpart = new BoundPoint(counterpartPosition, parentLayer);
                     }
                 }
                 EditDispatch.postPointInserted(this, wrapped, boundPoints.indexOf(preceding));
@@ -219,12 +161,12 @@ public final class BoundPointsPainter extends AbstractPointPainter {
                 }
             }
         } else if (appendBoundHotkeyPressed) {
-            BoundPoint wrapped = new BoundPoint(position, this.parentLayer);
+            BoundPoint wrapped = new BoundPoint(position, parentLayer);
             EditDispatch.postPointAdded(this, wrapped);
             if (mirrorMode) {
                 if (getMirroredCounterpart(wrapped) == null) {
                     Point2D counterpartPosition = createCounterpartPosition(position);
-                    BoundPoint wrappedCounterpart = new BoundPoint(counterpartPosition, this.parentLayer);
+                    BoundPoint wrappedCounterpart = new BoundPoint(counterpartPosition, parentLayer);
                     EditDispatch.postPointInserted(this, wrappedCounterpart, 0);
                 }
             }
@@ -277,14 +219,6 @@ public final class BoundPointsPainter extends AbstractPointPainter {
             }
         }
         return closestPoints;
-    }
-
-    @Override
-    protected boolean checkVisibility() {
-        PainterVisibility visibilityMode = getVisibilityMode();
-        boolean parentCheck = super.checkVisibility();
-        if (visibilityMode == PainterVisibility.SHOWN_WHEN_SELECTED && !parentLayer.isLayerActive()) return false;
-        return parentCheck;
     }
 
     @Override
@@ -352,9 +286,8 @@ public final class BoundPointsPainter extends AbstractPointPainter {
     }
 
     private void paintIfBoundsEmpty(Graphics2D g, AffineTransform worldToScreen) {
-        ViewerControl viewerControl = viewerPanel.getControls();
-        Point2D cursor = viewerControl.getAdjustedCursor();
-        AffineTransform screenToWorld = viewerPanel.getScreenToWorld();
+        Point2D cursor = StaticController.getAdjustedCursor();
+        AffineTransform screenToWorld = StaticController.getScreenToWorld();
         Point2D adjustedWorldCursor = Utility.correctAdjustedCursor(cursor, screenToWorld);
         Point2D worldCounterpart = this.createCounterpartPosition(adjustedWorldCursor);
         boolean hotkeyPressed = appendBoundHotkeyPressed || insertBoundHotkeyPressed;
@@ -370,9 +303,8 @@ public final class BoundPointsPainter extends AbstractPointPainter {
 
     private void paintCreationGuidelines(Graphics2D g, AffineTransform worldToScreen,
                                          Point2D prev, Point2D first) {
-        ViewerControl viewerControl = viewerPanel.getControls();
-        Point2D cursor = viewerControl.getAdjustedCursor();
-        AffineTransform screenToWorld = viewerPanel.getScreenToWorld();
+        Point2D cursor =  StaticController.getAdjustedCursor();
+        AffineTransform screenToWorld = StaticController.getScreenToWorld();
         Point2D adjustedWorldCursor = Utility.correctAdjustedCursor(cursor, screenToWorld);
         Point2D adjustedScreenCursor = worldToScreen.transform(adjustedWorldCursor, null);
         Point2D worldCounterpart = this.createCounterpartPosition(adjustedWorldCursor);

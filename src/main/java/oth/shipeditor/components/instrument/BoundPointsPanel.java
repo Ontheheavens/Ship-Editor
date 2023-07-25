@@ -13,14 +13,14 @@ import oth.shipeditor.communication.events.viewer.points.PointRemovedConfirmed;
 import oth.shipeditor.components.viewer.entities.BoundPoint;
 import oth.shipeditor.components.viewer.layers.LayerPainter;
 import oth.shipeditor.components.viewer.layers.ShipLayer;
-import oth.shipeditor.components.viewer.painters.BoundPointsPainter;
+import oth.shipeditor.components.viewer.painters.points.BoundPointsPainter;
+import oth.shipeditor.components.viewer.painters.points.CenterPointPainter;
 import oth.shipeditor.components.viewer.painters.PainterVisibility;
 import oth.shipeditor.utility.Pair;
 import oth.shipeditor.utility.StringConstants;
 import oth.shipeditor.utility.components.ComponentUtilities;
 
 import javax.swing.*;
-import javax.swing.border.EmptyBorder;
 import javax.swing.event.ChangeListener;
 import java.awt.*;
 import java.awt.event.ActionListener;
@@ -47,15 +47,15 @@ public final class BoundPointsPanel extends JPanel {
         this.setLayout(new BorderLayout());
         boundPointContainer = new BoundList(model);
         JScrollPane scrollableContainer = new JScrollPane(boundPointContainer);
-        Dimension listSize = new Dimension(boundPointContainer.getPreferredSize().width + 30,
-                boundPointContainer.getPreferredSize().height);
-        scrollableContainer.setPreferredSize(listSize);
+
         JPanel northContainer = new JPanel();
         northContainer.setLayout(new BoxLayout(northContainer, BoxLayout.PAGE_AXIS));
         northContainer.add(this.createPainterOpacityPanel());
         northContainer.add(this.createPainterVisibilityPanel());
         northContainer.add(Box.createRigidArea(new Dimension(0,6)));
+
         this.add(northContainer, BorderLayout.PAGE_START);
+
         this.add(scrollableContainer, BorderLayout.CENTER);
 
         this.initPointListener();
@@ -63,7 +63,8 @@ public final class BoundPointsPanel extends JPanel {
     }
 
     private void updateOpacityLabel(int opacity) {
-        opacityLabel.setText("Painter opacity: " + opacity + "%");
+        opacityLabel.setText(StringConstants.PAINTER_OPACITY);
+        opacityLabel.setToolTipText(StringConstants.CURRENT_VALUE + opacity + "%");
     }
 
     private JPanel createPainterOpacityPanel() {
@@ -104,25 +105,14 @@ public final class BoundPointsPanel extends JPanel {
         opacityLabel = widgetComponents.getSecond();
         this.updateOpacityLabel(100);
 
-        container.add(Box.createRigidArea(new Dimension(sidePadding,0)));
-        container.add(opacityLabel);
-        container.add(Box.createHorizontalGlue());
-        container.add(opacitySlider);
-        container.add(Box.createRigidArea(new Dimension(sidePadding,0)));
+        ComponentUtilities.layoutAsOpposites(container, opacityLabel, opacitySlider, sidePadding);
 
         return container;
     }
 
     @SuppressWarnings("MethodMayBeStatic")
     private JPanel createPainterVisibilityPanel() {
-        JPanel container = new JPanel();
-        container.setLayout(new BoxLayout(container, BoxLayout.LINE_AXIS));
-        container.setBorder(new EmptyBorder(4, 0, 0, 0));
-
         JComboBox<PainterVisibility> visibilityList = new JComboBox<>(PainterVisibility.values());
-        visibilityList.setRenderer(PainterVisibility.createCellRenderer());
-        visibilityList.addActionListener(PainterVisibility.createActionListener(visibilityList,
-                BoundPointsPainter.class));
         ActionListener selectionAction = e -> {
             LayerPainter painter = (LayerPainter) e.getSource();
             BoundPointsPainter boundsPainter = painter.getBoundsPainter();
@@ -131,16 +121,8 @@ public final class BoundPointsPanel extends JPanel {
         };
         EventBus.subscribe(PainterVisibility.createBusEventListener(visibilityList, selectionAction));
 
-        JLabel widgetLabel = new JLabel("Bounds visibility:");
-        widgetLabel.setToolTipText(StringConstants.TOGGLED_ON_PER_LAYER_BASIS);
-
-        container.add(Box.createRigidArea(new Dimension(sidePadding,0)));
-        container.add(widgetLabel);
-        container.add(Box.createHorizontalGlue()); // Add glue to push components to opposite sides.
-        container.add(visibilityList);
-        container.add(Box.createRigidArea(new Dimension(sidePadding,0)));
-
-        return container;
+        return ComponentUtilities.createVisibilityWidget(visibilityList,
+                CenterPointPainter.class, selectionAction, "");
     }
 
     private void initPointListener() {
@@ -176,7 +158,7 @@ public final class BoundPointsPanel extends JPanel {
                 if (selected != null && selected.getPainter() != null) {
                     LayerPainter selectedLayerPainter = selected.getPainter();
                     BoundPointsPainter newBoundsPainter = selectedLayerPainter.getBoundsPainter();
-                    newModel.addAll(newBoundsPainter.getBoundPoints());
+                    newModel.addAll(newBoundsPainter.getPointsIndex());
                 }
                 this.model = newModel;
                 this.boundPointContainer.setModel(newModel);

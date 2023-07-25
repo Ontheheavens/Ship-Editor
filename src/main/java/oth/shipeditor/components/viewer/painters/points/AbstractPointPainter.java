@@ -1,4 +1,4 @@
-package oth.shipeditor.components.viewer.painters;
+package oth.shipeditor.components.viewer.painters.points;
 
 import de.javagl.viewer.Painter;
 import lombok.Getter;
@@ -14,6 +14,7 @@ import oth.shipeditor.components.viewer.control.ControlPredicates;
 import oth.shipeditor.components.viewer.control.PointSelectionMode;
 import oth.shipeditor.components.viewer.entities.BaseWorldPoint;
 import oth.shipeditor.components.viewer.entities.WorldPoint;
+import oth.shipeditor.components.viewer.painters.PainterVisibility;
 import oth.shipeditor.undo.EditDispatch;
 import oth.shipeditor.utility.Utility;
 
@@ -74,7 +75,7 @@ public abstract class AbstractPointPainter implements Painter {
     }
 
     public boolean isInteractionEnabled() {
-        return interactionEnabled;
+        return interactionEnabled && isParentLayerActive();
     }
 
     void setPaintOpacity(float opacity) {
@@ -83,7 +84,6 @@ public abstract class AbstractPointPainter implements Painter {
         } else this.paintOpacity = Math.min(opacity, 1.0f);
     }
 
-    @SuppressWarnings("BooleanMethodIsAlwaysInverted")
     public abstract boolean isMirrorable();
 
     @SuppressWarnings("OverlyComplexMethod")
@@ -111,7 +111,7 @@ public abstract class AbstractPointPainter implements Painter {
         EventBus.subscribe(event -> {
             if (event instanceof PointDragQueued checked) {
                 if (!this.isInteractionEnabled()) return;
-                if (selected == null) return;
+                if (getSelected() == null) return;
                 AffineTransform screenToWorld = checked.screenToWorld();
                 Point2D translated = screenToWorld.transform(checked.adjustedCursor(), null);
                 double x = translated.getX();
@@ -124,12 +124,12 @@ public abstract class AbstractPointPainter implements Painter {
                 Point2D counterpartNewPosition = null;
                 boolean mirroringEnabled = ControlPredicates.isMirrorModeEnabled();
                 if (isMirrorable() && mirroringEnabled) {
-                    counterpart = getMirroredCounterpart(this.selected);
+                    counterpart = getMirroredCounterpart(getSelected());
                     if (counterpart != null) {
                         counterpartNewPosition = createCounterpartPosition(changedPosition);
                     }
                 }
-                EditDispatch.postPointDragged(this.selected, changedPosition);
+                EditDispatch.postPointDragged(getSelected(), changedPosition);
                 if (counterpartNewPosition != null) {
                     EditDispatch.postPointDragged(counterpart, counterpartNewPosition);
                 }
@@ -154,21 +154,22 @@ public abstract class AbstractPointPainter implements Painter {
         });
     }
 
-    @SuppressWarnings("BooleanMethodIsAlwaysInverted")
     protected abstract boolean isParentLayerActive();
 
     protected Point2D createCounterpartPosition(Point2D toMirror) {
         throw new UnsupportedOperationException("Point mirroring supported only for specific point painters!");
     }
 
-    @SuppressWarnings("WeakerAccess")
+    @SuppressWarnings({"WeakerAccess", "SuspiciousMethodCalls"})
     protected void handlePointSelectionEvent(WorldPoint point) {
         if (point != null) {
+            List<? extends BaseWorldPoint> pointsIndex = getPointsIndex();
+            if (!pointsIndex.contains(point)) return;
             if (this.selected != null) {
-                this.selected.setSelected(false);
+                this.selected.setPointSelected(false);
             }
             this.selected = point;
-            this.selected.setSelected(true);
+            this.selected.setPointSelected(true);
             EventBus.publish(new PointSelectedConfirmed(this.selected));
             EventBus.publish(new ViewerRepaintQueued());
         } else {
@@ -195,11 +196,11 @@ public abstract class AbstractPointPainter implements Painter {
         }
         WorldPoint selectedPoint = this.getSelected();
         if (selectedPoint != null) {
-            selectedPoint.setSelected(false);
+            selectedPoint.setPointSelected(false);
         }
         this.setSelected(toSelect);
         if (toSelect != null) {
-            toSelect.setSelected(true);
+            toSelect.setPointSelected(true);
         }
         EventBus.publish(new PointSelectedConfirmed(toSelect));
         EventBus.publish(new ViewerRepaintQueued());
@@ -208,14 +209,13 @@ public abstract class AbstractPointPainter implements Painter {
     private void selectPointStrictly() {
         if (!this.isMousedOverPoint()) return;
         if (this.selected != null) {
-            this.selected.setSelected(false);
+            this.selected.setPointSelected(false);
         }
         this.selected = this.getMousedOver();
-        this.selected.setSelected(true);
+        WorldPoint point = this.getSelected();
+        point.setPointSelected(true);
         EventBus.publish(new PointSelectedConfirmed(this.selected));
         EventBus.publish(new ViewerRepaintQueued());
-
-
     }
 
     public abstract List<? extends BaseWorldPoint> getPointsIndex();
@@ -226,14 +226,13 @@ public abstract class AbstractPointPainter implements Painter {
 
     public abstract int getIndexOfPoint(BaseWorldPoint point);
 
-    public abstract WorldPoint getMirroredCounterpart(WorldPoint point);
+    public abstract WorldPoint getMirroredCounterpart(WorldPoint inputPoint);
 
-    protected abstract BaseWorldPoint getTypeReference();
+    protected abstract Class<? extends BaseWorldPoint> getTypeReference();
 
     private boolean isPointEligible(WorldPoint point) {
         if (point != null) {
-            BaseWorldPoint typeReference = getTypeReference();
-            Class<? extends BaseWorldPoint> typeReferenceClass = typeReference.getClass();
+            Class<? extends BaseWorldPoint> typeReferenceClass = getTypeReference();
             return typeReferenceClass.isAssignableFrom(point.getClass());
         }
         return true;

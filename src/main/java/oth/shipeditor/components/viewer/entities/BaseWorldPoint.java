@@ -6,7 +6,7 @@ import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
 import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.components.BoundsPanelRepaintQueued;
-import oth.shipeditor.communication.events.components.CentersPanelRepaintQueued;
+import oth.shipeditor.communication.events.components.CenterPanelsRepaintQueued;
 import oth.shipeditor.communication.events.viewer.points.AnchorOffsetConfirmed;
 import oth.shipeditor.communication.events.viewer.points.AnchorOffsetQueued;
 import oth.shipeditor.communication.events.viewer.points.InstrumentModeChanged;
@@ -53,7 +53,7 @@ public class BaseWorldPoint implements WorldPoint {
     private boolean cursorInBounds;
 
     @Getter @Setter
-    private boolean selected;
+    private boolean pointSelected;
 
     @Getter
     private final AffineTransform delegateWorldToScreen;
@@ -66,7 +66,7 @@ public class BaseWorldPoint implements WorldPoint {
             if (event instanceof CoordsModeChanged checked) {
                 coordsMode = checked.newMode();
                 EventBus.publish(new BoundsPanelRepaintQueued());
-                EventBus.publish(new CentersPanelRepaintQueued());
+                EventBus.publish(new CenterPanelsRepaintQueued());
             }
         });
         EventBus.subscribe(event -> {
@@ -160,7 +160,7 @@ public class BaseWorldPoint implements WorldPoint {
     @SuppressWarnings("WeakerAccess")
     protected Color getCurrentColor() {
         Color result;
-        if (this.selected && isInteractable()) {
+        if (this.pointSelected && isInteractable()) {
             result = createSelectColor();
         } else if (this.cursorInBounds && isInteractable()) {
             result = createHoverColor();
@@ -180,12 +180,12 @@ public class BaseWorldPoint implements WorldPoint {
 
     public Painter createPointPainter() {
         return (g, worldToScreen, w, h) -> {
-            Shape circle = BaseWorldPoint.getShapeForPoint(worldToScreen, this.position);
+            Shape shape = BaseWorldPoint.getShapeForPoint(worldToScreen, this.position);
 
-            this.cursorInBounds = StaticController.checkIsHovered(circle);
+            this.cursorInBounds = StaticController.checkIsHovered(shape);
 
-            DrawUtilities.outlineShape(g, circle, Color.BLACK, 2);
-            DrawUtilities.fillShape(g, circle, getCurrentColor());
+            DrawUtilities.outlineShape(g, shape, Color.BLACK, 2);
+            DrawUtilities.fillShape(g, shape, getCurrentColor());
         };
     }
 

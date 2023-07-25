@@ -141,8 +141,8 @@ final class TripleSplitContainer extends JSplitPane {
         EventBus.subscribe(event -> {
             if (event instanceof WindowGUIShowConfirmed ) {
                 this.minimizer.minimize();
-                int maximum = secondaryLevel.getMaximumDividerLocation();
-                secondaryLevel.setDividerLocation(maximum + 100);
+                int maximum = this.getSize().width - instrumentPane.getMinimumSize().width;
+                secondaryLevel.setDividerLocation(maximum - 16);
             }
         });
     }
@@ -153,7 +153,7 @@ final class TripleSplitContainer extends JSplitPane {
     private void relocateDivider() {
         if (secondaryLevel == null) return;
         if (instrumentPaneMinimized) {
-            secondaryLevel.setDividerLocation(secondaryLevel.getWidth() - 70);
+            secondaryLevel.setDividerLocation(secondaryLevel.getWidth() - 106);
             this.toggleSecondarySplitterOff();
         } else {
             int maximum = secondaryLevel.getMaximumDividerLocation();
