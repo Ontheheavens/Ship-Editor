@@ -31,6 +31,7 @@ public enum PainterVisibility {
         this.name = inputName;
     }
 
+    @SuppressWarnings("StaticMethodOnlyUsedInOneClass")
     public static DefaultListCellRenderer createCellRenderer() {
         return new DefaultListCellRenderer() {
             @Override
@@ -44,6 +45,7 @@ public enum PainterVisibility {
         };
     }
 
+    @SuppressWarnings("StaticMethodOnlyUsedInOneClass")
     public static ActionListener createActionListener(JComboBox<PainterVisibility> visibilityList,
                                                       Class<? extends AbstractPointPainter> painterClass) {
         return e -> {

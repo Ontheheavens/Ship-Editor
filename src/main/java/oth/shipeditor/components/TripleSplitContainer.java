@@ -28,7 +28,7 @@ import java.util.Map;
  * @author Ontheheavens
  * @since 23.06.2023
  */
-@SuppressWarnings({"FieldCanBeLocal", "ClassWithTooManyFields"})
+@SuppressWarnings({"ClassWithTooManyFields"})
 @Log4j2
 final class TripleSplitContainer extends JSplitPane {
 

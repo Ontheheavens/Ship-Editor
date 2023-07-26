@@ -11,6 +11,7 @@ import oth.shipeditor.components.viewer.entities.BaseWorldPoint;
 import oth.shipeditor.components.viewer.entities.BoundPoint;
 import oth.shipeditor.utility.components.ComponentUtilities;
 import oth.shipeditor.utility.components.SortableList;
+import oth.shipeditor.utility.text.StringValues;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -100,7 +101,7 @@ final class BoundList extends SortableList<BoundPoint> {
                     EventBus.publish(new PointRemoveQueued(boundPoint, true))));
             menu.add(removeBound);
             menu.addSeparator();
-            JMenuItem adjustPosition = new JMenuItem("Adjust position");
+            JMenuItem adjustPosition = new JMenuItem(StringValues.ADJUST_POSITION);
             adjustPosition.addActionListener(event ->
                     actOnSelectedBound(ComponentUtilities::showAdjustPointDialog));
             menu.add(adjustPosition);

@@ -3,6 +3,7 @@ package oth.shipeditor.components.viewer.painters.points;
 import de.javagl.viewer.Painter;
 import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
+import oth.shipeditor.communication.BusEventListener;
 import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.Events;
 import oth.shipeditor.communication.events.viewer.points.BoundCreationQueued;
@@ -17,7 +18,6 @@ import oth.shipeditor.components.viewer.entities.BoundPoint;
 import oth.shipeditor.components.viewer.entities.WorldPoint;
 import oth.shipeditor.components.viewer.layers.LayerPainter;
 import oth.shipeditor.undo.EditDispatch;
-import oth.shipeditor.utility.ApplicationDefaults;
 import oth.shipeditor.utility.StaticController;
 import oth.shipeditor.utility.Utility;
 import oth.shipeditor.utility.graphics.DrawUtilities;
@@ -37,7 +37,7 @@ import java.util.List;
 @Log4j2
 public final class BoundPointsPainter extends MirrorablePointPainter {
 
-    private static final Color BOUND_LINE = ApplicationDefaults.BOUND_LINE_COLOR;
+    private static final Color BOUND_LINE = Color.WHITE;
 
     @Setter
     private List<BoundPoint> boundPoints;
@@ -48,6 +48,8 @@ public final class BoundPointsPainter extends MirrorablePointPainter {
     private final int appendBoundHotkey = KeyEvent.VK_Z;
     private final int insertBoundHotkey = KeyEvent.VK_X;
 
+    private KeyEventDispatcher hotkeyDispatcher;
+
     public BoundPointsPainter(LayerPainter parent) {
         super(parent);
         this.boundPoints = new ArrayList<>();
@@ -55,6 +57,12 @@ public final class BoundPointsPainter extends MirrorablePointPainter {
         this.initModeListener();
         this.initPointListening();
         this.setInteractionEnabled(InstrumentTabsPane.getCurrentMode() == InstrumentMode.BOUNDS);
+    }
+
+    @Override
+    public void cleanupForRemoval() {
+        super.cleanupForRemoval();
+        KeyboardFocusManager.getCurrentKeyboardFocusManager().removeKeyEventDispatcher(hotkeyDispatcher);
     }
 
     @Override
@@ -95,7 +103,7 @@ public final class BoundPointsPainter extends MirrorablePointPainter {
     }
 
     private void initHotkeys() {
-        KeyboardFocusManager.getCurrentKeyboardFocusManager().addKeyEventDispatcher(ke -> {
+        hotkeyDispatcher = ke -> {
             int keyCode = ke.getKeyCode();
             // Remember, single equals is assignments, while double is boolean evaluation.
             // First we evaluate whether the passed keycode is one of our hotkeys, then assign the result to field.
@@ -115,33 +123,41 @@ public final class BoundPointsPainter extends MirrorablePointPainter {
             }
             Events.repaintView();
             return false;
-        });
+        };
+        KeyboardFocusManager.getCurrentKeyboardFocusManager().addKeyEventDispatcher(hotkeyDispatcher);
     }
 
-    @SuppressWarnings("DuplicatedCode")
     private void initModeListener() {
-        EventBus.subscribe(event -> {
+        List<BusEventListener> listeners = getListeners();
+        BusEventListener modeListener = event -> {
             if (event instanceof InstrumentModeChanged checked) {
                 setInteractionEnabled(checked.newMode() == InstrumentMode.BOUNDS);
             }
-        });
+        };
+        listeners.add(modeListener);
+        EventBus.subscribe(modeListener);
     }
 
     private void initPointListening() {
-        EventBus.subscribe(event -> {
+        List<BusEventListener> listeners = getListeners();
+        BusEventListener boundCreationListener = event -> {
             if (event instanceof BoundCreationQueued checked) {
                 if (!isInteractionEnabled()) return;
                 if (!hasPointAtCoords(checked.position())) {
                     createBound(checked);
                 }
             }
-        });
-        EventBus.subscribe(event -> {
+        };
+        listeners.add(boundCreationListener);
+        EventBus.subscribe(boundCreationListener);
+        BusEventListener boundsSortingListener = event -> {
             if (event instanceof BoundPointsSorted checked) {
                 if (!isInteractionEnabled()) return;
                 EditDispatch.postBoundsRearranged(this, this.boundPoints, checked.rearranged());
             }
-        });
+        };
+        listeners.add(boundsSortingListener);
+        EventBus.subscribe(boundsSortingListener);
     }
 
     private void createBound(BoundCreationQueued event) {
@@ -342,7 +358,6 @@ public final class BoundPointsPainter extends MirrorablePointPainter {
         DrawUtilities.fillShape(g, hexagon, Color.WHITE);
     }
 
-    @SuppressWarnings("DuplicatedCode")
     private void handleInsertionGuides(Graphics2D g, AffineTransform worldToScreen,
                                        Point2D adjustedWorldCursor, Point2D worldCounterpart) {
         List<BoundPoint> closest = this.findClosestBoundPoints(adjustedWorldCursor);

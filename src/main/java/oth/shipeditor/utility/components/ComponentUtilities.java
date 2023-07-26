@@ -5,14 +5,16 @@ import com.formdev.flatlaf.ui.FlatRoundBorder;
 import oth.shipeditor.communication.BusEventListener;
 import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.Events;
+import oth.shipeditor.components.viewer.entities.ShieldCenterPoint;
+import oth.shipeditor.components.viewer.entities.ShipCenterPoint;
 import oth.shipeditor.components.viewer.entities.WorldPoint;
 import oth.shipeditor.components.viewer.painters.points.AbstractPointPainter;
 import oth.shipeditor.components.viewer.painters.PainterVisibility;
 import oth.shipeditor.menubar.FileUtilities;
 import oth.shipeditor.undo.EditDispatch;
 import oth.shipeditor.utility.Pair;
-import oth.shipeditor.utility.StringConstants;
 import oth.shipeditor.utility.graphics.ColorUtilities;
+import oth.shipeditor.utility.text.StringValues;
 
 import javax.swing.*;
 import javax.swing.border.Border;
@@ -31,7 +33,6 @@ import java.util.Hashtable;
  * @since 22.07.2023
  */
 public final class ComponentUtilities {
-
 
     private ComponentUtilities() {
     }
@@ -107,10 +108,10 @@ public final class ComponentUtilities {
 
     public static JPopupMenu createPathContextMenu(Path filePath) {
         JPopupMenu openFileMenu = new JPopupMenu();
-        JMenuItem openSourceFile = new JMenuItem(StringConstants.OPEN_SOURCE_FILE);
+        JMenuItem openSourceFile = new JMenuItem(StringValues.OPEN_SOURCE_FILE);
         openSourceFile.addActionListener(e -> FileUtilities.openPathInDesktop(filePath));
         openFileMenu.add(openSourceFile);
-        JMenuItem openContainingFolder = new JMenuItem(StringConstants.OPEN_CONTAINING_FOLDER);
+        JMenuItem openContainingFolder = new JMenuItem(StringValues.OPEN_CONTAINING_FOLDER);
         openContainingFolder.addActionListener(e -> FileUtilities.openPathInDesktop(filePath.getParent()));
         openFileMenu.add(openContainingFolder);
 
@@ -177,11 +178,11 @@ public final class ComponentUtilities {
         visibilityList.setMaximumSize(visibilityList.getPreferredSize());
 
         if (widgetLabel.isEmpty()) {
-            widgetLabel = StringConstants.PAINTER_VIEW;
+            widgetLabel = StringValues.PAINTER_VIEW;
         }
 
         JLabel visibilityWidgetLabel = new JLabel(widgetLabel);
-        visibilityWidgetLabel.setToolTipText(StringConstants.TOGGLED_ON_PER_LAYER_BASIS);
+        visibilityWidgetLabel.setToolTipText(StringValues.TOGGLED_ON_PER_LAYER_BASIS);
         widgetPanel.setBorder(new EmptyBorder(4, 0, 4, 0));
 
         int sidePadding = 6;
@@ -201,6 +202,34 @@ public final class ComponentUtilities {
             EditDispatch.postPointDragged(point, newPosition);
             Events.repaintView();
         }
+    }
+
+    public static void showAdjustShieldRadiusDialog(ShieldCenterPoint point) {
+        NumberChangeDialog dialog = new NumberChangeDialog(point.getShieldRadius());
+        int option = JOptionPane.showConfirmDialog(null, dialog,
+                "Change Shield Radius", JOptionPane.OK_CANCEL_OPTION,
+                JOptionPane.PLAIN_MESSAGE);
+        if (option == JOptionPane.OK_OPTION) {
+            double newRadius = dialog.getUpdatedValue();
+            EditDispatch.postShieldRadiusChanged(point, (float) newRadius);
+            Events.repaintView();
+        }
+    }
+
+    public static void showAdjustCollisionDialog(ShipCenterPoint point) {
+        NumberChangeDialog dialog = new NumberChangeDialog(point.getCollisionRadius());
+        int option = JOptionPane.showConfirmDialog(null, dialog,
+                "Change Collision Radius", JOptionPane.OK_CANCEL_OPTION,
+                JOptionPane.PLAIN_MESSAGE);
+        if (option == JOptionPane.OK_OPTION) {
+            double newRadius = dialog.getUpdatedValue();
+            EditDispatch.postCollisionRadiusChanged(point, (float) newRadius);
+            Events.repaintView();
+        }
+    }
+
+    public static Insets createLabelInsets() {
+        return new Insets(0, 3, 2, 4);
     }
 
 }

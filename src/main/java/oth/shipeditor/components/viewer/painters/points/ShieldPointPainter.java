@@ -1,6 +1,7 @@
 package oth.shipeditor.components.viewer.painters.points;
 
 import lombok.Getter;
+import oth.shipeditor.communication.BusEventListener;
 import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.components.CenterPanelsRepaintQueued;
 import oth.shipeditor.communication.events.viewer.ViewerRepaintQueued;
@@ -10,7 +11,6 @@ import oth.shipeditor.components.instrument.InstrumentTabsPane;
 import oth.shipeditor.components.viewer.InstrumentMode;
 import oth.shipeditor.components.viewer.entities.BaseWorldPoint;
 import oth.shipeditor.components.viewer.entities.ShieldCenterPoint;
-import oth.shipeditor.components.viewer.entities.WorldPoint;
 import oth.shipeditor.components.viewer.layers.LayerPainter;
 import oth.shipeditor.representation.Hull;
 import oth.shipeditor.representation.HullStyle;
@@ -28,24 +28,30 @@ import java.util.List;
  * @author Ontheheavens
  * @since 16.07.2023
  */
-public class ShieldPointPainter extends AbstractPointPainter{
+public class ShieldPointPainter extends SinglePointPainter {
 
     private final List<BaseWorldPoint> points = new ArrayList<>();
 
     @Getter
     private ShieldCenterPoint shieldCenterPoint;
 
-    private final LayerPainter parentLayer;
-
     private final int dragShieldRadiusHotkey = KeyEvent.VK_S;
 
     private boolean shieldRadiusHotkeyPressed;
 
+    private KeyEventDispatcher hotkeyDispatcher;
+
     public ShieldPointPainter(LayerPainter parent) {
-        this.parentLayer = parent;
+        super(parent);
         this.initModeListening();
         this.initHotkeys();
         this.setInteractionEnabled(InstrumentTabsPane.getCurrentMode() == InstrumentMode.SHIELD);
+    }
+
+    @Override
+    public void cleanupForRemoval() {
+        super.cleanupForRemoval();
+        KeyboardFocusManager.getCurrentKeyboardFocusManager().removeKeyEventDispatcher(hotkeyDispatcher);
     }
 
     public void initShieldPoint(Point2D translated, ShipData data) {
@@ -55,7 +61,7 @@ public class ShieldPointPainter extends AbstractPointPainter{
             style = new HullStyle();
         }
         this.shieldCenterPoint = new ShieldCenterPoint(translated,
-                (float) hull.getShieldRadius(), this.parentLayer, style, this);
+                (float) hull.getShieldRadius(), this.getParentLayer(), style, this);
         this.addPoint(shieldCenterPoint);
         Color shieldInnerColor = style.getShieldInnerColor();
         float styleInnerColorOpacity = ColorUtilities.getOpacityFromAlpha(shieldInnerColor.getAlpha());
@@ -63,13 +69,16 @@ public class ShieldPointPainter extends AbstractPointPainter{
     }
 
     private void initModeListening() {
-        EventBus.subscribe(event -> {
+        List<BusEventListener> listeners = getListeners();
+        BusEventListener modeListener = event -> {
             if (event instanceof InstrumentModeChanged checked) {
                 this.setInteractionEnabled(checked.newMode() == InstrumentMode.SHIELD);
                 EventBus.publish(new CenterPanelsRepaintQueued());
             }
-        });
-        EventBus.subscribe(event -> {
+        };
+        listeners.add(modeListener);
+        EventBus.subscribe(modeListener);
+        BusEventListener radiusDragListener = event -> {
             if (event instanceof RadiusDragQueued checked && isInteractionEnabled()) {
                 if (!shieldRadiusHotkeyPressed) return;
                 Point2D pointPosition = this.shieldCenterPoint.getPosition();
@@ -77,16 +86,13 @@ public class ShieldPointPainter extends AbstractPointPainter{
                 float rounded = Math.round(radius * 2) / 2.0f;
                 EditDispatch.postShieldRadiusChanged(this.shieldCenterPoint, rounded);
             }
-        });
-    }
-
-    @Override
-    protected boolean isParentLayerActive() {
-        return this.parentLayer.isLayerActive();
+        };
+        listeners.add(radiusDragListener);
+        EventBus.subscribe(radiusDragListener);
     }
 
     private void initHotkeys() {
-        KeyboardFocusManager.getCurrentKeyboardFocusManager().addKeyEventDispatcher(ke -> {
+        hotkeyDispatcher = ke -> {
             int keyCode = ke.getKeyCode();
             boolean isShieldHotkey = (keyCode == dragShieldRadiusHotkey);
             switch (ke.getID()) {
@@ -103,12 +109,8 @@ public class ShieldPointPainter extends AbstractPointPainter{
             }
             EventBus.publish(new ViewerRepaintQueued());
             return false;
-        });
-    }
-
-    @Override
-    public boolean isMirrorable() {
-        return false;
+        };
+        KeyboardFocusManager.getCurrentKeyboardFocusManager().addKeyEventDispatcher(hotkeyDispatcher);
     }
 
     @Override
@@ -129,11 +131,6 @@ public class ShieldPointPainter extends AbstractPointPainter{
     @Override
     public int getIndexOfPoint(BaseWorldPoint point) {
         return points.indexOf(point);
-    }
-
-    @Override
-    public WorldPoint getMirroredCounterpart(WorldPoint inputPoint) {
-        throw new UnsupportedOperationException("Mirrored operations unsupported by ShieldPointPainters!");
     }
 
     @Override

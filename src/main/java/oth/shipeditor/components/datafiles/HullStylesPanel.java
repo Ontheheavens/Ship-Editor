@@ -5,9 +5,9 @@ import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.files.HullStylesLoaded;
 import oth.shipeditor.menubar.FileUtilities;
 import oth.shipeditor.representation.HullStyle;
-import oth.shipeditor.utility.StringConstants;
 import oth.shipeditor.utility.components.ComponentUtilities;
 import oth.shipeditor.utility.components.MouseoverLabelListener;
+import oth.shipeditor.utility.text.StringValues;
 
 import javax.swing.*;
 import javax.swing.border.Border;
@@ -76,7 +76,7 @@ class HullStylesPanel extends JPanel {
         Path filePath = style.getFilePath();
         JPopupMenu contextMenu = ComponentUtilities.createPathContextMenu(filePath);
 
-        JMenuItem openContainingPackage = new JMenuItem(StringConstants.OPEN_DATA_PACKAGE);
+        JMenuItem openContainingPackage = new JMenuItem(StringValues.OPEN_DATA_PACKAGE);
         openContainingPackage.addActionListener(e -> FileUtilities.openPathInDesktop(style.getContainingPackage()));
         contextMenu.add(openContainingPackage);
 

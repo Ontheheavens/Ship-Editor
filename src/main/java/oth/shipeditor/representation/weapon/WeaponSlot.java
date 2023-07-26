@@ -1,4 +1,4 @@
-package oth.shipeditor.representation;
+package oth.shipeditor.representation.weapon;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -6,7 +6,7 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import lombok.Getter;
 import lombok.Setter;
 import oth.shipeditor.parsing.deserialize.Point2DArrayDeserializer;
-import oth.shipeditor.utility.StringConstants;
+import oth.shipeditor.utility.text.StringConstants;
 
 import java.awt.geom.Point2D;
 
@@ -16,8 +16,7 @@ import java.awt.geom.Point2D;
  */
 @Getter @Setter
 @JsonIgnoreProperties(ignoreUnknown = true)
-public
-class WeaponSlot {
+public class WeaponSlot {
 
     @JsonProperty("id")
     private String id;

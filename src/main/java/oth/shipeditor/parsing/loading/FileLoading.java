@@ -13,7 +13,8 @@ import oth.shipeditor.persistence.SettingsManager;
 import oth.shipeditor.representation.Hull;
 import oth.shipeditor.representation.Skin;
 import oth.shipeditor.utility.ImageCache;
-import oth.shipeditor.utility.StringConstants;
+import oth.shipeditor.utility.text.StringConstants;
+import oth.shipeditor.utility.text.StringValues;
 
 import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
@@ -124,7 +125,7 @@ public final class FileLoading {
             log.error("Hull file loading failed: {}", file.getName());
             JOptionPane.showMessageDialog(null,
                     "Ship hull file loading failed, exception thrown at: " + file,
-                    StringConstants.FILE_LOADING_ERROR,
+                    StringValues.FILE_LOADING_ERROR,
                     JOptionPane.ERROR_MESSAGE);
             e.printStackTrace();
         }

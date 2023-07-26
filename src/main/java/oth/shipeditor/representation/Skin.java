@@ -8,7 +8,8 @@ import lombok.Getter;
 import lombok.Setter;
 import oth.shipeditor.parsing.deserialize.ColorArrayRGBADeserializer;
 import oth.shipeditor.parsing.deserialize.ShipTypeHintsDeserializer;
-import oth.shipeditor.utility.StringConstants;
+import oth.shipeditor.representation.weapon.WeaponSlot;
+import oth.shipeditor.utility.text.StringConstants;
 
 import java.awt.*;
 import java.nio.file.Path;

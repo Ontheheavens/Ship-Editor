@@ -13,8 +13,8 @@ import oth.shipeditor.components.viewer.layers.ShipLayer;
 import oth.shipeditor.representation.Hull;
 import oth.shipeditor.representation.ShipData;
 import oth.shipeditor.representation.Skin;
-import oth.shipeditor.utility.StringConstants;
 import oth.shipeditor.utility.components.SortableTabbedPane;
+import oth.shipeditor.utility.text.StringValues;
 
 import javax.swing.*;
 import java.awt.*;
@@ -169,7 +169,7 @@ public final class ShipLayersPanel extends SortableTabbedPane {
             if (Objects.equals(sprite, "")) {
                 sprite = notLoaded;
             }
-            String spriteNameLine = StringConstants.SPRITE_FILE + sprite;
+            String spriteNameLine = StringValues.SPRITE_FILE + sprite;
             String hull = hullFileName;
             if (Objects.equals(hull, "")) {
                 hull = notLoaded;
@@ -177,7 +177,7 @@ public final class ShipLayersPanel extends SortableTabbedPane {
             String hullNameLine = "Hull file: " + hull;
             String skin = skinFileName;
             if (Objects.equals(skin, "")) {
-                skin = StringConstants.DEFAULT;
+                skin = StringValues.DEFAULT;
             }
             String skinNameLine = "Skin file: " + skin;
             return "<html>" + spriteNameLine + "<br>" + hullNameLine + "<br>" + skinNameLine + "</html>";

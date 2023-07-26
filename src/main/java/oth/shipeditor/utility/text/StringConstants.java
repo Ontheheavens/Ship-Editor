@@ -1,6 +1,8 @@
-package oth.shipeditor.utility;
+package oth.shipeditor.utility.text;
 
 /**
+ * Class for holding internal strings constants, (typically ID field names)
+ * which are not subject for translation changes.
  * @author Ontheheavens
  * @since 26.06.2023
  */
@@ -70,38 +72,5 @@ public interface StringConstants {
     String WEAPON_SLOT_CHANGES = "weaponSlotChanges";
 
     String ENGINE_SLOT_CHANGES = "engineSlotChanges";
-
-    String DEFAULT = "Default";
-
-    String SPRITE_FILE = "Sprite file: ";
-
-    String SEARCH = "Search";
-
-    String FILE_LOADING_ERROR = "File loading error!";
-
-    String LAYER_PROPERTIES = "Layer properties";
-
-    String TOGGLED_ON_PER_LAYER_BASIS = "Toggled on per-layer basis";
-
-    String OPEN_CONTAINING_FOLDER = "Open containing folder";
-
-    String NO_ENTRY_SELECTED = "No entry selected";
-    String OPEN_SOURCE_FILE = "Open source file";
-
-    String NOT_INITIALIZED = "Not initialized";
-
-    String OPEN_DATA_PACKAGE = "Open data package";
-
-    String PIXELS = "pixels";
-
-    String COLLISION = "Collision";
-
-    String SHIELD = "Shield";
-
-    String PAINTER_VIEW = "Painter view: ";
-
-    String PAINTER_OPACITY = "Painter opacity: ";
-
-    String CURRENT_VALUE = "Current value: ";
 
 }

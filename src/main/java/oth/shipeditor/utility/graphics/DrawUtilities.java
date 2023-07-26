@@ -14,7 +14,6 @@ import java.awt.geom.Rectangle2D;
  * @author Ontheheavens
  * @since 19.07.2023
  */
-@SuppressWarnings("DuplicatedCode")
 @Log4j2
 public final class DrawUtilities {
 

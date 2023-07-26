@@ -4,14 +4,10 @@ import de.javagl.viewer.Painter;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
+import oth.shipeditor.communication.BusEventListener;
 import oth.shipeditor.communication.EventBus;
-import oth.shipeditor.communication.events.components.BoundsPanelRepaintQueued;
-import oth.shipeditor.communication.events.components.CenterPanelsRepaintQueued;
 import oth.shipeditor.communication.events.viewer.points.AnchorOffsetConfirmed;
 import oth.shipeditor.communication.events.viewer.points.AnchorOffsetQueued;
-import oth.shipeditor.communication.events.viewer.points.InstrumentModeChanged;
-import oth.shipeditor.communication.events.viewer.status.CoordsModeChanged;
-import oth.shipeditor.components.CoordsDisplayMode;
 import oth.shipeditor.components.instrument.InstrumentTabsPane;
 import oth.shipeditor.components.viewer.InstrumentMode;
 import oth.shipeditor.components.viewer.layers.LayerPainter;
@@ -34,13 +30,8 @@ import java.awt.geom.Point2D;
 @Log4j2
 public class BaseWorldPoint implements WorldPoint {
 
-    private static CoordsDisplayMode coordsMode = CoordsDisplayMode.WORLD;
-
     @Getter @Setter
     private LayerPainter parentLayer;
-
-    @Getter
-    private static InstrumentMode instrumentationMode = InstrumentTabsPane.getCurrentMode();
 
     @Getter
     private final Point2D position;
@@ -59,23 +50,7 @@ public class BaseWorldPoint implements WorldPoint {
     @Getter
     private final AffineTransform delegateWorldToScreen;
 
-    /**
-     * Note: this method needs to be called as soon as possible when initializing the viewer.
-     */
-    public static void initStaticListening() {
-        EventBus.subscribe(event -> {
-            if (event instanceof CoordsModeChanged checked) {
-                coordsMode = checked.newMode();
-                EventBus.publish(new BoundsPanelRepaintQueued());
-                EventBus.publish(new CenterPanelsRepaintQueued());
-            }
-        });
-        EventBus.subscribe(event -> {
-            if (event instanceof InstrumentModeChanged checked) {
-                instrumentationMode = checked.newMode();
-            }
-        });
-    }
+    private BusEventListener anchorDragListener;
 
     public InstrumentMode getAssociatedMode() {
         return InstrumentMode.LAYER;
@@ -120,11 +95,11 @@ public class BaseWorldPoint implements WorldPoint {
 
     public String getPositionText() {
         Point2D location = this.getCoordinatesForDisplay();
-        return "[" + location.getX() + "," + location.getY() + "]";
+        return location.getX() + ", " + location.getY();
     }
     
     private void initLayerListening() {
-        EventBus.subscribe(event -> {
+        anchorDragListener = event -> {
             if (event instanceof AnchorOffsetQueued checked && checked.layer() == this.parentLayer) {
                 Point2D offset = checked.difference();
                 Point2D oldBoundPosition = this.getPosition();
@@ -132,7 +107,12 @@ public class BaseWorldPoint implements WorldPoint {
                         oldBoundPosition.getY() - offset.getY());
                 EventBus.publish(new AnchorOffsetConfirmed(this, offset));
             }
-        });
+        };
+        EventBus.subscribe(anchorDragListener);
+    }
+
+    public void cleanupForRemoval() {
+        EventBus.unsubscribe(anchorDragListener);
     }
 
     protected Color createHoverColor() {
@@ -154,7 +134,7 @@ public class BaseWorldPoint implements WorldPoint {
         if (layer == null) {
             return true;
         }
-        return BaseWorldPoint.getInstrumentationMode() == getAssociatedMode() && layer.isLayerActive();
+        return InstrumentTabsPane.getCurrentMode() == getAssociatedMode() && layer.isLayerActive();
     }
 
 
@@ -211,7 +191,7 @@ public class BaseWorldPoint implements WorldPoint {
         }
         double positionX = pointPosition.getX();
         double positionY = pointPosition.getY();
-        switch (coordsMode) {
+        switch (StaticController.getCoordsMode()) {
             case WORLD -> {}
             case SPRITE_CENTER -> {
                 Point2D center = layerPainter.getSpriteCenter();

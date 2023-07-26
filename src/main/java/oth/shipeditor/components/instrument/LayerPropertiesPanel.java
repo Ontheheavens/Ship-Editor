@@ -7,13 +7,10 @@ import oth.shipeditor.communication.events.viewer.layers.LayerWasSelected;
 import oth.shipeditor.components.viewer.layers.LayerPainter;
 import oth.shipeditor.components.viewer.layers.ShipLayer;
 import oth.shipeditor.utility.Pair;
-import oth.shipeditor.utility.StringConstants;
 import oth.shipeditor.utility.components.ComponentUtilities;
+import oth.shipeditor.utility.text.StringValues;
 
 import javax.swing.*;
-import javax.swing.border.Border;
-import javax.swing.border.CompoundBorder;
-import javax.swing.border.EmptyBorder;
 import javax.swing.event.ChangeListener;
 import java.awt.*;
 
@@ -45,7 +42,7 @@ final class LayerPropertiesPanel extends JPanel {
 
     private void updateOpacityLabel(int opacity) {
         opacityLabel.setText("Sprite opacity: ");
-        opacityLabel.setToolTipText(StringConstants.CURRENT_VALUE + opacity + "%");
+        opacityLabel.setToolTipText(StringValues.CURRENT_VALUE + opacity + "%");
     }
 
     private JPanel createLayerPanel() {

@@ -5,7 +5,7 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import lombok.Getter;
 import lombok.Setter;
 import oth.shipeditor.parsing.deserialize.Point2DDeserializer;
-import oth.shipeditor.utility.StringConstants;
+import oth.shipeditor.utility.text.StringConstants;
 
 import java.awt.geom.Point2D;
 

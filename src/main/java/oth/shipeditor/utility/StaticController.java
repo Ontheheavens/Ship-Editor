@@ -3,9 +3,13 @@ package oth.shipeditor.utility;
 import lombok.Getter;
 import lombok.Setter;
 import oth.shipeditor.communication.EventBus;
+import oth.shipeditor.communication.events.components.BoundsPanelRepaintQueued;
+import oth.shipeditor.communication.events.components.CenterPanelsRepaintQueued;
 import oth.shipeditor.communication.events.viewer.control.ViewerCursorMoved;
 import oth.shipeditor.communication.events.viewer.layers.ActiveLayerUpdated;
 import oth.shipeditor.communication.events.viewer.layers.LayerWasSelected;
+import oth.shipeditor.communication.events.viewer.status.CoordsModeChanged;
+import oth.shipeditor.components.CoordsDisplayMode;
 import oth.shipeditor.components.viewer.PrimaryShipViewer;
 import oth.shipeditor.components.viewer.layers.ShipLayer;
 import oth.shipeditor.menubar.FileUtilities;
@@ -33,11 +37,17 @@ public final class StaticController {
     @Getter @Setter
     private static double zoomLevel = 1;
 
-    @Getter @Setter
+    @Getter
     private static Point2D rawCursor = new Point2D.Double();
 
-    @Getter @Setter
+    @Getter
     private static Point2D adjustedCursor = new Point2D.Double();
+
+    @Getter
+    private static Point2D correctedCursor = new Point2D.Double();
+
+    @Getter
+    private static CoordsDisplayMode coordsMode = CoordsDisplayMode.WORLD;
 
     private StaticController() {
     }
@@ -70,6 +80,14 @@ public final class StaticController {
             if (event instanceof ViewerCursorMoved checked) {
                 rawCursor = checked.rawCursor();
                 adjustedCursor = checked.adjusted();
+                correctedCursor = checked.adjustedAndCorrected();
+            }
+        });
+        EventBus.subscribe(event -> {
+            if (event instanceof CoordsModeChanged checked) {
+                coordsMode = checked.newMode();
+                EventBus.publish(new BoundsPanelRepaintQueued());
+                EventBus.publish(new CenterPanelsRepaintQueued());
             }
         });
     }

@@ -3,6 +3,7 @@ package oth.shipeditor.components.viewer.layers;
 import de.javagl.viewer.Painter;
 import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
+import oth.shipeditor.communication.BusEventListener;
 import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.Events;
 import oth.shipeditor.communication.events.viewer.ViewerRepaintQueued;
@@ -76,10 +77,13 @@ public final class LayerPainter implements Painter {
     @Getter
     private boolean uninitialized = true;
 
+    private final List<BusEventListener> listeners;
+
     @SuppressWarnings("ThisEscapedInObjectConstruction")
     public LayerPainter(ShipLayer layer, PrimaryShipViewer viewerPanel) {
         this.parentLayer = layer;
         this.viewer = viewerPanel;
+        this.listeners = new ArrayList<>();
 
         this.centerPointPainter = new CenterPointPainter(this);
         this.shieldPointPainter = new ShieldPointPainter(this);
@@ -99,16 +103,23 @@ public final class LayerPainter implements Painter {
         return (layerManager.getActiveLayer() == this.parentLayer);
     }
 
+    private void cleanupForRemoval() {
+        for (AbstractPointPainter pointPainter : this.getAllPainters()) {
+            LayerPainter.clearPointPainter(pointPainter);
+        }
+        listeners.forEach(EventBus::unsubscribe);
+    }
+
     private void initLayerListeners() {
-        EventBus.subscribe(event -> {
+        BusEventListener removalListener = event -> {
             if (event instanceof ShipLayerRemovalConfirmed checked) {
                 if (checked.removed() != this.parentLayer) return;
-                for (AbstractPointPainter pointPainter : this.getAllPainters()) {
-                    LayerPainter.clearPointPainter(pointPainter);
-                }
+                this.cleanupForRemoval();
             }
-        });
-        EventBus.subscribe(event -> {
+        };
+        listeners.add(removalListener);
+        EventBus.subscribe(removalListener);
+        BusEventListener anchorDragListener = event -> {
             if (event instanceof LayerAnchorDragged checked && checked.selected() == this) {
                 AffineTransform screenToWorld = checked.screenToWorld();
                 Point2D difference = checked.difference();
@@ -119,18 +130,22 @@ public final class LayerPainter implements Painter {
                 updateAnchorOffset(corrected);
                 Events.repaintView();
             }
-        });
+        };
+        listeners.add(anchorDragListener);
+        EventBus.subscribe(anchorDragListener);
     }
 
     private static void clearPointPainter(AbstractPointPainter pointPainter) {
         Iterable<BaseWorldPoint> points = new ArrayList<>(pointPainter.getPointsIndex());
         for (BaseWorldPoint point : points) {
+            point.cleanupForRemoval();
             pointPainter.removePoint(point);
         }
+        pointPainter.cleanupForRemoval();
     }
 
     private void initPainterListeners(ShipLayer layer) {
-        EventBus.subscribe(event -> {
+        BusEventListener layerUpdateListener = event -> {
             if (event instanceof ActiveLayerUpdated checked) {
                 if (checked.updated() != layer) return;
                 if (layer.getShipSprite() != null) {
@@ -140,7 +155,9 @@ public final class LayerPainter implements Painter {
                     this.initializeShipData(layer.getShipData());
                 }
             }
-        });
+        };
+        listeners.add(layerUpdateListener);
+        EventBus.subscribe(layerUpdateListener);
     }
 
     public void updateAnchorOffset(Point2D updated) {

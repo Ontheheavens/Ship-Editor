@@ -11,7 +11,7 @@ import oth.shipeditor.components.instrument.centers.ShieldPanel;
 import oth.shipeditor.components.viewer.InstrumentMode;
 import oth.shipeditor.utility.components.MinimizeListener;
 import oth.shipeditor.utility.components.MinimizerWidget;
-import oth.shipeditor.utility.StringConstants;
+import oth.shipeditor.utility.text.StringValues;
 
 import javax.swing.*;
 import java.awt.*;
@@ -22,7 +22,6 @@ import java.util.Map;
  * @author Ontheheavens
  * @since 08.06.2023
  */
-@SuppressWarnings("FieldCanBeLocal")
 @Log4j2
 public final class InstrumentTabsPane extends JTabbedPane {
 
@@ -83,11 +82,11 @@ public final class InstrumentTabsPane extends JTabbedPane {
 
         collisionPanel = new CollisionPanel();
         panelMode.put(collisionPanel, InstrumentMode.COLLISION);
-        this.addTab(StringConstants.COLLISION, collisionPanel);
+        this.addTab(StringValues.COLLISION, collisionPanel);
 
         shieldPanel = new ShieldPanel();
         panelMode.put(shieldPanel, InstrumentMode.SHIELD);
-        this.addTab(StringConstants.SHIELD, shieldPanel);
+        this.addTab(StringValues.SHIELD, shieldPanel);
 
         boundsPanel = new BoundPointsPanel();
         panelMode.put(boundsPanel, InstrumentMode.BOUNDS);
@@ -138,7 +137,7 @@ public final class InstrumentTabsPane extends JTabbedPane {
         if (minimizer.isMinimized()) {
             minimizePrompt = "(Left-click to expand panel)";
         }
-        String layerPanelLabel = StringConstants.LAYER_PROPERTIES;
+        String layerPanelLabel = StringValues.LAYER_PROPERTIES;
         String collisionPanelLabel = "Ship center and collision";
         String shieldPanelLabel = "Shield center and radius";
         String boundPanelLabel = "Ship bound polygon";

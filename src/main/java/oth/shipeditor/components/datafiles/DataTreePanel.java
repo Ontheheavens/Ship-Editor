@@ -2,7 +2,7 @@ package oth.shipeditor.components.datafiles;
 
 import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
-import oth.shipeditor.utility.StringConstants;
+import oth.shipeditor.utility.text.StringValues;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -53,7 +53,7 @@ abstract class DataTreePanel extends JPanel {
 
     void resetInfoPanel() {
         rightPanel.removeAll();
-        rightPanel.add(new JLabel(StringConstants.NO_ENTRY_SELECTED));
+        rightPanel.add(new JLabel(StringValues.NO_ENTRY_SELECTED));
     }
 
     private static JScrollPane createTableFromMap(Map<String, String> data) {
@@ -85,7 +85,7 @@ abstract class DataTreePanel extends JPanel {
 
     private JSplitPane createContentSplitter(JPanel treeContainer) {
         rightPanel = new JPanel(new GridBagLayout());
-        rightPanel.add(new JLabel(StringConstants.NO_ENTRY_SELECTED));
+        rightPanel.add(new JLabel(StringValues.NO_ENTRY_SELECTED));
         JSplitPane treeSplitter = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
         treeSplitter.setOneTouchExpandable(true);
         treeSplitter.setResizeWeight(0.4f);
@@ -111,7 +111,7 @@ abstract class DataTreePanel extends JPanel {
         gridBagConstraints.insets = new Insets(0, 0, 0, 0); // Set padding.
         // Add the search field to the container with the specified constraints.
         searchContainer.add(searchField, gridBagConstraints);
-        JButton searchButton = new JButton(StringConstants.SEARCH);
+        JButton searchButton = new JButton(StringValues.SEARCH);
         searchButton.addActionListener(e -> {
             String query = searchField.getText();
             if (query.isEmpty()) return;
@@ -241,13 +241,13 @@ abstract class DataTreePanel extends JPanel {
         collapsePackage.addActionListener(getCollapseAction());
         menu.add(collapsePackage);
         menu.addSeparator();
-        JMenuItem openSourceFile = new JMenuItem(StringConstants.OPEN_SOURCE_FILE);
+        JMenuItem openSourceFile = new JMenuItem(StringValues.OPEN_SOURCE_FILE);
         openSourceFile.addActionListener(e -> openEntryPath(OpenDataTarget.FILE));
         menu.add(openSourceFile);
-        JMenuItem openInExplorer = new JMenuItem(StringConstants.OPEN_CONTAINING_FOLDER);
+        JMenuItem openInExplorer = new JMenuItem(StringValues.OPEN_CONTAINING_FOLDER);
         openInExplorer.addActionListener(e -> openEntryPath(OpenDataTarget.CONTAINER));
         menu.add(openInExplorer);
-        JMenuItem openPackage = new JMenuItem(StringConstants.OPEN_DATA_PACKAGE);
+        JMenuItem openPackage = new JMenuItem(StringValues.OPEN_DATA_PACKAGE);
         openPackage.addActionListener(e -> openEntryPath(OpenDataTarget.PACKAGE));
         menu.add(openPackage);
         return menu;

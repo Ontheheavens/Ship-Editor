@@ -3,16 +3,20 @@ package oth.shipeditor.components.viewer.entities;
 import de.javagl.viewer.Painter;
 import lombok.Getter;
 import lombok.Setter;
+import oth.shipeditor.components.instrument.InstrumentTabsPane;
 import oth.shipeditor.components.viewer.InstrumentMode;
 import oth.shipeditor.components.viewer.layers.LayerPainter;
 import oth.shipeditor.components.viewer.painters.points.ShieldPointPainter;
 import oth.shipeditor.representation.HullStyle;
 import oth.shipeditor.utility.Utility;
+import oth.shipeditor.utility.graphics.ColorUtilities;
 import oth.shipeditor.utility.graphics.DrawUtilities;
 import oth.shipeditor.utility.graphics.ShapeUtilities;
 
 import java.awt.*;
-import java.awt.geom.*;
+import java.awt.geom.AffineTransform;
+import java.awt.geom.Ellipse2D;
+import java.awt.geom.Point2D;
 
 /**
  * @author Ontheheavens
@@ -38,7 +42,7 @@ public class ShieldCenterPoint extends BaseWorldPoint{
 
     @Override
     protected boolean isInteractable() {
-        return BaseWorldPoint.getInstrumentationMode() == getAssociatedMode() && parentPainter.isInteractionEnabled();
+        return InstrumentTabsPane.getCurrentMode() == getAssociatedMode() && parentPainter.isInteractionEnabled();
     }
 
     @Override
@@ -85,18 +89,19 @@ public class ShieldCenterPoint extends BaseWorldPoint{
 
     @Override
     protected Color createBaseColor() {
-        return new Color(0xFF006E28, true);
+        return Color.GRAY;
     }
 
     @Override
     protected Color createHoverColor() {
-        return new Color(0xFF009B37, true);
+        return ColorUtilities.getBlendedColor(createBaseColor(),
+                createSelectColor(), 0.5f);
     }
 
     @Override
     @SuppressWarnings("WeakerAccess")
     protected Color createSelectColor() {
-        return new Color(0xFF00FF73, true);
+        return Color.LIGHT_GRAY;
     }
 
     private void paintShieldCenterCross(Graphics2D g, AffineTransform worldToScreen) {

@@ -3,10 +3,12 @@ package oth.shipeditor.components.viewer.entities;
 import de.javagl.viewer.Painter;
 import lombok.Getter;
 import lombok.Setter;
+import oth.shipeditor.components.instrument.InstrumentTabsPane;
 import oth.shipeditor.components.viewer.InstrumentMode;
 import oth.shipeditor.components.viewer.layers.LayerPainter;
 import oth.shipeditor.components.viewer.painters.points.CenterPointPainter;
 import oth.shipeditor.utility.Utility;
+import oth.shipeditor.utility.graphics.ColorUtilities;
 import oth.shipeditor.utility.graphics.DrawUtilities;
 import oth.shipeditor.utility.graphics.ShapeUtilities;
 
@@ -40,7 +42,7 @@ public class ShipCenterPoint extends BaseWorldPoint {
     protected boolean isInteractable() {
         LayerPainter layerPainter = super.getParentLayer();
         CenterPointPainter painter = layerPainter.getCenterPointPainter();
-        return BaseWorldPoint.getInstrumentationMode() == getAssociatedMode() && painter.isInteractionEnabled();
+        return InstrumentTabsPane.getCurrentMode() == getAssociatedMode() && painter.isInteractionEnabled();
     }
 
     @Override
@@ -77,14 +79,20 @@ public class ShipCenterPoint extends BaseWorldPoint {
     }
 
     @Override
+    protected Color createBaseColor() {
+        return Color.GRAY;
+    }
+
+    @Override
     protected Color createHoverColor() {
-        return new Color(0xFF00329B, true);
+        return ColorUtilities.getBlendedColor(createBaseColor(),
+                createSelectColor(), 0.5f);
     }
 
     @Override
     @SuppressWarnings("WeakerAccess")
     protected Color createSelectColor() {
-        return new Color(0xFF0087FF, true);
+        return Color.LIGHT_GRAY;
     }
 
     private void paintCenterCross(Graphics2D g, AffineTransform worldToScreen) {

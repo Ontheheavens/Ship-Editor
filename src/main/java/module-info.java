@@ -53,5 +53,8 @@
     exports oth.shipeditor.utility;
     exports oth.shipeditor.utility.graphics;
     exports oth.shipeditor.components.viewer.painters.points;
+    exports oth.shipeditor.representation.weapon;
+    opens oth.shipeditor.representation.weapon;
+    exports oth.shipeditor.utility.text;
 
 }

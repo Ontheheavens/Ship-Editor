@@ -16,8 +16,8 @@ import oth.shipeditor.components.viewer.layers.ShipLayer;
 import oth.shipeditor.components.viewer.painters.PainterVisibility;
 import oth.shipeditor.components.viewer.painters.points.BoundPointsPainter;
 import oth.shipeditor.utility.Pair;
-import oth.shipeditor.utility.StringConstants;
 import oth.shipeditor.utility.components.ComponentUtilities;
+import oth.shipeditor.utility.text.StringValues;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -29,7 +29,6 @@ import java.awt.event.ActionListener;
  * @author Ontheheavens
  * @since 30.04.2023
  */
-@SuppressWarnings("DuplicatedCode")
 @Log4j2
 public final class BoundPointsPanel extends JPanel {
 
@@ -66,8 +65,8 @@ public final class BoundPointsPanel extends JPanel {
     }
 
     private void updateOpacityLabel(int opacity) {
-        opacityLabel.setText(StringConstants.PAINTER_OPACITY);
-        opacityLabel.setToolTipText(StringConstants.CURRENT_VALUE + opacity + "%");
+        opacityLabel.setText(StringValues.PAINTER_OPACITY);
+        opacityLabel.setToolTipText(StringValues.CURRENT_VALUE + opacity + "%");
     }
 
     private JPanel createReorderCheckboxPanel() {

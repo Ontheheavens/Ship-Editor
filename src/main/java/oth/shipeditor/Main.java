@@ -20,7 +20,6 @@ import oth.shipeditor.representation.Hull;
 import oth.shipeditor.representation.Skin;
 
 import javax.swing.*;
-import javax.swing.border.TitledBorder;
 import java.awt.*;
 import java.awt.geom.Point2D;
 import java.awt.image.BufferedImage;

@@ -32,14 +32,6 @@ public final class EventBus {
         return listener;
     }
 
-    // TODO: Right now listener are not getting removed from bus at all.
-    //  Since the number of listeners is comparatively small so far, this is not a problem yet.
-    //  If situation arises where the event bus bloat proves an issue, we will need to refactor our whole listener system.
-    //  One of the solutions for that is to swap lambdas for anonymous classes and have unsubscribe event condition.
-
-    // Note: not all event listeners are equally perpetrators in this issue; some are registered and persist
-    // through whole runtime duration, while others are registered en masse in span of seconds. We should deal with the latter,
-    // and leave the former be.
     public static void unsubscribe(BusEventListener listener) {
         bus.subscribers.remove(listener);
         log.info("Removed listener {}, bus size: {}",

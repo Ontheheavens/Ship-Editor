@@ -5,7 +5,7 @@ import lombok.extern.log4j.Log4j2;
 import oth.shipeditor.components.layering.ShipLayersPanel;
 import oth.shipeditor.components.viewer.PrimaryShipViewer;
 import oth.shipeditor.components.viewer.ShipViewable;
-import oth.shipeditor.utility.StringConstants;
+import oth.shipeditor.utility.text.StringValues;
 
 import javax.swing.*;
 import java.awt.*;
@@ -17,7 +17,7 @@ import java.awt.*;
 @Log4j2
 public final class WindowContentPanes {
 
-    private static final String DEFAULT_LEFTSIDE_PANE = StringConstants.DEFAULT;
+    private static final String DEFAULT_LEFTSIDE_PANE = StringValues.DEFAULT;
 
     /**
      * Complex component responsible for ship layers display.

@@ -9,7 +9,8 @@ import oth.shipeditor.menubar.FileUtilities;
 import oth.shipeditor.parsing.loading.FileLoading;
 import oth.shipeditor.representation.Hull;
 import oth.shipeditor.representation.Skin;
-import oth.shipeditor.utility.StringConstants;
+import oth.shipeditor.utility.text.StringConstants;
+import oth.shipeditor.utility.text.StringValues;
 
 import java.io.File;
 import java.nio.file.Path;
@@ -52,7 +53,7 @@ public class ShipCSVEntry {
         this.hullFileName = fileName;
         this.activeSkin = Skin.empty();
         if (this.skins != null) {
-            this.skins.put(StringConstants.DEFAULT, activeSkin);
+            this.skins.put(StringValues.DEFAULT, activeSkin);
         }
     }
 

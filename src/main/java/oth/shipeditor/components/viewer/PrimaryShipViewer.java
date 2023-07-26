@@ -2,7 +2,6 @@ package oth.shipeditor.components.viewer;
 
 import de.javagl.viewer.Viewer;
 import lombok.Getter;
-import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
 import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.components.ViewerFocusRequestQueued;
@@ -13,7 +12,6 @@ import oth.shipeditor.communication.events.viewer.control.ViewerTransformsReset;
 import oth.shipeditor.communication.events.viewer.layers.*;
 import oth.shipeditor.components.viewer.control.ShipViewerControls;
 import oth.shipeditor.components.viewer.control.ViewerControl;
-import oth.shipeditor.components.viewer.entities.BaseWorldPoint;
 import oth.shipeditor.components.viewer.layers.LayerManager;
 import oth.shipeditor.components.viewer.layers.LayerPainter;
 import oth.shipeditor.components.viewer.layers.ShipLayer;
@@ -62,9 +60,6 @@ public final class PrimaryShipViewer extends Viewer implements ShipViewable {
     public PrimaryShipViewer() {
         this.setMinimumSize(minimumPanelSize);
         this.setBackground(Color.GRAY);
-
-        // Required for early initializing of base coordinate systems functionality.
-        BaseWorldPoint.initStaticListening();
 
         this.layerManager = new LayerManager();
         this.layerManager.initListeners();

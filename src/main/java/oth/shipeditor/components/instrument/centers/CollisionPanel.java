@@ -9,12 +9,12 @@ import oth.shipeditor.communication.events.viewer.layers.PainterOpacityChangeQue
 import oth.shipeditor.components.viewer.entities.ShipCenterPoint;
 import oth.shipeditor.components.viewer.layers.LayerPainter;
 import oth.shipeditor.components.viewer.layers.ShipLayer;
-import oth.shipeditor.components.viewer.painters.points.CenterPointPainter;
 import oth.shipeditor.components.viewer.painters.PainterVisibility;
-import oth.shipeditor.utility.ApplicationDefaults;
+import oth.shipeditor.components.viewer.painters.points.CenterPointPainter;
 import oth.shipeditor.utility.Pair;
-import oth.shipeditor.utility.StringConstants;
 import oth.shipeditor.utility.components.ComponentUtilities;
+import oth.shipeditor.utility.components.MouseoverLabelListener;
+import oth.shipeditor.utility.text.StringValues;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -84,14 +84,14 @@ public final class CollisionPanel extends JPanel {
     }
 
     private void updateHullLabels() {
-        String noInit = StringConstants.NOT_INITIALIZED;
+        String noInit = StringValues.NOT_INITIALIZED;
         String centerPosition = noInit;
         String collisionValue = noInit;
         if (this.centerPainter != null) {
             ShipCenterPoint center = this.centerPainter.getCenterPoint();
             if (center != null) {
                 centerPosition = center.getPositionText();
-                collisionValue = center.getCollisionRadius() + " " + StringConstants.PIXELS;
+                collisionValue = center.getCollisionRadius() + " " + StringValues.PIXELS;
             }
         }
         centerCoords.setText(centerPosition);
@@ -126,6 +126,20 @@ public final class CollisionPanel extends JPanel {
 
     private JPanel createShipCenterInfo() {
         centerCoords = new JLabel();
+
+        centerCoords.setToolTipText(StringValues.RIGHT_CLICK_TO_ADJUST_POSITION);
+        Insets insets = ComponentUtilities.createLabelInsets();
+        centerCoords.setBorder(ComponentUtilities.createLabelSimpleBorder(insets));
+
+        JPopupMenu shipCenterMenu = new JPopupMenu();
+        JMenuItem adjustPosition = new JMenuItem(StringValues.ADJUST_POSITION);
+        adjustPosition.addActionListener(event -> {
+            ShipCenterPoint centerPoint = centerPainter.getCenterPoint();
+            ComponentUtilities.showAdjustPointDialog(centerPoint);
+        });
+        shipCenterMenu.add(adjustPosition);
+        centerCoords.addMouseListener(new MouseoverLabelListener(shipCenterMenu, centerCoords));
+
         JPanel panel = ComponentUtilities.createBoxLabelPanel("Center position:", centerCoords);
         panel.setBorder(new EmptyBorder(12, 0, 0, 0));
         return panel;
@@ -133,14 +147,28 @@ public final class CollisionPanel extends JPanel {
 
     private JPanel createCollisionInfo() {
         collisionRadius = new JLabel();
+
+        collisionRadius.setToolTipText(StringValues.RIGHT_CLICK_TO_ADJUST_VALUE);
+        Insets insets = ComponentUtilities.createLabelInsets();
+        collisionRadius.setBorder(ComponentUtilities.createLabelSimpleBorder(insets));
+
+        JPopupMenu collisionRadiusMenu = new JPopupMenu();
+        JMenuItem adjustValue = new JMenuItem(StringValues.ADJUST_VALUE);
+        adjustValue.addActionListener(event -> {
+            ShipCenterPoint centerPoint = centerPainter.getCenterPoint();
+            ComponentUtilities.showAdjustCollisionDialog(centerPoint);
+        });
+        collisionRadiusMenu.add(adjustValue);
+        collisionRadius.addMouseListener(new MouseoverLabelListener(collisionRadiusMenu, collisionRadius));
+
         JPanel panel = ComponentUtilities.createBoxLabelPanel("Collision radius:", collisionRadius);
         panel.setBorder(new EmptyBorder(16, 0, 0, 0));
         return panel;
     }
 
     private void updateCollisionOpacityLabel(int opacity) {
-        collisionOpacityLabel.setText(StringConstants.PAINTER_OPACITY);
-        collisionOpacityLabel.setToolTipText(StringConstants.CURRENT_VALUE + opacity + "%");
+        collisionOpacityLabel.setText(StringValues.PAINTER_OPACITY);
+        collisionOpacityLabel.setToolTipText(StringValues.CURRENT_VALUE + opacity + "%");
     }
 
     private JPanel createCollisionOpacityPanel() {
@@ -158,7 +186,7 @@ public final class CollisionPanel extends JPanel {
         BusEventListener eventListener = event -> {
             if (event instanceof LayerWasSelected checked) {
                 ShipLayer selected = checked.selected();
-                int defaultOpacity = (int) (ApplicationDefaults.COLLISION_OPACITY * 100.0f);
+                int defaultOpacity = (int) (CenterPointPainter.COLLISION_OPACITY * 100.0f);
                 if (selected == null) {
                     updateCollisionOpacityLabel(defaultOpacity);
                     collisionOpacitySlider.setValue(defaultOpacity);

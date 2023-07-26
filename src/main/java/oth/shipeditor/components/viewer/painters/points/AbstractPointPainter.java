@@ -4,9 +4,9 @@ import de.javagl.viewer.Painter;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
+import oth.shipeditor.communication.BusEventListener;
 import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.viewer.ViewerRepaintQueued;
-import oth.shipeditor.communication.events.viewer.control.ViewerCursorMoved;
 import oth.shipeditor.communication.events.viewer.layers.PainterOpacityChangeQueued;
 import oth.shipeditor.communication.events.viewer.layers.PainterVisibilityChanged;
 import oth.shipeditor.communication.events.viewer.points.*;
@@ -16,6 +16,7 @@ import oth.shipeditor.components.viewer.entities.BaseWorldPoint;
 import oth.shipeditor.components.viewer.entities.WorldPoint;
 import oth.shipeditor.components.viewer.painters.PainterVisibility;
 import oth.shipeditor.undo.EditDispatch;
+import oth.shipeditor.utility.StaticController;
 import oth.shipeditor.utility.Utility;
 
 import java.awt.*;
@@ -56,22 +57,15 @@ public abstract class AbstractPointPainter implements Painter {
     private float paintOpacity = 1.0f;
 
     @Getter
-    private static Point2D correctedCursor = new Point2D.Double();
+    private final List<BusEventListener> listeners;
 
     AbstractPointPainter() {
         this.delegates = new ArrayList<>();
         this.delegateWorldToScreen = new AffineTransform();
+        this.listeners = new ArrayList<>();
         this.initChangeListeners();
         this.visibilityMode = PainterVisibility.SHOWN_WHEN_EDITED;
         this.setPaintOpacity(1.0f);
-    }
-
-    public static void initCursorListening() {
-        EventBus.subscribe(event -> {
-            if (event instanceof ViewerCursorMoved checked) {
-                correctedCursor = checked.adjustedAndCorrected();
-            }
-        });
     }
 
     public boolean isInteractionEnabled() {
@@ -86,20 +80,28 @@ public abstract class AbstractPointPainter implements Painter {
 
     public abstract boolean isMirrorable();
 
+    public void cleanupForRemoval() {
+        listeners.forEach(EventBus::unsubscribe);
+    }
+
     @SuppressWarnings("OverlyComplexMethod")
     private void initChangeListeners() {
-        EventBus.subscribe(event -> {
+        BusEventListener pointRemovalListener = event -> {
             if (event instanceof PointRemoveQueued checked && this.isInteractionEnabled()) {
                 this.handlePointRemovalEvent(checked.point(), checked.fromList());
             }
-        });
-        EventBus.subscribe(event -> {
+        };
+        listeners.add(pointRemovalListener);
+        EventBus.subscribe(pointRemovalListener);
+        BusEventListener pointSelectionListener = event -> {
             if (event instanceof PointSelectQueued checked && this.isPointEligible(checked.point())) {
                 if (!this.isInteractionEnabled()) return;
                 this.handlePointSelectionEvent((BaseWorldPoint) checked.point());
             }
-        });
-        EventBus.subscribe(event -> {
+        };
+        listeners.add(pointSelectionListener);
+        EventBus.subscribe(pointSelectionListener);
+        BusEventListener pointDragListener = event -> {
             if (event instanceof PointDragQueued checked) {
                 if (!this.isInteractionEnabled()) return;
                 if (getSelected() == null) return;
@@ -125,8 +127,10 @@ public abstract class AbstractPointPainter implements Painter {
                     EditDispatch.postPointDragged(counterpart, counterpartNewPosition);
                 }
             }
-        });
-        EventBus.subscribe(event -> {
+        };
+        listeners.add(pointDragListener);
+        EventBus.subscribe(pointDragListener);
+        BusEventListener painterOpacityListener = event -> {
             if (event instanceof PainterOpacityChangeQueued checked) {
                 Class<? extends AbstractPointPainter> painterClass = checked.painterClass();
                 if (!painterClass.isInstance(this)) return;
@@ -134,15 +138,19 @@ public abstract class AbstractPointPainter implements Painter {
                 this.setPaintOpacity(checked.change());
                 EventBus.publish(new ViewerRepaintQueued());
             }
-        });
-        EventBus.subscribe(event -> {
+        };
+        listeners.add(painterOpacityListener);
+        EventBus.subscribe(painterOpacityListener);
+        BusEventListener painterVisibilityListener = event -> {
             if (event instanceof PainterVisibilityChanged checked) {
                 Class<? extends AbstractPointPainter> painterClass = checked.painterClass();
                 if (!painterClass.isInstance(this) || !isParentLayerActive()) return;
                 this.setVisibilityMode(checked.changed());
                 EventBus.publish(new ViewerRepaintQueued());
             }
-        });
+        };
+        listeners.add(painterVisibilityListener);
+        EventBus.subscribe(painterVisibilityListener);
     }
 
     private void handlePointRemovalEvent(BaseWorldPoint point, boolean removalViaListPanel) {
@@ -193,13 +201,17 @@ public abstract class AbstractPointPainter implements Painter {
         }
     }
 
-    private void selectPointConditionally() {
+    protected void selectPointConditionally() {
         PointSelectionMode current = ControlPredicates.getSelectionMode();
         if (current == PointSelectionMode.STRICT) {
             this.selectPointStrictly();
             return;
         }
-        Point2D cursor = AbstractPointPainter.getCorrectedCursor();
+        this.selectPointClosest();
+    }
+
+    void selectPointClosest() {
+        Point2D cursor = StaticController.getCorrectedCursor();
         WorldPoint toSelect = null;
         double minDistance = Double.MAX_VALUE;
         for (WorldPoint point : this.getPointsIndex()) {
