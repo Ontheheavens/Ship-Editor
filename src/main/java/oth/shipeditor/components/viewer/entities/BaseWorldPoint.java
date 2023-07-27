@@ -11,7 +11,6 @@ import oth.shipeditor.communication.events.viewer.points.AnchorOffsetQueued;
 import oth.shipeditor.components.instrument.InstrumentTabsPane;
 import oth.shipeditor.components.viewer.InstrumentMode;
 import oth.shipeditor.components.viewer.layers.LayerPainter;
-import oth.shipeditor.components.viewer.layers.ShipLayer;
 import oth.shipeditor.components.viewer.painters.TextPainter;
 import oth.shipeditor.utility.StaticController;
 import oth.shipeditor.utility.Utility;
@@ -91,7 +90,7 @@ public class BaseWorldPoint implements WorldPoint, Painter {
 
     public String getPositionText() {
         Point2D location = this.getCoordinatesForDisplay();
-        return location.getX() + ", " + location.getY();
+        return Utility.getPointPositionText(location);
     }
     
     private void initLayerListening() {
@@ -165,44 +164,7 @@ public class BaseWorldPoint implements WorldPoint, Painter {
 
     public Point2D getCoordinatesForDisplay() {
         Point2D pointPosition = this.getPosition();
-        Point2D result = pointPosition;
-        ShipLayer activeLayer = StaticController.getActiveLayer();
-        if (activeLayer == null) {
-            return result;
-        }
-        LayerPainter layerPainter = activeLayer.getPainter();
-        if (layerPainter == null || layerPainter.isUninitialized()) {
-            return result;
-        }
-        double positionX = pointPosition.getX();
-        double positionY = pointPosition.getY();
-        switch (StaticController.getCoordsMode()) {
-            case WORLD -> {}
-            case SPRITE_CENTER -> {
-                Point2D center = layerPainter.getSpriteCenter();
-                double centerX = center.getX();
-                double centerY = center.getY();
-                result = new Point2D.Double(positionX - centerX, positionY - centerY);
-
-            }
-            case SHIPCENTER_ANCHOR -> {
-                Point2D center = layerPainter.getCenterAnchor();
-                double centerX = center.getX();
-                double centerY = center.getY();
-                result = new Point2D.Double(positionX - centerX, (-positionY + centerY));
-            }
-            // This case uses different coordinate system alignment to be consistent with game files.
-            // Otherwise, user might be confused as shown point coordinates won't match with those in file.
-            case SHIP_CENTER -> {
-                BaseWorldPoint shipCenter = layerPainter.getShipCenter();
-                Point2D center = shipCenter.position;
-                double centerX = center.getX();
-                double centerY = center.getY();
-                result = new Point2D.Double(-(positionY - centerY), -(positionX - centerX));
-            }
-        }
-        result = Utility.roundPointCoordinates(result, 3);
-        return result;
+        return Utility.getPointCoordinatesForDisplay(pointPosition);
     }
 
     @Override

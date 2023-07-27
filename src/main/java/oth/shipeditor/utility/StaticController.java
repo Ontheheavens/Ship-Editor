@@ -67,7 +67,11 @@ public final class StaticController {
         return shipViewer.getScreenToWorld();
     }
 
-    public static void updateRotationValues(double radiansChange, double degrees) {
+    public static AffineTransform getWorldToScreen() {
+        return shipViewer.getWorldToScreen();
+    }
+
+    public static void updateViewerRotation(double radiansChange, double degrees) {
         rotationRadians += radiansChange;
         rotationDegrees = degrees;
     }

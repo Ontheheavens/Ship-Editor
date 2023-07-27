@@ -7,6 +7,7 @@ import oth.shipeditor.communication.events.viewer.control.ViewerZoomSet;
 import oth.shipeditor.components.viewer.entities.ShieldCenterPoint;
 import oth.shipeditor.components.viewer.entities.ShipCenterPoint;
 import oth.shipeditor.components.viewer.entities.WorldPoint;
+import oth.shipeditor.components.viewer.layers.LayerPainter;
 import oth.shipeditor.undo.EditDispatch;
 
 import javax.swing.*;
@@ -29,6 +30,18 @@ public final class DialogUtilities {
         if (option == JOptionPane.OK_OPTION) {
             Point2D newPosition = dialog.getUpdatedPosition();
             EditDispatch.postPointDragged(point, newPosition);
+            Events.repaintView();
+        }
+    }
+
+    public static void showAdjustLayerAnchorDialog(LayerPainter layerPainter, Point2D oldAnchor) {
+        PointChangeDialog dialog = new PointChangeDialog(oldAnchor);
+        int option = JOptionPane.showConfirmDialog(null, dialog,
+                "Change Anchor Position", JOptionPane.OK_CANCEL_OPTION,
+                JOptionPane.PLAIN_MESSAGE);
+        if (option == JOptionPane.OK_OPTION) {
+            Point2D newPosition = dialog.getUpdatedPosition();
+            EditDispatch.postAnchorOffsetChanged(layerPainter, newPosition);
             Events.repaintView();
         }
     }
@@ -85,26 +98,27 @@ public final class DialogUtilities {
         }
     }
 
-    public static void showAdjustRotationDialog(double oldRotation) {
-        NumberChangeDialog dialog = new NumberChangeDialog(oldRotation) {
-            @Override
-            protected JLabel createOriginalLabel() {
-                return new JLabel(getOriginalNumber() + "° ");
-            }
-            @Override
-            protected SpinnerNumberModel createSpinnerModel() {
-                double min = 0.0d;
-                double max = 359.0d;
-                double step = 1.0d;
-                return new SpinnerNumberModel(getOriginalNumber(), min, max, step);
-            }
-        };
+    public static void showAdjustViewerRotationDialog(double oldRotation) {
+        AngleChangeDialog dialog = new AngleChangeDialog(oldRotation);
         int option = JOptionPane.showConfirmDialog(null, dialog,
-                "Change Rotation Degrees", JOptionPane.OK_CANCEL_OPTION,
+                "Change Viewer Rotation", JOptionPane.OK_CANCEL_OPTION,
                 JOptionPane.PLAIN_MESSAGE);
         if (option == JOptionPane.OK_OPTION) {
             double newRotation = dialog.getUpdatedValue();
             EventBus.publish(new ViewerRotationSet(newRotation));
+            Events.repaintView();
+        }
+    }
+
+    public static void showAdjustLayerRotationDialog(LayerPainter layerPainter, double oldRotation) {
+        AngleChangeDialog dialog = new AngleChangeDialog(oldRotation);
+        int option = JOptionPane.showConfirmDialog(null, dialog,
+                "Change Layer Rotation", JOptionPane.OK_CANCEL_OPTION,
+                JOptionPane.PLAIN_MESSAGE);
+        if (option == JOptionPane.OK_OPTION) {
+            double newRotation = dialog.getUpdatedValue();
+            double reversed = (360 - newRotation) % 360;
+            layerPainter.rotateLayer(reversed);
             Events.repaintView();
         }
     }

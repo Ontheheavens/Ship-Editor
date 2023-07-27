@@ -7,6 +7,8 @@ package oth.shipeditor.undo;
  */
 public interface Edit {
 
+    void setFinished(boolean finished);
+
     void add(Edit edit);
 
     void undo();

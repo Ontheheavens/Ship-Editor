@@ -197,7 +197,7 @@ final class ViewerStatusPanel extends JPanel {
         Insets rotationInsets = new Insets(2, 3, 2, 5);
         rotation.setBorder(ComponentUtilities.createRoundCompoundBorder(rotationInsets));
 
-        String rotationTooltip = Utility.getWithLinebreaks("CTRL-Mousewheel to rotate viewer",
+        String rotationTooltip = Utility.getWithLinebreaks("CTRL+Mousewheel to rotate viewer",
                 StringValues.RIGHT_CLICK_TO_ADJUST_VALUE);
         this.rotation.setToolTipText(rotationTooltip);
 
@@ -205,7 +205,7 @@ final class ViewerStatusPanel extends JPanel {
         JMenuItem adjustRotationValue = new JMenuItem(StringValues.ADJUST_VALUE);
         adjustRotationValue.addActionListener(event -> {
             double oldRotation = StaticController.getRotationDegrees();
-            DialogUtilities.showAdjustRotationDialog(oldRotation);
+            DialogUtilities.showAdjustViewerRotationDialog(oldRotation);
         });
         rotationMenu.add(adjustRotationValue);
         rotation.addMouseListener(new MouseoverLabelListener(rotationMenu, rotation));

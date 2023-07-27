@@ -18,6 +18,7 @@ import oth.shipeditor.persistence.SettingsManager;
 import oth.shipeditor.representation.GameDataRepository;
 import oth.shipeditor.representation.Hull;
 import oth.shipeditor.representation.Skin;
+import oth.shipeditor.undo.UndoOverseer;
 
 import javax.swing.*;
 import java.awt.*;
@@ -103,6 +104,7 @@ public final class Main {
         ShipLayer activeLayer = layerManager.getActiveLayer();
         LayerPainter painter = activeLayer.getPainter();
         painter.updateAnchorOffset(new Point2D.Double(-400, 0));
+        UndoOverseer.finishAllEdits();
         shipView.centerViewpoint();
     }
 
@@ -119,6 +121,7 @@ public final class Main {
         ShipLayer activeLayer = layerManager.getActiveLayer();
         LayerPainter painter = activeLayer.getPainter();
         painter.updateAnchorOffset(new Point2D.Double(-400, 0));
+        UndoOverseer.finishAllEdits();
         shipView.centerViewpoint();
     }
 

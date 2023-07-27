@@ -1,6 +1,9 @@
 package oth.shipeditor.utility;
 
 import lombok.extern.log4j.Log4j2;
+import oth.shipeditor.components.viewer.entities.BaseWorldPoint;
+import oth.shipeditor.components.viewer.layers.LayerPainter;
+import oth.shipeditor.components.viewer.layers.ShipLayer;
 
 import javax.swing.*;
 import java.awt.*;
@@ -65,6 +68,7 @@ public final class Utility {
         };
     }
 
+    @SuppressWarnings("WeakerAccess")
     public static Point2D roundPointCoordinates(Point2D point, int decimalPlaces) {
         double roundedX = Utility.round(point.getX(), decimalPlaces);
         double roundedY = Utility.round(point.getY(), decimalPlaces);
@@ -87,6 +91,60 @@ public final class Utility {
         });
         builder.append("</html>");
         return builder.toString();
+    }
+
+    public static String getPointPositionText(Point2D location) {
+            return location.getX() + ", " + location.getY();
+    }
+
+    public static Point2D getPointCoordinatesForDisplay(Point2D pointPosition) {
+        Point2D result = pointPosition;
+        ShipLayer activeLayer = StaticController.getActiveLayer();
+        if (activeLayer == null) {
+            return result;
+        }
+        LayerPainter layerPainter = activeLayer.getPainter();
+        if (layerPainter == null || layerPainter.isUninitialized()) {
+            return result;
+        }
+        double positionX = pointPosition.getX();
+        double positionY = pointPosition.getY();
+        switch (StaticController.getCoordsMode()) {
+            case WORLD -> {
+                AffineTransform transform = layerPainter.getRotationTransform();
+                result = transform.transform(result, null);
+            }
+            case SPRITE_CENTER -> {
+                Point2D center = layerPainter.getSpriteCenter();
+                double centerX = center.getX();
+                double centerY = center.getY();
+                result = new Point2D.Double(positionX - centerX, positionY - centerY);
+
+            }
+            case SHIPCENTER_ANCHOR -> {
+                Point2D center = layerPainter.getCenterAnchor();
+                double centerX = center.getX();
+                double centerY = center.getY();
+                result = new Point2D.Double(positionX - centerX, (-positionY + centerY));
+            }
+            // This case uses different coordinate system alignment to be consistent with game files.
+            // Otherwise, user might be confused as shown point coordinates won't match with those in file.
+            case SHIP_CENTER -> {
+                BaseWorldPoint shipCenter = layerPainter.getShipCenter();
+                Point2D center = shipCenter.getPosition();
+                double centerX = center.getX();
+                double centerY = center.getY();
+                result = new Point2D.Double(-(positionY - centerY), -(positionX - centerX));
+            }
+        }
+        result = Utility.roundPointCoordinates(result, 3);
+        return result;
+    }
+
+    public static double clampAngle(double radians) {
+        double rotationDegrees = Math.toDegrees(radians);
+        double clampedDegrees = (360 - rotationDegrees) % 360;
+        return Utility.round(clampedDegrees, 5);
     }
 
 }

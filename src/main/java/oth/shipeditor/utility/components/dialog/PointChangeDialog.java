@@ -54,7 +54,10 @@ class PointChangeDialog extends JPanel {
         JSpinner spinnerX = new JSpinner(spinnerModelX);
         JSpinner spinnerY = new JSpinner(spinnerModelY);
 
-        JPanel container = new JPanel(new GridLayout(2, 2));
+        GridLayout gridLayout = new GridLayout(2, 2);
+        gridLayout.setHgap(4);
+        gridLayout.setVgap(6);
+        JPanel container = new JPanel(gridLayout);
         container.setBorder(new EmptyBorder(4, 0, 0, 0));
         container.add(labelX);
         container.add(spinnerX);

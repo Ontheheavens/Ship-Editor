@@ -2,17 +2,16 @@ package oth.shipeditor.components.viewer.layers;
 
 import de.javagl.viewer.Painter;
 import lombok.Getter;
+import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
 import oth.shipeditor.communication.BusEventListener;
 import oth.shipeditor.communication.EventBus;
-import oth.shipeditor.communication.events.Events;
 import oth.shipeditor.communication.events.viewer.ViewerRepaintQueued;
 import oth.shipeditor.communication.events.viewer.control.LayerAnchorDragged;
 import oth.shipeditor.communication.events.viewer.layers.ActiveLayerUpdated;
 import oth.shipeditor.communication.events.viewer.layers.LayerRotationQueued;
 import oth.shipeditor.communication.events.viewer.layers.LayerShipDataInitialized;
 import oth.shipeditor.communication.events.viewer.layers.ShipLayerRemovalConfirmed;
-import oth.shipeditor.communication.events.viewer.points.AnchorOffsetQueued;
 import oth.shipeditor.components.viewer.entities.BaseWorldPoint;
 import oth.shipeditor.components.viewer.entities.BoundPoint;
 import oth.shipeditor.components.viewer.entities.ShipCenterPoint;
@@ -22,6 +21,7 @@ import oth.shipeditor.components.viewer.painters.points.CenterPointPainter;
 import oth.shipeditor.components.viewer.painters.points.ShieldPointPainter;
 import oth.shipeditor.representation.Hull;
 import oth.shipeditor.representation.ShipData;
+import oth.shipeditor.undo.EditDispatch;
 import oth.shipeditor.utility.CoordinateUtilities;
 import oth.shipeditor.utility.StaticController;
 
@@ -59,13 +59,13 @@ public final class LayerPainter implements Painter {
     @Getter
     private final List<AbstractPointPainter> allPainters;
 
-    @Getter
+    @Getter @Setter
     private Point2D anchorOffset = new Point2D.Double(0, 0);
 
     @Getter
     private float spriteOpacity = 1.0f;
 
-    @Getter
+    @Getter @Setter
     private double rotationRadians;
 
     /**
@@ -129,7 +129,6 @@ public final class LayerPainter implements Painter {
                 double roundedY = Math.round(wP.getY() * 2) / 2.0;
                 Point2D corrected = new Point2D.Double(roundedX, roundedY);
                 updateAnchorOffset(corrected);
-                Events.repaintView();
             }
         };
         listeners.add(anchorDragListener);
@@ -138,14 +137,14 @@ public final class LayerPainter implements Painter {
         BusEventListener rotationListener = event -> {
             if (event instanceof LayerRotationQueued checked) {
                 if (checked.layer() != this) return;
-                this.rotateLayer(checked.worldTarget());
+                this.rotateToTarget(checked.worldTarget());
             }
         };
         listeners.add(rotationListener);
         EventBus.subscribe(rotationListener);
     }
 
-    private void rotateLayer(Point2D worldTarget) {
+    private void rotateToTarget(Point2D worldTarget) {
         Point2D spriteCenter = getSpriteCenter();
         double deltaX = worldTarget.getX() - spriteCenter.getX();
         double deltaY = worldTarget.getY() - spriteCenter.getY();
@@ -153,7 +152,13 @@ public final class LayerPainter implements Painter {
         double radians = -Math.atan2(deltaX, deltaY);
 
         double rotationDegrees = Math.toDegrees(radians) + 180;
-        rotationRadians = Math.toRadians(rotationDegrees);
+        double degreesRounded = Math.round(rotationDegrees);
+        this.rotateLayer(degreesRounded);
+    }
+
+    @SuppressWarnings("WeakerAccess")
+    public void rotateLayer(double rotationDegrees) {
+        EditDispatch.postLayerRotated(this, this.getRotationRadians(), Math.toRadians(rotationDegrees));
     }
 
     public AffineTransform getWithRotation(AffineTransform worldToScreen) {
@@ -162,7 +167,7 @@ public final class LayerPainter implements Painter {
         return transform;
     }
 
-    private AffineTransform getRotationTransform() {
+    public AffineTransform getRotationTransform() {
         double rotation = this.getRotationRadians();
         Point2D spriteCenter = this.getSpriteCenter();
         double centerX = spriteCenter.getX();
@@ -208,12 +213,14 @@ public final class LayerPainter implements Painter {
         EventBus.subscribe(layerUpdateListener);
     }
 
+    /**
+     * Note: if called programmatically outside of usual user input flow,
+     * {@link oth.shipeditor.undo.UndoOverseer} needs to finish all edits programmatically as well,
+     * for consistent undo/redo behaviour.
+     * @param updated new position of the anchor offset.
+     */
     public void updateAnchorOffset(Point2D updated) {
-        Point2D oldOffset = this.anchorOffset;
-        Point2D difference = new Point2D.Double(oldOffset.getX() - updated.getX(),
-                oldOffset.getY() - updated.getY());
-        EventBus.publish(new AnchorOffsetQueued(this, difference));
-        this.anchorOffset = updated;
+        EditDispatch.postAnchorOffsetChanged(this, updated);
     }
 
     public ShipCenterPoint getShipCenter() {

@@ -14,6 +14,7 @@ import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Deque;
+import java.util.function.Consumer;
 
 /**
  * @author Ontheheavens
@@ -118,14 +119,18 @@ public final class UndoOverseer {
         seer.redoStack.clear();
     }
 
-    // TODO: introduce trimming mechanism.
-
     private static void clearEditListeners(Iterable<Edit> stack) {
         stack.forEach(edit -> {
             if (edit instanceof ListeningEdit checked) {
                 checked.unregisterListeners();
             }
         });
+    }
+
+    public static void finishAllEdits() {
+        Collection<Edit> allEdits = new ArrayList<>(seer.undoStack);
+        allEdits.addAll(seer.redoStack);
+        allEdits.forEach(edit -> edit.setFinished(true));
     }
 
     public static void cleanupRemovedLayer(LayerPainter painter) {

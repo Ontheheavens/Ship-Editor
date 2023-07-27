@@ -258,7 +258,7 @@ public final class ShipViewerControls implements ViewerControl {
                 this.rotationDegree -= 360;
             }
             rotationDegree = (rotationDegree + 360) % 360;
-            StaticController.updateRotationValues(-resultRadians, rotationDegree);
+            StaticController.updateViewerRotation(-resultRadians, rotationDegree);
             EventBus.publish(new ViewerTransformRotated(rotationDegree));
         } else {
             // Calculate the zoom factor - sign of wheel rotation argument determines the direction.
@@ -286,7 +286,7 @@ public final class ShipViewerControls implements ViewerControl {
         double radiansChange = current - desiredRadians;
         rotateViewer(radiansChange);
         this.rotationDegree = desiredDegrees;
-        StaticController.updateRotationValues(-radiansChange, desiredDegrees);
+        StaticController.updateViewerRotation(-radiansChange, desiredDegrees);
         EventBus.publish(new ViewerTransformRotated(desiredDegrees));
     }
 
@@ -356,6 +356,7 @@ public final class ShipViewerControls implements ViewerControl {
             }
             EventBus.publish(new PointDragQueued(screenToWorld, cursor));
         }
+        parentViewer.repaint();
     }
 
 }

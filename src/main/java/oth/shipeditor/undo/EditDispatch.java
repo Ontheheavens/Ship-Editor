@@ -5,7 +5,9 @@ import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.BusEvent;
 import oth.shipeditor.communication.events.Events;
 import oth.shipeditor.communication.events.viewer.control.ViewerMouseReleased;
+import oth.shipeditor.communication.events.viewer.points.AnchorOffsetQueued;
 import oth.shipeditor.components.viewer.entities.*;
+import oth.shipeditor.components.viewer.layers.LayerPainter;
 import oth.shipeditor.components.viewer.painters.points.AbstractPointPainter;
 import oth.shipeditor.components.viewer.painters.points.BoundPointsPainter;
 import oth.shipeditor.undo.edits.*;
@@ -18,6 +20,7 @@ import java.util.List;
  * @author Ontheheavens
  * @since 16.06.2023
  */
+@SuppressWarnings("OverlyCoupledClass")
 public final class EditDispatch {
 
     private EditDispatch() {
@@ -52,6 +55,55 @@ public final class EditDispatch {
         Edit removeEdit = new PointRemovalEdit(pointPainter, point, index);
         UndoOverseer.post(removeEdit);
         pointPainter.removePoint(point);
+        Events.repaintView();
+    }
+
+    public static void postAnchorOffsetChanged(LayerPainter layerPainter, Point2D updated) {
+        Point2D oldOffset = layerPainter.getAnchorOffset();
+        AnchorOffsetEdit offsetChangeEdit = new AnchorOffsetEdit(layerPainter, oldOffset, updated);
+
+        Edit previousEdit = UndoOverseer.getNextUndoable();
+        if (previousEdit instanceof AnchorOffsetEdit checked && !checked.isFinished()) {
+            offsetChangeEdit.setFinished(true);
+            checked.add(offsetChangeEdit);
+        } else {
+            EventBus.subscribe(new BusEventListener() {
+                @Override
+                public void handleEvent(BusEvent event) {
+                    if (event instanceof ViewerMouseReleased && !offsetChangeEdit.isFinished()) {
+                        offsetChangeEdit.setFinished(true);
+                        EventBus.unsubscribe(this);
+                    }
+                }
+            });
+            UndoOverseer.post(offsetChangeEdit);
+        }
+        Point2D difference = new Point2D.Double(oldOffset.getX() - updated.getX(),
+                oldOffset.getY() - updated.getY());
+        EventBus.publish(new AnchorOffsetQueued(layerPainter, difference));
+        layerPainter.setAnchorOffset(updated);
+        Events.repaintView();
+    }
+
+    public static void postLayerRotated(LayerPainter painter, double old, double updated) {
+        LayerRotationEdit rotationEdit = new LayerRotationEdit(painter, old, updated);
+        Edit previousEdit = UndoOverseer.getNextUndoable();
+        if (previousEdit instanceof LayerRotationEdit checked && !checked.isFinished()) {
+            rotationEdit.setFinished(true);
+            checked.add(rotationEdit);
+        } else {
+            EventBus.subscribe(new BusEventListener() {
+                @Override
+                public void handleEvent(BusEvent event) {
+                    if (event instanceof ViewerMouseReleased && !rotationEdit.isFinished()) {
+                        rotationEdit.setFinished(true);
+                        EventBus.unsubscribe(this);
+                    }
+                }
+            });
+            UndoOverseer.post(rotationEdit);
+        }
+        painter.setRotationRadians(updated);
         Events.repaintView();
     }
 
