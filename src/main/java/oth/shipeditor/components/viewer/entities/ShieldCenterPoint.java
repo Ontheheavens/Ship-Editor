@@ -1,6 +1,5 @@
 package oth.shipeditor.components.viewer.entities;
 
-import de.javagl.viewer.Painter;
 import lombok.Getter;
 import lombok.Setter;
 import oth.shipeditor.components.instrument.InstrumentTabsPane;
@@ -22,7 +21,7 @@ import java.awt.geom.Point2D;
  * @author Ontheheavens
  * @since 16.07.2023
  */
-public class ShieldCenterPoint extends BaseWorldPoint{
+public class ShieldCenterPoint extends BaseWorldPoint {
 
     @Getter @Setter
     private float shieldRadius;
@@ -65,26 +64,24 @@ public class ShieldCenterPoint extends BaseWorldPoint{
     }
 
     @Override
-    public Painter createPointPainter() {
+    public void paint(Graphics2D g, AffineTransform worldToScreen, double w, double h) {
         AffineTransform delegateWorldToScreen = getDelegateWorldToScreen();
-        return (g, worldToScreen, w, h) -> {
-            delegateWorldToScreen.setTransform(worldToScreen);
+        delegateWorldToScreen.setTransform(worldToScreen);
 
-            this.paintShieldCircle(g, delegateWorldToScreen);
+        this.paintShieldCircle(g, delegateWorldToScreen);
 
-            Composite old = null;
-            if (parentPainter.getPaintOpacity() != 0.0f) {
-                old = Utility.setFullAlpha(g);
-            }
+        Composite old = null;
+        if (parentPainter.getPaintOpacity() != 0.0f) {
+            old = Utility.setFullAlpha(g);
+        }
 
-            this.paintShieldCenterCross(g, delegateWorldToScreen);
+        this.paintShieldCenterCross(g, delegateWorldToScreen);
 
-            this.paintCoordsLabel(g, delegateWorldToScreen);
+        this.paintCoordsLabel(g, delegateWorldToScreen);
 
-            if (old != null) {
-                g.setComposite(old);
-            }
-        };
+        if (old != null) {
+            g.setComposite(old);
+        }
     }
 
     @Override

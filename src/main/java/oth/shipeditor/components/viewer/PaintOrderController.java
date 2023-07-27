@@ -9,9 +9,11 @@ import oth.shipeditor.components.viewer.painters.points.AbstractPointPainter;
 import oth.shipeditor.components.viewer.painters.GuidesPainters;
 import oth.shipeditor.components.viewer.painters.HotkeyHelpPainter;
 import oth.shipeditor.components.viewer.painters.points.MarkPointsPainter;
+import oth.shipeditor.utility.StaticController;
 
 import java.awt.*;
 import java.awt.geom.AffineTransform;
+import java.awt.geom.Point2D;
 import java.util.List;
 import java.util.Optional;
 
@@ -52,11 +54,7 @@ public class PaintOrderController implements Painter {
             PaintOrderController.paintLayer(g, worldToScreen, w, h, layer);
         }
 
-        this.paintIfPresent(g, worldToScreen, w, h, guidesPainters.getBordersPaint());
-        this.paintIfPresent(g, worldToScreen, w, h, guidesPainters.getCenterPaint());
-        if (parent.isCursorInViewer()) {
-            this.paintIfPresent(g, worldToScreen, w, h, guidesPainters.getGuidesPaint());
-        }
+        this.paintLayerDependentGuides(g, worldToScreen, w, h);
 
         this.paintIfPresent(g, worldToScreen, w, h, miscPointsPainter);
 
@@ -72,10 +70,29 @@ public class PaintOrderController implements Painter {
                                    double w, double h, ShipLayer layer) {
         LayerPainter layerPainter = layer.getPainter();
         if (layerPainter == null) return;
-        layerPainter.paint(g, worldToScreen, w, h);
+
+        AffineTransform transform = layerPainter.getWithRotation(worldToScreen);
+
+        layerPainter.paint(g, transform, w, h);
         if (layerPainter.isUninitialized()) return;
         List<AbstractPointPainter> allPainters = layerPainter.getAllPainters();
-        allPainters.forEach(pointPainter -> pointPainter.paint(g, worldToScreen, w, h));
+        allPainters.forEach(pointPainter -> pointPainter.paint(g, transform, w, h));
     }
+
+    private void paintLayerDependentGuides(Graphics2D g, AffineTransform worldToScreen, double w, double h) {
+        LayerPainter selected = parent.getSelectedLayer();
+        AffineTransform transform = new AffineTransform(worldToScreen);
+        if (selected != null) {
+            transform = selected.getWithRotation(worldToScreen);
+        }
+
+        this.paintIfPresent(g, transform, w, h, guidesPainters.getBordersPaint());
+        this.paintIfPresent(g, transform, w, h, guidesPainters.getCenterPaint());
+        if (parent.isCursorInViewer()) {
+            this.paintIfPresent(g, transform, w, h, guidesPainters.getGuidesPaint());
+        }
+    }
+
+
 
 }

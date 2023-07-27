@@ -6,6 +6,7 @@ import org.kordamp.ikonli.boxicons.BoxiconsRegular;
 import org.kordamp.ikonli.fluentui.FluentUiRegularAL;
 import org.kordamp.ikonli.swing.FontIcon;
 import oth.shipeditor.communication.EventBus;
+import oth.shipeditor.communication.events.viewer.control.CursorSnappingToggled;
 import oth.shipeditor.communication.events.viewer.control.PointSelectionModeChange;
 import oth.shipeditor.communication.events.viewer.layers.ActiveLayerRemovalQueued;
 import oth.shipeditor.communication.events.viewer.layers.LayerCreationQueued;
@@ -23,9 +24,11 @@ import java.awt.event.ActionListener;
 @Log4j2
 public final class PrimaryMenuBar extends JMenuBar {
 
+    private JCheckBoxMenuItem toggleCursorSnap;
+
     public PrimaryMenuBar() {
         this.add(PrimaryMenuBar.createFileMenu());
-        this.add(PrimaryMenuBar.createEditMenu());
+        this.add(this.createEditMenu());
         this.add(PrimaryMenuBar.createViewMenu());
         this.add(PrimaryMenuBar.createLayersMenu());
     }
@@ -42,7 +45,7 @@ public final class PrimaryMenuBar extends JMenuBar {
         return viewMenu;
     }
 
-    private static JMenu createEditMenu() {
+    private JMenu createEditMenu() {
         JMenu editMenu = new JMenu("Edit");
 
         JMenuItem undo = new JMenuItem("Undo");
@@ -65,6 +68,18 @@ public final class PrimaryMenuBar extends JMenuBar {
 
         JMenuItem pointSelectionMode = PrimaryMenuBar.createPointSelectionModeOptions();
         editMenu.add(pointSelectionMode);
+
+        toggleCursorSnap = new JCheckBoxMenuItem("Toggle cursor snapping");
+        toggleCursorSnap.setSelected(true);
+        toggleCursorSnap.addActionListener(event ->
+                EventBus.publish(new CursorSnappingToggled(toggleCursorSnap.isSelected()))
+        );
+        EventBus.subscribe(event -> {
+            if (event instanceof CursorSnappingToggled checked) {
+                toggleCursorSnap.setSelected(checked.toggled());
+            }
+        });
+        editMenu.add(toggleCursorSnap);
 
         return editMenu;
     }

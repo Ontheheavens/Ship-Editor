@@ -1,6 +1,5 @@
 package oth.shipeditor.components.viewer.painters.points;
 
-import de.javagl.viewer.Painter;
 import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
 import oth.shipeditor.communication.BusEventListener;
@@ -210,8 +209,6 @@ public final class BoundPointsPainter extends MirrorablePointPainter {
     public void insertPoint(BoundPoint toInsert, int precedingIndex) {
         boundPoints.add(precedingIndex, toInsert);
         EventBus.publish(new BoundInsertedConfirmed(toInsert, precedingIndex));
-        List<Painter> painters = getDelegates();
-        painters.add(toInsert.getPainter());
         log.info("Bound inserted to painter: {}", toInsert);
     }
 
@@ -309,44 +306,52 @@ public final class BoundPointsPainter extends MirrorablePointPainter {
     }
 
     private void paintIfBoundsEmpty(Graphics2D g, AffineTransform worldToScreen) {
-        Point2D cursor = StaticController.getAdjustedCursor();
         AffineTransform screenToWorld = StaticController.getScreenToWorld();
-        Point2D adjustedWorldCursor = Utility.correctAdjustedCursor(cursor, screenToWorld);
-        Point2D worldCounterpart = this.createCounterpartPosition(adjustedWorldCursor);
+        Point2D finalWorldCursor = screenToWorld.transform(StaticController.getRawCursor(), null);
+        if (ControlPredicates.isCursorSnappingEnabled()) {
+            Point2D cursor = StaticController.getAdjustedCursor();
+            finalWorldCursor = Utility.correctAdjustedCursor(cursor, screenToWorld);
+        }
+        Point2D worldCounterpart = this.createCounterpartPosition(finalWorldCursor);
         boolean hotkeyPressed = appendBoundHotkeyPressed || insertBoundHotkeyPressed;
         if (!isInteractionEnabled() || !hotkeyPressed) return;
         if (ControlPredicates.isMirrorModeEnabled()) {
-            Point2D adjustedScreenCursor = worldToScreen.transform(adjustedWorldCursor, null);
+            Point2D adjustedScreenCursor = worldToScreen.transform(finalWorldCursor, null);
             Point2D adjustedScreenCounterpart = worldToScreen.transform(worldCounterpart, null);
             this.drawBoundLine(g, adjustedScreenCursor, adjustedScreenCounterpart, BOUND_LINE);
             BoundPointsPainter.paintProspectiveBound(g, worldToScreen, worldCounterpart);
         }
-        BoundPointsPainter.paintProspectiveBound(g, worldToScreen, adjustedWorldCursor);
+        BoundPointsPainter.paintProspectiveBound(g, worldToScreen, finalWorldCursor);
     }
 
     private void paintCreationGuidelines(Graphics2D g, AffineTransform worldToScreen,
                                          Point2D prev, Point2D first) {
-        Point2D cursor =  StaticController.getAdjustedCursor();
         AffineTransform screenToWorld = StaticController.getScreenToWorld();
-        Point2D adjustedWorldCursor = Utility.correctAdjustedCursor(cursor, screenToWorld);
-        Point2D adjustedScreenCursor = worldToScreen.transform(adjustedWorldCursor, null);
-        Point2D worldCounterpart = this.createCounterpartPosition(adjustedWorldCursor);
+        Point2D finalWorldCursor = screenToWorld.transform(StaticController.getRawCursor(), null);
+        if (ControlPredicates.isCursorSnappingEnabled()) {
+            Point2D cursor = StaticController.getAdjustedCursor();
+            finalWorldCursor = Utility.correctAdjustedCursor(cursor, screenToWorld);
+        }
+        Point2D finalScreenCursor = worldToScreen.transform(finalWorldCursor, null);
+        Point2D worldCounterpart = this.createCounterpartPosition(finalWorldCursor);
         Point2D adjustedScreenCounterpart = worldToScreen.transform(worldCounterpart, null);
         boolean mirrorMode = ControlPredicates.isMirrorModeEnabled();
         if (appendBoundHotkeyPressed) {
             if (mirrorMode) {
-                this.drawBoundLine(g, prev, adjustedScreenCursor, BOUND_LINE);
-                this.drawBoundLine(g, adjustedScreenCursor, adjustedScreenCounterpart, BOUND_LINE);
+                this.drawBoundLine(g, prev, finalScreenCursor, BOUND_LINE);
+                this.drawBoundLine(g, finalScreenCursor, adjustedScreenCounterpart, BOUND_LINE);
                 this.drawBoundLine(g, adjustedScreenCounterpart, first, BOUND_LINE);
-            } else {
-                this.drawGuidelines(g, prev, first, adjustedScreenCursor);
             }
-        } else if (insertBoundHotkeyPressed) {
+            else {
+                this.drawGuidelines(g, prev, first, finalScreenCursor);
+            }
+        }
+        else if (insertBoundHotkeyPressed) {
             this.handleInsertionGuides(g, worldToScreen,
-                    adjustedWorldCursor, worldCounterpart);
+                    finalWorldCursor, worldCounterpart);
         }
         // Also paint dots where the points would be placed.
-        BoundPointsPainter.paintProspectiveBound(g, worldToScreen, adjustedWorldCursor);
+        BoundPointsPainter.paintProspectiveBound(g, worldToScreen, finalWorldCursor);
         if (mirrorMode) {
             BoundPointsPainter.paintProspectiveBound(g, worldToScreen, worldCounterpart);
         }

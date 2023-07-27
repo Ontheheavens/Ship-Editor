@@ -12,8 +12,10 @@ import oth.shipeditor.components.viewer.layers.ShipLayer;
 import oth.shipeditor.components.viewer.painters.PainterVisibility;
 import oth.shipeditor.components.viewer.painters.points.ShieldPointPainter;
 import oth.shipeditor.utility.Pair;
+import oth.shipeditor.utility.Utility;
 import oth.shipeditor.utility.components.ComponentUtilities;
 import oth.shipeditor.utility.components.MouseoverLabelListener;
+import oth.shipeditor.utility.components.dialog.DialogUtilities;
 import oth.shipeditor.utility.text.StringValues;
 
 import javax.swing.*;
@@ -88,7 +90,7 @@ public class ShieldPanel extends JPanel {
             ShieldCenterPoint center = this.shieldPainter.getShieldCenterPoint();
             if (center != null) {
                 shieldPosition = center.getPositionText();
-                shieldRadius = center.getShieldRadius() + " " + StringValues.PIXELS;
+                shieldRadius = Utility.round(center.getShieldRadius(), 5) + " " + StringValues.PIXELS;
             }
         }
         shieldCenterCoords.setText(shieldPosition);
@@ -105,13 +107,14 @@ public class ShieldPanel extends JPanel {
 
         shieldCenterCoords.setToolTipText(StringValues.RIGHT_CLICK_TO_ADJUST_POSITION);
         Insets insets = ComponentUtilities.createLabelInsets();
+        insets.top = 1;
         shieldCenterCoords.setBorder(ComponentUtilities.createLabelSimpleBorder(insets));
 
         JPopupMenu shieldCenterMenu = new JPopupMenu();
         JMenuItem adjustPosition = new JMenuItem(StringValues.ADJUST_POSITION);
         adjustPosition.addActionListener(event -> {
             ShieldCenterPoint shieldPoint = shieldPainter.getShieldCenterPoint();
-            ComponentUtilities.showAdjustPointDialog(shieldPoint);
+            DialogUtilities.showAdjustPointDialog(shieldPoint);
         });
         shieldCenterMenu.add(adjustPosition);
         shieldCenterCoords.addMouseListener(new MouseoverLabelListener(shieldCenterMenu, shieldCenterCoords));
@@ -126,13 +129,14 @@ public class ShieldPanel extends JPanel {
 
         shieldRadiusLabel.setToolTipText(StringValues.RIGHT_CLICK_TO_ADJUST_VALUE);
         Insets insets = ComponentUtilities.createLabelInsets();
+        insets.top = 1;
         shieldRadiusLabel.setBorder(ComponentUtilities.createLabelSimpleBorder(insets));
 
         JPopupMenu shieldRadiusMenu = new JPopupMenu();
         JMenuItem adjustValue = new JMenuItem(StringValues.ADJUST_VALUE);
         adjustValue.addActionListener(event -> {
             ShieldCenterPoint shieldPoint = shieldPainter.getShieldCenterPoint();
-            ComponentUtilities.showAdjustShieldRadiusDialog(shieldPoint);
+            DialogUtilities.showAdjustShieldRadiusDialog(shieldPoint);
         });
         shieldRadiusMenu.add(adjustValue);
         shieldRadiusLabel.addMouseListener(new MouseoverLabelListener(shieldRadiusMenu, shieldRadiusLabel));

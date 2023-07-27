@@ -33,14 +33,8 @@ import java.util.List;
 @Log4j2
 public abstract class AbstractPointPainter implements Painter {
 
-    @Getter
-    protected final List<Painter> delegates;
-
     @Getter @Setter
     private WorldPoint selected;
-
-    @Getter @Setter
-    private boolean shown = true;
 
     @Getter @Setter
     private PainterVisibility visibilityMode;
@@ -60,7 +54,6 @@ public abstract class AbstractPointPainter implements Painter {
     private final List<BusEventListener> listeners;
 
     AbstractPointPainter() {
-        this.delegates = new ArrayList<>();
         this.delegateWorldToScreen = new AffineTransform();
         this.listeners = new ArrayList<>();
         this.initChangeListeners();
@@ -106,12 +99,14 @@ public abstract class AbstractPointPainter implements Painter {
                 if (!this.isInteractionEnabled()) return;
                 if (getSelected() == null) return;
                 AffineTransform screenToWorld = checked.screenToWorld();
-                Point2D translated = screenToWorld.transform(checked.adjustedCursor(), null);
+                Point2D translated = screenToWorld.transform(checked.target(), null);
                 double x = translated.getX();
                 double y = translated.getY();
-                double roundedX = Math.round(x * 2) / 2.0;
-                double roundedY = Math.round(y * 2) / 2.0;
-                Point2D changedPosition = new Point2D.Double(roundedX, roundedY);
+                if (ControlPredicates.isCursorSnappingEnabled()) {
+                    x = Math.round(x * 2) / 2.0;
+                    y = Math.round(y * 2) / 2.0;
+                }
+                Point2D changedPosition = new Point2D.Double(x, y);
 
                 WorldPoint counterpart = null;
                 Point2D counterpartNewPosition = null;
@@ -283,18 +278,14 @@ public abstract class AbstractPointPainter implements Painter {
     public void addPoint(BaseWorldPoint point) {
         this.addPointToIndex(point);
         EventBus.publish(new PointAddConfirmed(point));
-        Painter painter = point.getPainter();
-        this.delegates.add(painter);
     }
 
     public void removePoint(BaseWorldPoint point) {
         this.removePointFromIndex(point);
         EventBus.publish(new PointRemovedConfirmed(point));
-        Painter painter = point.getPainter();
         if (this.selected == point) {
             this.setSelected(null);
         }
-        this.delegates.remove(painter);
         point.setPointSelected(false);
     }
 
@@ -311,7 +302,8 @@ public abstract class AbstractPointPainter implements Painter {
     }
 
     void paintDelegates(Graphics2D g, AffineTransform worldToScreen, double w, double h) {
-        this.delegates.forEach(painter -> paintDelegate(g, worldToScreen, w, h, painter));
+        List<? extends BaseWorldPoint> pointsIndex = this.getPointsIndex();
+        pointsIndex.forEach(painter -> paintDelegate(g, worldToScreen, w, h, painter));
     }
 
     @SuppressWarnings("WeakerAccess")
@@ -338,8 +330,9 @@ public abstract class AbstractPointPainter implements Painter {
     protected boolean checkVisibility() {
         PainterVisibility visibility = getVisibilityMode();
         if (visibility == PainterVisibility.ALWAYS_HIDDEN) return false;
-        if (visibility == PainterVisibility.SHOWN_WHEN_EDITED && !this.isInteractionEnabled()) return false;
-        return isShown() || visibility == PainterVisibility.ALWAYS_SHOWN;
+        if (visibility == PainterVisibility.SHOWN_WHEN_EDITED && this.isInteractionEnabled()) return true;
+        if (visibility == PainterVisibility.SHOWN_WHEN_SELECTED && this.isParentLayerActive()) return true;
+        return visibility == PainterVisibility.ALWAYS_SHOWN;
     }
 
     @Override

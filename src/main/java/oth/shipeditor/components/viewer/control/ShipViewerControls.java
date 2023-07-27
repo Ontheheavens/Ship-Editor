@@ -4,6 +4,7 @@ import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
 import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.viewer.control.*;
+import oth.shipeditor.communication.events.viewer.layers.LayerRotationQueued;
 import oth.shipeditor.communication.events.viewer.points.*;
 import oth.shipeditor.components.viewer.PrimaryShipViewer;
 import oth.shipeditor.components.viewer.layers.LayerPainter;
@@ -111,6 +112,16 @@ public final class ShipViewerControls implements ViewerControl {
                 this.rotationEnabled = checked.isSelected();
             }
         });
+        EventBus.subscribe(event -> {
+            if (event instanceof ViewerZoomSet checked) {
+                this.setZoomExact(checked.level());
+            }
+        });
+        EventBus.subscribe(event -> {
+            if (event instanceof ViewerRotationSet checked) {
+                this.rotateExact(checked.degrees());
+            }
+        });
     }
 
     private void initLayerCursorListener() {
@@ -151,7 +162,7 @@ public final class ShipViewerControls implements ViewerControl {
             Point2D transformed = worldToScreen.transform(anchor, null);
             this.layerDragPoint.setLocation(e.getX() - transformed.getX(), e.getY() - transformed.getY());
         }
-        this.tryBoundCreation();
+        this.tryBoundCreation(point);
         if (ControlPredicates.removePointPredicate.test(e)) {
             EventBus.publish(new PointRemoveQueued(null, false));
         }
@@ -164,11 +175,14 @@ public final class ShipViewerControls implements ViewerControl {
     /**
      * Respective hotkey checks are being done in points painter itself.
      */
-    private void tryBoundCreation() {
-        Point2D screenPoint = this.getAdjustedCursor();
-        AffineTransform screenToWorld = this.parentViewer.getScreenToWorld();
-        Point2D rounded = Utility.correctAdjustedCursor(screenPoint, screenToWorld);
-        EventBus.publish(new BoundCreationQueued(rounded));
+    private void tryBoundCreation(Point2D point) {
+        AffineTransform screenToWorld = StaticController.getScreenToWorld();
+        Point2D position = screenToWorld.transform(point, null);
+        if (ControlPredicates.isCursorSnappingEnabled()) {
+            Point2D screenPoint = this.getAdjustedCursor();
+            position = Utility.correctAdjustedCursor(screenPoint, screenToWorld);
+        }
+        EventBus.publish(new BoundCreationQueued(position));
     }
 
     @Override
@@ -186,6 +200,8 @@ public final class ShipViewerControls implements ViewerControl {
     public void mouseDragged(MouseEvent e) {
         int x = e.getX();
         int y = e.getY();
+        LayerPainter selected = this.parentViewer.getSelectedLayer();
+        AffineTransform screenToWorld = this.parentViewer.getScreenToWorld();
         if (ControlPredicates.translatePredicate.test(e)) {
             int dx = x - this.previousPoint.x;
             int dy = y - this.previousPoint.y;
@@ -194,19 +210,26 @@ public final class ShipViewerControls implements ViewerControl {
         } else if (ControlPredicates.layerMovePredicate.test(e)) {
             int dx = x - this.layerDragPoint.x;
             int dy = y - this.layerDragPoint.y;
-            AffineTransform screenToWorld = this.parentViewer.getScreenToWorld();
-            LayerPainter selected = this.parentViewer.getSelectedLayer();
-            Point2D snappedDifference = this.snapPointToGrid(new Point2D.Double(dx, dy), 1.0f);
-            EventBus.publish(new LayerAnchorDragged(screenToWorld,
-                    selected, snappedDifference));
+            if (selected != null) {
+                Point2D snappedDifference = this.snapPointToGrid(new Point2D.Double(dx, dy), 1.0f);
+                EventBus.publish(new LayerAnchorDragged(screenToWorld, selected, snappedDifference));
+            }
+        } else if (ControlPredicates.layerRotatePredicate.test(e)) {
+            if (selected != null) {
+                Point2D worldTarget = screenToWorld.transform(e.getPoint(), null);
+                EventBus.publish(new LayerRotationQueued(selected, worldTarget));
+            }
         }
         this.previousPoint.setLocation(x, y);
         this.refreshCursorPosition(e);
     }
 
-    private void tryRadiusDrag() {
-        AffineTransform screenToWorld = this.parentViewer.getScreenToWorld();
-        Point2D transformed = screenToWorld.transform(this.getAdjustedCursor(), null);
+    private void tryRadiusDrag(MouseEvent e) {
+        AffineTransform screenToWorld = StaticController.getScreenToWorld();
+        Point2D transformed = screenToWorld.transform(e.getPoint(), null);
+        if (ControlPredicates.isCursorSnappingEnabled()) {
+            transformed = screenToWorld.transform(this.getAdjustedCursor(), null);
+        }
         EventBus.publish(new RadiusDragQueued(transformed));
     }
 
@@ -214,7 +237,7 @@ public final class ShipViewerControls implements ViewerControl {
     public void mouseMoved(MouseEvent e) {
         int x = e.getX();
         int y = e.getY();
-        this.tryRadiusDrag();
+        this.tryRadiusDrag(e);
         this.previousPoint.setLocation(x, y);
         this.parentViewer.repaint();
         if (ControlPredicates.getSelectionMode() == PointSelectionMode.CLOSEST) {
@@ -228,13 +251,14 @@ public final class ShipViewerControls implements ViewerControl {
         int wheelRotation = e.getWheelRotation();
         if (ControlPredicates.rotatePredicate.test(e) && this.rotationEnabled) {
             double toRadians = Math.toRadians(wheelRotation);
-            Point2D midpoint = parentViewer.getViewerMidpoint();
             double resultRadians = toRadians * ROTATION_SPEED;
-            StaticController.updateRotationRadians(-resultRadians);
-            this.parentViewer.rotate(midpoint.getX(), midpoint.getY(),
-                    resultRadians);
-            this.rotationDegree += Math.toDegrees(resultRadians);
+            rotateViewer(resultRadians);
+            this.rotationDegree -= Math.toDegrees(resultRadians);
+            if (this.rotationDegree >= 360) {
+                this.rotationDegree -= 360;
+            }
             rotationDegree = (rotationDegree + 360) % 360;
+            StaticController.updateRotationValues(-resultRadians, rotationDegree);
             EventBus.publish(new ViewerTransformRotated(rotationDegree));
         } else {
             // Calculate the zoom factor - sign of wheel rotation argument determines the direction.
@@ -254,6 +278,29 @@ public final class ShipViewerControls implements ViewerControl {
             }
         }
         this.refreshCursorPosition(e);
+    }
+
+    private void rotateExact(double desiredDegrees) {
+        double desiredRadians = Math.toRadians(desiredDegrees);
+        double current = StaticController.getRotationRadians();
+        double radiansChange = current - desiredRadians;
+        rotateViewer(radiansChange);
+        this.rotationDegree = desiredDegrees;
+        StaticController.updateRotationValues(-radiansChange, desiredDegrees);
+        EventBus.publish(new ViewerTransformRotated(desiredDegrees));
+    }
+
+    private void rotateViewer(double angleRadians) {
+        Point2D midpoint = parentViewer.getViewerMidpoint();
+        this.parentViewer.rotate(midpoint.getX(), midpoint.getY(), angleRadians);
+    }
+
+    private void setZoomExact(double level) {
+        double oldZoom = this.zoomLevel;
+        Point2D viewerMidPoint = parentViewer.getViewerMidpoint();
+        double factor = level / oldZoom;
+        this.parentViewer.zoom(viewerMidPoint.getX(), viewerMidPoint.getY(), factor, factor);
+        this.setZoomLevel(level);
     }
 
     private void setZoomAtLimit(int x, int y, double limit) {
@@ -298,12 +345,16 @@ public final class ShipViewerControls implements ViewerControl {
 
     private void refreshCursorPosition(MouseEvent event) {
         this.mousePoint = event.getPoint();
-        AffineTransform screenToWorld = this.parentViewer.getScreenToWorld();
+        AffineTransform screenToWorld = StaticController.getScreenToWorld();
         Point2D adjusted = this.getAdjustedCursor();
         Point2D corrected = Utility.correctAdjustedCursor(adjusted, screenToWorld);
         EventBus.publish(new ViewerCursorMoved(this.mousePoint, adjusted, corrected));
         if (ControlPredicates.selectPointPredicate.test(event)) {
-            EventBus.publish(new PointDragQueued(screenToWorld, adjusted));
+            Point2D cursor = mousePoint;
+            if (ControlPredicates.isCursorSnappingEnabled()) {
+                cursor = adjusted;
+            }
+            EventBus.publish(new PointDragQueued(screenToWorld, cursor));
         }
     }
 

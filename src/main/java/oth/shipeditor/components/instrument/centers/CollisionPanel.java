@@ -12,8 +12,10 @@ import oth.shipeditor.components.viewer.layers.ShipLayer;
 import oth.shipeditor.components.viewer.painters.PainterVisibility;
 import oth.shipeditor.components.viewer.painters.points.CenterPointPainter;
 import oth.shipeditor.utility.Pair;
+import oth.shipeditor.utility.Utility;
 import oth.shipeditor.utility.components.ComponentUtilities;
 import oth.shipeditor.utility.components.MouseoverLabelListener;
+import oth.shipeditor.utility.components.dialog.DialogUtilities;
 import oth.shipeditor.utility.text.StringValues;
 
 import javax.swing.*;
@@ -91,7 +93,7 @@ public final class CollisionPanel extends JPanel {
             ShipCenterPoint center = this.centerPainter.getCenterPoint();
             if (center != null) {
                 centerPosition = center.getPositionText();
-                collisionValue = center.getCollisionRadius() + " " + StringValues.PIXELS;
+                collisionValue = Utility.round(center.getCollisionRadius(), 5) + " " + StringValues.PIXELS;
             }
         }
         centerCoords.setText(centerPosition);
@@ -129,13 +131,14 @@ public final class CollisionPanel extends JPanel {
 
         centerCoords.setToolTipText(StringValues.RIGHT_CLICK_TO_ADJUST_POSITION);
         Insets insets = ComponentUtilities.createLabelInsets();
+        insets.top = 1;
         centerCoords.setBorder(ComponentUtilities.createLabelSimpleBorder(insets));
 
         JPopupMenu shipCenterMenu = new JPopupMenu();
         JMenuItem adjustPosition = new JMenuItem(StringValues.ADJUST_POSITION);
         adjustPosition.addActionListener(event -> {
             ShipCenterPoint centerPoint = centerPainter.getCenterPoint();
-            ComponentUtilities.showAdjustPointDialog(centerPoint);
+            DialogUtilities.showAdjustPointDialog(centerPoint);
         });
         shipCenterMenu.add(adjustPosition);
         centerCoords.addMouseListener(new MouseoverLabelListener(shipCenterMenu, centerCoords));
@@ -150,13 +153,14 @@ public final class CollisionPanel extends JPanel {
 
         collisionRadius.setToolTipText(StringValues.RIGHT_CLICK_TO_ADJUST_VALUE);
         Insets insets = ComponentUtilities.createLabelInsets();
+        insets.top = 1;
         collisionRadius.setBorder(ComponentUtilities.createLabelSimpleBorder(insets));
 
         JPopupMenu collisionRadiusMenu = new JPopupMenu();
         JMenuItem adjustValue = new JMenuItem(StringValues.ADJUST_VALUE);
         adjustValue.addActionListener(event -> {
             ShipCenterPoint centerPoint = centerPainter.getCenterPoint();
-            ComponentUtilities.showAdjustCollisionDialog(centerPoint);
+            DialogUtilities.showAdjustCollisionDialog(centerPoint);
         });
         collisionRadiusMenu.add(adjustValue);
         collisionRadius.addMouseListener(new MouseoverLabelListener(collisionRadiusMenu, collisionRadius));

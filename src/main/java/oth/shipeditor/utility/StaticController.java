@@ -11,6 +11,7 @@ import oth.shipeditor.communication.events.viewer.layers.LayerWasSelected;
 import oth.shipeditor.communication.events.viewer.status.CoordsModeChanged;
 import oth.shipeditor.components.CoordsDisplayMode;
 import oth.shipeditor.components.viewer.PrimaryShipViewer;
+import oth.shipeditor.components.viewer.layers.LayerPainter;
 import oth.shipeditor.components.viewer.layers.ShipLayer;
 import oth.shipeditor.menubar.FileUtilities;
 
@@ -35,6 +36,9 @@ public final class StaticController {
     private static double rotationRadians;
 
     @Getter @Setter
+    private static double rotationDegrees;
+
+    @Getter @Setter
     private static double zoomLevel = 1;
 
     @Getter
@@ -53,11 +57,19 @@ public final class StaticController {
     }
 
     public static AffineTransform getScreenToWorld() {
+        if (activeLayer != null) {
+            LayerPainter painter = activeLayer.getPainter();
+            if (painter != null) {
+                AffineTransform worldToScreen = shipViewer.getWorldToScreen();
+                return painter.getWithRotationInverse(worldToScreen);
+            }
+        }
         return shipViewer.getScreenToWorld();
     }
 
-    public static void updateRotationRadians(double input) {
-        rotationRadians += input;
+    public static void updateRotationValues(double radiansChange, double degrees) {
+        rotationRadians += radiansChange;
+        rotationDegrees = degrees;
     }
 
     public static boolean checkIsHovered(Shape shape) {

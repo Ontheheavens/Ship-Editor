@@ -4,6 +4,7 @@ import de.javagl.viewer.InputEventPredicates;
 import de.javagl.viewer.Predicates;
 import lombok.Getter;
 import oth.shipeditor.communication.EventBus;
+import oth.shipeditor.communication.events.viewer.control.CursorSnappingToggled;
 import oth.shipeditor.communication.events.viewer.control.MirrorModeChange;
 import oth.shipeditor.communication.events.viewer.control.PointLinkageToleranceChanged;
 import oth.shipeditor.communication.events.viewer.control.PointSelectionModeChange;
@@ -24,6 +25,9 @@ public final class ControlPredicates {
     private static boolean mirrorModeEnabled = true;
 
     @Getter
+    private static boolean cursorSnappingEnabled = true;
+
+    @Getter
     private static int mirrorPointLinkageTolerance;
 
     public static void initSelectionModeListening() {
@@ -35,6 +39,11 @@ public final class ControlPredicates {
         EventBus.subscribe(event -> {
             if (event instanceof MirrorModeChange checked) {
                 mirrorModeEnabled = checked.enabled();
+            }
+        });
+        EventBus.subscribe(event -> {
+            if (event instanceof CursorSnappingToggled checked) {
+                cursorSnappingEnabled = checked.toggled();
             }
         });
         EventBus.subscribe(event -> {
@@ -51,6 +60,11 @@ public final class ControlPredicates {
 
     static final Predicate<MouseEvent> layerMovePredicate = Predicates.and(
             InputEventPredicates.buttonDown(1),
+            InputEventPredicates.shiftDown()
+    );
+
+    static final Predicate<MouseEvent> layerRotatePredicate = Predicates.and(
+            InputEventPredicates.buttonDown(3),
             InputEventPredicates.shiftDown()
     );
 

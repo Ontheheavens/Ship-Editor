@@ -4,14 +4,9 @@ import com.formdev.flatlaf.ui.FlatLineBorder;
 import com.formdev.flatlaf.ui.FlatRoundBorder;
 import oth.shipeditor.communication.BusEventListener;
 import oth.shipeditor.communication.EventBus;
-import oth.shipeditor.communication.events.Events;
-import oth.shipeditor.components.viewer.entities.ShieldCenterPoint;
-import oth.shipeditor.components.viewer.entities.ShipCenterPoint;
-import oth.shipeditor.components.viewer.entities.WorldPoint;
 import oth.shipeditor.components.viewer.painters.points.AbstractPointPainter;
 import oth.shipeditor.components.viewer.painters.PainterVisibility;
 import oth.shipeditor.menubar.FileUtilities;
-import oth.shipeditor.undo.EditDispatch;
 import oth.shipeditor.utility.Pair;
 import oth.shipeditor.utility.graphics.ColorUtilities;
 import oth.shipeditor.utility.text.StringValues;
@@ -22,7 +17,6 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.event.ChangeListener;
 import java.awt.*;
 import java.awt.event.ActionListener;
-import java.awt.geom.Point2D;
 import java.awt.image.BufferedImage;
 import java.nio.file.Path;
 import java.util.Dictionary;
@@ -190,42 +184,6 @@ public final class ComponentUtilities {
                 visibilityList, sidePadding);
 
         return widgetPanel;
-    }
-
-    public static void showAdjustPointDialog(WorldPoint point) {
-        PointChangeDialog dialog = new PointChangeDialog(point.getPosition());
-        int option = JOptionPane.showConfirmDialog(null, dialog,
-                "Change Point Position", JOptionPane.OK_CANCEL_OPTION,
-                JOptionPane.PLAIN_MESSAGE);
-        if (option == JOptionPane.OK_OPTION) {
-            Point2D newPosition = dialog.getUpdatedPosition();
-            EditDispatch.postPointDragged(point, newPosition);
-            Events.repaintView();
-        }
-    }
-
-    public static void showAdjustShieldRadiusDialog(ShieldCenterPoint point) {
-        NumberChangeDialog dialog = new NumberChangeDialog(point.getShieldRadius());
-        int option = JOptionPane.showConfirmDialog(null, dialog,
-                "Change Shield Radius", JOptionPane.OK_CANCEL_OPTION,
-                JOptionPane.PLAIN_MESSAGE);
-        if (option == JOptionPane.OK_OPTION) {
-            double newRadius = dialog.getUpdatedValue();
-            EditDispatch.postShieldRadiusChanged(point, (float) newRadius);
-            Events.repaintView();
-        }
-    }
-
-    public static void showAdjustCollisionDialog(ShipCenterPoint point) {
-        NumberChangeDialog dialog = new NumberChangeDialog(point.getCollisionRadius());
-        int option = JOptionPane.showConfirmDialog(null, dialog,
-                "Change Collision Radius", JOptionPane.OK_CANCEL_OPTION,
-                JOptionPane.PLAIN_MESSAGE);
-        if (option == JOptionPane.OK_OPTION) {
-            double newRadius = dialog.getUpdatedValue();
-            EditDispatch.postCollisionRadiusChanged(point, (float) newRadius);
-            Events.repaintView();
-        }
     }
 
     public static Insets createLabelInsets() {

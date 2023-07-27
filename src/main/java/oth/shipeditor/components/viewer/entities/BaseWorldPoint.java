@@ -28,16 +28,13 @@ import java.awt.geom.Point2D;
  * @since 30.04.2023
  */
 @Log4j2
-public class BaseWorldPoint implements WorldPoint {
+public class BaseWorldPoint implements WorldPoint, Painter {
 
     @Getter @Setter
     private LayerPainter parentLayer;
 
     @Getter
     private final Point2D position;
-
-    @Getter
-    private final Painter painter;
 
     private final TextPainter coordsLabel;
 
@@ -69,7 +66,6 @@ public class BaseWorldPoint implements WorldPoint {
         this.position = new Point2D.Double(pointPosition.getX(), pointPosition.getY());
         this.parentLayer = layer;
         this.delegateWorldToScreen = new AffineTransform();
-        this.painter = this.createPointPainter();
         this.coordsLabel = new TextPainter();
         if (layer != null) {
             this.initLayerListening();
@@ -159,17 +155,6 @@ public class BaseWorldPoint implements WorldPoint {
                 position, circle, 12);
     }
 
-    public Painter createPointPainter() {
-        return (g, worldToScreen, w, h) -> {
-            Shape shape = BaseWorldPoint.getShapeForPoint(worldToScreen, this.position);
-
-            this.cursorInBounds = StaticController.checkIsHovered(shape);
-
-            DrawUtilities.outlineShape(g, shape, Color.BLACK, 2);
-            DrawUtilities.fillShape(g, shape, getCurrentColor());
-        };
-    }
-
     public void setPosition(double x, double y) {
         this.position.setLocation(x, y);
     }
@@ -216,8 +201,18 @@ public class BaseWorldPoint implements WorldPoint {
                 result = new Point2D.Double(-(positionY - centerY), -(positionX - centerX));
             }
         }
-        result = Utility.roundPointCoordinates(result, 5);
+        result = Utility.roundPointCoordinates(result, 3);
         return result;
+    }
+
+    @Override
+    public void paint(Graphics2D g, AffineTransform worldToScreen, double w, double h) {
+        Shape shape = BaseWorldPoint.getShapeForPoint(worldToScreen, this.position);
+
+        this.cursorInBounds = StaticController.checkIsHovered(shape);
+
+        DrawUtilities.outlineShape(g, shape, Color.BLACK, 2);
+        DrawUtilities.fillShape(g, shape, getCurrentColor());
     }
 
 }

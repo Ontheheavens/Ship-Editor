@@ -7,6 +7,6 @@ import java.awt.geom.Point2D;
  * @author Ontheheavens
  * @since 29.05.2023
  */
-public record PointDragQueued(AffineTransform screenToWorld, Point2D adjustedCursor) implements PointEvent {
+public record PointDragQueued(AffineTransform screenToWorld, Point2D target) implements PointEvent {
 
 }

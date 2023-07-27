@@ -16,8 +16,12 @@ import oth.shipeditor.components.viewer.ShipViewable;
 import oth.shipeditor.components.viewer.entities.ShipCenterPoint;
 import oth.shipeditor.components.viewer.layers.LayerPainter;
 import oth.shipeditor.components.viewer.layers.ShipLayer;
+import oth.shipeditor.utility.StaticController;
+import oth.shipeditor.utility.Utility;
 import oth.shipeditor.utility.components.ComponentUtilities;
 import oth.shipeditor.utility.components.MouseoverLabelListener;
+import oth.shipeditor.utility.components.dialog.DialogUtilities;
+import oth.shipeditor.utility.text.StringValues;
 
 import javax.swing.*;
 import java.awt.*;
@@ -158,24 +162,54 @@ final class ViewerStatusPanel extends JPanel {
 
         FontIcon mouseIcon = FontIcon.of(FluentUiRegularAL.CURSOR_HOVER_20, 20);
         cursorCoords = new JLabel("", mouseIcon, SwingConstants.TRAILING);
-        cursorCoords.setBorder(ComponentUtilities.createRoundCompoundBorder(new Insets(2, 6, 2, 7)));
+        Insets coordsInsets = new Insets(2, 6, 2, 7);
+        cursorCoords.setBorder(ComponentUtilities.createRoundCompoundBorder(coordsInsets));
         cursorCoords.setToolTipText("Right-click to change coordinate system");
-        JPopupMenu popupMenu = this.createCoordsMenu();
-        cursorCoords.addMouseListener(new MouseoverLabelListener(popupMenu, cursorCoords));
+        JPopupMenu coordsMenu = this.createCoordsMenu();
+        cursorCoords.addMouseListener(new MouseoverLabelListener(coordsMenu, cursorCoords));
         leftsideContainer.add(cursorCoords);
 
         this.addSeparator();
 
         FontIcon zoomIcon = FontIcon.of(FluentUiRegularMZ.ZOOM_IN_20, 20);
-        this.zoom = new JLabel("", zoomIcon, SwingConstants.TRAILING);
-        this.zoom.setToolTipText("Zoom level");
+        zoom = new JLabel("", zoomIcon, SwingConstants.TRAILING);
+        Insets zoomInsets = new Insets(2, 3, 2, 5);
+        zoom.setBorder(ComponentUtilities.createRoundCompoundBorder(zoomInsets));
+        String zoomTooltip = Utility.getWithLinebreaks("Mousewheel to zoom viewer", StringValues.RIGHT_CLICK_TO_ADJUST_VALUE);
+        zoom.setToolTipText(zoomTooltip);
+
+        JPopupMenu zoomMenu = new JPopupMenu();
+        JMenuItem adjustZoomValue = new JMenuItem(StringValues.ADJUST_VALUE);
+        adjustZoomValue.addActionListener(event -> {
+            double oldZoom = StaticController.getZoomLevel();
+            DialogUtilities.showAdjustZoomDialog(oldZoom);
+        });
+        zoomMenu.add(adjustZoomValue);
+        zoom.addMouseListener(new MouseoverLabelListener(zoomMenu, zoom));
+
         leftsideContainer.add(this.zoom);
 
         this.addSeparator();
 
         FontIcon rotationIcon = FontIcon.of(FluentUiRegularAL.ARROW_ROTATE_CLOCKWISE_20, 20);
         this.rotation = new JLabel("", rotationIcon, SwingConstants.TRAILING);
-        this.rotation.setToolTipText("Rotation degrees");
+
+        Insets rotationInsets = new Insets(2, 3, 2, 5);
+        rotation.setBorder(ComponentUtilities.createRoundCompoundBorder(rotationInsets));
+
+        String rotationTooltip = Utility.getWithLinebreaks("CTRL-Mousewheel to rotate viewer",
+                StringValues.RIGHT_CLICK_TO_ADJUST_VALUE);
+        this.rotation.setToolTipText(rotationTooltip);
+
+        JPopupMenu rotationMenu = new JPopupMenu();
+        JMenuItem adjustRotationValue = new JMenuItem(StringValues.ADJUST_VALUE);
+        adjustRotationValue.addActionListener(event -> {
+            double oldRotation = StaticController.getRotationDegrees();
+            DialogUtilities.showAdjustRotationDialog(oldRotation);
+        });
+        rotationMenu.add(adjustRotationValue);
+        rotation.addMouseListener(new MouseoverLabelListener(rotationMenu, rotation));
+
         leftsideContainer.add(this.rotation);
 
         return leftsideContainer;

@@ -138,7 +138,6 @@ public final class BoundPointsPanel extends JPanel {
             PainterVisibility valueOfLayer = boundsPainter.getVisibilityMode();
             visibilityList.setSelectedItem(valueOfLayer);
         };
-        EventBus.subscribe(PainterVisibility.createBusEventListener(visibilityList, selectionAction));
 
         return ComponentUtilities.createVisibilityWidget(visibilityList,
                 BoundPointsPainter.class, selectionAction, "");

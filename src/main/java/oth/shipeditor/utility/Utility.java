@@ -9,6 +9,8 @@ import java.awt.geom.AffineTransform;
 import java.awt.geom.Point2D;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.util.Arrays;
+import java.util.stream.Stream;
 
 /**
  * @author Ontheheavens
@@ -74,6 +76,17 @@ public final class Utility {
         BigDecimal bigDecimal = BigDecimal.valueOf(value);
         bigDecimal = bigDecimal.setScale(decimalPlaces, RoundingMode.HALF_UP);
         return bigDecimal.doubleValue();
+    }
+
+    public static String getWithLinebreaks(String ... lines) {
+        StringBuilder builder = new StringBuilder("<html>" );
+        Stream<String> stringStream = Arrays.stream(lines);
+        stringStream.forEachOrdered(line -> {
+            builder.append(line);
+            builder.append("<br>");
+        });
+        builder.append("</html>");
+        return builder.toString();
     }
 
 }

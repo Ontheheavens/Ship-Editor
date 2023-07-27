@@ -54,6 +54,7 @@ public enum PainterVisibility {
         };
     }
 
+    @SuppressWarnings("StaticMethodOnlyUsedInOneClass")
     public static BusEventListener createBusEventListener(JComboBox<PainterVisibility> visibilityList,
                                                           ActionListener selectionAction) {
         return event -> {

@@ -1,4 +1,6 @@
-package oth.shipeditor.utility.components;
+package oth.shipeditor.utility.components.dialog;
+
+import oth.shipeditor.utility.components.ComponentUtilities;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;

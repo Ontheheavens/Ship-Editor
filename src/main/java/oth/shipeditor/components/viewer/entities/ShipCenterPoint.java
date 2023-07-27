@@ -56,26 +56,24 @@ public class ShipCenterPoint extends BaseWorldPoint {
     }
 
     @Override
-    public Painter createPointPainter() {
+    public void paint(Graphics2D g, AffineTransform worldToScreen, double w, double h) {
         AffineTransform delegateWorldToScreen = getDelegateWorldToScreen();
-        return (g, worldToScreen, w, h) -> {
-            delegateWorldToScreen.setTransform(worldToScreen);
+        delegateWorldToScreen.setTransform(worldToScreen);
 
-            this.paintCollisionCircle(g, delegateWorldToScreen);
+        this.paintCollisionCircle(g, delegateWorldToScreen);
 
-            Composite old = null;
-            if (parentPainter.getPaintOpacity() != 0.0f) {
-                old = Utility.setFullAlpha(g);
-            }
+        Composite old = null;
+        if (parentPainter.getPaintOpacity() != 0.0f) {
+            old = Utility.setFullAlpha(g);
+        }
 
-            this.paintCenterCross(g, delegateWorldToScreen);
+        this.paintCenterCross(g, delegateWorldToScreen);
 
-            this.paintCoordsLabel(g, delegateWorldToScreen);
+        this.paintCoordsLabel(g, delegateWorldToScreen);
 
-            if (old != null) {
-                g.setComposite(old);
-            }
-        };
+        if (old != null) {
+            g.setComposite(old);
+        }
     }
 
     @Override

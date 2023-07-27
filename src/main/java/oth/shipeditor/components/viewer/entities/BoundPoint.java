@@ -39,20 +39,18 @@ public class BoundPoint extends BaseWorldPoint{
     }
 
     @Override
-    public Painter createPointPainter() {
-        return (g, worldToScreen, w, h) -> {
-            Point2D position = getPosition();
+    public void paint(Graphics2D g, AffineTransform worldToScreen, double w, double h) {
+        Point2D position = getPosition();
 
-            Shape hexagon = BoundPoint.getShapeForPoint(worldToScreen, position, paintSizeMultiplier);
+        Shape hexagon = BoundPoint.getShapeForPoint(worldToScreen, position, paintSizeMultiplier);
 
-            boolean cursorInBounds = StaticController.checkIsHovered(hexagon);
-            this.setCursorInBounds(cursorInBounds);
+        boolean cursorInBounds = StaticController.checkIsHovered(hexagon);
+        this.setCursorInBounds(cursorInBounds);
 
-            DrawUtilities.outlineShape(g, hexagon, Color.BLACK, 2);
-            DrawUtilities.fillShape(g, hexagon, getCurrentColor());
+        DrawUtilities.outlineShape(g, hexagon, Color.BLACK, 2);
+        DrawUtilities.fillShape(g, hexagon, getCurrentColor());
 
-            this.paintCoordsLabel(g, worldToScreen);
-        };
+        this.paintCoordsLabel(g, worldToScreen);
     }
 
     @Override

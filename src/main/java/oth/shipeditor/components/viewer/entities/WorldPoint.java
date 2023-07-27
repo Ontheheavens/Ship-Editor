@@ -1,6 +1,5 @@
 package oth.shipeditor.components.viewer.entities;
 
-import de.javagl.viewer.Painter;
 import oth.shipeditor.components.viewer.layers.LayerPainter;
 
 import java.awt.geom.Point2D;
@@ -23,11 +22,6 @@ public interface WorldPoint {
     void setPosition(double x, double y);
 
     void setPosition(Point2D input);
-
-    /**
-     * @return new Painter instance responsible for graphical representation of this point in Viewer.
-     */
-    Painter createPointPainter();
 
     /**
      * @return whether this point is selected, that is, active for some user input such as moving the point.

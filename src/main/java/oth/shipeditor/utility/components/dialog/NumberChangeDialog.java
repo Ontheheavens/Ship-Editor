@@ -1,4 +1,8 @@
-package oth.shipeditor.utility.components;
+package oth.shipeditor.utility.components.dialog;
+
+import lombok.Getter;
+import oth.shipeditor.utility.Utility;
+import oth.shipeditor.utility.components.ComponentUtilities;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -10,11 +14,12 @@ import java.awt.*;
  */
 class NumberChangeDialog extends JPanel {
 
-    private final Number originalNumber;
+    @Getter
+    private final double originalNumber;
 
     private SpinnerNumberModel spinnerModel;
 
-    NumberChangeDialog(Number original) {
+    NumberChangeDialog(double original) {
         this.originalNumber = original;
         this.setLayout(new BorderLayout());
         this.add(createTopPanel(), BorderLayout.PAGE_START);
@@ -25,7 +30,7 @@ class NumberChangeDialog extends JPanel {
         JPanel topPanel = new JPanel();
         topPanel.setLayout(new BoxLayout(topPanel, BoxLayout.PAGE_AXIS));
 
-        JLabel originalNumberLabel = new JLabel(originalNumber.doubleValue() + " ");
+        JLabel originalNumberLabel = createOriginalLabel();
 
         JPanel numberContainer = ComponentUtilities.createBoxLabelPanel("Original value: ",
                 originalNumberLabel, 0);
@@ -38,14 +43,20 @@ class NumberChangeDialog extends JPanel {
         return topPanel;
     }
 
-    private JPanel createSpinnerPanel() {
+    protected JLabel createOriginalLabel() {
+        return new JLabel(Utility.round(getOriginalNumber(), 5) + " ");
+    }
+
+    protected SpinnerNumberModel createSpinnerModel() {
         double min = Double.NEGATIVE_INFINITY;
         double max = Double.POSITIVE_INFINITY;
         double step = 0.005;
-        spinnerModel = new SpinnerNumberModel(originalNumber.doubleValue(), min, max, step);
+        return new SpinnerNumberModel(getOriginalNumber(), min, max, step);
+    }
 
+    private JPanel createSpinnerPanel() {
         JLabel label = new JLabel("New value:");
-
+        spinnerModel = createSpinnerModel();
         JSpinner spinner = new JSpinner(spinnerModel);
 
         JPanel container = new JPanel(new GridLayout(1, 2));
@@ -57,7 +68,7 @@ class NumberChangeDialog extends JPanel {
 
     double getUpdatedValue() {
         Number number = (spinnerModel.getNumber());
-        return number.doubleValue();
+        return Utility.round(number.doubleValue(), 5);
     }
 
 }

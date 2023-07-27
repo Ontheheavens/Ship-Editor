@@ -9,10 +9,10 @@ import oth.shipeditor.communication.events.Events;
 import oth.shipeditor.communication.events.viewer.ViewerRepaintQueued;
 import oth.shipeditor.communication.events.viewer.control.LayerAnchorDragged;
 import oth.shipeditor.communication.events.viewer.layers.ActiveLayerUpdated;
+import oth.shipeditor.communication.events.viewer.layers.LayerRotationQueued;
 import oth.shipeditor.communication.events.viewer.layers.LayerShipDataInitialized;
 import oth.shipeditor.communication.events.viewer.layers.ShipLayerRemovalConfirmed;
 import oth.shipeditor.communication.events.viewer.points.AnchorOffsetQueued;
-import oth.shipeditor.components.viewer.PrimaryShipViewer;
 import oth.shipeditor.components.viewer.entities.BaseWorldPoint;
 import oth.shipeditor.components.viewer.entities.BoundPoint;
 import oth.shipeditor.components.viewer.entities.ShipCenterPoint;
@@ -23,9 +23,11 @@ import oth.shipeditor.components.viewer.painters.points.ShieldPointPainter;
 import oth.shipeditor.representation.Hull;
 import oth.shipeditor.representation.ShipData;
 import oth.shipeditor.utility.CoordinateUtilities;
+import oth.shipeditor.utility.StaticController;
 
 import java.awt.*;
 import java.awt.geom.AffineTransform;
+import java.awt.geom.NoninvertibleTransformException;
 import java.awt.geom.Point2D;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
@@ -63,13 +65,14 @@ public final class LayerPainter implements Painter {
     @Getter
     private float spriteOpacity = 1.0f;
 
+    @Getter
+    private double rotationRadians;
+
     /**
      * Reference to parent layer is needed here for points cleanup.
      */
     @Getter
     private final ShipLayer parentLayer;
-
-    private final PrimaryShipViewer viewer;
 
     @Getter
     private BufferedImage shipSprite;
@@ -80,9 +83,8 @@ public final class LayerPainter implements Painter {
     private final List<BusEventListener> listeners;
 
     @SuppressWarnings("ThisEscapedInObjectConstruction")
-    public LayerPainter(ShipLayer layer, PrimaryShipViewer viewerPanel) {
+    public LayerPainter(ShipLayer layer) {
         this.parentLayer = layer;
-        this.viewer = viewerPanel;
         this.listeners = new ArrayList<>();
 
         this.centerPointPainter = new CenterPointPainter(this);
@@ -99,8 +101,7 @@ public final class LayerPainter implements Painter {
     }
 
     public boolean isLayerActive() {
-        LayerManager layerManager = viewer.getLayerManager();
-        return (layerManager.getActiveLayer() == this.parentLayer);
+        return StaticController.getActiveLayer() == this.parentLayer;
     }
 
     private void cleanupForRemoval() {
@@ -133,6 +134,53 @@ public final class LayerPainter implements Painter {
         };
         listeners.add(anchorDragListener);
         EventBus.subscribe(anchorDragListener);
+
+        BusEventListener rotationListener = event -> {
+            if (event instanceof LayerRotationQueued checked) {
+                if (checked.layer() != this) return;
+                this.rotateLayer(checked.worldTarget());
+            }
+        };
+        listeners.add(rotationListener);
+        EventBus.subscribe(rotationListener);
+    }
+
+    private void rotateLayer(Point2D worldTarget) {
+        Point2D spriteCenter = getSpriteCenter();
+        double deltaX = worldTarget.getX() - spriteCenter.getX();
+        double deltaY = worldTarget.getY() - spriteCenter.getY();
+
+        double radians = -Math.atan2(deltaX, deltaY);
+
+        double rotationDegrees = Math.toDegrees(radians) + 180;
+        rotationRadians = Math.toRadians(rotationDegrees);
+    }
+
+    public AffineTransform getWithRotation(AffineTransform worldToScreen) {
+        AffineTransform transform = new AffineTransform(worldToScreen);
+        transform.concatenate(getRotationTransform());
+        return transform;
+    }
+
+    private AffineTransform getRotationTransform() {
+        double rotation = this.getRotationRadians();
+        Point2D spriteCenter = this.getSpriteCenter();
+        double centerX = spriteCenter.getX();
+        double centerY = spriteCenter.getY();
+        return AffineTransform.getRotateInstance(rotation, centerX, centerY);
+    }
+
+    public AffineTransform getWithRotationInverse(AffineTransform worldToScreen) {
+        AffineTransform transform;
+        AffineTransform worldToScreenCopy = new AffineTransform(worldToScreen);
+        try {
+            AffineTransform inverseRotation = getRotationTransform();
+            worldToScreenCopy.concatenate(inverseRotation);
+            transform = worldToScreenCopy.createInverse();
+        } catch (NoninvertibleTransformException e) {
+            throw new RuntimeException("Non-invertible rotation transform of layer!", e);
+        }
+        return transform;
     }
 
     private static void clearPointPainter(AbstractPointPainter pointPainter) {

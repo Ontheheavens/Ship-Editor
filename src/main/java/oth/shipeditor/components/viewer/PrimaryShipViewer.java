@@ -170,7 +170,7 @@ public final class PrimaryShipViewer extends Viewer implements ShipViewable {
 
     @Override
     public void loadLayer(ShipLayer layer) {
-        LayerPainter newPainter = new LayerPainter(layer, this);
+        LayerPainter newPainter = new LayerPainter(layer);
         ShipLayer activeLayer = this.layerManager.getActiveLayer();
         activeLayer.setPainter(newPainter);
         // Main sprite painter and said painter children point painters are distinct conceptually.

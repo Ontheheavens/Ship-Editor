@@ -12,6 +12,7 @@ import oth.shipeditor.communication.events.viewer.control.ViewerGuidesToggled;
 import oth.shipeditor.components.instrument.InstrumentTabsPane;
 import oth.shipeditor.components.viewer.InstrumentMode;
 import oth.shipeditor.components.viewer.PrimaryShipViewer;
+import oth.shipeditor.components.viewer.control.ControlPredicates;
 import oth.shipeditor.components.viewer.entities.BaseWorldPoint;
 import oth.shipeditor.components.viewer.entities.WorldPoint;
 import oth.shipeditor.components.viewer.layers.LayerPainter;
@@ -88,19 +89,31 @@ public final class GuidesPainters {
             if (layer == null || layer.getShipSprite() == null) return;
             RenderedImage shipSprite = layer.getShipSprite();
 
-            Point2D mousePoint = StaticController.getAdjustedCursor();
-            AffineTransform screenToWorld = this.parent.getScreenToWorld();
-            Point2D transformedMouse = screenToWorld.transform(mousePoint, null);
+            Point2D adjustedCursor = StaticController.getAdjustedCursor();
+
+            AffineTransform screenToWorld = layer.getWithRotationInverse(parent.getWorldToScreen());
+
+            Point2D transformedMouse = screenToWorld.transform(adjustedCursor, null);
             double x = transformedMouse.getX();
             double y = transformedMouse.getY();
 
             double spriteW = shipSprite.getWidth();
             double spriteH = shipSprite.getHeight();
+
             Point2D anchor = layer.getAnchorOffset();
-            double xLeft = Math.round((anchor.getX() - 0.5) * 2) / 2.0;
-            double yTop = Math.round((anchor.getY() - 0.5) * 2) / 2.0;
-            double xGuide = Math.round((x - 0.5) * 2) / 2.0;
-            double yGuide = Math.round((y - 0.5) * 2) / 2.0;
+
+            double xLeft = anchor.getX() - 0.5;
+            double yTop = anchor.getY() - 0.5;
+
+            Point2D transformedRaw = screenToWorld.transform(StaticController.getRawCursor(), null);
+            double xGuide = transformedRaw.getX() - 0.5;
+            double yGuide = transformedRaw.getY() - 0.5;
+            if (ControlPredicates.isCursorSnappingEnabled()) {
+                xLeft = Math.round(xLeft * 2) / 2.0;
+                yTop = Math.round(yTop * 2) / 2.0;
+                xGuide = Math.round((x - 0.5) * 2) / 2.0;
+                yGuide = Math.round((y - 0.5) * 2) / 2.0;
+            }
 
             Point2D crossCenter = new Point2D.Double(xGuide + 0.5, yGuide + 0.5);
 
@@ -112,9 +125,11 @@ public final class GuidesPainters {
             Shape guideY = worldToScreen.createTransformedShape(axisY);
 
             g.setPaint(new Color(0x80232323, true));
-            g.draw(guideX); g.draw(guideY);
+            g.draw(guideX);
+            g.draw(guideY);
             g.setPaint(new Color(0x40FFFFFF, true));
-            g.fill(guideX); g.fill(guideY);
+            g.fill(guideX);
+            g.fill(guideY);
 
             Shape targetSquare = new Rectangle2D.Double(xGuide, yGuide, 1, 1);
             Shape transformed = worldToScreen.createTransformedShape(targetSquare);

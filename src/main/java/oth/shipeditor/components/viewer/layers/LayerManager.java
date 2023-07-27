@@ -12,6 +12,7 @@ import oth.shipeditor.communication.events.viewer.layers.*;
 import oth.shipeditor.representation.Hull;
 import oth.shipeditor.representation.ShipData;
 import oth.shipeditor.representation.Skin;
+import oth.shipeditor.utility.StaticController;
 
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
@@ -45,6 +46,7 @@ public class LayerManager {
     public void setActiveLayer(ShipLayer newlySelected) {
         ShipLayer old = this.activeLayer;
         this.activeLayer = newlySelected;
+        StaticController.setActiveLayer(activeLayer);
         EventBus.publish(new LayerWasSelected(old, newlySelected));
     }
 
