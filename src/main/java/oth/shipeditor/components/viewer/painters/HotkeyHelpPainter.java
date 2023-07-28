@@ -2,8 +2,8 @@ package oth.shipeditor.components.viewer.painters;
 
 import de.javagl.viewer.Painter;
 import lombok.extern.log4j.Log4j2;
-import oth.shipeditor.components.instrument.InstrumentTabsPane;
-import oth.shipeditor.components.viewer.InstrumentMode;
+import oth.shipeditor.components.instrument.ship.ShipInstrumentsPane;
+import oth.shipeditor.components.viewer.ShipInstrument;
 import oth.shipeditor.utility.graphics.DrawUtilities;
 
 import java.awt.*;
@@ -22,7 +22,7 @@ public class HotkeyHelpPainter implements Painter {
 
     @Override
     public void paint(Graphics2D g, AffineTransform worldToScreen, double w, double h) {
-        InstrumentMode current = InstrumentTabsPane.getCurrentMode();
+        ShipInstrument current = ShipInstrumentsPane.getCurrentMode();
 
         Collection<String> hints = new ArrayList<>();
         // The hotkey values are hardcoded because the respective fields in control classes are int constants.

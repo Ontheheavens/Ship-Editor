@@ -2,7 +2,7 @@ package oth.shipeditor.components.viewer.entities;
 
 import lombok.Getter;
 import lombok.Setter;
-import oth.shipeditor.components.viewer.InstrumentMode;
+import oth.shipeditor.components.viewer.ShipInstrument;
 import oth.shipeditor.components.viewer.layers.ship.ShipPainter;
 import oth.shipeditor.utility.StaticController;
 import oth.shipeditor.utility.graphics.DrawUtilities;
@@ -26,8 +26,8 @@ public class BoundPoint extends BaseWorldPoint{
     }
 
     @Override
-    public InstrumentMode getAssociatedMode() {
-        return InstrumentMode.BOUNDS;
+    public ShipInstrument getAssociatedMode() {
+        return ShipInstrument.BOUNDS;
     }
 
     public static Shape getShapeForPoint(AffineTransform worldToScreen, Point2D position, double sizeMult) {

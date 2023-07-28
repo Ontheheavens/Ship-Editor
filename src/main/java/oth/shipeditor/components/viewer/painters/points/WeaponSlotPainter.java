@@ -1,8 +1,8 @@
 package oth.shipeditor.components.viewer.painters.points;
 
 import lombok.Getter;
-import oth.shipeditor.components.instrument.InstrumentTabsPane;
-import oth.shipeditor.components.viewer.InstrumentMode;
+import oth.shipeditor.components.instrument.ship.ShipInstrumentsPane;
+import oth.shipeditor.components.viewer.ShipInstrument;
 import oth.shipeditor.components.viewer.entities.BaseWorldPoint;
 import oth.shipeditor.components.viewer.entities.WeaponSlotPoint;
 import oth.shipeditor.components.viewer.layers.ship.ShipPainter;
@@ -28,7 +28,7 @@ public class WeaponSlotPainter extends MirrorablePointPainter{
 //        this.initModeListener();
 //        this.initCreationListener();
 
-        this.setInteractionEnabled(InstrumentTabsPane.getCurrentMode() == InstrumentMode.WEAPON_SLOTS);
+        this.setInteractionEnabled(ShipInstrumentsPane.getCurrentMode() == ShipInstrument.WEAPON_SLOTS);
     }
 
     @Override

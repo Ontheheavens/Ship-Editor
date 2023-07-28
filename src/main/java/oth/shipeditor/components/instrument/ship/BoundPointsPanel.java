@@ -1,4 +1,4 @@
-package oth.shipeditor.components.instrument;
+package oth.shipeditor.components.instrument.ship;
 
 import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
@@ -41,6 +41,8 @@ public final class BoundPointsPanel extends JPanel {
     private JLabel opacityLabel;
     private JSlider opacitySlider;
 
+    private JCheckBox reorderCheckbox;
+
     private DefaultListModel<BoundPoint> model = new DefaultListModel<>();
 
     public BoundPointsPanel() {
@@ -75,7 +77,7 @@ public final class BoundPointsPanel extends JPanel {
         container.setLayout(new BoxLayout(container, BoxLayout.LINE_AXIS));
         container.setBorder(new EmptyBorder(2, 0, 2, 0));
 
-        JCheckBox reorderCheckbox = new JCheckBox("Reorder by drag");
+        reorderCheckbox = new JCheckBox("Reorder by drag");
         reorderCheckbox.addItemListener(e -> {
             boolean reorderOn = reorderCheckbox.isSelected();
             boundPointContainer.setDragEnabled(reorderOn);
@@ -173,11 +175,14 @@ public final class BoundPointsPanel extends JPanel {
         EventBus.subscribe(event -> {
             if (event instanceof LayerWasSelected checked) {
                 ViewerLayer selected = checked.selected();
+                DefaultListModel<BoundPoint> newModel = new DefaultListModel<>();
                 if (!(selected instanceof ShipLayer checkedLayer)) {
                     opacitySlider.setEnabled(false);
+                    reorderCheckbox.setEnabled(false);
+                    this.model = newModel;
+                    this.boundPointContainer.setModel(newModel);
                     return;
                 }
-                DefaultListModel<BoundPoint> newModel = new DefaultListModel<>();
                 if (checkedLayer.getPainter() != null) {
                     ShipPainter selectedShipPainter = checkedLayer.getPainter();
                     BoundPointsPainter newBoundsPainter = selectedShipPainter.getBoundsPainter();
@@ -187,6 +192,7 @@ public final class BoundPointsPanel extends JPanel {
                 this.boundPointContainer.setModel(newModel);
 
                 opacitySlider.setEnabled(selected.getPainter() != null);
+                reorderCheckbox.setEnabled(selected.getPainter() != null);
             }
         });
     }

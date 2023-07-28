@@ -88,7 +88,7 @@ public class ShipCSVEntry {
         Path spriteFilePath = Path.of(spriteName);
         File spriteFile = FileLoading.fetchDataFile(spriteFilePath, packagePath);
 
-        FileUtilities.createLayerWithSprite(spriteFile);
+        FileUtilities.createShipLayerWithSprite(spriteFile);
         EventBus.publish(new HullFileOpened(this.hullFile, this.getHullFileName()));
         if (skinChosen) {
             String skinFileName = this.activeSkin.getSkinFilePath().getFileName().toString();

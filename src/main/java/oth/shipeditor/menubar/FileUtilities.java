@@ -9,7 +9,7 @@ import oth.shipeditor.communication.events.files.HullFileOpened;
 import oth.shipeditor.communication.events.files.HullStylesLoaded;
 import oth.shipeditor.communication.events.files.SpriteOpened;
 import oth.shipeditor.communication.events.viewer.layers.LastLayerSelectQueued;
-import oth.shipeditor.communication.events.viewer.layers.ShipLayerCreationQueued;
+import oth.shipeditor.communication.events.viewer.layers.ships.ShipLayerCreationQueued;
 import oth.shipeditor.components.viewer.layers.ViewerLayer;
 import oth.shipeditor.components.viewer.layers.ship.ShipLayer;
 import oth.shipeditor.parsing.loading.*;
@@ -60,7 +60,7 @@ public final class FileUtilities {
 
     public static void updateActionStates(ViewerLayer currentlySelected) {
         if (!(currentlySelected instanceof ShipLayer layer)) {
-            openSpriteAction.setEnabled(false);
+            openSpriteAction.setEnabled(currentlySelected != null && currentlySelected.getSprite() == null);
             openShipDataAction.setEnabled(false);
             return;
         }
@@ -87,7 +87,7 @@ public final class FileUtilities {
         }
     }
 
-    public static void createLayerWithSprite(File spriteFile) {
+    public static void createShipLayerWithSprite(File spriteFile) {
         EventBus.publish(new ShipLayerCreationQueued());
         EventBus.publish(new LastLayerSelectQueued());
         BufferedImage sprite = FileLoading.loadSprite(spriteFile);

@@ -3,7 +3,7 @@ package oth.shipeditor.components.viewer.layers.ship;
 import lombok.extern.log4j.Log4j2;
 import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.viewer.ViewerRepaintQueued;
-import oth.shipeditor.communication.events.viewer.layers.LayerShipDataInitialized;
+import oth.shipeditor.communication.events.viewer.layers.ships.LayerShipDataInitialized;
 import oth.shipeditor.components.viewer.entities.BoundPoint;
 import oth.shipeditor.components.viewer.painters.points.BoundPointsPainter;
 import oth.shipeditor.components.viewer.painters.points.CenterPointPainter;

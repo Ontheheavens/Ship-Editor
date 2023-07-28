@@ -3,14 +3,20 @@ package oth.shipeditor.components.layering;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
-import org.kordamp.ikonli.fluentui.FluentUiRegularMZ;
+import org.kordamp.ikonli.boxicons.BoxiconsRegular;
 import org.kordamp.ikonli.swing.FontIcon;
 import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.components.WindowRepaintQueued;
-import oth.shipeditor.communication.events.viewer.layers.*;
+import oth.shipeditor.communication.events.viewer.layers.ActiveLayerUpdated;
+import oth.shipeditor.communication.events.viewer.layers.LayerRemovalQueued;
+import oth.shipeditor.communication.events.viewer.layers.LayerWasSelected;
+import oth.shipeditor.communication.events.viewer.layers.ViewerLayerRemovalConfirmed;
+import oth.shipeditor.communication.events.viewer.layers.ships.ShipLayerCreated;
+import oth.shipeditor.communication.events.viewer.layers.weapons.WeaponLayerCreated;
 import oth.shipeditor.components.viewer.layers.LayerManager;
 import oth.shipeditor.components.viewer.layers.ViewerLayer;
 import oth.shipeditor.components.viewer.layers.ship.ShipLayer;
+import oth.shipeditor.components.viewer.layers.weapon.WeaponLayer;
 import oth.shipeditor.representation.Hull;
 import oth.shipeditor.representation.ShipData;
 import oth.shipeditor.representation.Skin;
@@ -20,8 +26,8 @@ import oth.shipeditor.utility.text.StringValues;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.image.BufferedImage;
-import java.util.*;
 import java.util.List;
+import java.util.*;
 import java.util.function.IntConsumer;
 import java.util.function.ToIntFunction;
 
@@ -31,6 +37,8 @@ import java.util.function.ToIntFunction;
  */
 @Log4j2
 public final class ViewerLayersPanel extends SortableTabbedPane {
+
+    private static final String LAYER = "Layer #";
 
     /**
      * Expected to be the same instance that is originally created and assigned in viewer;
@@ -66,16 +74,25 @@ public final class ViewerLayersPanel extends SortableTabbedPane {
         this.setBorder(BorderFactory.createMatteBorder(1, 0, 0, 0, Color.LIGHT_GRAY));
     }
 
-    @SuppressWarnings("OverlyCoupledMethod")
+    @SuppressWarnings({"OverlyCoupledMethod", "ChainOfInstanceofChecks", "OverlyComplexMethod"})
     private void initLayerListeners() {
         EventBus.subscribe(event -> {
             if (event instanceof ShipLayerCreated checked) {
-                Icon tabIcon = FontIcon.of(FluentUiRegularMZ.ROCKET_20, 20);
+                Icon tabIcon = FontIcon.of(BoxiconsRegular.ROCKET, 20);
                 ShipLayer layer = checked.newLayer();
                 LayerTab created = new LayerTab(layer);
                 tabIndex.put(layer, created);
                 String tooltip = created.getTabTooltip();
-                this.addTab("Layer #" + getTabCount(), tabIcon, tabIndex.get(layer), tooltip);
+                this.addTab(LAYER + getTabCount(), tabIcon, tabIndex.get(layer), tooltip);
+                EventBus.publish(new WindowRepaintQueued());
+            }
+            else if (event instanceof WeaponLayerCreated checked) {
+                Icon tabIcon = FontIcon.of(BoxiconsRegular.CROSSHAIR, 20);
+                WeaponLayer layer = checked.newLayer();
+                LayerTab created = new LayerTab(layer);
+                tabIndex.put(layer, created);
+                String tooltip = created.getTabTooltip();
+                this.addTab(LAYER + getTabCount(), tabIcon, tabIndex.get(layer), tooltip);
                 EventBus.publish(new WindowRepaintQueued());
             }
         });
@@ -144,7 +161,7 @@ public final class ViewerLayersPanel extends SortableTabbedPane {
     private static final class LayerTab extends JPanel {
 
         @Getter
-        private final ShipLayer associatedLayer;
+        private final ViewerLayer associatedLayer;
 
         @Getter @Setter
         private String spriteFileName;
@@ -155,11 +172,13 @@ public final class ViewerLayersPanel extends SortableTabbedPane {
         @Getter @Setter
         private String skinFileName;
 
-        private LayerTab(ShipLayer layer) {
+        private LayerTab(ViewerLayer layer) {
             this.associatedLayer = layer;
             this.spriteFileName = layer.getSpriteFileName();
-            this.hullFileName = layer.getHullFileName();
-            this.skinFileName = layer.getSkinFileName();
+            if (layer instanceof ShipLayer checked) {
+                this.hullFileName = checked.getHullFileName();
+                this.skinFileName = checked.getSkinFileName();
+            }
             this.setLayout(new BorderLayout());
         }
 
@@ -173,6 +192,9 @@ public final class ViewerLayersPanel extends SortableTabbedPane {
                 sprite = notLoaded;
             }
             String spriteNameLine = StringValues.SPRITE_FILE + sprite;
+            if (!(associatedLayer instanceof ShipLayer)) {
+                return "<html>" + spriteNameLine + "</html>";
+            }
             String hull = hullFileName;
             if (Objects.equals(hull, "")) {
                 hull = notLoaded;

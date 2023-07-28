@@ -2,8 +2,8 @@ package oth.shipeditor.components.viewer.entities;
 
 import lombok.Getter;
 import lombok.Setter;
-import oth.shipeditor.components.instrument.InstrumentTabsPane;
-import oth.shipeditor.components.viewer.InstrumentMode;
+import oth.shipeditor.components.instrument.ship.ShipInstrumentsPane;
+import oth.shipeditor.components.viewer.ShipInstrument;
 import oth.shipeditor.components.viewer.layers.ship.ShipPainter;
 import oth.shipeditor.components.viewer.painters.points.ShieldPointPainter;
 import oth.shipeditor.representation.HullStyle;
@@ -41,12 +41,12 @@ public class ShieldCenterPoint extends BaseWorldPoint {
 
     @Override
     protected boolean isInteractable() {
-        return InstrumentTabsPane.getCurrentMode() == getAssociatedMode() && parentPainter.isInteractionEnabled();
+        return ShipInstrumentsPane.getCurrentMode() == getAssociatedMode() && parentPainter.isInteractionEnabled();
     }
 
     @Override
-    public InstrumentMode getAssociatedMode() {
-        return InstrumentMode.SHIELD;
+    public ShipInstrument getAssociatedMode() {
+        return ShipInstrument.SHIELD;
     }
 
     @Override

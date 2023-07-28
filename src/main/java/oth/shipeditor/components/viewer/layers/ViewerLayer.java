@@ -22,10 +22,6 @@ public abstract class ViewerLayer {
 
     private LayerPainter painter;
 
-    protected ViewerLayer(BufferedImage inputSprite) {
-        this.sprite = inputSprite;
-    }
-
     @Override
     public String toString() {
         if (!spriteFileName.isEmpty()) {

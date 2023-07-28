@@ -7,8 +7,8 @@ import oth.shipeditor.communication.events.components.CenterPanelsRepaintQueued;
 import oth.shipeditor.communication.events.viewer.ViewerRepaintQueued;
 import oth.shipeditor.communication.events.viewer.points.InstrumentModeChanged;
 import oth.shipeditor.communication.events.viewer.points.RadiusDragQueued;
-import oth.shipeditor.components.instrument.InstrumentTabsPane;
-import oth.shipeditor.components.viewer.InstrumentMode;
+import oth.shipeditor.components.instrument.ship.ShipInstrumentsPane;
+import oth.shipeditor.components.viewer.ShipInstrument;
 import oth.shipeditor.components.viewer.control.ControlPredicates;
 import oth.shipeditor.components.viewer.entities.BaseWorldPoint;
 import oth.shipeditor.components.viewer.entities.ShieldCenterPoint;
@@ -46,7 +46,7 @@ public class ShieldPointPainter extends SinglePointPainter {
         super(parent);
         this.initModeListening();
         this.initHotkeys();
-        this.setInteractionEnabled(InstrumentTabsPane.getCurrentMode() == InstrumentMode.SHIELD);
+        this.setInteractionEnabled(ShipInstrumentsPane.getCurrentMode() == ShipInstrument.SHIELD);
     }
 
     @Override
@@ -73,7 +73,7 @@ public class ShieldPointPainter extends SinglePointPainter {
         List<BusEventListener> listeners = getListeners();
         BusEventListener modeListener = event -> {
             if (event instanceof InstrumentModeChanged checked) {
-                this.setInteractionEnabled(checked.newMode() == InstrumentMode.SHIELD);
+                this.setInteractionEnabled(checked.newMode() == ShipInstrument.SHIELD);
                 EventBus.publish(new CenterPanelsRepaintQueued());
             }
         };

@@ -1,4 +1,4 @@
-package oth.shipeditor.components.instrument.centers;
+package oth.shipeditor.components.instrument.ship.centers;
 
 import lombok.extern.log4j.Log4j2;
 import oth.shipeditor.communication.BusEventListener;
@@ -43,6 +43,9 @@ public final class CollisionPanel extends JPanel {
     private JLabel collisionOpacityLabel;
     private JSlider collisionOpacitySlider;
 
+    private JPopupMenu shipCenterMenu;
+    private JPopupMenu collisionRadiusMenu;
+
     public CollisionPanel() {
         LayoutManager layout = new BorderLayout();
         this.setLayout(layout);
@@ -67,6 +70,8 @@ public final class CollisionPanel extends JPanel {
             if (event instanceof LayerWasSelected checked) {
                 ViewerLayer selected = checked.selected();
                 if (!(selected instanceof ShipLayer checkedLayer)) {
+                    this.centerPainter = null;
+                    this.refresh();
                     return;
                 }
                 boolean enableSlider = false;
@@ -78,7 +83,6 @@ public final class CollisionPanel extends JPanel {
                     this.centerPainter = null;
                 }
                 this.refresh();
-
                 collisionOpacitySlider.setEnabled(enableSlider);
             }
         });
@@ -93,15 +97,25 @@ public final class CollisionPanel extends JPanel {
         String noInit = StringValues.NOT_INITIALIZED;
         String centerPosition = noInit;
         String collisionValue = noInit;
+        shipCenterMenu.setEnabled(false);
+        collisionRadiusMenu.setEnabled(false);
+        collisionOpacitySlider.setEnabled(false);
+        Color labelColor = Color.GRAY;
         if (this.centerPainter != null) {
             ShipCenterPoint center = this.centerPainter.getCenterPoint();
             if (center != null) {
                 centerPosition = center.getPositionText();
                 collisionValue = Utility.round(center.getCollisionRadius(), 5) + " " + StringValues.PIXELS;
+                shipCenterMenu.setEnabled(true);
+                collisionRadiusMenu.setEnabled(true);
+                collisionOpacitySlider.setEnabled(true);
+                labelColor = Color.BLACK;
             }
         }
         centerCoords.setText(centerPosition);
+        centerCoords.setForeground(labelColor);
         collisionRadius.setText(collisionValue);
+        collisionRadius.setForeground(labelColor);
     }
 
     private JPanel createCollisionPanel() {
@@ -138,7 +152,7 @@ public final class CollisionPanel extends JPanel {
         insets.top = 1;
         centerCoords.setBorder(ComponentUtilities.createLabelSimpleBorder(insets));
 
-        JPopupMenu shipCenterMenu = new JPopupMenu();
+        shipCenterMenu = new JPopupMenu();
         JMenuItem adjustPosition = new JMenuItem(StringValues.ADJUST_POSITION);
         adjustPosition.addActionListener(event -> {
             ShipCenterPoint centerPoint = centerPainter.getCenterPoint();
@@ -160,7 +174,7 @@ public final class CollisionPanel extends JPanel {
         insets.top = 1;
         collisionRadius.setBorder(ComponentUtilities.createLabelSimpleBorder(insets));
 
-        JPopupMenu collisionRadiusMenu = new JPopupMenu();
+        collisionRadiusMenu = new JPopupMenu();
         JMenuItem adjustValue = new JMenuItem(StringValues.ADJUST_VALUE);
         adjustValue.addActionListener(event -> {
             ShipCenterPoint centerPoint = centerPainter.getCenterPoint();
@@ -205,8 +219,8 @@ public final class CollisionPanel extends JPanel {
                 if (painter == null) {
                     value = defaultOpacity;
                 } else {
-                    CenterPointPainter boundsPainter = painter.getCenterPointPainter();
-                    value = (int) (boundsPainter.getPaintOpacity() * 100.0f);
+                    CenterPointPainter centerPointPainter = painter.getCenterPointPainter();
+                    value = (int) (centerPointPainter.getPaintOpacity() * 100.0f);
                 }
                 updateCollisionOpacityLabel(value);
                 collisionOpacitySlider.setValue(value);

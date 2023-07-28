@@ -1,4 +1,4 @@
-package oth.shipeditor.components.instrument;
+package oth.shipeditor.components.instrument.ship;
 
 import lombok.extern.log4j.Log4j2;
 import oth.shipeditor.communication.EventBus;

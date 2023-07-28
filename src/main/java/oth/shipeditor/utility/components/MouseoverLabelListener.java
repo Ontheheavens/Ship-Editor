@@ -31,6 +31,7 @@ public class MouseoverLabelListener extends MouseAdapter {
     @Override
     public void mouseEntered(MouseEvent e) {
         super.mouseEntered(e);
+        if (!popupMenu.isEnabled()) return;
         label.setBackground(highlight);
         label.setOpaque(true);
     }
@@ -45,6 +46,7 @@ public class MouseoverLabelListener extends MouseAdapter {
     @Override
     public void mouseClicked(MouseEvent e) {
         if (SwingUtilities.isRightMouseButton(e) && popupMenu != null) {
+            if (!popupMenu.isEnabled()) return;
             popupMenu.show(label, e.getX(), e.getY());
         }
     }

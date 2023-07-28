@@ -2,8 +2,8 @@ package oth.shipeditor.components.viewer.entities;
 
 import lombok.Getter;
 import lombok.Setter;
-import oth.shipeditor.components.instrument.InstrumentTabsPane;
-import oth.shipeditor.components.viewer.InstrumentMode;
+import oth.shipeditor.components.instrument.ship.ShipInstrumentsPane;
+import oth.shipeditor.components.viewer.ShipInstrument;
 import oth.shipeditor.components.viewer.layers.ship.ShipPainter;
 import oth.shipeditor.components.viewer.painters.points.CenterPointPainter;
 import oth.shipeditor.utility.Utility;
@@ -41,12 +41,12 @@ public class ShipCenterPoint extends BaseWorldPoint {
     protected boolean isInteractable() {
         ShipPainter shipPainter = super.getParentLayer();
         CenterPointPainter painter = shipPainter.getCenterPointPainter();
-        return InstrumentTabsPane.getCurrentMode() == getAssociatedMode() && painter.isInteractionEnabled();
+        return ShipInstrumentsPane.getCurrentMode() == getAssociatedMode() && painter.isInteractionEnabled();
     }
 
     @Override
-    public InstrumentMode getAssociatedMode() {
-        return InstrumentMode.COLLISION;
+    public ShipInstrument getAssociatedMode() {
+        return ShipInstrument.COLLISION;
     }
 
     @Override

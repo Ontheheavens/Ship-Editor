@@ -1,5 +1,6 @@
-package oth.shipeditor.communication.events.viewer.layers;
+package oth.shipeditor.communication.events.viewer.layers.ships;
 
+import oth.shipeditor.communication.events.viewer.layers.LayerEvent;
 import oth.shipeditor.components.viewer.layers.ship.ShipPainter;
 
 /**

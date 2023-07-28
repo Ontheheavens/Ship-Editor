@@ -9,8 +9,14 @@ import oth.shipeditor.communication.events.files.SkinFileOpened;
 import oth.shipeditor.communication.events.files.SpriteOpened;
 import oth.shipeditor.communication.events.viewer.ViewerRepaintQueued;
 import oth.shipeditor.communication.events.viewer.layers.*;
+import oth.shipeditor.communication.events.viewer.layers.ships.LayerShipDataInitialized;
+import oth.shipeditor.communication.events.viewer.layers.ships.ShipLayerCreated;
+import oth.shipeditor.communication.events.viewer.layers.ships.ShipLayerCreationQueued;
+import oth.shipeditor.communication.events.viewer.layers.weapons.WeaponLayerCreated;
+import oth.shipeditor.communication.events.viewer.layers.weapons.WeaponLayerCreationQueued;
 import oth.shipeditor.components.viewer.layers.ship.ShipLayer;
 import oth.shipeditor.components.viewer.layers.ship.ShipPainter;
+import oth.shipeditor.components.viewer.layers.weapon.WeaponLayer;
 import oth.shipeditor.representation.Hull;
 import oth.shipeditor.representation.ShipData;
 import oth.shipeditor.representation.Skin;
@@ -52,13 +58,17 @@ public class LayerManager {
         EventBus.publish(new LayerWasSelected(old, newlySelected));
     }
 
-    @SuppressWarnings("OverlyCoupledMethod")
+    @SuppressWarnings({"OverlyCoupledMethod", "ChainOfInstanceofChecks"})
     private void initLayerListening() {
         EventBus.subscribe(event -> {
             if (event instanceof ShipLayerCreationQueued) {
                 ShipLayer newLayer = new ShipLayer();
                 layers.add(newLayer);
                 EventBus.publish(new ShipLayerCreated(newLayer));
+            } else if (event instanceof WeaponLayerCreationQueued) {
+                WeaponLayer newLayer = new WeaponLayer();
+                layers.add(newLayer);
+                EventBus.publish(new WeaponLayerCreated(newLayer));
             }
         });
         // It is implicitly assumed that the last layer in list is also the one that was just created.

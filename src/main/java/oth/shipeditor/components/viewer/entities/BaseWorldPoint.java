@@ -8,8 +8,8 @@ import oth.shipeditor.communication.BusEventListener;
 import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.viewer.points.AnchorOffsetConfirmed;
 import oth.shipeditor.communication.events.viewer.points.AnchorOffsetQueued;
-import oth.shipeditor.components.instrument.InstrumentTabsPane;
-import oth.shipeditor.components.viewer.InstrumentMode;
+import oth.shipeditor.components.instrument.ship.ShipInstrumentsPane;
+import oth.shipeditor.components.viewer.ShipInstrument;
 import oth.shipeditor.components.viewer.layers.ship.ShipPainter;
 import oth.shipeditor.components.viewer.painters.TextPainter;
 import oth.shipeditor.utility.StaticController;
@@ -48,8 +48,8 @@ public class BaseWorldPoint implements WorldPoint, Painter {
 
     private BusEventListener anchorDragListener;
 
-    public InstrumentMode getAssociatedMode() {
-        return InstrumentMode.LAYER;
+    public ShipInstrument getAssociatedMode() {
+        return ShipInstrument.LAYER;
     }
 
     public BaseWorldPoint() {
@@ -129,7 +129,7 @@ public class BaseWorldPoint implements WorldPoint, Painter {
         if (layer == null) {
             return true;
         }
-        return InstrumentTabsPane.getCurrentMode() == getAssociatedMode() && layer.isLayerActive();
+        return ShipInstrumentsPane.getCurrentMode() == getAssociatedMode() && layer.isLayerActive();
     }
 
     @SuppressWarnings("WeakerAccess")

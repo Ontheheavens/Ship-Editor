@@ -9,7 +9,8 @@ import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.viewer.control.CursorSnappingToggled;
 import oth.shipeditor.communication.events.viewer.control.PointSelectionModeChange;
 import oth.shipeditor.communication.events.viewer.layers.ActiveLayerRemovalQueued;
-import oth.shipeditor.communication.events.viewer.layers.ShipLayerCreationQueued;
+import oth.shipeditor.communication.events.viewer.layers.ships.ShipLayerCreationQueued;
+import oth.shipeditor.communication.events.viewer.layers.weapons.WeaponLayerCreationQueued;
 import oth.shipeditor.components.viewer.control.PointSelectionMode;
 import oth.shipeditor.undo.UndoOverseer;
 
@@ -120,18 +121,27 @@ public final class PrimaryMenuBar extends JMenuBar {
 
         JMenuItem createLayer = new JMenuItem("Create new layer");
         createLayer.setIcon(FontIcon.of(BoxiconsRegular.LAYER_PLUS, 16));
-        createLayer.addActionListener(event -> SwingUtilities.invokeLater(
-                        () -> EventBus.publish(new ShipLayerCreationQueued())
-                )
-        );
+        createLayer.addActionListener(event -> {
+            Object[] options = {"Ship Layer", "Weapon Layer"};
+            int result = JOptionPane.showOptionDialog(null,
+                    "Select new layer type:",
+                    "Create New Layer",
+                    JOptionPane.YES_NO_CANCEL_OPTION,
+                    JOptionPane.QUESTION_MESSAGE,
+                    null,
+                    options,
+                    options[0]);
+            if (result == 0) {
+                EventBus.publish(new ShipLayerCreationQueued());
+            } else {
+                EventBus.publish(new WeaponLayerCreationQueued());
+            }
+        });
         layersMenu.add(createLayer);
 
         JMenuItem removeLayer = new JMenuItem("Remove selected layer");
         removeLayer.setIcon(FontIcon.of(BoxiconsRegular.LAYER_MINUS, 16));
-        removeLayer.addActionListener(event -> SwingUtilities.invokeLater(
-                        () -> EventBus.publish(new ActiveLayerRemovalQueued())
-                )
-        );
+        removeLayer.addActionListener(event -> EventBus.publish(new ActiveLayerRemovalQueued()));
         layersMenu.add(removeLayer);
 
         return layersMenu;

@@ -33,7 +33,7 @@ public class MinimizerWidget {
         this.minimizeAction.run();
     }
 
-    public void maximize() {
+    void maximize() {
         this.maximizeAction.run();
     }
 

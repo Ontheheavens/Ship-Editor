@@ -26,12 +26,10 @@ public class ShipLayer extends ViewerLayer {
 
     private String skinFileName = "";
 
-    public ShipLayer() {
-        this(null);
-    }
+    public ShipLayer() {}
 
-    public ShipLayer(BufferedImage inputSprite) {
-        super(inputSprite);
+    public ShipLayer(BufferedImage sprite) {
+        this.setSprite(sprite);
     }
 
     @Override

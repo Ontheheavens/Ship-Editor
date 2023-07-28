@@ -9,8 +9,8 @@ import lombok.extern.log4j.Log4j2;
 import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.viewer.ViewerRepaintQueued;
 import oth.shipeditor.communication.events.viewer.control.ViewerGuidesToggled;
-import oth.shipeditor.components.instrument.InstrumentTabsPane;
-import oth.shipeditor.components.viewer.InstrumentMode;
+import oth.shipeditor.components.instrument.ship.ShipInstrumentsPane;
+import oth.shipeditor.components.viewer.ShipInstrument;
 import oth.shipeditor.components.viewer.PrimaryViewer;
 import oth.shipeditor.components.viewer.control.ControlPredicates;
 import oth.shipeditor.components.viewer.entities.BaseWorldPoint;
@@ -217,7 +217,7 @@ public final class GuidesPainters {
 
     @SuppressWarnings("MethodWithMultipleReturnPoints")
     private static void drawPointPositionHint(Graphics2D g, Point2D position, LayerPainter painter) {
-        if (InstrumentTabsPane.getCurrentMode() == InstrumentMode.BOUNDS) {
+        if (ShipInstrumentsPane.getCurrentMode() == ShipInstrument.BOUNDS) {
             Font hintFont = Utility.getOrbitron(12);
             if (!(painter instanceof ShipPainter checkedPainter)) return;
             BoundPointsPainter boundsPainter = checkedPainter.getBoundsPainter();

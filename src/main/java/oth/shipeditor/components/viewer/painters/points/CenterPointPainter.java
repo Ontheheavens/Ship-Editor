@@ -8,8 +8,8 @@ import oth.shipeditor.communication.events.components.CenterPanelsRepaintQueued;
 import oth.shipeditor.communication.events.viewer.ViewerRepaintQueued;
 import oth.shipeditor.communication.events.viewer.points.InstrumentModeChanged;
 import oth.shipeditor.communication.events.viewer.points.RadiusDragQueued;
-import oth.shipeditor.components.instrument.InstrumentTabsPane;
-import oth.shipeditor.components.viewer.InstrumentMode;
+import oth.shipeditor.components.instrument.ship.ShipInstrumentsPane;
+import oth.shipeditor.components.viewer.ShipInstrument;
 import oth.shipeditor.components.viewer.control.ControlPredicates;
 import oth.shipeditor.components.viewer.entities.BaseWorldPoint;
 import oth.shipeditor.components.viewer.entities.ShipCenterPoint;
@@ -47,7 +47,7 @@ public class CenterPointPainter extends SinglePointPainter {
         super(parent);
         this.initModeListening();
         this.initHotkeys();
-        this.setInteractionEnabled(InstrumentTabsPane.getCurrentMode() == InstrumentMode.COLLISION);
+        this.setInteractionEnabled(ShipInstrumentsPane.getCurrentMode() == ShipInstrument.COLLISION);
         this.setPaintOpacity(COLLISION_OPACITY);
     }
 
@@ -61,7 +61,7 @@ public class CenterPointPainter extends SinglePointPainter {
         List<BusEventListener> listeners = getListeners();
         BusEventListener modeListener = event -> {
             if (event instanceof InstrumentModeChanged checked) {
-                this.setInteractionEnabled(checked.newMode() == InstrumentMode.COLLISION);
+                this.setInteractionEnabled(checked.newMode() == ShipInstrument.COLLISION);
                 EventBus.publish(new CenterPanelsRepaintQueued());
             }
         };

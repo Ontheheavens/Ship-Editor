@@ -7,8 +7,6 @@ import oth.shipeditor.communication.events.viewer.layers.LayerOpacityChangeQueue
 import oth.shipeditor.communication.events.viewer.layers.LayerWasSelected;
 import oth.shipeditor.components.viewer.layers.LayerPainter;
 import oth.shipeditor.components.viewer.layers.ViewerLayer;
-import oth.shipeditor.components.viewer.layers.ship.ShipLayer;
-import oth.shipeditor.components.viewer.layers.ship.ShipPainter;
 import oth.shipeditor.utility.Pair;
 import oth.shipeditor.utility.StaticController;
 import oth.shipeditor.utility.Utility;
@@ -40,7 +38,8 @@ public class ViewerLayerWidgetsPanel extends JPanel {
     private JLabel layerRotationLabel;
     private JPopupMenu rotationMenu;
 
-    ViewerLayerWidgetsPanel() {
+    @SuppressWarnings("ThisEscapedInObjectConstruction")
+    public ViewerLayerWidgetsPanel() {
         this.setLayout(new BoxLayout(this, BoxLayout.PAGE_AXIS));
 
         JPanel opacityWidget = this.createOpacityWidget();
@@ -84,24 +83,29 @@ public class ViewerLayerWidgetsPanel extends JPanel {
 
     private void updateAnchorLabel() {
         String anchorPosition = StringValues.NOT_INITIALIZED;
+        Color labelColor = Color.GRAY;
         if (this.layerPainter != null) {
             Point2D anchor = this.layerPainter.getAnchor();
             if (anchor != null) {
                 Point2D coordinatesForDisplay = Utility.getPointCoordinatesForDisplay(anchor);
                 anchorPosition = Utility.getPointPositionText(coordinatesForDisplay);
-
+                labelColor = Color.BLACK;
             }
         }
         layerAnchorLabel.setText(anchorPosition);
+        layerAnchorLabel.setForeground(labelColor);
     }
 
     private void updateRotationLabel() {
         String rotationValue = StringValues.NOT_INITIALIZED;
+        Color labelColor = Color.GRAY;
         if (this.layerPainter != null) {
             double rotation = this.layerPainter.getRotationRadians();
             rotationValue = Utility.clampAngle(rotation) + "°";
+            labelColor = Color.BLACK;
         }
         layerRotationLabel.setText(rotationValue);
+        layerRotationLabel.setForeground(labelColor);
     }
 
     private JPanel createOpacityWidget() {

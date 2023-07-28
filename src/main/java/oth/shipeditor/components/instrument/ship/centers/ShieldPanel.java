@@ -1,4 +1,4 @@
-package oth.shipeditor.components.instrument.centers;
+package oth.shipeditor.components.instrument.ship.centers;
 
 import lombok.extern.log4j.Log4j2;
 import oth.shipeditor.communication.BusEventListener;
@@ -41,6 +41,9 @@ public class ShieldPanel extends JPanel {
     private JLabel shieldOpacityLabel;
     private JSlider shieldOpacitySlider;
 
+    private JPopupMenu shieldCenterMenu;
+    private JPopupMenu shieldRadiusMenu;
+
     public ShieldPanel() {
         LayoutManager layout = new BorderLayout();
         this.setLayout(layout);
@@ -65,6 +68,8 @@ public class ShieldPanel extends JPanel {
             if (event instanceof LayerWasSelected checked) {
                 ViewerLayer selected = checked.selected();
                 if (!(selected instanceof ShipLayer checkedLayer)) {
+                    this.shieldPainter = null;
+                    this.refresh();
                     return;
                 }
                 boolean enableSlider = false;
@@ -90,15 +95,25 @@ public class ShieldPanel extends JPanel {
         String noInit = StringValues.NOT_INITIALIZED;
         String shieldPosition = noInit;
         String shieldRadius = noInit;
+        shieldCenterMenu.setEnabled(false);
+        shieldRadiusMenu.setEnabled(false);
+        shieldOpacitySlider.setEnabled(false);
+        Color labelColor = Color.GRAY;
         if (this.shieldPainter != null) {
             ShieldCenterPoint center = this.shieldPainter.getShieldCenterPoint();
             if (center != null) {
                 shieldPosition = center.getPositionText();
                 shieldRadius = Utility.round(center.getShieldRadius(), 5) + " " + StringValues.PIXELS;
+                shieldCenterMenu.setEnabled(true);
+                shieldRadiusMenu.setEnabled(true);
+                shieldOpacitySlider.setEnabled(true);
+                labelColor = Color.BLACK;
             }
         }
         shieldCenterCoords.setText(shieldPosition);
+        shieldCenterCoords.setForeground(labelColor);
         shieldRadiusLabel.setText(shieldRadius);
+        shieldRadiusLabel.setForeground(labelColor);
     }
 
     private void updateShieldOpacityLabel(int opacity) {
@@ -114,7 +129,7 @@ public class ShieldPanel extends JPanel {
         insets.top = 1;
         shieldCenterCoords.setBorder(ComponentUtilities.createLabelSimpleBorder(insets));
 
-        JPopupMenu shieldCenterMenu = new JPopupMenu();
+        shieldCenterMenu = new JPopupMenu();
         JMenuItem adjustPosition = new JMenuItem(StringValues.ADJUST_POSITION);
         adjustPosition.addActionListener(event -> {
             ShieldCenterPoint shieldPoint = shieldPainter.getShieldCenterPoint();
@@ -136,7 +151,7 @@ public class ShieldPanel extends JPanel {
         insets.top = 1;
         shieldRadiusLabel.setBorder(ComponentUtilities.createLabelSimpleBorder(insets));
 
-        JPopupMenu shieldRadiusMenu = new JPopupMenu();
+        shieldRadiusMenu = new JPopupMenu();
         JMenuItem adjustValue = new JMenuItem(StringValues.ADJUST_VALUE);
         adjustValue.addActionListener(event -> {
             ShieldCenterPoint shieldPoint = shieldPainter.getShieldCenterPoint();

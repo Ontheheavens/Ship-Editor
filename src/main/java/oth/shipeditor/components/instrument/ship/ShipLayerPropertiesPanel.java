@@ -1,4 +1,6 @@
-package oth.shipeditor.components.instrument;
+package oth.shipeditor.components.instrument.ship;
+
+import oth.shipeditor.components.instrument.ViewerLayerWidgetsPanel;
 
 import javax.swing.*;
 import java.awt.*;

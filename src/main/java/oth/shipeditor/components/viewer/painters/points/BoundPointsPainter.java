@@ -9,8 +9,8 @@ import oth.shipeditor.communication.events.viewer.points.BoundCreationQueued;
 import oth.shipeditor.communication.events.viewer.points.BoundInsertedConfirmed;
 import oth.shipeditor.communication.events.viewer.points.BoundPointsSorted;
 import oth.shipeditor.communication.events.viewer.points.InstrumentModeChanged;
-import oth.shipeditor.components.instrument.InstrumentTabsPane;
-import oth.shipeditor.components.viewer.InstrumentMode;
+import oth.shipeditor.components.instrument.ship.ShipInstrumentsPane;
+import oth.shipeditor.components.viewer.ShipInstrument;
 import oth.shipeditor.components.viewer.control.ControlPredicates;
 import oth.shipeditor.components.viewer.entities.BaseWorldPoint;
 import oth.shipeditor.components.viewer.entities.BoundPoint;
@@ -55,7 +55,7 @@ public final class BoundPointsPainter extends MirrorablePointPainter {
         this.initHotkeys();
         this.initModeListener();
         this.initPointListening();
-        this.setInteractionEnabled(InstrumentTabsPane.getCurrentMode() == InstrumentMode.BOUNDS);
+        this.setInteractionEnabled(ShipInstrumentsPane.getCurrentMode() == ShipInstrument.BOUNDS);
     }
 
     @Override
@@ -130,7 +130,7 @@ public final class BoundPointsPainter extends MirrorablePointPainter {
         List<BusEventListener> listeners = getListeners();
         BusEventListener modeListener = event -> {
             if (event instanceof InstrumentModeChanged checked) {
-                setInteractionEnabled(checked.newMode() == InstrumentMode.BOUNDS);
+                setInteractionEnabled(checked.newMode() == ShipInstrument.BOUNDS);
             }
         };
         listeners.add(modeListener);
