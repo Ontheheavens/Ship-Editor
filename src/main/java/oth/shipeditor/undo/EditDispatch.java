@@ -59,7 +59,7 @@ public final class EditDispatch {
     }
 
     public static void postAnchorOffsetChanged(LayerPainter layerPainter, Point2D updated) {
-        Point2D oldOffset = layerPainter.getAnchorOffset();
+        Point2D oldOffset = layerPainter.getAnchor();
         AnchorOffsetEdit offsetChangeEdit = new AnchorOffsetEdit(layerPainter, oldOffset, updated);
 
         Edit previousEdit = UndoOverseer.getNextUndoable();
@@ -81,7 +81,7 @@ public final class EditDispatch {
         Point2D difference = new Point2D.Double(oldOffset.getX() - updated.getX(),
                 oldOffset.getY() - updated.getY());
         EventBus.publish(new AnchorOffsetQueued(layerPainter, difference));
-        layerPainter.setAnchorOffset(updated);
+        layerPainter.setAnchor(updated);
         Events.repaintView();
     }
 

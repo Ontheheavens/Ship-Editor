@@ -5,12 +5,13 @@ import oth.shipeditor.components.instrument.InstrumentTabsPane;
 import oth.shipeditor.components.viewer.InstrumentMode;
 import oth.shipeditor.components.viewer.entities.BaseWorldPoint;
 import oth.shipeditor.components.viewer.entities.WeaponSlotPoint;
-import oth.shipeditor.components.viewer.layers.LayerPainter;
+import oth.shipeditor.components.viewer.layers.ship.ShipPainter;
 
 import java.util.ArrayList;
 import java.util.List;
 
 /**
+ * Is not supposed to handle launch bays - bays deserialize to different points and painter.
  * @author Ontheheavens
  * @since 25.07.2023
  */
@@ -19,7 +20,7 @@ public class WeaponSlotPainter extends MirrorablePointPainter{
     @Getter
     private final List<WeaponSlotPoint> slotPoints;
 
-    public WeaponSlotPainter(LayerPainter parent) {
+    public WeaponSlotPainter(ShipPainter parent) {
         super(parent);
         this.slotPoints = new ArrayList<>();
 

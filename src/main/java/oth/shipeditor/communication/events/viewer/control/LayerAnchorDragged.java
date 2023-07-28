@@ -2,6 +2,7 @@ package oth.shipeditor.communication.events.viewer.control;
 
 import oth.shipeditor.communication.events.viewer.ViewerEvent;
 import oth.shipeditor.components.viewer.layers.LayerPainter;
+import oth.shipeditor.components.viewer.layers.ship.ShipPainter;
 
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Point2D;

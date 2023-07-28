@@ -9,6 +9,8 @@ import oth.shipeditor.communication.events.files.SkinFileOpened;
 import oth.shipeditor.communication.events.files.SpriteOpened;
 import oth.shipeditor.communication.events.viewer.ViewerRepaintQueued;
 import oth.shipeditor.communication.events.viewer.layers.*;
+import oth.shipeditor.components.viewer.layers.ship.ShipLayer;
+import oth.shipeditor.components.viewer.layers.ship.ShipPainter;
 import oth.shipeditor.representation.Hull;
 import oth.shipeditor.representation.ShipData;
 import oth.shipeditor.representation.Skin;
@@ -27,10 +29,10 @@ import java.util.List;
 public class LayerManager {
 
     @Getter @Setter
-    private List<ShipLayer> layers = new ArrayList<>();
+    private List<ViewerLayer> layers = new ArrayList<>();
 
     @Getter
-    private ShipLayer activeLayer;
+    private ViewerLayer activeLayer;
 
     public void initListeners() {
         this.initLayerListening();
@@ -39,12 +41,12 @@ public class LayerManager {
     }
 
     private void activateLastLayer() {
-        ShipLayer next = layers.get(layers.size() - 1);
+        ViewerLayer next = layers.get(layers.size() - 1);
         this.setActiveLayer(next);
     }
 
-    public void setActiveLayer(ShipLayer newlySelected) {
-        ShipLayer old = this.activeLayer;
+    public void setActiveLayer(ViewerLayer newlySelected) {
+        ViewerLayer old = this.activeLayer;
         this.activeLayer = newlySelected;
         StaticController.setActiveLayer(activeLayer);
         EventBus.publish(new LayerWasSelected(old, newlySelected));
@@ -53,7 +55,7 @@ public class LayerManager {
     @SuppressWarnings("OverlyCoupledMethod")
     private void initLayerListening() {
         EventBus.subscribe(event -> {
-            if (event instanceof LayerCreationQueued) {
+            if (event instanceof ShipLayerCreationQueued) {
                 ShipLayer newLayer = new ShipLayer();
                 layers.add(newLayer);
                 EventBus.publish(new ShipLayerCreated(newLayer));
@@ -67,13 +69,13 @@ public class LayerManager {
         });
         EventBus.subscribe(event -> {
             if (event instanceof ActiveLayerRemovalQueued) {
-                ShipLayer selected = this.activeLayer;
+                ViewerLayer selected = this.activeLayer;
                 publishLayerRemoval(selected);
             }
         });
         EventBus.subscribe(event -> {
             if (event instanceof LayerRemovalQueued checked) {
-                ShipLayer layer = checked.layer();
+                ViewerLayer layer = checked.layer();
                 publishLayerRemoval(layer);
             }
         });
@@ -89,16 +91,16 @@ public class LayerManager {
         });
         EventBus.subscribe(event -> {
             if (event instanceof LayerShipDataInitialized checked) {
-                LayerPainter source = checked.source();
+                ShipPainter source = checked.source();
                 this.setActiveLayer(source.getParentLayer());
             }
         });
     }
 
-    private void publishLayerRemoval(ShipLayer layer) {
+    private void publishLayerRemoval(ViewerLayer layer) {
         if (layers.size() >= 2) {
-            ShipLayer other = null;
-            for (ShipLayer checked : layers) {
+            ViewerLayer other = null;
+            for (ViewerLayer checked : layers) {
                 if (checked != layer) {
                     other = checked;
                 }
@@ -108,17 +110,17 @@ public class LayerManager {
             this.setActiveLayer(null);
         }
         layers.remove(layer);
-        EventBus.publish(new ShipLayerRemovalConfirmed(layer));
+        EventBus.publish(new ViewerLayerRemovalConfirmed(layer));
     }
 
     private void initOpenSpriteListener() {
         EventBus.subscribe(event -> {
             if (event instanceof SpriteOpened checked) {
                 BufferedImage sprite = checked.sprite();
-                if (activeLayer.getShipSprite() != null) {
+                if (activeLayer.getSprite() != null) {
                     throw new IllegalStateException("Sprite loaded onto existing sprite!");
                 } else if (activeLayer != null) {
-                    activeLayer.setShipSprite(sprite);
+                    activeLayer.setSprite(sprite);
                     activeLayer.setSpriteFileName(checked.filename());
                     EventBus.publish(new ActiveLayerUpdated(activeLayer, true));
                 } else {
@@ -136,35 +138,35 @@ public class LayerManager {
         EventBus.subscribe(event -> {
             if (event instanceof HullFileOpened checked) {
                 Hull hull = checked.hull();
-                if (activeLayer != null) {
-                    ShipData data = activeLayer.getShipData();
+                if (activeLayer != null && activeLayer instanceof ShipLayer checkedLayer) {
+                    ShipData data = checkedLayer.getShipData();
                     if (data != null ) {
                         data.setHull(hull);
                     } else {
                         ShipData newData = new ShipData(hull);
-                        activeLayer.setShipData(newData);
+                        checkedLayer.setShipData(newData);
                     }
-                    activeLayer.setHullFileName(checked.hullFileName());
-                    EventBus.publish(new ActiveLayerUpdated(activeLayer, false));
+                    checkedLayer.setHullFileName(checked.hullFileName());
+                    EventBus.publish(new ActiveLayerUpdated(checkedLayer, false));
                 } else {
-                    throw new IllegalStateException("Hull file loaded into layer without a sprite!");
+                    throw new IllegalStateException("Hull file loaded onto invalid layer!");
                 }
             }
         });
         EventBus.subscribe(event -> {
             if (event instanceof SkinFileOpened checked) {
                 Skin skin = checked.skin();
-                if (activeLayer != null) {
-                    ShipData data = activeLayer.getShipData();
+                if (activeLayer != null && activeLayer instanceof ShipLayer checkedLayer) {
+                    ShipData data = checkedLayer.getShipData();
                     if (data != null ) {
                         data.setSkin(skin);
                     } else {
                         throw new IllegalStateException("Skin file loaded onto a null ship data!");
                     }
-                    activeLayer.setSkinFileName(checked.skinFileName());
-                    EventBus.publish(new ActiveLayerUpdated(activeLayer, false));
+                    checkedLayer.setSkinFileName(checked.skinFileName());
+                    EventBus.publish(new ActiveLayerUpdated(checkedLayer, false));
                 } else {
-                    throw new IllegalStateException("Skin file loaded into a null layer!");
+                    throw new IllegalStateException("Skin file loaded onto invalid layer!");
                 }
             }
         });

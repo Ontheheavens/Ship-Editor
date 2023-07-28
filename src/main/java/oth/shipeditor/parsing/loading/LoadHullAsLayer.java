@@ -5,7 +5,7 @@ import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.files.HullFileOpened;
 import oth.shipeditor.communication.events.files.SpriteOpened;
 import oth.shipeditor.communication.events.viewer.layers.LastLayerSelectQueued;
-import oth.shipeditor.communication.events.viewer.layers.LayerCreationQueued;
+import oth.shipeditor.communication.events.viewer.layers.ShipLayerCreationQueued;
 import oth.shipeditor.representation.Hull;
 
 import javax.swing.*;
@@ -42,7 +42,7 @@ public class LoadHullAsLayer extends AbstractAction {
                 return;
             }
 
-            EventBus.publish(new LayerCreationQueued());
+            EventBus.publish(new ShipLayerCreationQueued());
             EventBus.publish(new LastLayerSelectQueued());
             BufferedImage sprite = FileLoading.loadSprite(spriteFile);
             EventBus.publish(new SpriteOpened(sprite, spriteFile.getName()));

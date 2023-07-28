@@ -73,8 +73,17 @@ public abstract class AbstractPointPainter implements Painter {
 
     public abstract boolean isMirrorable();
 
-    public void cleanupForRemoval() {
+    public void cleanupListeners() {
         listeners.forEach(EventBus::unsubscribe);
+    }
+
+    public void cleanupPointPainter() {
+        Iterable<BaseWorldPoint> points = new ArrayList<>(this.getPointsIndex());
+        for (BaseWorldPoint point : points) {
+            point.cleanupForRemoval();
+            this.removePoint(point);
+        }
+        this.cleanupListeners();
     }
 
     @SuppressWarnings("OverlyComplexMethod")

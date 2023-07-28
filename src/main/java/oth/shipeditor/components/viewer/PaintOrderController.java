@@ -4,7 +4,9 @@ import de.javagl.viewer.Painter;
 import lombok.Getter;
 import oth.shipeditor.components.viewer.layers.LayerManager;
 import oth.shipeditor.components.viewer.layers.LayerPainter;
-import oth.shipeditor.components.viewer.layers.ShipLayer;
+import oth.shipeditor.components.viewer.layers.ViewerLayer;
+import oth.shipeditor.components.viewer.layers.ship.ShipPainter;
+import oth.shipeditor.components.viewer.layers.ship.ShipLayer;
 import oth.shipeditor.components.viewer.painters.GuidesPainters;
 import oth.shipeditor.components.viewer.painters.HotkeyHelpPainter;
 import oth.shipeditor.components.viewer.painters.points.AbstractPointPainter;
@@ -23,7 +25,7 @@ import java.util.Optional;
  */
 public class PaintOrderController implements Painter {
 
-    private final PrimaryShipViewer parent;
+    private final PrimaryViewer parent;
 
     @Getter
     private final MarkPointsPainter miscPointsPainter;
@@ -34,7 +36,7 @@ public class PaintOrderController implements Painter {
     @Getter
     private final HotkeyHelpPainter hotkeyPainter;
 
-    PaintOrderController(PrimaryShipViewer viewer) {
+    PaintOrderController(PrimaryViewer viewer) {
         this.parent = viewer;
 
         this.miscPointsPainter = MarkPointsPainter.create();
@@ -47,8 +49,8 @@ public class PaintOrderController implements Painter {
         this.paintIfPresent(g, worldToScreen, w, h, guidesPainters.getAxesPaint());
 
         LayerManager layerManager = parent.getLayerManager();
-        List<ShipLayer> layers = layerManager.getLayers();
-        for (ShipLayer layer : layers) {
+        List<ViewerLayer> layers = layerManager.getLayers();
+        for (ViewerLayer layer : layers) {
             PaintOrderController.paintLayer(g, worldToScreen, w, h, layer);
         }
 
@@ -65,15 +67,15 @@ public class PaintOrderController implements Painter {
     }
 
     private static void paintLayer(Graphics2D g, AffineTransform worldToScreen,
-                                   double w, double h, ShipLayer layer) {
-        LayerPainter layerPainter = layer.getPainter();
-        if (layerPainter == null) return;
+                                   double w, double h, ViewerLayer layer) {
+        LayerPainter shipPainter = layer.getPainter();
+        if (shipPainter == null) return;
 
-        AffineTransform transform = layerPainter.getWithRotation(worldToScreen);
+        AffineTransform transform = shipPainter.getWithRotation(worldToScreen);
 
-        layerPainter.paint(g, transform, w, h);
-        if (layerPainter.isUninitialized()) return;
-        List<AbstractPointPainter> allPainters = layerPainter.getAllPainters();
+        shipPainter.paint(g, transform, w, h);
+        if (shipPainter.isUninitialized()) return;
+        List<AbstractPointPainter> allPainters = shipPainter.getAllPainters();
         allPainters.forEach(pointPainter -> pointPainter.paint(g, transform, w, h));
     }
 

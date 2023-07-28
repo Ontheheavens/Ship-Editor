@@ -9,8 +9,9 @@ import oth.shipeditor.communication.events.files.HullFileOpened;
 import oth.shipeditor.communication.events.files.HullStylesLoaded;
 import oth.shipeditor.communication.events.files.SpriteOpened;
 import oth.shipeditor.communication.events.viewer.layers.LastLayerSelectQueued;
-import oth.shipeditor.communication.events.viewer.layers.LayerCreationQueued;
-import oth.shipeditor.components.viewer.layers.ShipLayer;
+import oth.shipeditor.communication.events.viewer.layers.ShipLayerCreationQueued;
+import oth.shipeditor.components.viewer.layers.ViewerLayer;
+import oth.shipeditor.components.viewer.layers.ship.ShipLayer;
 import oth.shipeditor.parsing.loading.*;
 import oth.shipeditor.persistence.Settings;
 import oth.shipeditor.persistence.SettingsManager;
@@ -57,9 +58,14 @@ public final class FileUtilities {
 
     private FileUtilities() {}
 
-    public static void updateActionStates(ShipLayer current) {
-        boolean spriteState = (current != null) && current.getShipSprite() == null && current.getShipData() == null;
-        boolean hullState = (current != null) && current.getShipSprite() != null && current.getShipData() == null;
+    public static void updateActionStates(ViewerLayer currentlySelected) {
+        if (!(currentlySelected instanceof ShipLayer layer)) {
+            openSpriteAction.setEnabled(false);
+            openShipDataAction.setEnabled(false);
+            return;
+        }
+        boolean spriteState = layer.getSprite() == null && layer.getShipData() == null;
+        boolean hullState = layer.getSprite() != null && layer.getShipData() == null;
         openSpriteAction.setEnabled(spriteState);
         openShipDataAction.setEnabled(hullState);
     }
@@ -82,7 +88,7 @@ public final class FileUtilities {
     }
 
     public static void createLayerWithSprite(File spriteFile) {
-        EventBus.publish(new LayerCreationQueued());
+        EventBus.publish(new ShipLayerCreationQueued());
         EventBus.publish(new LastLayerSelectQueued());
         BufferedImage sprite = FileLoading.loadSprite(spriteFile);
         EventBus.publish(new SpriteOpened(sprite, spriteFile.getName()));

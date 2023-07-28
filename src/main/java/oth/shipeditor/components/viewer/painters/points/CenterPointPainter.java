@@ -13,7 +13,7 @@ import oth.shipeditor.components.viewer.InstrumentMode;
 import oth.shipeditor.components.viewer.control.ControlPredicates;
 import oth.shipeditor.components.viewer.entities.BaseWorldPoint;
 import oth.shipeditor.components.viewer.entities.ShipCenterPoint;
-import oth.shipeditor.components.viewer.layers.LayerPainter;
+import oth.shipeditor.components.viewer.layers.ship.ShipPainter;
 import oth.shipeditor.representation.Hull;
 import oth.shipeditor.undo.EditDispatch;
 
@@ -43,7 +43,7 @@ public class CenterPointPainter extends SinglePointPainter {
 
     private KeyEventDispatcher hotkeyDispatcher;
 
-    public CenterPointPainter(LayerPainter parent) {
+    public CenterPointPainter(ShipPainter parent) {
         super(parent);
         this.initModeListening();
         this.initHotkeys();
@@ -52,8 +52,8 @@ public class CenterPointPainter extends SinglePointPainter {
     }
 
     @Override
-    public void cleanupForRemoval() {
-        super.cleanupForRemoval();
+    public void cleanupListeners() {
+        super.cleanupListeners();
         KeyboardFocusManager.getCurrentKeyboardFocusManager().removeKeyEventDispatcher(hotkeyDispatcher);
     }
 

@@ -9,7 +9,8 @@ import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.components.WindowRepaintQueued;
 import oth.shipeditor.communication.events.viewer.layers.*;
 import oth.shipeditor.components.viewer.layers.LayerManager;
-import oth.shipeditor.components.viewer.layers.ShipLayer;
+import oth.shipeditor.components.viewer.layers.ViewerLayer;
+import oth.shipeditor.components.viewer.layers.ship.ShipLayer;
 import oth.shipeditor.representation.Hull;
 import oth.shipeditor.representation.ShipData;
 import oth.shipeditor.representation.Skin;
@@ -29,7 +30,7 @@ import java.util.function.ToIntFunction;
  * @since 01.06.2023
  */
 @Log4j2
-public final class ShipLayersPanel extends SortableTabbedPane {
+public final class ViewerLayersPanel extends SortableTabbedPane {
 
     /**
      * Expected to be the same instance that is originally created and assigned in viewer;
@@ -37,9 +38,9 @@ public final class ShipLayersPanel extends SortableTabbedPane {
      */
     private final LayerManager layerManager;
 
-    private final Map<ShipLayer, LayerTab> tabIndex;
+    private final Map<ViewerLayer, LayerTab> tabIndex;
 
-    public ShipLayersPanel(LayerManager manager) {
+    public ViewerLayersPanel(LayerManager manager) {
         this.layerManager = manager;
         this.tabIndex = new HashMap<>();
 
@@ -47,14 +48,14 @@ public final class ShipLayersPanel extends SortableTabbedPane {
         this.putClientProperty("JTabbedPane.tabCloseToolTipText", "Remove this layer");
         this.putClientProperty( "JTabbedPane.tabCloseCallback", (IntConsumer) index -> {
             LayerTab tab = (LayerTab) getComponentAt(index);
-            ShipLayer layer = getLayerByTab(tab);
+            ViewerLayer layer = getLayerByTab(tab);
             EventBus.publish(new LayerRemovalQueued(layer));
         });
 
         this.initLayerListeners();
         this.setTabLayoutPolicy(JTabbedPane.SCROLL_TAB_LAYOUT);
         this.addChangeListener(event -> {
-            ShipLayer newlySelected = getLayerByTab((LayerTab) getSelectedComponent());
+            ViewerLayer newlySelected = getLayerByTab((LayerTab) getSelectedComponent());
             log.info("Layer panel change!");
             // If the change results from the last layer being removed and the newly selected layer is null,
             // call to set active layer is unnecessary as this case is handled directly by layer manager.
@@ -65,6 +66,7 @@ public final class ShipLayersPanel extends SortableTabbedPane {
         this.setBorder(BorderFactory.createMatteBorder(1, 0, 0, 0, Color.LIGHT_GRAY));
     }
 
+    @SuppressWarnings("OverlyCoupledMethod")
     private void initLayerListeners() {
         EventBus.subscribe(event -> {
             if (event instanceof ShipLayerCreated checked) {
@@ -79,24 +81,25 @@ public final class ShipLayersPanel extends SortableTabbedPane {
         });
         EventBus.subscribe(event -> {
             if (event instanceof ActiveLayerUpdated checked) {
-                ShipLayer eventLayer = checked.updated();
+                ViewerLayer eventLayer = checked.updated();
                 LayerTab updated = tabIndex.get(eventLayer);
-                BufferedImage sprite = eventLayer.getShipSprite();
-                ShipData shipData = eventLayer.getShipData();
+                BufferedImage sprite = eventLayer.getSprite();
                 if (sprite != null) {
                     log.info(eventLayer.getSpriteFileName());
                     updated.setSpriteFileName(eventLayer.getSpriteFileName());
                     this.setToolTipTextAt(indexOfComponent(updated), updated.getTabTooltip());
                 }
+                if (!(eventLayer instanceof ShipLayer checkedLayer)) return;
+                ShipData shipData = checkedLayer.getShipData();
                 if (shipData == null) return;
                 Hull hull = shipData.getHull();
                 if (hull != null) {
-                    updated.setHullFileName(eventLayer.getHullFileName());
+                    updated.setHullFileName(checkedLayer.getHullFileName());
                     this.setTitleAt(indexOfComponent(updated), hull.getHullName());
                 }
                 Skin skin = shipData.getSkin();
                 if (skin != null) {
-                    updated.setSkinFileName(eventLayer.getSkinFileName());
+                    updated.setSkinFileName(checkedLayer.getSkinFileName());
                     if (skin.getHullName() != null) {
                         this.setTitleAt(indexOfComponent(updated), skin.getHullName());
                     }
@@ -105,15 +108,15 @@ public final class ShipLayersPanel extends SortableTabbedPane {
             }
         });
         EventBus.subscribe(event -> {
-            if (event instanceof ShipLayerRemovalConfirmed checked) {
-                ShipLayer layer = checked.removed();
+            if (event instanceof ViewerLayerRemovalConfirmed checked) {
+                ViewerLayer layer = checked.removed();
                 closeLayer(layer);
             }
         });
         EventBus.subscribe(event -> {
             if (event instanceof LayerWasSelected checked) {
-                ShipLayer newlySelected = checked.selected();
-                ShipLayer selectedTabLayer = getLayerByTab((LayerTab) getSelectedComponent());
+                ViewerLayer newlySelected = checked.selected();
+                ViewerLayer selectedTabLayer = getLayerByTab((LayerTab) getSelectedComponent());
                 if (newlySelected == selectedTabLayer) return;
                 this.setSelectedIndex(indexOfComponent(tabIndex.get(newlySelected)));
             }
@@ -122,14 +125,14 @@ public final class ShipLayersPanel extends SortableTabbedPane {
 
     @Override
     protected void sortTabObjects() {
-        List<ShipLayer> layers = new ArrayList<>(tabIndex.keySet());
+        List<ViewerLayer> layers = new ArrayList<>(tabIndex.keySet());
 
-        ToIntFunction<ShipLayer> intFunction = layer -> indexOfComponent(tabIndex.get(layer));
+        ToIntFunction<ViewerLayer> intFunction = layer -> indexOfComponent(tabIndex.get(layer));
         layers.sort(Comparator.comparingInt(intFunction));
         layerManager.setLayers(layers);
     }
 
-    private void closeLayer(ShipLayer layer) {
+    private void closeLayer(ViewerLayer layer) {
         this.removeTabAt(indexOfComponent(tabIndex.get(layer)));
         tabIndex.remove(layer);
         EventBus.publish(new WindowRepaintQueued());
@@ -185,9 +188,9 @@ public final class ShipLayersPanel extends SortableTabbedPane {
 
     }
 
-    private ShipLayer getLayerByTab(LayerTab value) {
-        ShipLayer result;
-        for (Map.Entry<ShipLayer, LayerTab> entry : tabIndex.entrySet()) {
+    private ViewerLayer getLayerByTab(LayerTab value) {
+        ViewerLayer result;
+        for (Map.Entry<ViewerLayer, LayerTab> entry : tabIndex.entrySet()) {
             LayerTab entryValue = entry.getValue();
             if (entryValue.equals(value)) {
                 result = entry.getKey();

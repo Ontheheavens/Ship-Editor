@@ -10,7 +10,7 @@ import oth.shipeditor.communication.events.viewer.points.AnchorOffsetConfirmed;
 import oth.shipeditor.communication.events.viewer.points.AnchorOffsetQueued;
 import oth.shipeditor.components.instrument.InstrumentTabsPane;
 import oth.shipeditor.components.viewer.InstrumentMode;
-import oth.shipeditor.components.viewer.layers.LayerPainter;
+import oth.shipeditor.components.viewer.layers.ship.ShipPainter;
 import oth.shipeditor.components.viewer.painters.TextPainter;
 import oth.shipeditor.utility.StaticController;
 import oth.shipeditor.utility.Utility;
@@ -30,7 +30,7 @@ import java.awt.geom.Point2D;
 public class BaseWorldPoint implements WorldPoint, Painter {
 
     @Getter @Setter
-    private LayerPainter parentLayer;
+    private ShipPainter parentLayer;
 
     @Getter
     private final Point2D position;
@@ -61,7 +61,7 @@ public class BaseWorldPoint implements WorldPoint, Painter {
 
     }
 
-    public BaseWorldPoint(Point2D pointPosition, LayerPainter layer) {
+    public BaseWorldPoint(Point2D pointPosition, ShipPainter layer) {
         this.position = new Point2D.Double(pointPosition.getX(), pointPosition.getY());
         this.parentLayer = layer;
         this.delegateWorldToScreen = new AffineTransform();
@@ -125,13 +125,12 @@ public class BaseWorldPoint implements WorldPoint, Painter {
 
 
     protected boolean isInteractable() {
-        LayerPainter layer = getParentLayer();
+        ShipPainter layer = getParentLayer();
         if (layer == null) {
             return true;
         }
         return InstrumentTabsPane.getCurrentMode() == getAssociatedMode() && layer.isLayerActive();
     }
-
 
     @SuppressWarnings("WeakerAccess")
     protected Color getCurrentColor() {

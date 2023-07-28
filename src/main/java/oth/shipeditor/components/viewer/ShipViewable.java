@@ -3,9 +3,10 @@ package oth.shipeditor.components.viewer;
 import oth.shipeditor.components.viewer.control.ViewerControl;
 import oth.shipeditor.components.viewer.layers.LayerManager;
 import oth.shipeditor.components.viewer.layers.LayerPainter;
-import oth.shipeditor.components.viewer.layers.ShipLayer;
+import oth.shipeditor.components.viewer.layers.ViewerLayer;
+import oth.shipeditor.components.viewer.layers.ship.ShipPainter;
+import oth.shipeditor.components.viewer.layers.ship.ShipLayer;
 
-import java.awt.*;
 import java.awt.geom.AffineTransform;
 
 /**
@@ -14,13 +15,11 @@ import java.awt.geom.AffineTransform;
  */
 public interface ShipViewable {
 
-    void loadLayer(ShipLayer layer);
+    void loadLayer(ViewerLayer layer);
 
     void centerViewpoint();
 
     LayerPainter getSelectedLayer();
-
-    ViewerControl getControls();
 
     AffineTransform getTransformWorldToScreen();
 

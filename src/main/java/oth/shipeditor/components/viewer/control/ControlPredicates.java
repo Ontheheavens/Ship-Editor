@@ -18,6 +18,12 @@ import java.util.function.Predicate;
  */
 public final class ControlPredicates {
 
+    public static final double MAXIMUM_ZOOM = 1000.0;
+    public static final double MINIMUM_ZOOM = 0.1;
+    @SuppressWarnings("WeakerAccess")
+    public static final double ZOOMING_SPEED = 0.15;
+    @SuppressWarnings("WeakerAccess")
+    public static final double ROTATION_SPEED = 6.0;
     @Getter
     private static PointSelectionMode selectionMode = PointSelectionMode.CLOSEST;
 

@@ -14,7 +14,9 @@ import oth.shipeditor.components.viewer.control.ShipViewerControls;
 import oth.shipeditor.components.viewer.control.ViewerControl;
 import oth.shipeditor.components.viewer.layers.LayerManager;
 import oth.shipeditor.components.viewer.layers.LayerPainter;
-import oth.shipeditor.components.viewer.layers.ShipLayer;
+import oth.shipeditor.components.viewer.layers.ViewerLayer;
+import oth.shipeditor.components.viewer.layers.ship.ShipPainter;
+import oth.shipeditor.components.viewer.layers.ship.ShipLayer;
 import oth.shipeditor.menubar.FileUtilities;
 import oth.shipeditor.undo.UndoOverseer;
 import oth.shipeditor.utility.StaticController;
@@ -41,7 +43,7 @@ import java.util.Locale;
  */
 @SuppressWarnings("OverlyCoupledClass")
 @Log4j2
-public final class PrimaryShipViewer extends Viewer implements ShipViewable {
+public final class PrimaryViewer extends Viewer implements ShipViewable {
 
     private static final Dimension minimumPanelSize = new Dimension(240, 120);
 
@@ -52,12 +54,9 @@ public final class PrimaryShipViewer extends Viewer implements ShipViewable {
     private PaintOrderController paintOrderController;
 
     @Getter
-    private ViewerControl controls;
-
-    @Getter
     private boolean cursorInViewer;
 
-    public PrimaryShipViewer() {
+    public PrimaryViewer() {
         this.setMinimumSize(minimumPanelSize);
         this.setBackground(Color.GRAY);
 
@@ -65,7 +64,7 @@ public final class PrimaryShipViewer extends Viewer implements ShipViewable {
         this.layerManager.initListeners();
     }
 
-    public PrimaryShipViewer commenceInitialization() {
+    public PrimaryViewer commenceInitialization() {
         this.paintOrderController = new PaintOrderController(this);
         this.addPainter(this.paintOrderController);
 
@@ -75,7 +74,7 @@ public final class PrimaryShipViewer extends Viewer implements ShipViewable {
         this.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseEntered(MouseEvent e) {
-                PrimaryShipViewer.this.requestFocusInWindow();
+                PrimaryViewer.this.requestFocusInWindow();
                 cursorInViewer = true;
                 repaint();
             }
@@ -87,12 +86,12 @@ public final class PrimaryShipViewer extends Viewer implements ShipViewable {
             }
         });
 
-        this.controls = ShipViewerControls.create(this);
-        this.setMouseControl(this.controls);
+        ViewerControl controls = ShipViewerControls.create(this);
+        this.setMouseControl(controls);
         this.initViewerStateListeners();
         this.initLayerListening();
         this.setDropTarget(new SpriteDropReceiver());
-        StaticController.setShipViewer(this);
+        StaticController.setViewer(this);
         return this;
     }
 
@@ -129,22 +128,22 @@ public final class PrimaryShipViewer extends Viewer implements ShipViewable {
         EventBus.subscribe(event -> {
             if (event instanceof ShipLayerCreated checked) {
                 ShipLayer newLayer = checked.newLayer();
-                if (newLayer.getShipSprite() != null) {
+                if (newLayer.getSprite() != null) {
                     this.loadLayer(newLayer);
                 }
             }
         });
         EventBus.subscribe(event -> {
             if (event instanceof ActiveLayerUpdated checked) {
-                ShipLayer newLayer = checked.updated();
-                if (newLayer.getShipSprite() != null && checked.spriteChanged()) {
+                ViewerLayer newLayer = checked.updated();
+                if (newLayer.getSprite() != null && checked.spriteChanged()) {
                     this.loadLayer(newLayer);
                 }
             }
         });
         EventBus.subscribe(event -> {
-            if (event instanceof ShipLayerRemovalConfirmed checked) {
-                PrimaryShipViewer.unloadLayer(checked.removed());
+            if (event instanceof ViewerLayerRemovalConfirmed checked) {
+                PrimaryViewer.unloadLayer(checked.removed());
                 this.repaint();
             }
         });
@@ -161,7 +160,7 @@ public final class PrimaryShipViewer extends Viewer implements ShipViewable {
     @Override
     @SuppressWarnings("ReturnOfNull")
     public LayerPainter getSelectedLayer() {
-        ShipLayer activeLayer = layerManager.getActiveLayer();
+        ViewerLayer activeLayer = layerManager.getActiveLayer();
         if (activeLayer == null) {
             return null;
         }
@@ -169,29 +168,30 @@ public final class PrimaryShipViewer extends Viewer implements ShipViewable {
     }
 
     @Override
-    public void loadLayer(ShipLayer layer) {
-        LayerPainter newPainter = new LayerPainter(layer);
-        ShipLayer activeLayer = this.layerManager.getActiveLayer();
-        activeLayer.setPainter(newPainter);
+    public void loadLayer(ViewerLayer layer) {
         // Main sprite painter and said painter children point painters are distinct conceptually.
         // Layer might be selected and deselected, in which case children painters are loaded/unloaded.
         // At the same time main sprite painter remains loaded until layer is explicitly removed.
+        LayerPainter newPainter;
+        if (layer instanceof ShipLayer checkedLayer) {
+            newPainter = new ShipPainter(checkedLayer);
+            checkedLayer.setPainter(newPainter);
+        }
         this.centerViewpoint();
-        EventBus.publish(new ShipLayerLoadConfirmed(layer));
     }
 
-    private static void unloadLayer(ShipLayer layer) {
+    private static void unloadLayer(ViewerLayer layer) {
         LayerPainter mainPainter = layer.getPainter();
         UndoOverseer.cleanupRemovedLayer(mainPainter);
     }
 
     public void centerViewpoint() {
-        ShipLayer activeLayer = this.layerManager.getActiveLayer();
+        ViewerLayer activeLayer = this.layerManager.getActiveLayer();
         if (activeLayer == null) return;
         AffineTransform worldToScreen = this.getWorldToScreen();
         // Get the center of the sprite in screen coordinates.
-        LayerPainter activeLayerPainter = activeLayer.getPainter();
-        Point2D spriteCenter = activeLayerPainter.getSpriteCenter();
+        LayerPainter activePainter = activeLayer.getPainter();
+        Point2D spriteCenter = activePainter.getSpriteCenter();
         Point2D centerScreen = worldToScreen.transform(spriteCenter, null);
         // Calculate the delta values to center the sprite.
         Point2D midpoint = this.getViewerMidpoint();

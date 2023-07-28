@@ -4,7 +4,7 @@ import lombok.Getter;
 import lombok.Setter;
 import oth.shipeditor.components.instrument.InstrumentTabsPane;
 import oth.shipeditor.components.viewer.InstrumentMode;
-import oth.shipeditor.components.viewer.layers.LayerPainter;
+import oth.shipeditor.components.viewer.layers.ship.ShipPainter;
 import oth.shipeditor.components.viewer.painters.points.ShieldPointPainter;
 import oth.shipeditor.representation.HullStyle;
 import oth.shipeditor.utility.Utility;
@@ -31,7 +31,7 @@ public class ShieldCenterPoint extends BaseWorldPoint {
     @Getter
     private final HullStyle associatedStyle;
 
-    public ShieldCenterPoint(Point2D position, float radius, LayerPainter layer, HullStyle style,
+    public ShieldCenterPoint(Point2D position, float radius, ShipPainter layer, HullStyle style,
                              ShieldPointPainter parent) {
         super(position, layer);
         this.shieldRadius = radius;

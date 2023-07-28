@@ -11,8 +11,9 @@ import oth.shipeditor.communication.events.viewer.points.BoundInsertedConfirmed;
 import oth.shipeditor.communication.events.viewer.points.PointAddConfirmed;
 import oth.shipeditor.communication.events.viewer.points.PointRemovedConfirmed;
 import oth.shipeditor.components.viewer.entities.BoundPoint;
-import oth.shipeditor.components.viewer.layers.LayerPainter;
-import oth.shipeditor.components.viewer.layers.ShipLayer;
+import oth.shipeditor.components.viewer.layers.ViewerLayer;
+import oth.shipeditor.components.viewer.layers.ship.ShipPainter;
+import oth.shipeditor.components.viewer.layers.ship.ShipLayer;
 import oth.shipeditor.components.viewer.painters.PainterVisibility;
 import oth.shipeditor.components.viewer.painters.points.BoundPointsPainter;
 import oth.shipeditor.utility.Pair;
@@ -100,13 +101,13 @@ public final class BoundPointsPanel extends JPanel {
         };
         BusEventListener eventListener = event -> {
             if (event instanceof LayerWasSelected checked) {
-                ShipLayer selected = checked.selected();
-                if (selected == null) {
+                ViewerLayer selected = checked.selected();
+                if (!(selected instanceof ShipLayer checkedLayer)) {
                     updateOpacityLabel(100);
                     opacitySlider.setValue(100);
                     return;
                 }
-                LayerPainter painter = selected.getPainter();
+                ShipPainter painter = checkedLayer.getPainter();
                 int value;
                 if (painter == null) {
                     value = 100;
@@ -133,8 +134,8 @@ public final class BoundPointsPanel extends JPanel {
     private JPanel createPainterVisibilityPanel() {
         JComboBox<PainterVisibility> visibilityList = new JComboBox<>(PainterVisibility.values());
         ActionListener selectionAction = e -> {
-            LayerPainter painter = (LayerPainter) e.getSource();
-            BoundPointsPainter boundsPainter = painter.getBoundsPainter();
+            if (!(e.getSource() instanceof ShipPainter checked)) return;
+            BoundPointsPainter boundsPainter = checked.getBoundsPainter();
             PainterVisibility valueOfLayer = boundsPainter.getVisibilityMode();
             visibilityList.setSelectedItem(valueOfLayer);
         };
@@ -171,17 +172,21 @@ public final class BoundPointsPanel extends JPanel {
     private void initLayerListeners() {
         EventBus.subscribe(event -> {
             if (event instanceof LayerWasSelected checked) {
-                ShipLayer selected = checked.selected();
+                ViewerLayer selected = checked.selected();
+                if (!(selected instanceof ShipLayer checkedLayer)) {
+                    opacitySlider.setEnabled(false);
+                    return;
+                }
                 DefaultListModel<BoundPoint> newModel = new DefaultListModel<>();
-                if (selected != null && selected.getPainter() != null) {
-                    LayerPainter selectedLayerPainter = selected.getPainter();
-                    BoundPointsPainter newBoundsPainter = selectedLayerPainter.getBoundsPainter();
+                if (checkedLayer.getPainter() != null) {
+                    ShipPainter selectedShipPainter = checkedLayer.getPainter();
+                    BoundPointsPainter newBoundsPainter = selectedShipPainter.getBoundsPainter();
                     newModel.addAll(newBoundsPainter.getPointsIndex());
                 }
                 this.model = newModel;
                 this.boundPointContainer.setModel(newModel);
 
-                opacitySlider.setEnabled(selected != null && selected.getPainter() != null);
+                opacitySlider.setEnabled(selected.getPainter() != null);
             }
         });
     }

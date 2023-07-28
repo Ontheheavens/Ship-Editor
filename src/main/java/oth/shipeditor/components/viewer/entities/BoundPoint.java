@@ -1,10 +1,9 @@
 package oth.shipeditor.components.viewer.entities;
 
-import de.javagl.viewer.Painter;
 import lombok.Getter;
 import lombok.Setter;
 import oth.shipeditor.components.viewer.InstrumentMode;
-import oth.shipeditor.components.viewer.layers.LayerPainter;
+import oth.shipeditor.components.viewer.layers.ship.ShipPainter;
 import oth.shipeditor.utility.StaticController;
 import oth.shipeditor.utility.graphics.DrawUtilities;
 import oth.shipeditor.utility.graphics.ShapeUtilities;
@@ -22,7 +21,7 @@ public class BoundPoint extends BaseWorldPoint{
     @Getter @Setter
     private double paintSizeMultiplier = 1;
 
-    public BoundPoint(Point2D pointPosition, LayerPainter layer) {
+    public BoundPoint(Point2D pointPosition, ShipPainter layer) {
         super(pointPosition, layer);
     }
 

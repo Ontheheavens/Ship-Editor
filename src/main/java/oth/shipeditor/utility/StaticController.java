@@ -10,9 +10,9 @@ import oth.shipeditor.communication.events.viewer.layers.ActiveLayerUpdated;
 import oth.shipeditor.communication.events.viewer.layers.LayerWasSelected;
 import oth.shipeditor.communication.events.viewer.status.CoordsModeChanged;
 import oth.shipeditor.components.CoordsDisplayMode;
-import oth.shipeditor.components.viewer.PrimaryShipViewer;
+import oth.shipeditor.components.viewer.PrimaryViewer;
 import oth.shipeditor.components.viewer.layers.LayerPainter;
-import oth.shipeditor.components.viewer.layers.ShipLayer;
+import oth.shipeditor.components.viewer.layers.ViewerLayer;
 import oth.shipeditor.menubar.FileUtilities;
 
 import java.awt.*;
@@ -27,10 +27,10 @@ import java.awt.geom.Point2D;
 public final class StaticController {
 
     @Setter
-    private static PrimaryShipViewer shipViewer;
+    private static PrimaryViewer viewer;
 
     @Getter @Setter
-    private static ShipLayer activeLayer;
+    private static ViewerLayer activeLayer;
 
     @Getter @Setter
     private static double rotationRadians;
@@ -60,15 +60,15 @@ public final class StaticController {
         if (activeLayer != null) {
             LayerPainter painter = activeLayer.getPainter();
             if (painter != null) {
-                AffineTransform worldToScreen = shipViewer.getWorldToScreen();
+                AffineTransform worldToScreen = viewer.getWorldToScreen();
                 return painter.getWithRotationInverse(worldToScreen);
             }
         }
-        return shipViewer.getScreenToWorld();
+        return viewer.getScreenToWorld();
     }
 
     public static AffineTransform getWorldToScreen() {
-        return shipViewer.getWorldToScreen();
+        return viewer.getWorldToScreen();
     }
 
     public static void updateViewerRotation(double radiansChange, double degrees) {

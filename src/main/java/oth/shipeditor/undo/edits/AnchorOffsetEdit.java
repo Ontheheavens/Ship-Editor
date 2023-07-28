@@ -14,14 +14,14 @@ import java.awt.geom.Point2D;
  */
 public class AnchorOffsetEdit extends AbstractEdit {
 
-    private final LayerPainter layerPainter;
+    private final LayerPainter shipPainter;
 
     private final Point2D oldOffset;
 
     private final Point2D updatedOffset;
 
     public AnchorOffsetEdit(LayerPainter painter, Point2D old, Point2D updated) {
-        this.layerPainter = painter;
+        this.shipPainter = painter;
         this.oldOffset = old;
         this.updatedOffset = updated;
         this.setFinished(false);
@@ -32,8 +32,8 @@ public class AnchorOffsetEdit extends AbstractEdit {
         undoSubEdits();
         Point2D difference = new Point2D.Double(updatedOffset.getX() - oldOffset.getX(),
                 updatedOffset.getY() - oldOffset.getY());
-        EventBus.publish(new AnchorOffsetQueued(layerPainter, difference));
-        layerPainter.setAnchorOffset(oldOffset);
+        EventBus.publish(new AnchorOffsetQueued(shipPainter, difference));
+        shipPainter.setAnchor(oldOffset);
         Events.repaintView();
     }
 
@@ -41,8 +41,8 @@ public class AnchorOffsetEdit extends AbstractEdit {
     public void redo() {
         Point2D difference = new Point2D.Double(oldOffset.getX() - updatedOffset.getX(),
                 oldOffset.getY() - updatedOffset.getY());
-        EventBus.publish(new AnchorOffsetQueued(layerPainter, difference));
-        layerPainter.setAnchorOffset(updatedOffset);
+        EventBus.publish(new AnchorOffsetQueued(shipPainter, difference));
+        shipPainter.setAnchor(updatedOffset);
         redoSubEdits();
         Events.repaintView();
     }

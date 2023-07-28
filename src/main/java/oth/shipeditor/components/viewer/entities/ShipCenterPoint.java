@@ -1,11 +1,10 @@
 package oth.shipeditor.components.viewer.entities;
 
-import de.javagl.viewer.Painter;
 import lombok.Getter;
 import lombok.Setter;
 import oth.shipeditor.components.instrument.InstrumentTabsPane;
 import oth.shipeditor.components.viewer.InstrumentMode;
-import oth.shipeditor.components.viewer.layers.LayerPainter;
+import oth.shipeditor.components.viewer.layers.ship.ShipPainter;
 import oth.shipeditor.components.viewer.painters.points.CenterPointPainter;
 import oth.shipeditor.utility.Utility;
 import oth.shipeditor.utility.graphics.ColorUtilities;
@@ -32,7 +31,7 @@ public class ShipCenterPoint extends BaseWorldPoint {
 
 
 
-    public ShipCenterPoint(Point2D position, float radius, LayerPainter layer, CenterPointPainter parent) {
+    public ShipCenterPoint(Point2D position, float radius, ShipPainter layer, CenterPointPainter parent) {
         super(position, layer);
         this.collisionRadius = radius;
         this.parentPainter = parent;
@@ -40,8 +39,8 @@ public class ShipCenterPoint extends BaseWorldPoint {
 
     @Override
     protected boolean isInteractable() {
-        LayerPainter layerPainter = super.getParentLayer();
-        CenterPointPainter painter = layerPainter.getCenterPointPainter();
+        ShipPainter shipPainter = super.getParentLayer();
+        CenterPointPainter painter = shipPainter.getCenterPointPainter();
         return InstrumentTabsPane.getCurrentMode() == getAssociatedMode() && painter.isInteractionEnabled();
     }
 

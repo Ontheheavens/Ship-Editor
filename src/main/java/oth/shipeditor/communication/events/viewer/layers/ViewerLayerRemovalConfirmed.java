@@ -4,7 +4,8 @@ import oth.shipeditor.components.viewer.layers.ViewerLayer;
 
 /**
  * @author Ontheheavens
- * @since 03.06.2023
+ * @since 04.06.2023
  */
-public record LayerWasSelected(ViewerLayer old, ViewerLayer selected) implements LayerEvent {
+public record ViewerLayerRemovalConfirmed(ViewerLayer removed) implements LayerEvent {
+
 }

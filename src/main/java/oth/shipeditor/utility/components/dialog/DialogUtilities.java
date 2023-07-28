@@ -4,10 +4,12 @@ import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.Events;
 import oth.shipeditor.communication.events.viewer.control.ViewerRotationSet;
 import oth.shipeditor.communication.events.viewer.control.ViewerZoomSet;
+import oth.shipeditor.components.viewer.control.ControlPredicates;
 import oth.shipeditor.components.viewer.entities.ShieldCenterPoint;
 import oth.shipeditor.components.viewer.entities.ShipCenterPoint;
 import oth.shipeditor.components.viewer.entities.WorldPoint;
 import oth.shipeditor.components.viewer.layers.LayerPainter;
+import oth.shipeditor.components.viewer.layers.ship.ShipPainter;
 import oth.shipeditor.undo.EditDispatch;
 
 import javax.swing.*;
@@ -82,8 +84,8 @@ public final class DialogUtilities {
             }
             @Override
             protected SpinnerNumberModel createSpinnerModel() {
-                double min = 20.0d;
-                double max = 120000.0d;
+                double min = ControlPredicates.MINIMUM_ZOOM * 100.0d;
+                double max = ControlPredicates.MAXIMUM_ZOOM * 100.0d;
                 double step = 1.0d;
                 return new SpinnerNumberModel(getRounded(), min, max, step);
             }

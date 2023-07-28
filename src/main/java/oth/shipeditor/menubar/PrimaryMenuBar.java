@@ -9,7 +9,7 @@ import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.viewer.control.CursorSnappingToggled;
 import oth.shipeditor.communication.events.viewer.control.PointSelectionModeChange;
 import oth.shipeditor.communication.events.viewer.layers.ActiveLayerRemovalQueued;
-import oth.shipeditor.communication.events.viewer.layers.LayerCreationQueued;
+import oth.shipeditor.communication.events.viewer.layers.ShipLayerCreationQueued;
 import oth.shipeditor.components.viewer.control.PointSelectionMode;
 import oth.shipeditor.undo.UndoOverseer;
 
@@ -121,7 +121,7 @@ public final class PrimaryMenuBar extends JMenuBar {
         JMenuItem createLayer = new JMenuItem("Create new layer");
         createLayer.setIcon(FontIcon.of(BoxiconsRegular.LAYER_PLUS, 16));
         createLayer.addActionListener(event -> SwingUtilities.invokeLater(
-                        () -> EventBus.publish(new LayerCreationQueued())
+                        () -> EventBus.publish(new ShipLayerCreationQueued())
                 )
         );
         layersMenu.add(createLayer);

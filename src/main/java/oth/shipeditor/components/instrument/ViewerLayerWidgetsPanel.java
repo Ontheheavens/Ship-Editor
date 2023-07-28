@@ -6,7 +6,9 @@ import oth.shipeditor.communication.events.components.CenterPanelsRepaintQueued;
 import oth.shipeditor.communication.events.viewer.layers.LayerOpacityChangeQueued;
 import oth.shipeditor.communication.events.viewer.layers.LayerWasSelected;
 import oth.shipeditor.components.viewer.layers.LayerPainter;
-import oth.shipeditor.components.viewer.layers.ShipLayer;
+import oth.shipeditor.components.viewer.layers.ViewerLayer;
+import oth.shipeditor.components.viewer.layers.ship.ShipLayer;
+import oth.shipeditor.components.viewer.layers.ship.ShipPainter;
 import oth.shipeditor.utility.Pair;
 import oth.shipeditor.utility.StaticController;
 import oth.shipeditor.utility.Utility;
@@ -19,15 +21,13 @@ import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.event.ChangeListener;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.geom.Point2D;
 
 /**
  * @author Ontheheavens
- * @since 11.06.2023
+ * @since 28.07.2023
  */
-final class LayerPropertiesPanel extends JPanel {
+public class ViewerLayerWidgetsPanel extends JPanel {
 
     private LayerPainter layerPainter;
 
@@ -40,17 +40,22 @@ final class LayerPropertiesPanel extends JPanel {
     private JLabel layerRotationLabel;
     private JPopupMenu rotationMenu;
 
-    LayerPropertiesPanel() {
-        this.setLayout(new BorderLayout());
-        JPanel layerSettingsPanel = this.createLayerPanel();
-        this.add(layerSettingsPanel, BorderLayout.CENTER);
+    ViewerLayerWidgetsPanel() {
+        this.setLayout(new BoxLayout(this, BoxLayout.PAGE_AXIS));
+
+        JPanel opacityWidget = this.createOpacityWidget();
+        this.add(opacityWidget);
+
+        this.add(createLayerAnchorInfo());
+        this.add(createLayerRotationInfo());
+
         this.initListeners();
     }
 
     private void initListeners() {
         EventBus.subscribe(event -> {
             if (event instanceof LayerWasSelected checked) {
-                ShipLayer selected = checked.selected();
+                ViewerLayer selected = checked.selected();
                 boolean layerPainterPresent = selected != null && selected.getPainter() != null;
                 opacitySlider.setEnabled(layerPainterPresent);
                 anchorMenu.setEnabled(layerPainterPresent);
@@ -80,7 +85,7 @@ final class LayerPropertiesPanel extends JPanel {
     private void updateAnchorLabel() {
         String anchorPosition = StringValues.NOT_INITIALIZED;
         if (this.layerPainter != null) {
-            Point2D anchor = this.layerPainter.getAnchorOffset();
+            Point2D anchor = this.layerPainter.getAnchor();
             if (anchor != null) {
                 Point2D coordinatesForDisplay = Utility.getPointCoordinatesForDisplay(anchor);
                 anchorPosition = Utility.getPointPositionText(coordinatesForDisplay);
@@ -94,22 +99,9 @@ final class LayerPropertiesPanel extends JPanel {
         String rotationValue = StringValues.NOT_INITIALIZED;
         if (this.layerPainter != null) {
             double rotation = this.layerPainter.getRotationRadians();
-                rotationValue = Utility.clampAngle(rotation) + "°";
+            rotationValue = Utility.clampAngle(rotation) + "°";
         }
         layerRotationLabel.setText(rotationValue);
-    }
-
-    private JPanel createLayerPanel() {
-        JPanel layerSettingsPanel = new JPanel();
-        layerSettingsPanel.setLayout(new BoxLayout(layerSettingsPanel, BoxLayout.PAGE_AXIS));
-
-        JPanel opacityWidget = this.createOpacityWidget();
-        layerSettingsPanel.add(opacityWidget);
-
-        layerSettingsPanel.add(createLayerAnchorInfo());
-        layerSettingsPanel.add(createLayerRotationInfo());
-
-        return layerSettingsPanel;
     }
 
     private JPanel createOpacityWidget() {
@@ -125,7 +117,7 @@ final class LayerPropertiesPanel extends JPanel {
         };
         BusEventListener eventListener = event -> {
             if (event instanceof LayerWasSelected checked) {
-                ShipLayer selected = checked.selected();
+                ViewerLayer selected = checked.selected();
                 if (selected == null) {
                     updateOpacityLabel(100);
                     opacitySlider.setValue(100);
@@ -153,6 +145,7 @@ final class LayerPropertiesPanel extends JPanel {
         return container;
     }
 
+
     private JPanel createLayerAnchorInfo() {
         layerAnchorLabel = new JLabel();
 
@@ -166,10 +159,10 @@ final class LayerPropertiesPanel extends JPanel {
         anchorMenu = new JPopupMenu();
         JMenuItem adjustPosition = new JMenuItem(StringValues.ADJUST_POSITION);
         adjustPosition.addActionListener(event -> {
-            ShipLayer activeLayer = StaticController.getActiveLayer();
-            LayerPainter activeLayerPainter = activeLayer.getPainter();
-            Point2D anchorPosition = activeLayerPainter.getAnchorOffset();
-            DialogUtilities.showAdjustLayerAnchorDialog(activeLayerPainter, anchorPosition);
+            ViewerLayer activeLayer = StaticController.getActiveLayer();
+            LayerPainter activeShipPainter = activeLayer.getPainter();
+            Point2D anchorPosition = activeShipPainter.getAnchor();
+            DialogUtilities.showAdjustLayerAnchorDialog(activeShipPainter, anchorPosition);
         });
         anchorMenu.add(adjustPosition);
         layerAnchorLabel.addMouseListener(new MouseoverLabelListener(anchorMenu, layerAnchorLabel));
@@ -192,18 +185,18 @@ final class LayerPropertiesPanel extends JPanel {
         rotationMenu = new JPopupMenu();
         JMenuItem adjustRotation = new JMenuItem(StringValues.ADJUST_VALUE);
         adjustRotation.addActionListener(event -> {
-            ShipLayer activeLayer = StaticController.getActiveLayer();
-            LayerPainter activeLayerPainter = activeLayer.getPainter();
-            double currentRotation = activeLayerPainter.getRotationRadians();
+            ViewerLayer activeLayer = StaticController.getActiveLayer();
+            LayerPainter activeShipPainter = activeLayer.getPainter();
+            double currentRotation = activeShipPainter.getRotationRadians();
             double currentClamped = Utility.clampAngle(currentRotation);
-            DialogUtilities.showAdjustLayerRotationDialog(activeLayerPainter, currentClamped);
+            DialogUtilities.showAdjustLayerRotationDialog(activeShipPainter, currentClamped);
         });
         rotationMenu.add(adjustRotation);
         JMenuItem resetRotation = new JMenuItem("Reset rotation");
         resetRotation.addActionListener(e -> {
-            ShipLayer activeLayer = StaticController.getActiveLayer();
-            LayerPainter activeLayerPainter = activeLayer.getPainter();
-            activeLayerPainter.rotateLayer(0);
+            ViewerLayer activeLayer = StaticController.getActiveLayer();
+            LayerPainter activeShipPainter = activeLayer.getPainter();
+            activeShipPainter.rotateLayer(0);
         });
         rotationMenu.add(resetRotation);
         layerRotationLabel.addMouseListener(new MouseoverLabelListener(rotationMenu, layerRotationLabel));

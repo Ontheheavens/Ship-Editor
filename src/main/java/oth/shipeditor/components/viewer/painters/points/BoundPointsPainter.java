@@ -15,7 +15,7 @@ import oth.shipeditor.components.viewer.control.ControlPredicates;
 import oth.shipeditor.components.viewer.entities.BaseWorldPoint;
 import oth.shipeditor.components.viewer.entities.BoundPoint;
 import oth.shipeditor.components.viewer.entities.WorldPoint;
-import oth.shipeditor.components.viewer.layers.LayerPainter;
+import oth.shipeditor.components.viewer.layers.ship.ShipPainter;
 import oth.shipeditor.undo.EditDispatch;
 import oth.shipeditor.utility.StaticController;
 import oth.shipeditor.utility.Utility;
@@ -49,7 +49,7 @@ public final class BoundPointsPainter extends MirrorablePointPainter {
 
     private KeyEventDispatcher hotkeyDispatcher;
 
-    public BoundPointsPainter(LayerPainter parent) {
+    public BoundPointsPainter(ShipPainter parent) {
         super(parent);
         this.boundPoints = new ArrayList<>();
         this.initHotkeys();
@@ -59,8 +59,8 @@ public final class BoundPointsPainter extends MirrorablePointPainter {
     }
 
     @Override
-    public void cleanupForRemoval() {
-        super.cleanupForRemoval();
+    public void cleanupListeners() {
+        super.cleanupListeners();
         KeyboardFocusManager.getCurrentKeyboardFocusManager().removeKeyEventDispatcher(hotkeyDispatcher);
     }
 
@@ -160,7 +160,7 @@ public final class BoundPointsPainter extends MirrorablePointPainter {
     }
 
     private void createBound(BoundCreationQueued event) {
-        LayerPainter parentLayer = this.getParentLayer();
+        ShipPainter parentLayer = this.getParentLayer();
         Point2D position = event.position();
         boolean mirrorMode = ControlPredicates.isMirrorModeEnabled();
         if (insertBoundHotkeyPressed) {

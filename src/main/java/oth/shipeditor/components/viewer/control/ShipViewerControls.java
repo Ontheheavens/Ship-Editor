@@ -6,8 +6,9 @@ import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.viewer.control.*;
 import oth.shipeditor.communication.events.viewer.layers.LayerRotationQueued;
 import oth.shipeditor.communication.events.viewer.points.*;
-import oth.shipeditor.components.viewer.PrimaryShipViewer;
+import oth.shipeditor.components.viewer.PrimaryViewer;
 import oth.shipeditor.components.viewer.layers.LayerPainter;
+import oth.shipeditor.components.viewer.layers.ship.ShipPainter;
 import oth.shipeditor.utility.StaticController;
 import oth.shipeditor.utility.Utility;
 
@@ -29,9 +30,7 @@ import java.awt.geom.Point2D;
 @Log4j2
 public final class ShipViewerControls implements ViewerControl {
 
-    private static final double MAXIMUM_ZOOM = 1200.0;
-    private static final double MINIMUM_ZOOM = 0.2;
-    private final PrimaryShipViewer parentViewer;
+    private final PrimaryViewer parentViewer;
 
     @Getter
     private boolean rotationEnabled;
@@ -56,10 +55,6 @@ public final class ShipViewerControls implements ViewerControl {
     @Getter
     private Point mousePoint = new Point();
 
-    private static final double ZOOMING_SPEED = 0.15;
-
-    private static final double ROTATION_SPEED = 6.0;
-
     @Getter
     private double zoomLevel = 1;
 
@@ -69,7 +64,7 @@ public final class ShipViewerControls implements ViewerControl {
     /**
      * @param parent Viewer which is manipulated via this instance of controls class.
      */
-    private ShipViewerControls(PrimaryShipViewer parent) {
+    private ShipViewerControls(PrimaryViewer parent) {
         this.parentViewer = parent;
         this.rotationEnabled = true;
         this.initListeners();
@@ -94,7 +89,7 @@ public final class ShipViewerControls implements ViewerControl {
      * @param parent Viewer which is manipulated via this instance of controls class.
      * @return instance of controls via factory method.
      */
-    public static ShipViewerControls create(PrimaryShipViewer parent) {
+    public static ShipViewerControls create(PrimaryViewer parent) {
         return new ShipViewerControls(parent);
     }
 
@@ -157,7 +152,7 @@ public final class ShipViewerControls implements ViewerControl {
         if (this.parentViewer.getSelectedLayer() != null) {
             LayerPainter selected = this.parentViewer.getSelectedLayer();
             AffineTransform worldToScreen = this.parentViewer.getTransformWorldToScreen();
-            Point2D anchor = selected.getAnchorOffset();
+            Point2D anchor = selected.getAnchor();
             // Layer anchor needs to be transformed because all mouse events are evaluated in screen coordinates.
             Point2D transformed = worldToScreen.transform(anchor, null);
             this.layerDragPoint.setLocation(e.getX() - transformed.getX(), e.getY() - transformed.getY());
@@ -251,7 +246,7 @@ public final class ShipViewerControls implements ViewerControl {
         int wheelRotation = e.getWheelRotation();
         if (ControlPredicates.rotatePredicate.test(e) && this.rotationEnabled) {
             double toRadians = Math.toRadians(wheelRotation);
-            double resultRadians = toRadians * ROTATION_SPEED;
+            double resultRadians = toRadians * ControlPredicates.ROTATION_SPEED;
             rotateViewer(resultRadians);
             this.rotationDegree -= Math.toDegrees(resultRadians);
             if (this.rotationDegree >= 360) {
@@ -262,10 +257,10 @@ public final class ShipViewerControls implements ViewerControl {
             EventBus.publish(new ViewerTransformRotated(rotationDegree));
         } else {
             // Calculate the zoom factor - sign of wheel rotation argument determines the direction.
-            double d = Math.pow(1 + ZOOMING_SPEED, -wheelRotation) - 1;
+            double d = Math.pow(1 + ControlPredicates.ZOOMING_SPEED, -wheelRotation) - 1;
             double factor = 1.0 + d;
-            double max = MAXIMUM_ZOOM;
-            double min = MINIMUM_ZOOM;
+            double max = ControlPredicates.MAXIMUM_ZOOM;
+            double min = ControlPredicates.MINIMUM_ZOOM;
             int x = e.getX();
             int y = e.getY();
             if (this.zoomLevel * factor >= max) {
@@ -316,7 +311,7 @@ public final class ShipViewerControls implements ViewerControl {
     }
 
     public Point2D getAdjustedCursor() {
-        Point mouse = new Point(this.mousePoint);
+        Point mouse = new Point(this.getMousePoint());
         return this.snapPointToGrid(mouse, 2.0f);
     }
 

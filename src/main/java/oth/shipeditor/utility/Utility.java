@@ -3,7 +3,8 @@ package oth.shipeditor.utility;
 import lombok.extern.log4j.Log4j2;
 import oth.shipeditor.components.viewer.entities.BaseWorldPoint;
 import oth.shipeditor.components.viewer.layers.LayerPainter;
-import oth.shipeditor.components.viewer.layers.ShipLayer;
+import oth.shipeditor.components.viewer.layers.ViewerLayer;
+import oth.shipeditor.components.viewer.layers.ship.ShipPainter;
 
 import javax.swing.*;
 import java.awt.*;
@@ -99,7 +100,7 @@ public final class Utility {
 
     public static Point2D getPointCoordinatesForDisplay(Point2D pointPosition) {
         Point2D result = pointPosition;
-        ShipLayer activeLayer = StaticController.getActiveLayer();
+        ViewerLayer activeLayer = StaticController.getActiveLayer();
         if (activeLayer == null) {
             return result;
         }
@@ -122,7 +123,8 @@ public final class Utility {
 
             }
             case SHIPCENTER_ANCHOR -> {
-                Point2D center = layerPainter.getCenterAnchor();
+                if (!(layerPainter instanceof ShipPainter checkedPainter)) break;
+                Point2D center = checkedPainter.getCenterAnchor();
                 double centerX = center.getX();
                 double centerY = center.getY();
                 result = new Point2D.Double(positionX - centerX, (-positionY + centerY));
@@ -130,7 +132,8 @@ public final class Utility {
             // This case uses different coordinate system alignment to be consistent with game files.
             // Otherwise, user might be confused as shown point coordinates won't match with those in file.
             case SHIP_CENTER -> {
-                BaseWorldPoint shipCenter = layerPainter.getShipCenter();
+                if (!(layerPainter instanceof ShipPainter checkedPainter)) break;
+                BaseWorldPoint shipCenter = checkedPainter.getShipCenter();
                 Point2D center = shipCenter.getPosition();
                 double centerX = center.getX();
                 double centerY = center.getY();

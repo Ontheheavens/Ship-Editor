@@ -56,5 +56,6 @@
     exports oth.shipeditor.representation.weapon;
     opens oth.shipeditor.representation.weapon;
     exports oth.shipeditor.utility.text;
+    exports oth.shipeditor.components.viewer.layers.ship;
 
 }

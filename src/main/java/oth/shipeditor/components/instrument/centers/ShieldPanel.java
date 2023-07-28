@@ -7,8 +7,9 @@ import oth.shipeditor.communication.events.components.CenterPanelsRepaintQueued;
 import oth.shipeditor.communication.events.viewer.layers.LayerWasSelected;
 import oth.shipeditor.communication.events.viewer.layers.PainterOpacityChangeQueued;
 import oth.shipeditor.components.viewer.entities.ShieldCenterPoint;
-import oth.shipeditor.components.viewer.layers.LayerPainter;
-import oth.shipeditor.components.viewer.layers.ShipLayer;
+import oth.shipeditor.components.viewer.layers.ViewerLayer;
+import oth.shipeditor.components.viewer.layers.ship.ShipPainter;
+import oth.shipeditor.components.viewer.layers.ship.ShipLayer;
 import oth.shipeditor.components.viewer.painters.PainterVisibility;
 import oth.shipeditor.components.viewer.painters.points.ShieldPointPainter;
 import oth.shipeditor.utility.Pair;
@@ -62,11 +63,14 @@ public class ShieldPanel extends JPanel {
     private void initLayerListeners() {
         EventBus.subscribe(event -> {
             if (event instanceof LayerWasSelected checked) {
-                ShipLayer selected = checked.selected();
+                ViewerLayer selected = checked.selected();
+                if (!(selected instanceof ShipLayer checkedLayer)) {
+                    return;
+                }
                 boolean enableSlider = false;
-                if (selected != null && selected.getPainter() != null) {
-                    LayerPainter selectedLayerPainter = selected.getPainter();
-                    this.shieldPainter = selectedLayerPainter.getShieldPointPainter();
+                if (checkedLayer.getPainter() != null) {
+                    ShipPainter selectedShipPainter = checkedLayer.getPainter();
+                    this.shieldPainter = selectedShipPainter.getShieldPointPainter();
                     enableSlider = true;
                 } else {
                     this.shieldPainter = null;
@@ -160,14 +164,14 @@ public class ShieldPanel extends JPanel {
         };
         BusEventListener eventListener = event -> {
             if (event instanceof LayerWasSelected checked) {
-                ShipLayer selected = checked.selected();
+                ViewerLayer selected = checked.selected();
                 int defaultOpacity = (int) (DEFAULT_SHIELD_OPACITY * 100.0f);
-                if (selected == null) {
+                if (!(selected instanceof ShipLayer checkedLayer)) {
                     updateShieldOpacityLabel(defaultOpacity);
                     shieldOpacitySlider.setValue(defaultOpacity);
                     return;
                 }
-                LayerPainter painter = selected.getPainter();
+                ShipPainter painter = checkedLayer.getPainter();
                 int value;
                 if (painter == null) {
                     value = defaultOpacity;
@@ -200,8 +204,8 @@ public class ShieldPanel extends JPanel {
 
         JComboBox<PainterVisibility> visibilityList = new JComboBox<>(PainterVisibility.values());
         ActionListener selectionAction = e -> {
-            LayerPainter painter = (LayerPainter) e.getSource();
-            ShieldPointPainter shieldPointPainter = painter.getShieldPointPainter();
+            if (!(e.getSource() instanceof ShipPainter checked)) return;
+            ShieldPointPainter shieldPointPainter = checked.getShieldPointPainter();
             PainterVisibility valueOfLayer = shieldPointPainter.getVisibilityMode();
             visibilityList.setSelectedItem(valueOfLayer);
         };

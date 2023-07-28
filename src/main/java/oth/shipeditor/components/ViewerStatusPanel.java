@@ -15,7 +15,8 @@ import oth.shipeditor.communication.events.viewer.status.CoordsModeChanged;
 import oth.shipeditor.components.viewer.ShipViewable;
 import oth.shipeditor.components.viewer.entities.ShipCenterPoint;
 import oth.shipeditor.components.viewer.layers.LayerPainter;
-import oth.shipeditor.components.viewer.layers.ShipLayer;
+import oth.shipeditor.components.viewer.layers.ViewerLayer;
+import oth.shipeditor.components.viewer.layers.ship.ShipPainter;
 import oth.shipeditor.utility.StaticController;
 import oth.shipeditor.utility.Utility;
 import oth.shipeditor.utility.components.ComponentUtilities;
@@ -35,7 +36,7 @@ import java.awt.image.BufferedImage;
  * @author Ontheheavens
  * @since 01.05.2023
  */
-@SuppressWarnings("ClassWithTooManyFields")
+@SuppressWarnings({"ClassWithTooManyFields", "OverlyCoupledClass"})
 @Log4j2
 final class ViewerStatusPanel extends JPanel {
 
@@ -242,16 +243,16 @@ final class ViewerStatusPanel extends JPanel {
         EventBus.subscribe(event -> {
             if (event instanceof ActiveLayerUpdated checked) {
                 if (!checked.spriteChanged()) return;
-                ShipLayer layer = checked.updated();
-                BufferedImage shipSprite = layer.getShipSprite();
+                ViewerLayer layer = checked.updated();
+                BufferedImage shipSprite = layer.getSprite();
                 this.setDimensionsLabel(shipSprite);
             }
         });
         EventBus.subscribe(event -> {
             if (event instanceof LayerWasSelected checked) {
-                ShipLayer layer = checked.selected();
+                ViewerLayer layer = checked.selected();
                 if (layer != null) {
-                    BufferedImage shipSprite = layer.getShipSprite();
+                    BufferedImage shipSprite = layer.getSprite();
                     this.setDimensionsLabel(shipSprite);
                 } else {
                     this.setDimensionsLabel(null);
@@ -323,8 +324,8 @@ final class ViewerStatusPanel extends JPanel {
                 cursor = ViewerStatusPanel.adjustCursorCoordinates(this.cursorPoint, center);
             }
             case SHIPCENTER_ANCHOR -> {
-                if (selectedLayer == null) break;
-                Point2D center = selectedLayer.getCenterAnchor();
+                if (!(selectedLayer instanceof ShipPainter checkedPainter)) break;
+                Point2D center = checkedPainter.getCenterAnchor();
                 cursor = ViewerStatusPanel.adjustCursorCoordinates(this.cursorPoint, center);
                 cursor = new Point2D.Double(cursor.getX(), -cursor.getY());
                 if (cursor.getY() == -0.0) {
@@ -334,8 +335,8 @@ final class ViewerStatusPanel extends JPanel {
             // This case uses different coordinate system alignment to be consistent with game files.
             // Otherwise, user might be confused as shown point coordinates won't match with those in file.
             case SHIP_CENTER -> {
-                if (selectedLayer == null || selectedLayer.getShipCenter() == null) break;
-                ShipCenterPoint shipCenter = selectedLayer.getShipCenter();
+                if (!(selectedLayer instanceof ShipPainter checkedPainter) || checkedPainter.getShipCenter() == null) break;
+                ShipCenterPoint shipCenter = checkedPainter.getShipCenter();
                 Point2D center = shipCenter.getPosition();
                 Point2D adjusted = ViewerStatusPanel.adjustCursorCoordinates(this.cursorPoint, center);
                 cursor = new Point2D.Double(-adjusted.getY(), -adjusted.getX());

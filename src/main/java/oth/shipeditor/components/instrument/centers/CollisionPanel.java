@@ -7,8 +7,9 @@ import oth.shipeditor.communication.events.components.CenterPanelsRepaintQueued;
 import oth.shipeditor.communication.events.viewer.layers.LayerWasSelected;
 import oth.shipeditor.communication.events.viewer.layers.PainterOpacityChangeQueued;
 import oth.shipeditor.components.viewer.entities.ShipCenterPoint;
-import oth.shipeditor.components.viewer.layers.LayerPainter;
-import oth.shipeditor.components.viewer.layers.ShipLayer;
+import oth.shipeditor.components.viewer.layers.ViewerLayer;
+import oth.shipeditor.components.viewer.layers.ship.ShipPainter;
+import oth.shipeditor.components.viewer.layers.ship.ShipLayer;
 import oth.shipeditor.components.viewer.painters.PainterVisibility;
 import oth.shipeditor.components.viewer.painters.points.CenterPointPainter;
 import oth.shipeditor.utility.Pair;
@@ -64,11 +65,14 @@ public final class CollisionPanel extends JPanel {
     private void initLayerListeners() {
         EventBus.subscribe(event -> {
             if (event instanceof LayerWasSelected checked) {
-                ShipLayer selected = checked.selected();
+                ViewerLayer selected = checked.selected();
+                if (!(selected instanceof ShipLayer checkedLayer)) {
+                    return;
+                }
                 boolean enableSlider = false;
-                if (selected != null && selected.getPainter() != null) {
-                    LayerPainter selectedLayerPainter = selected.getPainter();
-                    this.centerPainter = selectedLayerPainter.getCenterPointPainter();
+                if (checkedLayer.getPainter() != null) {
+                    ShipPainter selectedShipPainter = checkedLayer.getPainter();
+                    this.centerPainter = selectedShipPainter.getCenterPointPainter();
                     enableSlider = true;
                 } else {
                     this.centerPainter = null;
@@ -106,8 +110,8 @@ public final class CollisionPanel extends JPanel {
 
         JComboBox<PainterVisibility> visibilityList = new JComboBox<>(PainterVisibility.values());
         ActionListener selectionAction = e -> {
-            LayerPainter painter = (LayerPainter) e.getSource();
-            CenterPointPainter boundsPainter = painter.getCenterPointPainter();
+            if (!(e.getSource() instanceof ShipPainter checked)) return;
+            CenterPointPainter boundsPainter = checked.getCenterPointPainter();
             PainterVisibility valueOfLayer = boundsPainter.getVisibilityMode();
             visibilityList.setSelectedItem(valueOfLayer);
         };
@@ -189,14 +193,14 @@ public final class CollisionPanel extends JPanel {
         };
         BusEventListener eventListener = event -> {
             if (event instanceof LayerWasSelected checked) {
-                ShipLayer selected = checked.selected();
+                ViewerLayer selected = checked.selected();
                 int defaultOpacity = (int) (CenterPointPainter.COLLISION_OPACITY * 100.0f);
-                if (selected == null) {
+                if (!(selected instanceof ShipLayer checkedLayer)) {
                     updateCollisionOpacityLabel(defaultOpacity);
                     collisionOpacitySlider.setValue(defaultOpacity);
                     return;
                 }
-                LayerPainter painter = selected.getPainter();
+                ShipPainter painter = checkedLayer.getPainter();
                 int value;
                 if (painter == null) {
                     value = defaultOpacity;

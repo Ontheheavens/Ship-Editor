@@ -3,7 +3,7 @@ package oth.shipeditor.components.viewer.painters.points;
 import lombok.Getter;
 import oth.shipeditor.components.viewer.entities.BaseWorldPoint;
 import oth.shipeditor.components.viewer.entities.WorldPoint;
-import oth.shipeditor.components.viewer.layers.LayerPainter;
+import oth.shipeditor.components.viewer.layers.ship.ShipPainter;
 
 /**
  * @author Ontheheavens
@@ -12,9 +12,9 @@ import oth.shipeditor.components.viewer.layers.LayerPainter;
 public abstract class SinglePointPainter extends AbstractPointPainter {
 
     @Getter
-    private final LayerPainter parentLayer;
+    private final ShipPainter parentLayer;
 
-    SinglePointPainter(LayerPainter parent) {
+    SinglePointPainter(ShipPainter parent) {
         this.parentLayer = parent;
     }
 

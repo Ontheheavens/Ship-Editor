@@ -43,7 +43,7 @@ public final class InstrumentTabsPane extends JTabbedPane {
 
     private ShieldPanel shieldPanel;
 
-    private LayerPropertiesPanel layerPanel;
+    private ShipLayerPropertiesPanel layerPanel;
 
     private final Map<JPanel, InstrumentMode> panelMode;
 
@@ -76,7 +76,7 @@ public final class InstrumentTabsPane extends JTabbedPane {
     }
 
     private void createTabs() {
-        layerPanel = new LayerPropertiesPanel();
+        layerPanel = new ShipLayerPropertiesPanel();
         panelMode.put(layerPanel, InstrumentMode.LAYER);
         this.addTab("Layer",layerPanel);
 

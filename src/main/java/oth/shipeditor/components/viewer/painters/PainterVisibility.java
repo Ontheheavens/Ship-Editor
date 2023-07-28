@@ -6,7 +6,7 @@ import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.viewer.layers.LayerWasSelected;
 import oth.shipeditor.communication.events.viewer.layers.PainterVisibilityChanged;
 import oth.shipeditor.components.viewer.layers.LayerPainter;
-import oth.shipeditor.components.viewer.layers.ShipLayer;
+import oth.shipeditor.components.viewer.layers.ViewerLayer;
 import oth.shipeditor.components.viewer.painters.points.AbstractPointPainter;
 
 import javax.swing.*;
@@ -59,7 +59,7 @@ public enum PainterVisibility {
                                                           ActionListener selectionAction) {
         return event -> {
             if (event instanceof LayerWasSelected checked) {
-                ShipLayer selected = checked.selected();
+                ViewerLayer selected = checked.selected();
                 if (selected == null) {
                     visibilityList.setSelectedItem(PainterVisibility.SHOWN_WHEN_EDITED);
                     return;

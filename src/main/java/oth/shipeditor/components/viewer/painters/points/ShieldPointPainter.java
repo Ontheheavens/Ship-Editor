@@ -12,7 +12,7 @@ import oth.shipeditor.components.viewer.InstrumentMode;
 import oth.shipeditor.components.viewer.control.ControlPredicates;
 import oth.shipeditor.components.viewer.entities.BaseWorldPoint;
 import oth.shipeditor.components.viewer.entities.ShieldCenterPoint;
-import oth.shipeditor.components.viewer.layers.LayerPainter;
+import oth.shipeditor.components.viewer.layers.ship.ShipPainter;
 import oth.shipeditor.representation.Hull;
 import oth.shipeditor.representation.HullStyle;
 import oth.shipeditor.representation.ShipData;
@@ -42,7 +42,7 @@ public class ShieldPointPainter extends SinglePointPainter {
 
     private KeyEventDispatcher hotkeyDispatcher;
 
-    public ShieldPointPainter(LayerPainter parent) {
+    public ShieldPointPainter(ShipPainter parent) {
         super(parent);
         this.initModeListening();
         this.initHotkeys();
@@ -50,8 +50,8 @@ public class ShieldPointPainter extends SinglePointPainter {
     }
 
     @Override
-    public void cleanupForRemoval() {
-        super.cleanupForRemoval();
+    public void cleanupListeners() {
+        super.cleanupListeners();
         KeyboardFocusManager.getCurrentKeyboardFocusManager().removeKeyEventDispatcher(hotkeyDispatcher);
     }
 
