@@ -1,5 +1,7 @@
 package oth.shipeditor.components.instrument;
 
+import lombok.Getter;
+import lombok.Setter;
 import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.components.InstrumentSplitterResized;
 import oth.shipeditor.utility.components.MinimizeListener;
@@ -19,7 +21,11 @@ public abstract class AbstractInstrumentsPane extends JTabbedPane {
      */
     private JPanel activePanel;
 
+    @Getter
     private final MinimizerWidget minimizer;
+
+    @Getter @Setter
+    private boolean instrumentPaneMinimized;
 
     private final Dimension maximumPanelSize = new Dimension(300, Integer.MAX_VALUE);
 
@@ -64,7 +70,7 @@ public abstract class AbstractInstrumentsPane extends JTabbedPane {
             this.setMinimumSize(minimizedSize);
             this.setMaximumSize(minimizedSize);
             updateTooltipText();
-            EventBus.publish(new InstrumentSplitterResized(true));
+            EventBus.publish(new InstrumentSplitterResized(this, true));
         };
     }
 
@@ -74,7 +80,7 @@ public abstract class AbstractInstrumentsPane extends JTabbedPane {
             this.setMinimumSize(maximumPanelSize);
             this.setMaximumSize(maximumPanelSize);
             updateTooltipText();
-            EventBus.publish(new InstrumentSplitterResized(false));
+            EventBus.publish(new InstrumentSplitterResized(this, false));
         };
     }
 

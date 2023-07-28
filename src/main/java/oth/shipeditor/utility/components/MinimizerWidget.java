@@ -33,7 +33,8 @@ public class MinimizerWidget {
         this.minimizeAction.run();
     }
 
-    void maximize() {
+    @SuppressWarnings("WeakerAccess")
+    public void maximize() {
         this.maximizeAction.run();
     }
 

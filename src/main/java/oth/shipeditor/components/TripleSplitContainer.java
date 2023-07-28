@@ -8,6 +8,7 @@ import oth.shipeditor.communication.events.components.InstrumentSplitterResized;
 import oth.shipeditor.communication.events.components.WindowGUIShowConfirmed;
 import oth.shipeditor.communication.events.viewer.layers.LayerWasSelected;
 import oth.shipeditor.components.datafiles.GameDataPanel;
+import oth.shipeditor.components.instrument.AbstractInstrumentsPane;
 import oth.shipeditor.components.instrument.ship.ShipInstrumentsPane;
 import oth.shipeditor.components.instrument.weapon.WeaponInstrumentsPane;
 import oth.shipeditor.components.viewer.ShipViewable;
@@ -42,9 +43,9 @@ final class TripleSplitContainer extends JSplitPane {
     @Getter
     private JSplitPane secondaryLevel;
 
-    private boolean instrumentPaneMinimized;
+    private int cachedDividerShips = -1;
 
-    private int cachedDividerLocation = -1;
+    private int cachedDividerWeapons = -1;
 
     /**
      * Parent pane for ship data editing tabs.
@@ -127,15 +128,22 @@ final class TripleSplitContainer extends JSplitPane {
         };
     }
 
+    @SuppressWarnings("OverlyComplexMethod")
     private void initEventListeners() {
         EventBus.subscribe(event -> {
             if (event instanceof InstrumentSplitterResized checked) {
                 boolean minimize = checked.minimized();
                 if (secondaryLevel == null) return;
                 if (minimize) {
-                    cachedDividerLocation = secondaryLevel.getDividerLocation();
+                    if (secondaryLevel.getRightComponent() instanceof ShipInstrumentsPane) {
+                        cachedDividerShips = secondaryLevel.getDividerLocation();
+                    } else {
+                        cachedDividerWeapons = secondaryLevel.getDividerLocation();
+                    }
                 }
-                instrumentPaneMinimized = minimize;
+                if (secondaryLevel.getRightComponent() instanceof AbstractInstrumentsPane instrumentsPane) {
+                    instrumentsPane.setInstrumentPaneMinimized(minimize);
+                }
                 relocateDivider();
             }
         });
@@ -158,16 +166,17 @@ final class TripleSplitContainer extends JSplitPane {
             if (event instanceof LayerWasSelected checked) {
                 ViewerLayer selected = checked.selected();
                 if (selected instanceof WeaponLayer) {
-                    secondaryLevel.setRightComponent(weaponInstrumentsPane);
+                    if (secondaryLevel.getRightComponent() instanceof ShipInstrumentsPane) {
+                        cachedDividerShips = secondaryLevel.getDividerLocation();
+                        secondaryLevel.setRightComponent(weaponInstrumentsPane);
+                        relocateDivider();
+                    }
                 } else {
-                    secondaryLevel.setRightComponent(shipInstrumentsPane);
-                }
-                if (instrumentPaneMinimized) {
-                    this.setDividerLocation(cachedDataPanelWidth);
-                } else {
-                    Component component = secondaryLevel.getRightComponent();
-                    int maximum = this.getSize().width - component.getMinimumSize().width;
-                    secondaryLevel.setDividerLocation(maximum - 16);
+                    if (secondaryLevel.getRightComponent() instanceof WeaponInstrumentsPane) {
+                        cachedDividerWeapons = secondaryLevel.getDividerLocation();
+                        secondaryLevel.setRightComponent(shipInstrumentsPane);
+                        relocateDivider();
+                    }
                 }
             }
         });
@@ -178,7 +187,13 @@ final class TripleSplitContainer extends JSplitPane {
      */
     private void relocateDivider() {
         if (secondaryLevel == null) return;
-        if (instrumentPaneMinimized) {
+
+        boolean minimized = false;
+        if (secondaryLevel.getRightComponent() instanceof AbstractInstrumentsPane instrumentsPane) {
+            minimized = instrumentsPane.isInstrumentPaneMinimized();
+        }
+
+        if (minimized) {
             int remainder = 106;
             if (secondaryLevel.getRightComponent() instanceof WeaponInstrumentsPane) {
                 remainder = 60;
@@ -187,7 +202,11 @@ final class TripleSplitContainer extends JSplitPane {
             this.toggleSecondarySplitterOff();
         } else {
             int maximum = secondaryLevel.getMaximumDividerLocation();
-            secondaryLevel.setDividerLocation(Math.min(cachedDividerLocation, maximum));
+            if (secondaryLevel.getRightComponent() instanceof ShipInstrumentsPane) {
+                secondaryLevel.setDividerLocation(Math.min(cachedDividerShips, maximum));
+            } else {
+                secondaryLevel.setDividerLocation(Math.min(cachedDividerWeapons, maximum));
+            }
             this.toggleSecondarySplitterOn();
         }
         this.repaint();
@@ -203,6 +222,7 @@ final class TripleSplitContainer extends JSplitPane {
         divider.removeMouseListener(cachedDividerHandler);
         divider.removeMouseMotionListener(cachedDividerHandler);
         divider.setEnabled(false);
+        System.out.println("Splitter off!");
     }
 
     private void toggleSecondarySplitterOn() {
@@ -213,6 +233,7 @@ final class TripleSplitContainer extends JSplitPane {
         divider.addMouseListener(cachedDividerHandler);
         divider.addMouseMotionListener(cachedDividerHandler);
         divider.setEnabled(true);
+        System.out.println("Splitter on!");
     }
 
     void loadContentPanes(ShipViewable shipView) {
@@ -226,9 +247,7 @@ final class TripleSplitContainer extends JSplitPane {
         secondaryLevel.addComponentListener(new ComponentAdapter() {
             @Override
             public void componentResized(ComponentEvent e) {
-                if (instrumentPaneMinimized) {
                     relocateDivider();
-                }
             }
         });
         // While this might look clunky, this is the least painful method for programmatic control over divider minimization.
