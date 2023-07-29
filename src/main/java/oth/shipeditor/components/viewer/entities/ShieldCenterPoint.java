@@ -114,7 +114,7 @@ public class ShieldCenterPoint extends BaseWorldPoint {
         Shape transformedCross = ShapeUtilities.ensureDynamicScaleShape(worldToScreen,
                 position, diagonalCross, 12);
 
-        DrawUtilities.drawCentroid(g, transformedCross, crossColor);
+        DrawUtilities.drawOutlined(g, transformedCross, crossColor);
     }
 
     private void paintShieldCircle(Graphics2D g, AffineTransform worldToScreen) {

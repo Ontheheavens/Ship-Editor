@@ -1,5 +1,6 @@
 package oth.shipeditor.components.viewer.painters.points;
 
+import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
 import oth.shipeditor.communication.BusEventListener;
@@ -14,7 +15,6 @@ import oth.shipeditor.components.viewer.ShipInstrument;
 import oth.shipeditor.components.viewer.control.ControlPredicates;
 import oth.shipeditor.components.viewer.entities.BaseWorldPoint;
 import oth.shipeditor.components.viewer.entities.BoundPoint;
-import oth.shipeditor.components.viewer.entities.WorldPoint;
 import oth.shipeditor.components.viewer.layers.ship.ShipPainter;
 import oth.shipeditor.undo.EditDispatch;
 import oth.shipeditor.utility.StaticController;
@@ -41,8 +41,11 @@ public final class BoundPointsPainter extends MirrorablePointPainter {
     @Setter
     private List<BoundPoint> boundPoints;
 
-    private boolean appendBoundHotkeyPressed;
-    private boolean insertBoundHotkeyPressed;
+    @Getter
+    private static boolean appendBoundHotkeyPressed;
+
+    @Getter
+    private static boolean insertBoundHotkeyPressed;
 
     private final int appendBoundHotkey = KeyEvent.VK_Z;
     private final int insertBoundHotkey = KeyEvent.VK_X;
@@ -111,12 +114,12 @@ public final class BoundPointsPainter extends MirrorablePointPainter {
             switch (ke.getID()) {
                 case KeyEvent.KEY_PRESSED:
                     if (isAppendHotkey || isInsertHotkey) {
-                        setHotkeyState(isAppendHotkey, true);
+                        BoundPointsPainter.setHotkeyState(isAppendHotkey, true);
                     }
                     break;
                 case KeyEvent.KEY_RELEASED:
                     if (isAppendHotkey || isInsertHotkey) {
-                        setHotkeyState(isAppendHotkey, false);
+                        BoundPointsPainter.setHotkeyState(isAppendHotkey, false);
                     }
                     break;
             }
@@ -212,7 +215,7 @@ public final class BoundPointsPainter extends MirrorablePointPainter {
         log.info("Bound inserted to painter: {}", toInsert);
     }
 
-    private void setHotkeyState(boolean isAppendHotkey, boolean state) {
+    private static void setHotkeyState(boolean isAppendHotkey, boolean state) {
         if (isAppendHotkey) {
             appendBoundHotkeyPressed = state;
         } else {
@@ -242,12 +245,7 @@ public final class BoundPointsPainter extends MirrorablePointPainter {
     }
 
     @Override
-    public void paint(Graphics2D g, AffineTransform worldToScreen, double w, double h) {
-        if (!checkVisibility()) return;
-
-        float alpha = this.getPaintOpacity();
-        Composite old = Utility.setAlphaComposite(g, alpha);
-
+    public void paintPainterContent(Graphics2D g, AffineTransform worldToScreen, double w, double h) {
         List<BoundPoint> bPoints = this.boundPoints;
         if (bPoints.isEmpty()) {
             this.paintIfBoundsEmpty(g, worldToScreen);
@@ -269,40 +267,12 @@ public final class BoundPointsPainter extends MirrorablePointPainter {
         if (isInteractionEnabled() && hotkeyPressed) {
             this.paintCreationGuidelines(g, worldToScreen, prev, first);
         }
-        this.handleSelectionHighlight();
-        this.paintDelegates(g, worldToScreen, w, h);
-        g.setComposite(old);
-    }
-
-    @Override
-    void paintDelegates(Graphics2D g, AffineTransform worldToScreen, double w, double h) {
-        super.paintDelegates(g, worldToScreen, w, h);
-        for (BoundPoint bound : boundPoints) {
-            bound.setPaintSizeMultiplier(1);
-        }
     }
 
     @SuppressWarnings("MethodMayBeStatic")
     private void drawBoundLine(Graphics2D g, Point2D start, Point2D finish, Color color) {
         DrawUtilities.drawScreenLine(g, start, finish, Color.BLACK, 5.0f);
         DrawUtilities.drawScreenLine(g, start, finish, color, 3.0f);
-    }
-
-    private void handleSelectionHighlight() {
-        WorldPoint selection = this.getSelected();
-        if (selection != null && isInteractionEnabled()) {
-            BoundPointsPainter.enlargeBound(selection);
-            WorldPoint counterpart = this.getMirroredCounterpart(selection);
-            if (counterpart != null && ControlPredicates.isMirrorModeEnabled()) {
-                BoundPointsPainter.enlargeBound(counterpart);
-            }
-        }
-    }
-
-    private static void enlargeBound(WorldPoint bound) {
-        if (bound instanceof BoundPoint checked) {
-            checked.setPaintSizeMultiplier(1.5);
-        }
     }
 
     private void paintIfBoundsEmpty(Graphics2D g, AffineTransform worldToScreen) {

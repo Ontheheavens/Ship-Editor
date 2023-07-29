@@ -9,6 +9,7 @@ import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.viewer.control.LayerAnchorDragged;
 import oth.shipeditor.communication.events.viewer.layers.LayerRotationQueued;
 import oth.shipeditor.communication.events.viewer.layers.ViewerLayerRemovalConfirmed;
+import oth.shipeditor.components.viewer.control.ControlPredicates;
 import oth.shipeditor.components.viewer.painters.points.AbstractPointPainter;
 import oth.shipeditor.undo.EditDispatch;
 import oth.shipeditor.utility.StaticController;
@@ -123,8 +124,11 @@ public abstract class LayerPainter implements Painter {
         double radians = -Math.atan2(deltaX, deltaY);
 
         double rotationDegrees = Math.toDegrees(radians) + 180;
-        double degreesRounded = Math.round(rotationDegrees);
-        this.rotateLayer(degreesRounded);
+        double result = rotationDegrees;
+        if (ControlPredicates.isRotationRoundingEnabled()) {
+            result = Math.round(rotationDegrees);
+        }
+        this.rotateLayer(result);
     }
 
     @SuppressWarnings("WeakerAccess")

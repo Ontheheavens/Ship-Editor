@@ -13,25 +13,39 @@ public final class ColorUtilities {
     }
 
     public static Color darken(Color color, double factor) {
-        double darkenFactor = factor;
-        if (darkenFactor < 0) {
-            darkenFactor = 0;
-        } else if (darkenFactor > 1) {
-            darkenFactor = 1;
-        }
+        double darkenFactor = ColorUtilities.clampValue(factor, 0, 1);
         int red = color.getRed();
         int green = color.getGreen();
         int blue = color.getBlue();
 
-        red = (int) (red * (1 - darkenFactor));
-        green = (int) (green * (1 - darkenFactor));
-        blue = (int) (blue * (1 - darkenFactor));
-
-        red = Math.max(0, red);
-        green = Math.max(0, green);
-        blue = Math.max(0, blue);
+        red = ColorUtilities.adjustComponent(red, darkenFactor);
+        green = ColorUtilities.adjustComponent(green, darkenFactor);
+        blue = ColorUtilities.adjustComponent(blue, darkenFactor);
 
         return new Color(red, green, blue);
+    }
+
+    public static Color lighten(Color color, double factor) {
+        double lightenFactor = ColorUtilities.clampValue(factor, 0, 1);
+        int red = color.getRed();
+        int green = color.getGreen();
+        int blue = color.getBlue();
+
+        red = ColorUtilities.adjustComponent(red, 1 + lightenFactor);
+        green = ColorUtilities.adjustComponent(green, 1 + lightenFactor);
+        blue = ColorUtilities.adjustComponent(blue, 1 + lightenFactor);
+
+        return new Color(red, green, blue);
+    }
+
+    private static int adjustComponent(int component, double factor) {
+        double result = (component * factor);
+        return (int) ColorUtilities.clampValue(result, 0, 255);
+    }
+
+    @SuppressWarnings("SameParameterValue")
+    private static double clampValue(double value, double min, double max) {
+        return Math.min(Math.max(value, min), max);
     }
 
     public static Color setFullAlpha(Color color) {

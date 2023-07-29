@@ -9,6 +9,8 @@ import oth.shipeditor.communication.events.viewer.points.*;
 import oth.shipeditor.components.viewer.PrimaryViewer;
 import oth.shipeditor.components.viewer.layers.LayerPainter;
 import oth.shipeditor.components.viewer.layers.ship.ShipPainter;
+import oth.shipeditor.components.viewer.painters.points.BoundPointsPainter;
+import oth.shipeditor.components.viewer.painters.points.WeaponSlotPainter;
 import oth.shipeditor.utility.StaticController;
 import oth.shipeditor.utility.Utility;
 
@@ -28,7 +30,7 @@ import java.awt.geom.Point2D;
 
 @SuppressWarnings("OverlyCoupledClass")
 @Log4j2
-public final class ShipViewerControls implements ViewerControl {
+public final class LayerViewerControls implements ViewerControl {
 
     private final PrimaryViewer parentViewer;
 
@@ -64,7 +66,7 @@ public final class ShipViewerControls implements ViewerControl {
     /**
      * @param parent Viewer which is manipulated via this instance of controls class.
      */
-    private ShipViewerControls(PrimaryViewer parent) {
+    private LayerViewerControls(PrimaryViewer parent) {
         this.parentViewer = parent;
         this.rotationEnabled = true;
         this.initListeners();
@@ -89,8 +91,8 @@ public final class ShipViewerControls implements ViewerControl {
      * @param parent Viewer which is manipulated via this instance of controls class.
      * @return instance of controls via factory method.
      */
-    public static ShipViewerControls create(PrimaryViewer parent) {
-        return new ShipViewerControls(parent);
+    public static LayerViewerControls create(PrimaryViewer parent) {
+        return new LayerViewerControls(parent);
     }
 
     private void initListeners() {
@@ -99,7 +101,7 @@ public final class ShipViewerControls implements ViewerControl {
                 this.setZoomLevel(1);
                 this.rotationDegree = 0;
                 StaticController.setRotationRadians(0);
-                EventBus.publish(new ViewerTransformRotated(rotationDegree));
+                EventBus.publish(new ViewerTransformRotated());
             }
         });
         EventBus.subscribe(event -> {
@@ -157,7 +159,9 @@ public final class ShipViewerControls implements ViewerControl {
             Point2D transformed = worldToScreen.transform(anchor, null);
             this.layerDragPoint.setLocation(e.getX() - transformed.getX(), e.getY() - transformed.getY());
         }
-        this.tryBoundCreation(point);
+        if (e.getButton() == MouseEvent.BUTTON1) {
+            this.tryBoundCreation(point);
+        }
         if (ControlPredicates.removePointPredicate.test(e)) {
             EventBus.publish(new PointRemoveQueued(null, false));
         }
@@ -191,6 +195,7 @@ public final class ShipViewerControls implements ViewerControl {
     @Override
     public void mouseExited(MouseEvent e) {}
 
+    @SuppressWarnings("IfStatementWithTooManyBranches")
     @Override
     public void mouseDragged(MouseEvent e) {
         int x = e.getX();
@@ -213,6 +218,13 @@ public final class ShipViewerControls implements ViewerControl {
             if (selected != null) {
                 Point2D worldTarget = screenToWorld.transform(e.getPoint(), null);
                 EventBus.publish(new LayerRotationQueued(selected, worldTarget));
+            }
+        }
+        else if (ControlPredicates.changeSlotAnglePredicate.test(e)) {
+            if (selected instanceof ShipPainter) {
+                AffineTransform rotated = StaticController.getScreenToWorld();
+                Point2D worldTarget = rotated.transform(e.getPoint(), null);
+                EventBus.publish(new SlotAngleChangeQueued(worldTarget));
             }
         }
         this.previousPoint.setLocation(x, y);
@@ -254,7 +266,7 @@ public final class ShipViewerControls implements ViewerControl {
             }
             rotationDegree = (rotationDegree + 360) % 360;
             StaticController.updateViewerRotation(-resultRadians, rotationDegree);
-            EventBus.publish(new ViewerTransformRotated(rotationDegree));
+            EventBus.publish(new ViewerTransformRotated());
         } else {
             // Calculate the zoom factor - sign of wheel rotation argument determines the direction.
             double d = Math.pow(1 + ControlPredicates.ZOOMING_SPEED, -wheelRotation) - 1;
@@ -282,7 +294,7 @@ public final class ShipViewerControls implements ViewerControl {
         rotateViewer(radiansChange);
         this.rotationDegree = desiredDegrees;
         StaticController.updateViewerRotation(-radiansChange, desiredDegrees);
-        EventBus.publish(new ViewerTransformRotated(desiredDegrees));
+        EventBus.publish(new ViewerTransformRotated());
     }
 
     private void rotateViewer(double angleRadians) {
@@ -307,7 +319,7 @@ public final class ShipViewerControls implements ViewerControl {
     private void setZoomLevel(double level) {
         this.zoomLevel = level;
         StaticController.setZoomLevel(level);
-        EventBus.publish(new ViewerZoomChanged(level));
+        EventBus.publish(new ViewerZoomChanged());
     }
 
     public Point2D getAdjustedCursor() {
@@ -345,11 +357,17 @@ public final class ShipViewerControls implements ViewerControl {
         Point2D corrected = Utility.correctAdjustedCursor(adjusted, screenToWorld);
         EventBus.publish(new ViewerCursorMoved(this.mousePoint, adjusted, corrected));
         if (ControlPredicates.selectPointPredicate.test(event)) {
+            boolean appendBoundDown = BoundPointsPainter.isAppendBoundHotkeyPressed();
+            boolean insertBoundDown = BoundPointsPainter.isInsertBoundHotkeyPressed();
+            boolean slotAngleDown = WeaponSlotPainter.isAngleHotkeyPressed();
+
             Point2D cursor = mousePoint;
             if (ControlPredicates.isCursorSnappingEnabled()) {
                 cursor = adjusted;
             }
-            EventBus.publish(new PointDragQueued(screenToWorld, cursor));
+            if (!appendBoundDown && !insertBoundDown && !slotAngleDown) {
+                EventBus.publish(new PointDragQueued(screenToWorld, cursor));
+            }
         }
         parentViewer.repaint();
     }

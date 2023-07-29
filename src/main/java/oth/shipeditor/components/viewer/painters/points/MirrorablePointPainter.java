@@ -7,7 +7,10 @@ import oth.shipeditor.components.viewer.entities.ShipCenterPoint;
 import oth.shipeditor.components.viewer.entities.WorldPoint;
 import oth.shipeditor.components.viewer.layers.ship.ShipPainter;
 import oth.shipeditor.components.viewer.painters.PainterVisibility;
+import oth.shipeditor.utility.Utility;
 
+import java.awt.*;
+import java.awt.geom.AffineTransform;
 import java.awt.geom.Point2D;
 import java.util.List;
 
@@ -49,6 +52,46 @@ public abstract class MirrorablePointPainter extends AbstractPointPainter {
     @Override
     public boolean isMirrorable() {
         return true;
+    }
+
+    @Override
+    public void paint(Graphics2D g, AffineTransform worldToScreen, double w, double h) {
+        if (!checkVisibility()) return;
+
+        float alpha = this.getPaintOpacity();
+        Composite old = Utility.setAlphaComposite(g, alpha);
+
+        this.paintPainterContent(g, worldToScreen, w, h);
+
+        this.handleSelectionHighlight();
+        this.paintDelegates(g, worldToScreen, w, h);
+        g.setComposite(old);
+    }
+
+    @SuppressWarnings("NoopMethodInAbstractClass")
+    public void paintPainterContent(Graphics2D g, AffineTransform worldToScreen, double w, double h) {}
+
+    private void handleSelectionHighlight() {
+        WorldPoint selection = this.getSelected();
+        if (selection != null && isInteractionEnabled()) {
+            MirrorablePointPainter.enlargePoint(selection);
+            WorldPoint counterpart = this.getMirroredCounterpart(selection);
+            if (counterpart != null && ControlPredicates.isMirrorModeEnabled()) {
+                MirrorablePointPainter.enlargePoint(counterpart);
+            }
+        }
+    }
+
+    private static void enlargePoint(WorldPoint point) {
+        point.setPaintSizeMultiplier(1.5);
+    }
+
+    @Override
+    void paintDelegates(Graphics2D g, AffineTransform worldToScreen, double w, double h) {
+        super.paintDelegates(g, worldToScreen, w, h);
+        for (BaseWorldPoint point : getPointsIndex()) {
+            point.setPaintSizeMultiplier(1);
+        }
     }
 
     @Override

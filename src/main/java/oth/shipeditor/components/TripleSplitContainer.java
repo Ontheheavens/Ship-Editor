@@ -11,7 +11,7 @@ import oth.shipeditor.components.datafiles.GameDataPanel;
 import oth.shipeditor.components.instrument.AbstractInstrumentsPane;
 import oth.shipeditor.components.instrument.ship.ShipInstrumentsPane;
 import oth.shipeditor.components.instrument.weapon.WeaponInstrumentsPane;
-import oth.shipeditor.components.viewer.ShipViewable;
+import oth.shipeditor.components.viewer.LayerViewer;
 import oth.shipeditor.components.viewer.layers.ViewerLayer;
 import oth.shipeditor.components.viewer.layers.weapon.WeaponLayer;
 import oth.shipeditor.utility.components.MinimizeListener;
@@ -24,6 +24,7 @@ import javax.swing.plaf.basic.BasicSplitPaneUI;
 import java.awt.*;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
+import java.awt.event.ComponentListener;
 import java.awt.event.MouseAdapter;
 import java.util.EnumMap;
 import java.util.HashMap;
@@ -236,7 +237,7 @@ final class TripleSplitContainer extends JSplitPane {
         divider.setEnabled(true);
     }
 
-    void loadContentPanes(ShipViewable shipView) {
+    void loadContentPanes(LayerViewer shipView) {
         this.shipInstrumentsPane = new ShipInstrumentsPane();
         this.weaponInstrumentsPane = new WeaponInstrumentsPane();
         shipInstrumentsPane.setOpaque(true);
@@ -244,12 +245,14 @@ final class TripleSplitContainer extends JSplitPane {
         secondaryLevel.setLeftComponent((Component) shipView);
         secondaryLevel.setRightComponent(shipInstrumentsPane);
         secondaryLevel.setResizeWeight(1.0f);
-        secondaryLevel.addComponentListener(new ComponentAdapter() {
+        ComponentListener adapter = new ComponentAdapter() {
             @Override
             public void componentResized(ComponentEvent e) {
-                    relocateDivider();
+                relocateDivider();
             }
-        });
+        };
+        secondaryLevel.addComponentListener(adapter);
+        this.addComponentListener(adapter);
         // While this might look clunky, this is the least painful method for programmatic control over divider minimization.
         Component divider = this.getComponents()[0];
         BasicSplitPaneDivider casted = (BasicSplitPaneDivider) divider;

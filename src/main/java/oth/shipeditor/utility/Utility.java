@@ -150,4 +150,9 @@ public final class Utility {
         return Utility.round(clampedDegrees, 5);
     }
 
+    public static double flipAngle(double degrees) {
+        double flipped = -degrees;
+        return (flipped + 360) % 360;
+    }
+
 }

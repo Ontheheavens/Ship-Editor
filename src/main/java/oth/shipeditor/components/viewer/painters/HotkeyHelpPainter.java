@@ -4,6 +4,9 @@ import de.javagl.viewer.Painter;
 import lombok.extern.log4j.Log4j2;
 import oth.shipeditor.components.instrument.ship.ShipInstrumentsPane;
 import oth.shipeditor.components.viewer.ShipInstrument;
+import oth.shipeditor.components.viewer.layers.LayerPainter;
+import oth.shipeditor.components.viewer.layers.ViewerLayer;
+import oth.shipeditor.utility.StaticController;
 import oth.shipeditor.utility.graphics.DrawUtilities;
 
 import java.awt.*;
@@ -22,10 +25,13 @@ public class HotkeyHelpPainter implements Painter {
 
     @Override
     public void paint(Graphics2D g, AffineTransform worldToScreen, double w, double h) {
-        ShipInstrument current = ShipInstrumentsPane.getCurrentMode();
+        ViewerLayer activeLayer = StaticController.getActiveLayer();
+        if (activeLayer == null) return;
+        LayerPainter painter = activeLayer.getPainter();
+        if (painter == null || painter.isUninitialized()) return;
 
+        ShipInstrument current = ShipInstrumentsPane.getCurrentMode();
         Collection<String> hints = new ArrayList<>();
-        // The hotkey values are hardcoded because the respective fields in control classes are int constants.
         switch (current) {
             case COLLISION -> {
                 String radiusHint = "Alter collision radius: C";

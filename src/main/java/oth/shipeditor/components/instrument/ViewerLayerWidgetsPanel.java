@@ -196,10 +196,11 @@ public class ViewerLayerWidgetsPanel extends JPanel {
             DialogUtilities.showAdjustLayerRotationDialog(activeShipPainter, currentClamped);
         });
         rotationMenu.add(adjustRotation);
-        JMenuItem resetRotation = new JMenuItem("Reset rotation");
+        JMenuItem resetRotation = new JMenuItem(StringValues.RESET_ROTATION);
         resetRotation.addActionListener(e -> {
             ViewerLayer activeLayer = StaticController.getActiveLayer();
             LayerPainter activeShipPainter = activeLayer.getPainter();
+            if (activeShipPainter.getRotationRadians() == 0) return;
             activeShipPainter.rotateLayer(0);
         });
         rotationMenu.add(resetRotation);

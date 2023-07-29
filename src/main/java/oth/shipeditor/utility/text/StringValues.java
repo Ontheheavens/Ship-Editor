@@ -29,6 +29,8 @@ public final class StringValues {
     public static final String RIGHT_CLICK_TO_ADJUST_VALUE = "Right-click to adjust value";
     public static final String ADJUST_VALUE = "Adjust value";
     public static final String LAYER = "Layer";
+    public static final String RESET_ROTATION = "Reset rotation";
+    public static final String NOT_LOADED = "Not loaded";
 
     private StringValues() {
     }

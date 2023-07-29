@@ -8,7 +8,7 @@ import oth.shipeditor.communication.events.files.SpriteOpened;
 import oth.shipeditor.communication.events.viewer.layers.LastLayerSelectQueued;
 import oth.shipeditor.communication.events.viewer.layers.ships.ShipLayerCreationQueued;
 import oth.shipeditor.components.datafiles.entities.ShipCSVEntry;
-import oth.shipeditor.components.viewer.ShipViewable;
+import oth.shipeditor.components.viewer.LayerViewer;
 import oth.shipeditor.components.viewer.layers.LayerManager;
 import oth.shipeditor.components.viewer.layers.LayerPainter;
 import oth.shipeditor.components.viewer.layers.ViewerLayer;
@@ -99,7 +99,7 @@ public final class Main {
         legionEntry.setActiveSkin(legionXIV);
         legionEntry.loadLayerFromEntry();
 
-        ShipViewable shipView = window.getShipView();
+        LayerViewer shipView = window.getShipView();
         LayerManager layerManager = shipView.getLayerManager();
         ViewerLayer activeLayer = layerManager.getActiveLayer();
         LayerPainter painter = activeLayer.getPainter();
@@ -116,7 +116,7 @@ public final class Main {
         String crigHull = "constructionrig.ship";
         Main.loadShip(window, crigSprite, crigHull);
         Main.loadShip(window, legionSprite, legionHull);
-        ShipViewable shipView = window.getShipView();
+        LayerViewer shipView = window.getShipView();
         LayerManager layerManager = shipView.getLayerManager();
         ViewerLayer activeLayer = layerManager.getActiveLayer();
         LayerPainter painter = activeLayer.getPainter();

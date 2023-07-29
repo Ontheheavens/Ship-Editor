@@ -216,7 +216,7 @@ public final class CollisionPanel extends JPanel {
                 }
                 ShipPainter painter = checkedLayer.getPainter();
                 int value;
-                if (painter == null) {
+                if (painter == null || painter.isUninitialized()) {
                     value = defaultOpacity;
                 } else {
                     CenterPointPainter centerPointPainter = painter.getCenterPointPainter();

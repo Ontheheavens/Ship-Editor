@@ -4,7 +4,7 @@ import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
 import oth.shipeditor.components.layering.ViewerLayersPanel;
 import oth.shipeditor.components.viewer.PrimaryViewer;
-import oth.shipeditor.components.viewer.ShipViewable;
+import oth.shipeditor.components.viewer.LayerViewer;
 import oth.shipeditor.utility.text.StringValues;
 
 import javax.swing.*;
@@ -23,7 +23,7 @@ public final class WindowContentPanes {
      * Complex component responsible for ship layers display.
      */
     @Getter
-    private ShipViewable shipView;
+    private LayerViewer shipView;
 
     /**
      * Status line panel for ship sprite viewer.

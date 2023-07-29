@@ -10,6 +10,7 @@ import oth.shipeditor.communication.events.viewer.points.AnchorOffsetConfirmed;
 import oth.shipeditor.communication.events.viewer.points.AnchorOffsetQueued;
 import oth.shipeditor.components.instrument.ship.ShipInstrumentsPane;
 import oth.shipeditor.components.viewer.ShipInstrument;
+import oth.shipeditor.components.viewer.layers.LayerPainter;
 import oth.shipeditor.components.viewer.layers.ship.ShipPainter;
 import oth.shipeditor.components.viewer.painters.TextPainter;
 import oth.shipeditor.utility.StaticController;
@@ -30,7 +31,7 @@ import java.awt.geom.Point2D;
 public class BaseWorldPoint implements WorldPoint, Painter {
 
     @Getter @Setter
-    private ShipPainter parentLayer;
+    private LayerPainter parentLayer;
 
     @Getter
     private final Point2D position;
@@ -47,6 +48,9 @@ public class BaseWorldPoint implements WorldPoint, Painter {
     private final AffineTransform delegateWorldToScreen;
 
     private BusEventListener anchorDragListener;
+
+    @Getter @Setter
+    private double paintSizeMultiplier = 1;
 
     public ShipInstrument getAssociatedMode() {
         return ShipInstrument.LAYER;
@@ -97,9 +101,9 @@ public class BaseWorldPoint implements WorldPoint, Painter {
         anchorDragListener = event -> {
             if (event instanceof AnchorOffsetQueued checked && checked.layer() == this.parentLayer) {
                 Point2D offset = checked.difference();
-                Point2D oldBoundPosition = this.getPosition();
-                this.setPosition(oldBoundPosition.getX() - offset.getX(),
-                        oldBoundPosition.getY() - offset.getY());
+                Point2D oldPosition = this.getPosition();
+                this.setPosition(oldPosition.getX() - offset.getX(),
+                        oldPosition.getY() - offset.getY());
                 EventBus.publish(new AnchorOffsetConfirmed(this, offset));
             }
         };
@@ -125,7 +129,7 @@ public class BaseWorldPoint implements WorldPoint, Painter {
 
 
     protected boolean isInteractable() {
-        ShipPainter layer = getParentLayer();
+        LayerPainter layer = getParentLayer();
         if (layer == null) {
             return true;
         }
@@ -145,12 +149,11 @@ public class BaseWorldPoint implements WorldPoint, Painter {
         return result;
     }
 
-    @SuppressWarnings("WeakerAccess")
-    public static Shape getShapeForPoint(AffineTransform worldToScreen, Point2D position) {
-        Shape circle = ShapeUtilities.createCircle(position, 0.10f);
+    private Shape getShapeForPoint(AffineTransform worldToScreen) {
+        Shape circle = ShapeUtilities.createCircle(position, (float) (0.10f * paintSizeMultiplier));
 
         return ShapeUtilities.ensureDynamicScaleShape(worldToScreen,
-                position, circle, 12);
+                position, circle, 12 * paintSizeMultiplier);
     }
 
     public void setPosition(double x, double y) {
@@ -168,7 +171,7 @@ public class BaseWorldPoint implements WorldPoint, Painter {
 
     @Override
     public void paint(Graphics2D g, AffineTransform worldToScreen, double w, double h) {
-        Shape shape = BaseWorldPoint.getShapeForPoint(worldToScreen, this.position);
+        Shape shape = this.getShapeForPoint(worldToScreen);
 
         this.cursorInBounds = StaticController.checkIsHovered(shape);
 

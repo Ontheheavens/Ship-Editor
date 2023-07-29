@@ -188,7 +188,7 @@ public class ShieldPanel extends JPanel {
                 }
                 ShipPainter painter = checkedLayer.getPainter();
                 int value;
-                if (painter == null) {
+                if (painter == null || painter.isUninitialized()) {
                     value = defaultOpacity;
                 } else {
                     ShieldPointPainter shieldPointPainter = painter.getShieldPointPainter();

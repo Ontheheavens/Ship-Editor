@@ -39,9 +39,9 @@ public abstract class AbstractInstrumentsPane extends JTabbedPane {
     }
 
     protected String getMinimizePrompt() {
-        String minimizePrompt = "(Left-click to minimize panel)";
+        String minimizePrompt = "Left-click to minimize panel";
         if (minimizer.isMinimized()) {
-            minimizePrompt = "(Left-click to expand panel)";
+            minimizePrompt = "Left-click to expand panel";
         }
         return minimizePrompt;
     }

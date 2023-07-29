@@ -8,8 +8,8 @@ import oth.shipeditor.communication.events.viewer.points.InstrumentModeChanged;
 import oth.shipeditor.components.instrument.AbstractInstrumentsPane;
 import oth.shipeditor.components.instrument.ship.centers.CollisionPanel;
 import oth.shipeditor.components.instrument.ship.centers.ShieldPanel;
+import oth.shipeditor.components.instrument.ship.slots.WeaponSlotsPanel;
 import oth.shipeditor.components.viewer.ShipInstrument;
-import oth.shipeditor.utility.text.StringValues;
 
 import javax.swing.*;
 import java.util.HashMap;
@@ -25,18 +25,6 @@ public final class ShipInstrumentsPane extends AbstractInstrumentsPane {
     @Getter
     private static ShipInstrument currentMode;
 
-    /**
-     * Panel for data representation of ship bounds.
-     */
-    @Getter
-    private BoundPointsPanel boundsPanel;
-
-    private CollisionPanel collisionPanel;
-
-    private ShieldPanel shieldPanel;
-
-    private ShipLayerPropertiesPanel layerPanel;
-
     private final Map<JPanel, ShipInstrument> panelMode;
 
     public ShipInstrumentsPane() {
@@ -46,31 +34,19 @@ public final class ShipInstrumentsPane extends AbstractInstrumentsPane {
     }
 
     private void createTabs() {
-        layerPanel = new ShipLayerPropertiesPanel();
-        panelMode.put(layerPanel, ShipInstrument.LAYER);
-        this.addTab(StringValues.LAYER,layerPanel);
-
-        collisionPanel = new CollisionPanel();
-        panelMode.put(collisionPanel, ShipInstrument.COLLISION);
-        this.addTab(StringValues.COLLISION, collisionPanel);
-
-        shieldPanel = new ShieldPanel();
-        panelMode.put(shieldPanel, ShipInstrument.SHIELD);
-        this.addTab(StringValues.SHIELD, shieldPanel);
-
-        boundsPanel = new BoundPointsPanel();
-        panelMode.put(boundsPanel, ShipInstrument.BOUNDS);
-        this.addTab("Bounds", boundsPanel);
-
-        JPanel weaponSlotsPanel = new JPanel();
-        panelMode.put(weaponSlotsPanel, ShipInstrument.WEAPON_SLOTS);
-        this.addTab("Weapon Slots", weaponSlotsPanel);
-
-        JPanel engineSlotsPanel = new JPanel();
-        panelMode.put(engineSlotsPanel, ShipInstrument.ENGINES);
-        this.addTab("Engines", engineSlotsPanel);
-
+        this.createTab(new ShipLayerPropertiesPanel(), ShipInstrument.LAYER);
+        this.createTab(new CollisionPanel(), ShipInstrument.COLLISION);
+        this.createTab(new ShieldPanel(), ShipInstrument.SHIELD);
+        this.createTab(new BoundPointsPanel(), ShipInstrument.BOUNDS);
+        this.createTab(new WeaponSlotsPanel(), ShipInstrument.WEAPON_SLOTS);
+        this.createTab(new JPanel(), ShipInstrument.LAUNCH_BAYS);
+        this.createTab(new JPanel(), ShipInstrument.ENGINES);
         updateTooltipText();
+    }
+
+    private void createTab(JPanel panel, ShipInstrument mode) {
+        panelMode.put(panel, mode);
+        this.addTab(mode.getTitle(), panel);
     }
 
     @Override
@@ -84,18 +60,10 @@ public final class ShipInstrumentsPane extends AbstractInstrumentsPane {
     @Override
     protected void updateTooltipText() {
         String minimizePrompt = getMinimizePrompt();
-        String layerPanelLabel = StringValues.LAYER_PROPERTIES;
-        String collisionPanelLabel = "Ship center and collision";
-        String shieldPanelLabel = "Shield center and radius";
-        String boundPanelLabel = "Ship bound polygon";
-        this.setToolTipTextAt(indexOfComponent(layerPanel),
-                "<html>" + layerPanelLabel + "<br>" + minimizePrompt + "</html>");
-        this.setToolTipTextAt(indexOfComponent(collisionPanel),
-                "<html>" + collisionPanelLabel + "<br>" + minimizePrompt + "</html>");
-        this.setToolTipTextAt(indexOfComponent(shieldPanel),
-                "<html>" + shieldPanelLabel + "<br>" + minimizePrompt + "</html>");
-        this.setToolTipTextAt(indexOfComponent(boundsPanel),
-                "<html>" + boundPanelLabel + "<br>" + minimizePrompt + "</html>");
+        int size = this.getComponentCount();
+        for (int i = 0; i < size - 1; i++) {
+            this.setToolTipTextAt(i, minimizePrompt);
+        }
     }
 
 }

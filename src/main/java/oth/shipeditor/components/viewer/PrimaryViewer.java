@@ -10,9 +10,7 @@ import oth.shipeditor.communication.events.viewer.ViewerRepaintQueued;
 import oth.shipeditor.communication.events.viewer.control.ViewerGuidesToggled;
 import oth.shipeditor.communication.events.viewer.control.ViewerTransformsReset;
 import oth.shipeditor.communication.events.viewer.layers.*;
-import oth.shipeditor.communication.events.viewer.layers.ships.ShipLayerCreated;
-import oth.shipeditor.communication.events.viewer.layers.weapons.WeaponLayerCreated;
-import oth.shipeditor.components.viewer.control.ShipViewerControls;
+import oth.shipeditor.components.viewer.control.LayerViewerControls;
 import oth.shipeditor.components.viewer.control.ViewerControl;
 import oth.shipeditor.components.viewer.layers.LayerManager;
 import oth.shipeditor.components.viewer.layers.LayerPainter;
@@ -47,7 +45,7 @@ import java.util.Locale;
  */
 @SuppressWarnings("OverlyCoupledClass")
 @Log4j2
-public final class PrimaryViewer extends Viewer implements ShipViewable {
+public final class PrimaryViewer extends Viewer implements LayerViewer {
 
     private static final Dimension minimumPanelSize = new Dimension(240, 120);
 
@@ -90,7 +88,7 @@ public final class PrimaryViewer extends Viewer implements ShipViewable {
             }
         });
 
-        ViewerControl controls = ShipViewerControls.create(this);
+        ViewerControl controls = LayerViewerControls.create(this);
         this.setMouseControl(controls);
         this.initViewerStateListeners();
         this.initLayerListening();

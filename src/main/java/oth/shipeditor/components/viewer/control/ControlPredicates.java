@@ -4,10 +4,7 @@ import de.javagl.viewer.InputEventPredicates;
 import de.javagl.viewer.Predicates;
 import lombok.Getter;
 import oth.shipeditor.communication.EventBus;
-import oth.shipeditor.communication.events.viewer.control.CursorSnappingToggled;
-import oth.shipeditor.communication.events.viewer.control.MirrorModeChange;
-import oth.shipeditor.communication.events.viewer.control.PointLinkageToleranceChanged;
-import oth.shipeditor.communication.events.viewer.control.PointSelectionModeChange;
+import oth.shipeditor.communication.events.viewer.control.*;
 
 import java.awt.event.MouseEvent;
 import java.util.function.Predicate;
@@ -16,6 +13,7 @@ import java.util.function.Predicate;
  * @author Ontheheavens
  * @since 01.06.2023
  */
+@SuppressWarnings("ClassWithTooManyFields")
 public final class ControlPredicates {
 
     public static final double MAXIMUM_ZOOM = 1000.0;
@@ -34,6 +32,9 @@ public final class ControlPredicates {
     private static boolean cursorSnappingEnabled = true;
 
     @Getter
+    private static boolean rotationRoundingEnabled = true;
+
+    @Getter
     private static int mirrorPointLinkageTolerance;
 
     public static void initSelectionModeListening() {
@@ -50,6 +51,11 @@ public final class ControlPredicates {
         EventBus.subscribe(event -> {
             if (event instanceof CursorSnappingToggled checked) {
                 cursorSnappingEnabled = checked.toggled();
+            }
+        });
+        EventBus.subscribe(event -> {
+            if (event instanceof RotationRoundingToggled checked) {
+                rotationRoundingEnabled = checked.toggled();
             }
         });
         EventBus.subscribe(event -> {
@@ -81,6 +87,16 @@ public final class ControlPredicates {
 
     static final Predicate<MouseEvent> selectPointPredicate = Predicates.and(
             InputEventPredicates.buttonDown(1),
+            InputEventPredicates.noModifiers()
+    );
+
+    static final Predicate<MouseEvent> changeSlotAnglePredicate = Predicates.and(
+            InputEventPredicates.buttonDown(1),
+            InputEventPredicates.noModifiers()
+    );
+
+    static final Predicate<MouseEvent> changeSlotArcPredicate = Predicates.and(
+            InputEventPredicates.buttonDown(3),
             InputEventPredicates.noModifiers()
     );
 

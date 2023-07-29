@@ -1,18 +1,23 @@
 package oth.shipeditor.components.viewer.layers.ship;
 
 import lombok.extern.log4j.Log4j2;
-import oth.shipeditor.communication.EventBus;
-import oth.shipeditor.communication.events.viewer.ViewerRepaintQueued;
-import oth.shipeditor.communication.events.viewer.layers.ships.LayerShipDataInitialized;
 import oth.shipeditor.components.viewer.entities.BoundPoint;
+import oth.shipeditor.components.viewer.entities.WeaponSlotPoint;
 import oth.shipeditor.components.viewer.painters.points.BoundPointsPainter;
 import oth.shipeditor.components.viewer.painters.points.CenterPointPainter;
 import oth.shipeditor.components.viewer.painters.points.ShieldPointPainter;
+import oth.shipeditor.components.viewer.painters.points.WeaponSlotPainter;
 import oth.shipeditor.representation.Hull;
 import oth.shipeditor.representation.ShipData;
+import oth.shipeditor.representation.weapon.WeaponMount;
+import oth.shipeditor.representation.weapon.WeaponSize;
+import oth.shipeditor.representation.weapon.WeaponSlot;
+import oth.shipeditor.representation.weapon.WeaponType;
+import oth.shipeditor.utility.text.StringConstants;
 
 import java.awt.geom.Point2D;
 import java.util.Arrays;
+import java.util.Objects;
 import java.util.stream.Stream;
 
 /**
@@ -25,7 +30,7 @@ public final class ShipPainterInitialization {
     private ShipPainterInitialization() {
     }
 
-    static void initializeShipData(ShipPainter shipPainter, ShipData shipData) {
+    static void loadShipData(ShipPainter shipPainter, ShipData shipData) {
         Hull hull = shipData.getHull();
 
         Point2D anchor = shipPainter.getCenterAnchor();
@@ -37,10 +42,9 @@ public final class ShipPainterInitialization {
 
         ShipPainterInitialization.initBounds(shipPainter, hull, translatedCenter);
 
-        shipPainter.setUninitialized(false);
-        log.info("{} initialized!", shipPainter);
-        EventBus.publish(new LayerShipDataInitialized(shipPainter));
-        EventBus.publish(new ViewerRepaintQueued());
+        ShipPainterInitialization.initWeaponSlots(shipPainter, hull, translatedCenter);
+
+        shipPainter.finishInitialization();
     }
 
     private static void initCentroids(ShipPainter shipPainter, ShipData shipData, Point2D translatedCenter) {
@@ -65,6 +69,37 @@ public final class ShipPainterInitialization {
             Point2D rotatedPosition = ShipPainterInitialization.rotatePointByCenter(bound, translatedCenter);
             BoundPoint boundPoint = new BoundPoint(rotatedPosition, shipPainter);
             boundsPainter.addPoint(boundPoint);
+        });
+    }
+
+    private static void initWeaponSlots(ShipPainter shipPainter, Hull hull, Point2D translatedCenter) {
+        Stream<WeaponSlot> slotStream = Arrays.stream(hull.getWeaponSlots());
+        WeaponSlotPainter slotPainter = shipPainter.getWeaponSlotPainter();
+        slotStream.forEach(weaponSlot -> {
+            if (Objects.equals(weaponSlot.getType(), StringConstants.LAUNCH_BAY)) return;
+            Point2D location = weaponSlot.getLocations()[0];
+            Point2D rotatedPosition = ShipPainterInitialization.rotatePointByCenter(location, translatedCenter);
+
+            WeaponSlotPoint slotPoint = new WeaponSlotPoint(rotatedPosition, shipPainter);
+            slotPoint.setId(weaponSlot.getId());
+
+            slotPoint.setAngle(weaponSlot.getAngle());
+            slotPoint.setArc(weaponSlot.getArc());
+            slotPoint.setRenderOrderMod((int) weaponSlot.getRenderOrderMod());
+
+            String weaponType = weaponSlot.getType();
+            WeaponType typeInstance = WeaponType.valueOf(weaponType);
+            slotPoint.setWeaponType(typeInstance);
+
+            String weaponSize = weaponSlot.getSize();
+            WeaponSize sizeInstance = WeaponSize.valueOf(weaponSize);
+            slotPoint.setWeaponSize(sizeInstance);
+
+            String weaponMount = weaponSlot.getMount();
+            WeaponMount mountInstance = WeaponMount.valueOf(weaponMount);
+            slotPoint.setWeaponMount(mountInstance);
+
+            slotPainter.addPoint(slotPoint);
         });
     }
 

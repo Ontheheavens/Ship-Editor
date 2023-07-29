@@ -67,8 +67,8 @@ public enum PainterVisibility {
                     return;
                 }
                 LayerPainter painter = selected.getPainter();
-                if (painter instanceof ShipPainter) {
-                    selectionAction.actionPerformed(new ActionEvent(painter,
+                if (painter instanceof ShipPainter checkedPainter && !checkedPainter.isUninitialized()) {
+                    selectionAction.actionPerformed(new ActionEvent(checkedPainter,
                             ActionEvent.ACTION_PERFORMED, null));
                     visibilityList.setEnabled(true);
                 } else {

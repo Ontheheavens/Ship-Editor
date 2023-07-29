@@ -59,5 +59,7 @@
     exports oth.shipeditor.components.viewer.layers.ship;
     exports oth.shipeditor.components.instrument.ship;
     opens oth.shipeditor.components.instrument.ship;
+    exports oth.shipeditor.components.instrument.ship.slots;
+    opens oth.shipeditor.components.instrument.ship.slots;
 
 }

@@ -87,7 +87,7 @@ public final class ViewerLayersPanel extends SortableTabbedPane {
                 EventBus.publish(new WindowRepaintQueued());
             }
             else if (event instanceof WeaponLayerCreated checked) {
-                Icon tabIcon = FontIcon.of(BoxiconsRegular.CROSSHAIR, 20);
+                Icon tabIcon = FontIcon.of(BoxiconsRegular.TARGET_LOCK, 20);
                 WeaponLayer layer = checked.newLayer();
                 LayerTab created = new LayerTab(layer);
                 tabIndex.put(layer, created);
@@ -186,7 +186,7 @@ public final class ViewerLayersPanel extends SortableTabbedPane {
          * @return HTML-formatted string that enables multi-line tooltip setup.
          */
         private String getTabTooltip() {
-            String notLoaded = "Not loaded";
+            String notLoaded = StringValues.NOT_LOADED;
             String sprite = spriteFileName;
             if (Objects.equals(sprite, "")) {
                 sprite = notLoaded;
@@ -202,7 +202,7 @@ public final class ViewerLayersPanel extends SortableTabbedPane {
             String hullNameLine = "Hull file: " + hull;
             String skin = skinFileName;
             if (Objects.equals(skin, "")) {
-                skin = StringValues.DEFAULT;
+                skin = StringValues.NOT_LOADED;
             }
             String skinNameLine = "Skin file: " + skin;
             return "<html>" + spriteNameLine + "<br>" + hullNameLine + "<br>" + skinNameLine + "</html>";

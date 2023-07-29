@@ -4,6 +4,7 @@ import lombok.Getter;
 import lombok.Setter;
 import oth.shipeditor.components.instrument.ship.ShipInstrumentsPane;
 import oth.shipeditor.components.viewer.ShipInstrument;
+import oth.shipeditor.components.viewer.layers.LayerPainter;
 import oth.shipeditor.components.viewer.layers.ship.ShipPainter;
 import oth.shipeditor.components.viewer.painters.points.CenterPointPainter;
 import oth.shipeditor.utility.Utility;
@@ -39,9 +40,13 @@ public class ShipCenterPoint extends BaseWorldPoint {
 
     @Override
     protected boolean isInteractable() {
-        ShipPainter shipPainter = super.getParentLayer();
-        CenterPointPainter painter = shipPainter.getCenterPointPainter();
-        return ShipInstrumentsPane.getCurrentMode() == getAssociatedMode() && painter.isInteractionEnabled();
+        LayerPainter shipPainter = super.getParentLayer();
+        if (shipPainter instanceof ShipPainter checkedLayer) {
+            CenterPointPainter painter = checkedLayer.getCenterPointPainter();
+            return ShipInstrumentsPane.getCurrentMode() == getAssociatedMode() && painter.isInteractionEnabled();
+        } else {
+            throw new IllegalStateException("Illegal parent layer of ship center point!");
+        }
     }
 
     @Override
@@ -103,7 +108,7 @@ public class ShipCenterPoint extends BaseWorldPoint {
         Shape transformedCross = ShapeUtilities.ensureDynamicScaleShape(worldToScreen,
                 position, cross, 12);
 
-        DrawUtilities.drawCentroid(g, transformedCross, crossColor);
+        DrawUtilities.drawOutlined(g, transformedCross, crossColor);
     }
 
     private void paintCollisionCircle(Graphics2D g, AffineTransform worldToScreen) {

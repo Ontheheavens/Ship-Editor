@@ -1,7 +1,5 @@
 package oth.shipeditor.components.viewer.entities;
 
-import lombok.Getter;
-import lombok.Setter;
 import oth.shipeditor.components.viewer.ShipInstrument;
 import oth.shipeditor.components.viewer.layers.ship.ShipPainter;
 import oth.shipeditor.utility.StaticController;
@@ -17,9 +15,6 @@ import java.awt.geom.Point2D;
  * @since 01.05.2023
  */
 public class BoundPoint extends BaseWorldPoint{
-
-    @Getter @Setter
-    private double paintSizeMultiplier = 1;
 
     public BoundPoint(Point2D pointPosition, ShipPainter layer) {
         super(pointPosition, layer);
@@ -41,7 +36,7 @@ public class BoundPoint extends BaseWorldPoint{
     public void paint(Graphics2D g, AffineTransform worldToScreen, double w, double h) {
         Point2D position = getPosition();
 
-        Shape hexagon = BoundPoint.getShapeForPoint(worldToScreen, position, paintSizeMultiplier);
+        Shape hexagon = BoundPoint.getShapeForPoint(worldToScreen, position, getPaintSizeMultiplier());
 
         boolean cursorInBounds = StaticController.checkIsHovered(hexagon);
         this.setCursorInBounds(cursorInBounds);

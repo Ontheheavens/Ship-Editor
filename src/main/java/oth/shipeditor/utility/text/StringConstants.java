@@ -73,4 +73,6 @@ public interface StringConstants {
 
     String ENGINE_SLOT_CHANGES = "engineSlotChanges";
 
+    String LAUNCH_BAY = "LAUNCH_BAY";
+
 }

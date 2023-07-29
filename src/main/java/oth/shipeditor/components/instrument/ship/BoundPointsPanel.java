@@ -107,12 +107,16 @@ public final class BoundPointsPanel extends JPanel {
                 if (!(selected instanceof ShipLayer checkedLayer)) {
                     updateOpacityLabel(100);
                     opacitySlider.setValue(100);
+                    opacitySlider.setEnabled(false);
+                    reorderCheckbox.setEnabled(false);
                     return;
                 }
                 ShipPainter painter = checkedLayer.getPainter();
                 int value;
-                if (painter == null) {
+                if (painter == null || painter.isUninitialized()) {
                     value = 100;
+                    opacitySlider.setEnabled(false);
+                    reorderCheckbox.setEnabled(false);
                 } else {
                     BoundPointsPainter boundsPainter = painter.getBoundsPainter();
                     value = (int) (boundsPainter.getPaintOpacity() * 100.0f);
@@ -181,18 +185,23 @@ public final class BoundPointsPanel extends JPanel {
                     reorderCheckbox.setEnabled(false);
                     this.model = newModel;
                     this.boundPointContainer.setModel(newModel);
+                    this.boundPointContainer.setEnabled(false);
                     return;
                 }
-                if (checkedLayer.getPainter() != null) {
-                    ShipPainter selectedShipPainter = checkedLayer.getPainter();
-                    BoundPointsPainter newBoundsPainter = selectedShipPainter.getBoundsPainter();
+                ShipPainter painter = checkedLayer.getPainter();
+                if (painter != null && !painter.isUninitialized()) {
+                    BoundPointsPainter newBoundsPainter = painter.getBoundsPainter();
                     newModel.addAll(newBoundsPainter.getPointsIndex());
+                    opacitySlider.setEnabled(true);
+                    reorderCheckbox.setEnabled(true);
+                    this.boundPointContainer.setEnabled(true);
+                } else {
+                    opacitySlider.setEnabled(false);
+                    reorderCheckbox.setEnabled(false);
+                    this.boundPointContainer.setEnabled(false);
                 }
                 this.model = newModel;
                 this.boundPointContainer.setModel(newModel);
-
-                opacitySlider.setEnabled(selected.getPainter() != null);
-                reorderCheckbox.setEnabled(selected.getPainter() != null);
             }
         });
     }

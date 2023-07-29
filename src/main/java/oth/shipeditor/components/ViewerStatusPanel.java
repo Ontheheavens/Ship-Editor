@@ -6,13 +6,15 @@ import org.kordamp.ikonli.fluentui.FluentUiRegularAL;
 import org.kordamp.ikonli.fluentui.FluentUiRegularMZ;
 import org.kordamp.ikonli.swing.FontIcon;
 import oth.shipeditor.communication.EventBus;
+import oth.shipeditor.communication.events.Events;
 import oth.shipeditor.communication.events.components.ViewerFocusRequestQueued;
 import oth.shipeditor.communication.events.viewer.ViewerRepaintQueued;
 import oth.shipeditor.communication.events.viewer.control.*;
 import oth.shipeditor.communication.events.viewer.layers.ActiveLayerUpdated;
 import oth.shipeditor.communication.events.viewer.layers.LayerWasSelected;
 import oth.shipeditor.communication.events.viewer.status.CoordsModeChanged;
-import oth.shipeditor.components.viewer.ShipViewable;
+import oth.shipeditor.components.viewer.LayerViewer;
+import oth.shipeditor.components.viewer.control.ControlPredicates;
 import oth.shipeditor.components.viewer.entities.ShipCenterPoint;
 import oth.shipeditor.components.viewer.layers.LayerPainter;
 import oth.shipeditor.components.viewer.layers.ViewerLayer;
@@ -36,18 +38,14 @@ import java.awt.image.BufferedImage;
  * @author Ontheheavens
  * @since 01.05.2023
  */
-@SuppressWarnings({"ClassWithTooManyFields", "OverlyCoupledClass"})
+@SuppressWarnings("OverlyCoupledClass")
 @Log4j2
 final class ViewerStatusPanel extends JPanel {
-
-    private static double zoomLevel = 1.0f;
-
-    private static double rotationDegrees;
 
     @Getter
     private CoordsDisplayMode mode = CoordsDisplayMode.WORLD;
 
-    private final ShipViewable viewer;
+    private final LayerViewer viewer;
 
     private JLabel dimensions;
 
@@ -61,7 +59,7 @@ final class ViewerStatusPanel extends JPanel {
 
     private JPanel leftsideContainer;
 
-    ViewerStatusPanel(ShipViewable viewable) {
+    ViewerStatusPanel(LayerViewer viewable) {
         this.setLayout(new BorderLayout());
 
         this.viewer = viewable;
@@ -69,8 +67,8 @@ final class ViewerStatusPanel extends JPanel {
 
         this.initListeners();
         this.setDimensionsLabel(null);
-        this.setZoomLabel(zoomLevel);
-        this.setRotationLabel(rotationDegrees);
+        this.setZoomLabel(StaticController.getZoomLevel());
+        this.setRotationLabel(StaticController.getRotationDegrees());
         this.cursorPoint = new Point2D.Double();
         this.updateCursorCoordsLabel();
 
@@ -209,6 +207,14 @@ final class ViewerStatusPanel extends JPanel {
             DialogUtilities.showAdjustViewerRotationDialog(oldRotation);
         });
         rotationMenu.add(adjustRotationValue);
+
+        JMenuItem resetRotation = new JMenuItem(StringValues.RESET_ROTATION);
+        resetRotation.addActionListener(e -> {
+            EventBus.publish(new ViewerRotationSet(0));
+            Events.repaintView();
+        });
+        rotationMenu.add(resetRotation);
+
         rotation.addMouseListener(new MouseoverLabelListener(rotationMenu, rotation));
 
         leftsideContainer.add(this.rotation);
@@ -226,12 +232,10 @@ final class ViewerStatusPanel extends JPanel {
     @SuppressWarnings("ChainOfInstanceofChecks")
     private void initListeners() {
         EventBus.subscribe(event -> {
-            if (event instanceof ViewerZoomChanged checked) {
-                zoomLevel = checked.newValue();
-                this.setZoomLabel(zoomLevel);
-            } else if (event instanceof ViewerTransformRotated checked) {
-                rotationDegrees = checked.degrees();
-                this.setRotationLabel(rotationDegrees);
+            if (event instanceof ViewerZoomChanged) {
+                this.setZoomLabel(StaticController.getZoomLevel());
+            } else if (event instanceof ViewerTransformRotated) {
+                this.setRotationLabel(StaticController.getRotationDegrees());
             }
         });
         EventBus.subscribe(event -> {
@@ -364,7 +368,10 @@ final class ViewerStatusPanel extends JPanel {
     }
 
     private void setRotationLabel(double newRotation) {
-        int rounded = (int) Math.round(newRotation);
+        double rounded = Utility.round(newRotation, 3);
+        if (ControlPredicates.isRotationRoundingEnabled()) {
+            rounded = (int) Math.round(newRotation);
+        }
         rotation.setText(rounded + "°");
     }
 

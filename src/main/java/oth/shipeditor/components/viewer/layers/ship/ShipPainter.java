@@ -4,13 +4,12 @@ import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
 import oth.shipeditor.communication.BusEventListener;
 import oth.shipeditor.communication.EventBus;
+import oth.shipeditor.communication.events.viewer.ViewerRepaintQueued;
 import oth.shipeditor.communication.events.viewer.layers.ActiveLayerUpdated;
+import oth.shipeditor.communication.events.viewer.layers.ships.LayerShipDataInitialized;
 import oth.shipeditor.components.viewer.entities.ShipCenterPoint;
 import oth.shipeditor.components.viewer.layers.LayerPainter;
-import oth.shipeditor.components.viewer.painters.points.AbstractPointPainter;
-import oth.shipeditor.components.viewer.painters.points.BoundPointsPainter;
-import oth.shipeditor.components.viewer.painters.points.CenterPointPainter;
-import oth.shipeditor.components.viewer.painters.points.ShieldPointPainter;
+import oth.shipeditor.components.viewer.painters.points.*;
 
 import java.awt.geom.Point2D;
 import java.awt.image.BufferedImage;
@@ -26,31 +25,38 @@ import java.util.List;
 public final class ShipPainter extends LayerPainter {
 
     @Getter
-    private final BoundPointsPainter boundsPainter;
+    private BoundPointsPainter boundsPainter;
     @Getter
-    private final CenterPointPainter centerPointPainter;
+    private CenterPointPainter centerPointPainter;
 
     @Getter
-    private final ShieldPointPainter shieldPointPainter;
+    private ShieldPointPainter shieldPointPainter;
 
+    @Getter
+    private WeaponSlotPainter weaponSlotPainter;
 
-    @SuppressWarnings("ThisEscapedInObjectConstruction")
     public ShipPainter(ShipLayer layer) {
         super(layer);
+        this.initPainterListeners(layer);
+    }
+
+    private void createPointPainters() {
         this.centerPointPainter = new CenterPointPainter(this);
         this.shieldPointPainter = new ShieldPointPainter(this);
         this.boundsPainter = new BoundPointsPainter(this);
+        this.weaponSlotPainter = new WeaponSlotPainter(this);
 
         List<AbstractPointPainter> allPainters = getAllPainters();
         allPainters.add(centerPointPainter);
         allPainters.add(shieldPointPainter);
         allPainters.add(boundsPainter);
-        this.initPainterListeners(layer);
+        allPainters.add(weaponSlotPainter);
     }
-
-    @Override
-    protected void setUninitialized(boolean uninitialized) {
-        super.setUninitialized(uninitialized);
+    void finishInitialization() {
+        this.setUninitialized(false);
+        log.info("{} initialized!", this);
+        EventBus.publish(new LayerShipDataInitialized(this));
+        EventBus.publish(new ViewerRepaintQueued());
     }
 
     private void initPainterListeners(ShipLayer layer) {
@@ -61,7 +67,8 @@ public final class ShipPainter extends LayerPainter {
                     this.setSprite(layer.getSprite());
                 }
                 if (layer.getShipData() != null && this.isUninitialized()) {
-                    ShipPainterInitialization.initializeShipData(this, layer.getShipData());
+                    this.createPointPainters();
+                    ShipPainterInitialization.loadShipData(this, layer.getShipData());
                 }
             }
         };

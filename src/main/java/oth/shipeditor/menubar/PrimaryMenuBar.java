@@ -4,10 +4,12 @@ import lombok.extern.log4j.Log4j2;
 import org.kordamp.ikonli.Ikon;
 import org.kordamp.ikonli.boxicons.BoxiconsRegular;
 import org.kordamp.ikonli.fluentui.FluentUiRegularAL;
+import org.kordamp.ikonli.fluentui.FluentUiRegularMZ;
 import org.kordamp.ikonli.swing.FontIcon;
 import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.viewer.control.CursorSnappingToggled;
 import oth.shipeditor.communication.events.viewer.control.PointSelectionModeChange;
+import oth.shipeditor.communication.events.viewer.control.RotationRoundingToggled;
 import oth.shipeditor.communication.events.viewer.layers.ActiveLayerRemovalQueued;
 import oth.shipeditor.communication.events.viewer.layers.ships.ShipLayerCreationQueued;
 import oth.shipeditor.communication.events.viewer.layers.weapons.WeaponLayerCreationQueued;
@@ -26,6 +28,8 @@ import java.awt.event.ActionListener;
 public final class PrimaryMenuBar extends JMenuBar {
 
     private JCheckBoxMenuItem toggleCursorSnap;
+
+    private JCheckBoxMenuItem toggleRotationRounding;
 
     public PrimaryMenuBar() {
         this.add(PrimaryMenuBar.createFileMenu());
@@ -71,6 +75,7 @@ public final class PrimaryMenuBar extends JMenuBar {
         editMenu.add(pointSelectionMode);
 
         toggleCursorSnap = new JCheckBoxMenuItem("Toggle cursor snapping");
+        toggleCursorSnap.setIcon(FontIcon.of(FluentUiRegularAL.GROUP_20, 16));
         toggleCursorSnap.setSelected(true);
         toggleCursorSnap.addActionListener(event ->
                 EventBus.publish(new CursorSnappingToggled(toggleCursorSnap.isSelected()))
@@ -82,11 +87,25 @@ public final class PrimaryMenuBar extends JMenuBar {
         });
         editMenu.add(toggleCursorSnap);
 
+        toggleRotationRounding = new JCheckBoxMenuItem("Toggle rotation rounding");
+        toggleRotationRounding.setIcon(FontIcon.of(FluentUiRegularAL.ARROW_ROTATE_CLOCKWISE_20, 16));
+        toggleRotationRounding.setSelected(true);
+        toggleRotationRounding.addActionListener(event ->
+                EventBus.publish(new RotationRoundingToggled(toggleRotationRounding.isSelected()))
+        );
+        EventBus.subscribe(event -> {
+            if (event instanceof RotationRoundingToggled checked) {
+                toggleRotationRounding.setSelected(checked.toggled());
+            }
+        });
+        editMenu.add(toggleRotationRounding);
+
         return editMenu;
     }
 
     private static JMenu createPointSelectionModeOptions() {
         JMenu newSubmenu = new JMenu("Point selection mode");
+        newSubmenu.setIcon(FontIcon.of(FluentUiRegularMZ.TARGET_20, 16));
 
         JMenuItem selectHovered = new JRadioButtonMenuItem("Select clicked");
         selectHovered.addActionListener(e ->
