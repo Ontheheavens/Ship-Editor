@@ -26,6 +26,26 @@ public final class EditDispatch {
     private EditDispatch() {
     }
 
+    private static void handleContinuousEdit(Edit edit) {
+        Class<? extends Edit> editClass = edit.getClass();
+        Edit previousEdit = UndoOverseer.getNextUndoable();
+        if (editClass.isInstance(previousEdit) && !previousEdit.isFinished()) {
+            edit.setFinished(true);
+            previousEdit.add(edit);
+        } else {
+            EventBus.subscribe(new BusEventListener() {
+                @Override
+                public void handleEvent(BusEvent event) {
+                    if (event instanceof ViewerMouseReleased && !edit.isFinished()) {
+                        edit.setFinished(true);
+                        EventBus.unsubscribe(this);
+                    }
+                }
+            });
+            UndoOverseer.post(edit);
+        }
+    }
+
     public static void postPointInserted(BoundPointsPainter pointPainter, BoundPoint point, int index) {
         Edit addEdit = new PointAdditionEdit(pointPainter, point, index);
         UndoOverseer.post(addEdit);
@@ -60,24 +80,8 @@ public final class EditDispatch {
 
     public static void postAnchorOffsetChanged(LayerPainter layerPainter, Point2D updated) {
         Point2D oldOffset = layerPainter.getAnchor();
-        AnchorOffsetEdit offsetChangeEdit = new AnchorOffsetEdit(layerPainter, oldOffset, updated);
-
-        Edit previousEdit = UndoOverseer.getNextUndoable();
-        if (previousEdit instanceof AnchorOffsetEdit checked && !checked.isFinished()) {
-            offsetChangeEdit.setFinished(true);
-            checked.add(offsetChangeEdit);
-        } else {
-            EventBus.subscribe(new BusEventListener() {
-                @Override
-                public void handleEvent(BusEvent event) {
-                    if (event instanceof ViewerMouseReleased && !offsetChangeEdit.isFinished()) {
-                        offsetChangeEdit.setFinished(true);
-                        EventBus.unsubscribe(this);
-                    }
-                }
-            });
-            UndoOverseer.post(offsetChangeEdit);
-        }
+        Edit offsetChangeEdit = new AnchorOffsetEdit(layerPainter, oldOffset, updated);
+        EditDispatch.handleContinuousEdit(offsetChangeEdit);
         Point2D difference = new Point2D.Double(oldOffset.getX() - updated.getX(),
                 oldOffset.getY() - updated.getY());
         EventBus.publish(new AnchorOffsetQueued(layerPainter, difference));
@@ -85,24 +89,16 @@ public final class EditDispatch {
         Events.repaintView();
     }
 
+    public static void postSlotAngleSet(WeaponSlotPoint slotPoint, double old, double updated ) {
+        Edit angleEdit = new WeaponSlotAngleSet(slotPoint, old, updated);
+        EditDispatch.handleContinuousEdit(angleEdit);
+        slotPoint.setAngle(updated);
+        Events.repaintView();
+    }
+
     public static void postLayerRotated(LayerPainter painter, double old, double updated) {
-        LayerRotationEdit rotationEdit = new LayerRotationEdit(painter, old, updated);
-        Edit previousEdit = UndoOverseer.getNextUndoable();
-        if (previousEdit instanceof LayerRotationEdit checked && !checked.isFinished()) {
-            rotationEdit.setFinished(true);
-            checked.add(rotationEdit);
-        } else {
-            EventBus.subscribe(new BusEventListener() {
-                @Override
-                public void handleEvent(BusEvent event) {
-                    if (event instanceof ViewerMouseReleased && !rotationEdit.isFinished()) {
-                        rotationEdit.setFinished(true);
-                        EventBus.unsubscribe(this);
-                    }
-                }
-            });
-            UndoOverseer.post(rotationEdit);
-        }
+        Edit rotationEdit = new LayerRotationEdit(painter, old, updated);
+        EditDispatch.handleContinuousEdit(rotationEdit);
         painter.setRotationRadians(updated);
         Events.repaintView();
     }
@@ -111,69 +107,24 @@ public final class EditDispatch {
         Point2D position = selected.getPosition();
         Point2D wrappedOld = new Point2D.Double(position.getX(), position.getY());
         Point2D wrappedNew = new Point2D.Double(changedPosition.getX(), changedPosition.getY());
-        PointDragEdit dragEdit = new PointDragEdit(selected, wrappedOld, wrappedNew);
-        Edit previousEdit = UndoOverseer.getNextUndoable();
-        if (previousEdit instanceof PointDragEdit checked && !checked.isFinished()) {
-            dragEdit.setFinished(true);
-            checked.add(dragEdit);
-        } else {
-            EventBus.subscribe(new BusEventListener() {
-                @Override
-                public void handleEvent(BusEvent event) {
-                    if (event instanceof ViewerMouseReleased && !dragEdit.isFinished()) {
-                        dragEdit.setFinished(true);
-                        EventBus.unsubscribe(this);
-                    }
-                }
-            });
-            UndoOverseer.post(dragEdit);
-        }
+        Edit dragEdit = new PointDragEdit(selected, wrappedOld, wrappedNew);
+        EditDispatch.handleContinuousEdit(dragEdit);
         selected.setPosition(changedPosition);
         Events.repaintView();
     }
 
     public static void postCollisionRadiusChanged(ShipCenterPoint point, float radius) {
         float oldRadius = point.getCollisionRadius();
-        CollisionRadiusEdit radiusEdit = new CollisionRadiusEdit(point, oldRadius, radius);
-        Edit previousEdit = UndoOverseer.getNextUndoable();
-        if (previousEdit instanceof CollisionRadiusEdit checked && !checked.isFinished()) {
-            radiusEdit.setFinished(true);
-            checked.add(radiusEdit);
-        } else {
-            EventBus.subscribe(new BusEventListener() {
-                @Override
-                public void handleEvent(BusEvent event) {
-                    if (event instanceof ViewerMouseReleased && !radiusEdit.isFinished()) {
-                        radiusEdit.setFinished(true);
-                        EventBus.unsubscribe(this);
-                    }
-                }
-            });
-            UndoOverseer.post(radiusEdit);
-        }
+        Edit radiusEdit = new CollisionRadiusEdit(point, oldRadius, radius);
+        EditDispatch.handleContinuousEdit(radiusEdit);
         point.setCollisionRadius(radius);
         Events.repaintView();
     }
 
     public static void postShieldRadiusChanged(ShieldCenterPoint point, float radius) {
         float oldRadius = point.getShieldRadius();
-        ShieldRadiusEdit radiusEdit = new ShieldRadiusEdit(point, oldRadius, radius);
-        Edit previousEdit = UndoOverseer.getNextUndoable();
-        if (previousEdit instanceof ShieldRadiusEdit checked && !checked.isFinished()) {
-            radiusEdit.setFinished(true);
-            checked.add(radiusEdit);
-        } else {
-            EventBus.subscribe(new BusEventListener() {
-                @Override
-                public void handleEvent(BusEvent event) {
-                    if (event instanceof ViewerMouseReleased && !radiusEdit.isFinished()) {
-                        radiusEdit.setFinished(true);
-                        EventBus.unsubscribe(this);
-                    }
-                }
-            });
-            UndoOverseer.post(radiusEdit);
-        }
+        Edit radiusEdit = new ShieldRadiusEdit(point, oldRadius, radius);
+        EditDispatch.handleContinuousEdit(radiusEdit);
         point.setShieldRadius(radius);
         Events.repaintView();
     }

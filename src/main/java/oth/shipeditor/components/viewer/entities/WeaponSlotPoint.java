@@ -7,6 +7,7 @@ import oth.shipeditor.components.viewer.layers.ship.ShipPainter;
 import oth.shipeditor.representation.weapon.WeaponMount;
 import oth.shipeditor.representation.weapon.WeaponSize;
 import oth.shipeditor.representation.weapon.WeaponType;
+import oth.shipeditor.undo.EditDispatch;
 import oth.shipeditor.utility.graphics.DrawUtilities;
 import oth.shipeditor.utility.graphics.ShapeUtilities;
 
@@ -37,6 +38,10 @@ public class WeaponSlotPoint extends BaseWorldPoint {
 
     public WeaponSlotPoint(Point2D pointPosition, ShipPainter layer) {
         super(pointPosition, layer);
+    }
+
+    public void changeSlotAngle(double degrees) {
+        EditDispatch.postSlotAngleSet(this,this.angle,degrees);
     }
 
     @Override

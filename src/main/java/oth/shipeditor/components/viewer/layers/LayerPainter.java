@@ -26,7 +26,7 @@ import java.util.List;
  * @author Ontheheavens
  * @since 28.07.2023
  */
-@SuppressWarnings({"AbstractClassWithOnlyOneDirectInheritor", "AbstractClassWithoutAbstractMethods"})
+@SuppressWarnings("AbstractClassWithoutAbstractMethods")
 public abstract class LayerPainter implements Painter {
 
     @Getter

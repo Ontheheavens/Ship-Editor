@@ -104,7 +104,10 @@ public class ShipCSVEntry {
         }
         Skin skin = this.activeSkin;
         if (skin != null && !skin.isBase()) {
-            hullmodIDs.addAll(skin.getBuiltInMods());
+            List<String> builtInMods = skin.getBuiltInMods();
+            if (builtInMods != null) {
+                hullmodIDs.addAll(builtInMods);
+            }
         }
         return hullmodIDs;
     }

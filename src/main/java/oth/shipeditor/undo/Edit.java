@@ -17,4 +17,7 @@ public interface Edit {
 
     String getName();
 
+    @SuppressWarnings("BooleanMethodIsAlwaysInverted")
+    boolean isFinished();
+
 }

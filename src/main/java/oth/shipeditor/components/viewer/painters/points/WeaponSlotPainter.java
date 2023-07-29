@@ -77,11 +77,11 @@ public class WeaponSlotPainter extends MirrorablePointPainter{
         if (ControlPredicates.isRotationRoundingEnabled()) {
             result = Math.round(rotationDegrees);
         }
-        checked.setAngle(result);
+        checked.changeSlotAngle(result);
         boolean mirrorMode = ControlPredicates.isMirrorModeEnabled();
         BaseWorldPoint mirroredCounterpart = getMirroredCounterpart(checked);
         if (mirrorMode && mirroredCounterpart instanceof WeaponSlotPoint checkedSlot) {
-            checkedSlot.setAngle(Utility.flipAngle(result));
+            checkedSlot.changeSlotAngle(Utility.flipAngle(result));
         }
     }
 
