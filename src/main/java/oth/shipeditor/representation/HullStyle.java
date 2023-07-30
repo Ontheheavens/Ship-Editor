@@ -9,6 +9,7 @@ import lombok.Getter;
 import lombok.Setter;
 import oth.shipeditor.parsing.deserialize.ColorArrayRGBADeserializer;
 import oth.shipeditor.parsing.serialize.ColorArrayRGBASerializer;
+import oth.shipeditor.utility.text.StringConstants;
 
 import java.awt.*;
 import java.nio.file.Path;
@@ -42,7 +43,7 @@ public class HullStyle {
     private Color shieldInnerColor;
 
     public HullStyle() {
-        hullStyleID = "DEFAULT";
+        hullStyleID = StringConstants.DEFAULT_ID;
         shieldRingColor = Color.WHITE;
         shieldInnerColor = new Color(0x4D00AFFA, true);
     }

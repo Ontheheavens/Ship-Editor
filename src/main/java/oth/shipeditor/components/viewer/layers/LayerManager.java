@@ -25,9 +25,11 @@ import oth.shipeditor.utility.StaticController;
 import oth.shipeditor.utility.graphics.Sprite;
 
 import javax.swing.*;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 /**
  * @author Ontheheavens
@@ -168,14 +170,14 @@ public class LayerManager {
                     if (data != null && data.getHull() != null) {
                         Hull baseHull = data.getHull();
                         String hullID = baseHull.getHullId();
-
                         if (!hullID.equals(skin.getBaseHullId())) {
+                            Path skinFilePath = skin.getSkinFilePath();
                             JOptionPane.showMessageDialog(null,
                                     "Hull ID of active layer does not equal base hull ID of skin: " +
-                                            skin.getSkinFilePath(),
+                                            Optional.of(skinFilePath.toString()).orElse(skin.toString()),
                                     "Ship ID mismatch!",
                                     JOptionPane.ERROR_MESSAGE);
-                            return;
+                            throw new IllegalStateException("Illegal skin file opening operation!");
                         }
                         Map<String, Skin> skins = data.getSkins();
                         skins.put(skin.getSkinHullId(), skin);

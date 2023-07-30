@@ -1,4 +1,4 @@
-package oth.shipeditor.components.instrument.ship.slots;
+package oth.shipeditor.components.instrument.ship.weaponslots;
 
 import oth.shipeditor.components.instrument.ship.PointList;
 import oth.shipeditor.components.viewer.entities.WeaponSlotPoint;
@@ -11,9 +11,9 @@ import java.util.List;
  * @author Ontheheavens
  * @since 29.07.2023
  */
-public class SlotList extends PointList<WeaponSlotPoint> {
+public class WeaponSlotList extends PointList<WeaponSlotPoint> {
 
-    SlotList(ListModel<WeaponSlotPoint> dataModel) {
+    WeaponSlotList(ListModel<WeaponSlotPoint> dataModel) {
         super(dataModel);
         this.setCellRenderer(new SlotCellRenderer());
     }

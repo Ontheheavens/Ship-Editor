@@ -1,4 +1,4 @@
-package oth.shipeditor.components.instrument.ship.slots;
+package oth.shipeditor.components.instrument.ship.weaponslots;
 
 import lombok.Getter;
 import oth.shipeditor.communication.EventBus;
@@ -22,7 +22,7 @@ import java.awt.*;
 public class WeaponSlotListPanel extends JPanel {
 
     @Getter
-    private final SlotList slotPointContainer;
+    private final WeaponSlotList slotPointContainer;
 
     private final JCheckBox reorderCheckbox;
 
@@ -30,7 +30,7 @@ public class WeaponSlotListPanel extends JPanel {
 
     WeaponSlotListPanel() {
         this.setLayout(new BorderLayout());
-        slotPointContainer = new SlotList(model);
+        slotPointContainer = new WeaponSlotList(model);
         JScrollPane scrollableContainer = new JScrollPane(slotPointContainer);
 
         JPanel northContainer = new JPanel();

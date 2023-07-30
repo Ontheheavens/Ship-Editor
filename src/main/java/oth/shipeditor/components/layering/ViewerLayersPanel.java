@@ -113,14 +113,18 @@ public final class ViewerLayersPanel extends SortableTabbedPane {
                 ShipData shipData = checkedLayer.getShipData();
                 if (shipData == null) return;
                 Hull hull = shipData.getHull();
-                if (hull != null) {
-                    updated.setHullFileName(checkedLayer.getHullFileName());
-                    this.setTitleAt(indexOfComponent(updated), hull.getHullName());
-                }
+                if (hull == null) return;
+
+                updated.setHullFileName(checkedLayer.getHullFileName());
+                this.setTitleAt(indexOfComponent(updated), hull.getHullName());
+
                 ShipPainter layerPainter = checkedLayer.getPainter();
                 if (layerPainter == null) return;
                 Skin skin = layerPainter.getActiveSkin();
-                if (skin != null) {
+                if (skin == null || skin.isBase()) {
+                    updated.setSkinFileName("");
+                    this.setTitleAt(indexOfComponent(updated), hull.getHullName());
+                } else {
                     String skinFileName = skin.getSkinFilePath().getFileName().toString();
                     updated.setSkinFileName(skinFileName);
                     if (skin.getHullName() != null) {

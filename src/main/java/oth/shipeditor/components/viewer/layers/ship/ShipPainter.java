@@ -6,6 +6,7 @@ import lombok.extern.log4j.Log4j2;
 import oth.shipeditor.communication.BusEventListener;
 import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.Events;
+import oth.shipeditor.communication.events.components.SkinPanelRepaintQueued;
 import oth.shipeditor.communication.events.viewer.ViewerRepaintQueued;
 import oth.shipeditor.communication.events.viewer.layers.ActiveLayerUpdated;
 import oth.shipeditor.communication.events.viewer.layers.LayerSpriteLoadQueued;
@@ -52,7 +53,7 @@ public final class ShipPainter extends LayerPainter {
     private Sprite baseHullSprite;
 
     @Getter @Setter
-    private Skin activeSkin;
+    private Skin activeSkin = Skin.empty();
 
     public ShipPainter(ShipLayer layer) {
         super(layer);
@@ -62,25 +63,30 @@ public final class ShipPainter extends LayerPainter {
     /**
      * @param skinID only evaluated if spec type is SKIN.
      */
-    @SuppressWarnings("unused")
     public void setActiveSpec(ActiveShipSpec type, String skinID) {
         ShipLayer parentLayer = this.getParentLayer();
         if (type == ActiveShipSpec.HULL) {
             this.setSprite(baseHullSprite.getSpriteImage());
             parentLayer.setSpriteFileName(baseHullSprite.getFileName());
             parentLayer.setSkinFileName(StringValues.NOT_LOADED);
+            activeSkin = Skin.empty();
         } else {
             ShipLayer shipLayer = getParentLayer();
             ShipData shipData = shipLayer.getShipData();
             Map<String, Skin> skins = shipData.getSkins();
+            if (skinID == null || skinID.isEmpty()) {
+                throw new IllegalArgumentException("Illegal skinID passed to ShipPainter!");
+            }
             Skin retrieved = skins.get(skinID);
             Sprite skinSprite = retrieved.getLoadedSkinSprite();
             this.setSprite(skinSprite.getSpriteImage());
             parentLayer.setSpriteFileName(skinSprite.getFileName());
             String skinFileName = retrieved.getSkinFilePath().getFileName().toString();
             parentLayer.setSkinFileName(skinFileName);
+            this.activeSkin = retrieved;
         }
         EventBus.publish(new ActiveLayerUpdated(this.getParentLayer()));
+        EventBus.publish(new SkinPanelRepaintQueued());
         Events.repaintView();
     }
 

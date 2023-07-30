@@ -14,7 +14,9 @@ public enum ShipInstrument {
     BOUNDS("Bounds"),
     WEAPON_SLOTS("Weapon Slots"),
     LAUNCH_BAYS("Launch Bays"),
-    ENGINES("Engines");
+    ENGINES("Engines"),
+    SKIN("Skin");;
+
 
     @Getter
     private final String title;

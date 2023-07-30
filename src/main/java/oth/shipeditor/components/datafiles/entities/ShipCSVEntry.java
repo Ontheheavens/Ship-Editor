@@ -11,7 +11,6 @@ import oth.shipeditor.representation.Hull;
 import oth.shipeditor.representation.Skin;
 import oth.shipeditor.utility.graphics.Sprite;
 import oth.shipeditor.utility.text.StringConstants;
-import oth.shipeditor.utility.text.StringValues;
 
 import java.io.File;
 import java.nio.file.Path;
@@ -55,7 +54,7 @@ public class ShipCSVEntry {
         this.hullFileName = fileName;
         this.activeSkin = Skin.empty();
         if (this.skins != null) {
-            this.skins.put(StringValues.DEFAULT, activeSkin);
+            this.skins.put(Skin.DEFAULT, activeSkin);
         }
     }
 
@@ -87,9 +86,10 @@ public class ShipCSVEntry {
         if (skins == null || skins.isEmpty()) return;
 
         Map<String, Skin> eligibleSkins = new HashMap<>(skins);
-        eligibleSkins.remove(StringValues.DEFAULT);
+        eligibleSkins.remove(Skin.DEFAULT);
         if (eligibleSkins.isEmpty()) return;
         for (Skin skin : eligibleSkins.values()) {
+            if (skin == null || skin.isBase()) continue;
 
             String skinSpriteName = skin.getSpriteName();
             Path skinPackagePath = skin.getContainingPackage();

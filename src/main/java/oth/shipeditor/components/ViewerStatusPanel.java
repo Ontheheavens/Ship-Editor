@@ -1,6 +1,5 @@
 package oth.shipeditor.components;
 
-import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
 import org.kordamp.ikonli.fluentui.FluentUiRegularAL;
 import org.kordamp.ikonli.fluentui.FluentUiRegularMZ;
@@ -42,9 +41,6 @@ import java.awt.image.BufferedImage;
 @Log4j2
 final class ViewerStatusPanel extends JPanel {
 
-    @Getter
-    private CoordsDisplayMode mode = CoordsDisplayMode.WORLD;
-
     private final LayerViewer viewer;
 
     private JLabel dimensions;
@@ -54,8 +50,6 @@ final class ViewerStatusPanel extends JPanel {
     private JLabel zoom;
 
     private JLabel rotation;
-
-    private Point2D cursorPoint;
 
     private JPanel leftsideContainer;
 
@@ -69,7 +63,6 @@ final class ViewerStatusPanel extends JPanel {
         this.setDimensionsLabel(null);
         this.setZoomLabel(StaticController.getZoomLevel());
         this.setRotationLabel(StaticController.getRotationDegrees());
-        this.cursorPoint = new Point2D.Double();
         this.updateCursorCoordsLabel();
 
         this.add(leftsideContainer, BorderLayout.LINE_START);
@@ -239,8 +232,7 @@ final class ViewerStatusPanel extends JPanel {
             }
         });
         EventBus.subscribe(event -> {
-            if (event instanceof ViewerCursorMoved checked) {
-                this.cursorPoint = checked.adjustedAndCorrected();
+            if (event instanceof ViewerCursorMoved) {
                 this.updateCursorCoordsLabel();
             }
         });
@@ -266,17 +258,15 @@ final class ViewerStatusPanel extends JPanel {
     }
 
     private JRadioButtonMenuItem createCoordsOption(String text, ButtonGroup group,
-                                                    CoordsDisplayMode displayMode, boolean selected) {
+                                                    CoordsDisplayMode displayMode) {
         JRadioButtonMenuItem menuItem = new JRadioButtonMenuItem(text);
         menuItem.addActionListener(e -> {
-            this.mode = displayMode;
             menuItem.setSelected(true);
             this.updateCursorCoordsLabel();
             EventBus.publish(new CoordsModeChanged(displayMode));
             Events.repaintView();
         });
         group.add(menuItem);
-        menuItem.setSelected(selected);
         return menuItem;
     }
 
@@ -287,22 +277,23 @@ final class ViewerStatusPanel extends JPanel {
 
         JRadioButtonMenuItem world = createCoordsOption(
                 axes + "start of coordinate system (World 0,0)",
-                group, CoordsDisplayMode.WORLD, true);
+                group, CoordsDisplayMode.WORLD);
         popupMenu.add(world);
 
         JRadioButtonMenuItem sprite = createCoordsOption(
                 axes + "selected sprite center (Sprite 0,0)",
-                group, CoordsDisplayMode.SPRITE_CENTER, false);
+                group, CoordsDisplayMode.SPRITE_CENTER);
         popupMenu.add(sprite);
 
         JRadioButtonMenuItem shipCenterAnchor = createCoordsOption(
                 axes + "bottom left corner of selected sprite (Ship Center Anchor 0,0)",
-                group, CoordsDisplayMode.SHIPCENTER_ANCHOR, false);
+                group, CoordsDisplayMode.SHIPCENTER_ANCHOR);
         popupMenu.add(shipCenterAnchor);
 
         JRadioButtonMenuItem shipCenter = createCoordsOption(
                 axes + "designated ship center of selected layer (Ship Center 0,0)",
-                group, CoordsDisplayMode.SHIP_CENTER, false);
+                group, CoordsDisplayMode.SHIP_CENTER);
+        shipCenter.setSelected(true);
         popupMenu.add(shipCenter);
 
         return popupMenu;
@@ -319,18 +310,19 @@ final class ViewerStatusPanel extends JPanel {
     }
 
     private void updateCursorCoordsLabel() {
-        Point2D cursor = this.cursorPoint;
+        Point2D cursorPoint = StaticController.getCorrectedCursor();
+        Point2D cursor = cursorPoint;
         LayerPainter selectedLayer = this.viewer.getSelectedLayer();
-        switch (mode) {
+        switch (StaticController.getCoordsMode()) {
             case SPRITE_CENTER -> {
                 if (selectedLayer == null) break;
                 Point2D center = selectedLayer.getSpriteCenter();
-                cursor = ViewerStatusPanel.adjustCursorCoordinates(this.cursorPoint, center);
+                cursor = ViewerStatusPanel.adjustCursorCoordinates(cursorPoint, center);
             }
             case SHIPCENTER_ANCHOR -> {
                 if (!(selectedLayer instanceof ShipPainter checkedPainter)) break;
                 Point2D center = checkedPainter.getCenterAnchor();
-                cursor = ViewerStatusPanel.adjustCursorCoordinates(this.cursorPoint, center);
+                cursor = ViewerStatusPanel.adjustCursorCoordinates(cursorPoint, center);
                 cursor = new Point2D.Double(cursor.getX(), -cursor.getY());
                 if (cursor.getY() == -0.0) {
                     cursor.setLocation(cursor.getX(), 0);
@@ -339,10 +331,10 @@ final class ViewerStatusPanel extends JPanel {
             // This case uses different coordinate system alignment to be consistent with game files.
             // Otherwise, user might be confused as shown point coordinates won't match with those in file.
             case SHIP_CENTER -> {
-                if (!(selectedLayer instanceof ShipPainter checkedPainter) || checkedPainter.getShipCenter() == null) break;
+                if (!(selectedLayer instanceof ShipPainter checkedPainter) || checkedPainter.isUninitialized()) break;
                 ShipCenterPoint shipCenter = checkedPainter.getShipCenter();
                 Point2D center = shipCenter.getPosition();
-                Point2D adjusted = ViewerStatusPanel.adjustCursorCoordinates(this.cursorPoint, center);
+                Point2D adjusted = ViewerStatusPanel.adjustCursorCoordinates(cursorPoint, center);
                 cursor = new Point2D.Double(-adjusted.getY(), -adjusted.getX());
                 if (cursor.getX() == -0.0) {
                     cursor.setLocation(0, cursor.getY());

@@ -25,6 +25,7 @@ public class ShipData {
     public ShipData(Hull openedHull) {
         this.hull = openedHull;
         this.skins = new HashMap<>();
+        this.skins.put(Skin.DEFAULT, Skin.empty());
     }
 
     public void initHullStyle() {

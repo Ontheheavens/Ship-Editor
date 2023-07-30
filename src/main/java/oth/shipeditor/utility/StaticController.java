@@ -6,7 +6,6 @@ import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.components.BoundsPanelRepaintQueued;
 import oth.shipeditor.communication.events.components.CenterPanelsRepaintQueued;
 import oth.shipeditor.communication.events.viewer.control.ViewerCursorMoved;
-import oth.shipeditor.communication.events.viewer.layers.ActiveLayerUpdated;
 import oth.shipeditor.communication.events.viewer.layers.LayerWasSelected;
 import oth.shipeditor.communication.events.viewer.status.CoordsModeChanged;
 import oth.shipeditor.components.CoordsDisplayMode;
@@ -51,7 +50,7 @@ public final class StaticController {
     private static Point2D correctedCursor = new Point2D.Double();
 
     @Getter
-    private static CoordsDisplayMode coordsMode = CoordsDisplayMode.WORLD;
+    private static CoordsDisplayMode coordsMode = CoordsDisplayMode.SHIP_CENTER;
 
     private StaticController() {
     }

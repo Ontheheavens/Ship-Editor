@@ -1,5 +1,6 @@
 package oth.shipeditor.components.viewer.painters.points;
 
+import de.javagl.viewer.Painter;
 import lombok.Getter;
 import oth.shipeditor.communication.BusEventListener;
 import oth.shipeditor.communication.EventBus;
@@ -17,6 +18,7 @@ import oth.shipeditor.utility.Utility;
 
 import java.awt.*;
 import java.awt.event.KeyEvent;
+import java.awt.geom.AffineTransform;
 import java.awt.geom.Point2D;
 import java.util.ArrayList;
 import java.util.List;
@@ -122,6 +124,18 @@ public class WeaponSlotPainter extends MirrorablePointPainter{
         };
         listeners.add(modeListener);
         EventBus.subscribe(modeListener);
+    }
+
+    // TODO: Create paint overriding and skin validation methods.
+
+    @Override
+    void paintDelegates(Graphics2D g, AffineTransform worldToScreen, double w, double h) {
+        super.paintDelegates(g, worldToScreen, w, h);
+    }
+
+    @Override
+    protected void paintDelegate(Graphics2D g, AffineTransform worldToScreen, double w, double h, Painter painter) {
+        super.paintDelegate(g, worldToScreen, w, h, painter);
     }
 
     @Override

@@ -28,6 +28,8 @@ public class Skin {
     @JsonIgnore
     private static final Skin NO_SKIN = new Skin(true);
 
+    public static final String DEFAULT = StringConstants.DEFAULT_ID;
+
     @JsonCreator
     public Skin() {
         base = false;

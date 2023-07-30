@@ -28,11 +28,11 @@ import java.util.Map;
  */
 class ShipFilesSubpanel extends JPanel {
 
-    private final JPanel rightPanelReference;
+    private final JPanel rightPanel;
 
 
-    ShipFilesSubpanel(JPanel rightPanel) {
-        this.rightPanelReference = rightPanel;
+    ShipFilesSubpanel(JPanel parentPanel) {
+        this.rightPanel = parentPanel;
     }
 
 
@@ -55,9 +55,9 @@ class ShipFilesSubpanel extends JPanel {
             skinChooser.setAlignmentX(Component.CENTER_ALIGNMENT);
 
             constraints.insets = new Insets(0, 0, 0, 0);
-            rightPanelReference.add(skinChooser, constraints);
+            rightPanel.add(skinChooser, constraints);
         } else {
-            rightPanelReference.removeAll();
+            rightPanel.removeAll();
         }
 
         JPanel labelContainer = ShipFilesSubpanel.createLabelContainer(selected);
