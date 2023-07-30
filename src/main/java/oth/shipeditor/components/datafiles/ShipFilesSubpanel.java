@@ -179,7 +179,7 @@ class ShipFilesSubpanel extends JPanel {
             HullmodCSVEntry entry = allHullmods.get(id);
             Map<String, String> rowData = entry.getRowData();
             String name = rowData.get("name");
-            Image iconImage = FileLoading.loadSprite(entry.fetchHullmodSpriteFile());
+            Image iconImage = FileLoading.loadSpriteAsImage(entry.fetchHullmodSpriteFile());
             int iconSize = 32;
             if (iconImage.getWidth(null) > iconSize || iconImage.getHeight(null) > iconSize) {
                 iconImage = iconImage.getScaledInstance(iconSize, iconSize, Image.SCALE_DEFAULT);

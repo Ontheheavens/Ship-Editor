@@ -13,6 +13,7 @@ import oth.shipeditor.persistence.SettingsManager;
 import oth.shipeditor.representation.Hull;
 import oth.shipeditor.representation.Skin;
 import oth.shipeditor.utility.ImageCache;
+import oth.shipeditor.utility.graphics.Sprite;
 import oth.shipeditor.utility.text.StringConstants;
 import oth.shipeditor.utility.text.StringValues;
 
@@ -28,7 +29,6 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
 /**
  * @author Ontheheavens
@@ -59,19 +59,34 @@ public final class FileLoading {
         String fileName = filePath.getFileName().toString();
 
         try (var stream = Files.walk(folderPath)) {
-            Optional<Path> first = stream.filter(file -> {
+            List<Path> foundFiles = stream.filter(file -> {
                 String toString = file.getFileName().toString();
                 return toString.equals(fileName);
-            }).findFirst();
-            return first.orElse(null);
+            }).toList();
+            for (Path foundFile : foundFiles) {
+                String toString = foundFile.toString();
+                if (toString.endsWith(filePath.toString())) {
+                    return foundFile;
+                }
+            }
+            return null;
         } catch (IOException e) {
             e.printStackTrace();
             return null;
         }
     }
 
-    public static BufferedImage loadSprite(File file) {
+    public static BufferedImage loadSpriteAsImage(File file) {
         return ImageCache.loadImage(file);
+    }
+
+    public static Sprite loadSprite(File file) {
+        BufferedImage spriteImage = FileLoading.loadSpriteAsImage(file);
+
+        Sprite sprite = new Sprite(spriteImage);
+        sprite.setFileName(file.getName());
+        sprite.setFilePath(file.toPath());
+        return sprite;
     }
 
     /**

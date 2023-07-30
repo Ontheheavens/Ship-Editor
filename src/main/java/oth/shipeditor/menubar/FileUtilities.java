@@ -18,18 +18,20 @@ import oth.shipeditor.persistence.SettingsManager;
 import oth.shipeditor.representation.GameDataRepository;
 import oth.shipeditor.representation.Hull;
 import oth.shipeditor.representation.HullStyle;
+import oth.shipeditor.utility.graphics.Sprite;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
-import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.*;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Stream;
 
 /**
@@ -90,8 +92,8 @@ public final class FileUtilities {
     public static void createShipLayerWithSprite(File spriteFile) {
         EventBus.publish(new ShipLayerCreationQueued());
         EventBus.publish(new LastLayerSelectQueued());
-        BufferedImage sprite = FileLoading.loadSprite(spriteFile);
-        EventBus.publish(new SpriteOpened(sprite, spriteFile.getName()));
+        Sprite sprite = FileLoading.loadSprite(spriteFile);
+        EventBus.publish(new SpriteOpened(sprite));
     }
 
     private static class OpenHullAction extends AbstractAction {

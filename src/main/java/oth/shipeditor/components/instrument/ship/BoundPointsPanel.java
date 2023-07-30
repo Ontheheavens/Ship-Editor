@@ -21,7 +21,6 @@ import oth.shipeditor.utility.components.ComponentUtilities;
 import oth.shipeditor.utility.text.StringValues;
 
 import javax.swing.*;
-import javax.swing.border.EmptyBorder;
 import javax.swing.event.ChangeListener;
 import java.awt.*;
 import java.awt.event.ActionListener;
@@ -41,7 +40,7 @@ public final class BoundPointsPanel extends JPanel {
     private JLabel opacityLabel;
     private JSlider opacitySlider;
 
-    private JCheckBox reorderCheckbox;
+    private final JCheckBox reorderCheckbox;
 
     private DefaultListModel<BoundPoint> model = new DefaultListModel<>();
 
@@ -57,7 +56,9 @@ public final class BoundPointsPanel extends JPanel {
 
         ComponentUtilities.addSeparatorToBoxPanel(northContainer);
 
-        northContainer.add(this.createReorderCheckboxPanel());
+        Pair<JPanel, JCheckBox> reorderWidget = ComponentUtilities.createReorderCheckboxPanel(boundPointContainer);
+        reorderCheckbox = reorderWidget.getSecond();
+        northContainer.add(reorderWidget.getFirst());
 
         this.add(northContainer, BorderLayout.PAGE_START);
 
@@ -70,23 +71,6 @@ public final class BoundPointsPanel extends JPanel {
     private void updateOpacityLabel(int opacity) {
         opacityLabel.setText(StringValues.PAINTER_OPACITY);
         opacityLabel.setToolTipText(StringValues.CURRENT_VALUE + opacity + "%");
-    }
-
-    private JPanel createReorderCheckboxPanel() {
-        JPanel container = new JPanel();
-        container.setLayout(new BoxLayout(container, BoxLayout.LINE_AXIS));
-        container.setBorder(new EmptyBorder(2, 0, 2, 0));
-
-        reorderCheckbox = new JCheckBox("Reorder by drag");
-        reorderCheckbox.addItemListener(e -> {
-            boolean reorderOn = reorderCheckbox.isSelected();
-            boundPointContainer.setDragEnabled(reorderOn);
-        });
-        container.add(Box.createRigidArea(new Dimension(sidePadding,0)));
-        container.add(reorderCheckbox);
-        container.add(Box.createHorizontalGlue());
-
-        return container;
     }
 
     private JPanel createPainterOpacityPanel() {

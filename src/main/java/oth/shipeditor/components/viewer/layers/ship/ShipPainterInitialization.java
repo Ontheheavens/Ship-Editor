@@ -42,7 +42,7 @@ public final class ShipPainterInitialization {
 
         ShipPainterInitialization.initBounds(shipPainter, hull, translatedCenter);
 
-        ShipPainterInitialization.initWeaponSlots(shipPainter, hull, translatedCenter);
+        ShipPainterInitialization.initWeaponSlots(shipPainter, shipData, translatedCenter);
 
         shipPainter.finishInitialization();
     }
@@ -72,7 +72,8 @@ public final class ShipPainterInitialization {
         });
     }
 
-    private static void initWeaponSlots(ShipPainter shipPainter, Hull hull, Point2D translatedCenter) {
+    private static void initWeaponSlots(ShipPainter shipPainter, ShipData shipData, Point2D translatedCenter) {
+        Hull hull = shipData.getHull();
         Stream<WeaponSlot> slotStream = Arrays.stream(hull.getWeaponSlots());
         WeaponSlotPainter slotPainter = shipPainter.getWeaponSlotPainter();
         slotStream.forEach(weaponSlot -> {

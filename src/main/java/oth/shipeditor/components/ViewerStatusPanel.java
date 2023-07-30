@@ -8,9 +8,8 @@ import org.kordamp.ikonli.swing.FontIcon;
 import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.Events;
 import oth.shipeditor.communication.events.components.ViewerFocusRequestQueued;
-import oth.shipeditor.communication.events.viewer.ViewerRepaintQueued;
 import oth.shipeditor.communication.events.viewer.control.*;
-import oth.shipeditor.communication.events.viewer.layers.ActiveLayerUpdated;
+import oth.shipeditor.communication.events.viewer.layers.LayerSpriteLoadConfirmed;
 import oth.shipeditor.communication.events.viewer.layers.LayerWasSelected;
 import oth.shipeditor.communication.events.viewer.status.CoordsModeChanged;
 import oth.shipeditor.components.viewer.LayerViewer;
@@ -24,6 +23,7 @@ import oth.shipeditor.utility.Utility;
 import oth.shipeditor.utility.components.ComponentUtilities;
 import oth.shipeditor.utility.components.MouseoverLabelListener;
 import oth.shipeditor.utility.components.dialog.DialogUtilities;
+import oth.shipeditor.utility.graphics.Sprite;
 import oth.shipeditor.utility.text.StringValues;
 
 import javax.swing.*;
@@ -245,19 +245,19 @@ final class ViewerStatusPanel extends JPanel {
             }
         });
         EventBus.subscribe(event -> {
-            if (event instanceof ActiveLayerUpdated checked) {
-                if (!checked.spriteChanged()) return;
-                ViewerLayer layer = checked.updated();
-                BufferedImage shipSprite = layer.getSprite();
-                this.setDimensionsLabel(shipSprite);
+            if (event instanceof LayerSpriteLoadConfirmed checked) {
+                Sprite sprite = checked.sprite();
+                this.setDimensionsLabel(sprite.getSpriteImage());
             }
         });
         EventBus.subscribe(event -> {
             if (event instanceof LayerWasSelected checked) {
                 ViewerLayer layer = checked.selected();
-                if (layer != null) {
-                    BufferedImage shipSprite = layer.getSprite();
-                    this.setDimensionsLabel(shipSprite);
+                if (layer == null) return;
+                LayerPainter layerPainter = layer.getPainter();
+                if (layerPainter != null) {
+                    BufferedImage layerSprite = layerPainter.getSprite();
+                    this.setDimensionsLabel(layerSprite);
                 } else {
                     this.setDimensionsLabel(null);
                 }
@@ -273,7 +273,7 @@ final class ViewerStatusPanel extends JPanel {
             menuItem.setSelected(true);
             this.updateCursorCoordsLabel();
             EventBus.publish(new CoordsModeChanged(displayMode));
-            EventBus.publish(new ViewerRepaintQueued());
+            Events.repaintView();
         });
         group.add(menuItem);
         menuItem.setSelected(selected);

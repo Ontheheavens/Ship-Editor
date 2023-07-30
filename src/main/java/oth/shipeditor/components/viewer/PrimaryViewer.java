@@ -15,13 +15,14 @@ import oth.shipeditor.components.viewer.control.ViewerControl;
 import oth.shipeditor.components.viewer.layers.LayerManager;
 import oth.shipeditor.components.viewer.layers.LayerPainter;
 import oth.shipeditor.components.viewer.layers.ViewerLayer;
-import oth.shipeditor.components.viewer.layers.ship.ShipPainter;
 import oth.shipeditor.components.viewer.layers.ship.ShipLayer;
+import oth.shipeditor.components.viewer.layers.ship.ShipPainter;
 import oth.shipeditor.components.viewer.layers.weapon.WeaponLayer;
 import oth.shipeditor.components.viewer.layers.weapon.WeaponPainter;
 import oth.shipeditor.menubar.FileUtilities;
 import oth.shipeditor.undo.UndoOverseer;
 import oth.shipeditor.utility.StaticController;
+import oth.shipeditor.utility.graphics.Sprite;
 
 import javax.swing.*;
 import java.awt.*;
@@ -128,10 +129,11 @@ public final class PrimaryViewer extends Viewer implements LayerViewer {
 
     private void initLayerListening() {
         EventBus.subscribe(event -> {
-            if (event instanceof ActiveLayerUpdated checked) {
+            if (event instanceof LayerSpriteLoadQueued checked) {
                 ViewerLayer newLayer = checked.updated();
-                if (newLayer.getSprite() != null && checked.spriteChanged()) {
-                    this.loadLayer(newLayer);
+                Sprite sprite = checked.sprite();
+                if (newLayer.getPainter() == null && sprite != null) {
+                    this.loadLayer(newLayer, sprite);
                 }
             }
         });
@@ -163,18 +165,27 @@ public final class PrimaryViewer extends Viewer implements LayerViewer {
 
     @SuppressWarnings("ChainOfInstanceofChecks")
     @Override
-    public void loadLayer(ViewerLayer layer) {
+    public void loadLayer(ViewerLayer layer, Sprite sprite) {
         // Main sprite painter and said painter children point painters are distinct conceptually.
         // Layer might be selected and deselected, in which case children painters are loaded/unloaded.
         // At the same time main sprite painter remains loaded until layer is explicitly removed.
         LayerPainter newPainter = null;
         if (layer instanceof ShipLayer checkedLayer) {
-            newPainter = new ShipPainter(checkedLayer);
+            ShipPainter shipPainter = new ShipPainter(checkedLayer);
+            shipPainter.setBaseHullSprite(sprite);
+            newPainter = shipPainter;
         } else if (layer instanceof WeaponLayer checkedLayer) {
             newPainter = new WeaponPainter(checkedLayer);
         }
         layer.setPainter(newPainter);
         layerManager.setActiveLayer(layer);
+
+        if (newPainter != null) {
+            newPainter.setSprite(sprite.getSpriteImage());
+        }
+        layer.setSpriteFileName(sprite.getFileName());
+        EventBus.publish(new LayerSpriteLoadConfirmed(layer, sprite));
+        EventBus.publish(new ActiveLayerUpdated(layer));
         this.centerViewpoint();
     }
 

@@ -60,7 +60,7 @@ public class WeaponSlotPoint extends BaseWorldPoint {
     }
 
     public String getNameForLabel() {
-        return weaponType.getDisplayName() + " Slot" + " (Angle: " + angle + ")";
+        return weaponType.getDisplayName();
     }
 
     @Override

@@ -4,11 +4,11 @@ import lombok.extern.log4j.Log4j2;
 import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.files.SpriteOpened;
 import oth.shipeditor.persistence.SettingsManager;
+import oth.shipeditor.utility.graphics.Sprite;
 
 import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.event.ActionEvent;
-import java.awt.image.BufferedImage;
 import java.io.File;
 import java.nio.file.Path;
 
@@ -33,8 +33,8 @@ public class OpenSpriteAction extends AbstractAction {
         FileLoading.lastDirectory = spriteChooser.getCurrentDirectory();
         if (returnVal == JFileChooser.APPROVE_OPTION) {
             File file = spriteChooser.getSelectedFile();
-            BufferedImage sprite = FileLoading.loadSprite(file);
-            EventBus.publish(new SpriteOpened(sprite, file.getName()));
+            Sprite sprite = FileLoading.loadSprite(file);
+            EventBus.publish(new SpriteOpened(sprite));
         }
         else {
             log.info(FileLoading.OPEN_COMMAND_CANCELLED_BY_USER);

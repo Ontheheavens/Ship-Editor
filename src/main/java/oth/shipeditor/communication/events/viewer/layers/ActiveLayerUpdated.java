@@ -8,6 +8,6 @@ import oth.shipeditor.components.viewer.layers.ViewerLayer;
  * @author Ontheheavens
  * @since 29.05.2023
  */
-public record ActiveLayerUpdated(ViewerLayer updated, boolean spriteChanged) implements LayerEvent {
+public record ActiveLayerUpdated(ViewerLayer updated) implements LayerEvent {
 
 }

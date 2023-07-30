@@ -9,6 +9,7 @@ import lombok.Setter;
 import oth.shipeditor.parsing.deserialize.ColorArrayRGBADeserializer;
 import oth.shipeditor.parsing.deserialize.ShipTypeHintsDeserializer;
 import oth.shipeditor.representation.weapon.WeaponSlot;
+import oth.shipeditor.utility.graphics.Sprite;
 import oth.shipeditor.utility.text.StringConstants;
 
 import java.awt.*;
@@ -48,6 +49,9 @@ public class Skin {
 
     @JsonIgnore
     private transient Path containingPackage;
+
+    @JsonIgnore
+    private transient Sprite loadedSkinSprite;
 
     @JsonProperty(StringConstants.BASE_HULL_ID)
     private String baseHullId;

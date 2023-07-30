@@ -80,15 +80,9 @@ public final class StaticController {
         return shape.contains(rawCursor);
     }
 
-    @SuppressWarnings("ChainOfInstanceofChecks")
     public static void init() {
         EventBus.subscribe(event -> {
-            if (event instanceof LayerWasSelected checked) {
-                activeLayer = checked.selected();
-                FileUtilities.updateActionStates(activeLayer);
-            }
-            if (event instanceof ActiveLayerUpdated checked) {
-                activeLayer = checked.updated();
+            if (event instanceof LayerWasSelected) {
                 FileUtilities.updateActionStates(activeLayer);
             }
         });

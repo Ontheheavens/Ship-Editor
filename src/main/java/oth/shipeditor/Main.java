@@ -19,6 +19,7 @@ import oth.shipeditor.representation.GameDataRepository;
 import oth.shipeditor.representation.Hull;
 import oth.shipeditor.representation.Skin;
 import oth.shipeditor.undo.UndoOverseer;
+import oth.shipeditor.utility.graphics.Sprite;
 
 import javax.swing.*;
 import java.awt.*;
@@ -28,6 +29,7 @@ import java.io.File;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Map;
@@ -134,8 +136,8 @@ public final class Main {
         File spriteFile;
         try {
             spriteFile = new File(spritePath.toURI());
-            BufferedImage sprite = FileLoading.loadSprite(spriteFile);
-            EventBus.publish(new SpriteOpened(sprite, spriteFile.getName()));
+            Sprite sprite = FileLoading.loadSprite(spriteFile);
+            EventBus.publish(new SpriteOpened(sprite));
         } catch (URISyntaxException e) {
             e.printStackTrace();
         }

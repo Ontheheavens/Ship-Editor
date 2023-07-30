@@ -4,6 +4,9 @@ import com.formdev.flatlaf.ui.FlatLineBorder;
 import com.formdev.flatlaf.ui.FlatRoundBorder;
 import oth.shipeditor.communication.BusEventListener;
 import oth.shipeditor.communication.EventBus;
+import oth.shipeditor.components.instrument.ship.BoundPointsPanel;
+import oth.shipeditor.components.instrument.ship.PointList;
+import oth.shipeditor.components.viewer.entities.BaseWorldPoint;
 import oth.shipeditor.components.viewer.painters.points.AbstractPointPainter;
 import oth.shipeditor.components.viewer.painters.PainterVisibility;
 import oth.shipeditor.menubar.FileUtilities;
@@ -188,6 +191,23 @@ public final class ComponentUtilities {
 
     public static Insets createLabelInsets() {
         return new Insets(0, 3, 2, 4);
+    }
+
+    public static Pair<JPanel, JCheckBox> createReorderCheckboxPanel(PointList<? extends BaseWorldPoint> pointList) {
+        JPanel container = new JPanel();
+        container.setLayout(new BoxLayout(container, BoxLayout.LINE_AXIS));
+        container.setBorder(new EmptyBorder(2, 0, 2, 0));
+
+        JCheckBox reorderCheckbox = new JCheckBox("Reorder by drag");
+        reorderCheckbox.addItemListener(e -> {
+            boolean reorderOn = reorderCheckbox.isSelected();
+            pointList.setDragEnabled(reorderOn);
+        });
+        container.add(Box.createRigidArea(new Dimension(6,0)));
+        container.add(reorderCheckbox);
+        container.add(Box.createHorizontalGlue());
+
+        return new Pair<>(container, reorderCheckbox);
     }
 
 }

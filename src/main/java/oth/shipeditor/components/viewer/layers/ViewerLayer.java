@@ -9,7 +9,7 @@ import java.awt.image.BufferedImage;
  * @author Ontheheavens
  * @since 28.07.2023
  */
-@SuppressWarnings({"AbstractClassWithOnlyOneDirectInheritor", "AbstractClassWithoutAbstractMethods"})
+@SuppressWarnings("AbstractClassWithoutAbstractMethods")
 @Getter @Setter
 public abstract class ViewerLayer {
 

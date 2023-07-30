@@ -14,8 +14,10 @@ import oth.shipeditor.communication.events.viewer.layers.ViewerLayerRemovalConfi
 import oth.shipeditor.communication.events.viewer.layers.ships.ShipLayerCreated;
 import oth.shipeditor.communication.events.viewer.layers.weapons.WeaponLayerCreated;
 import oth.shipeditor.components.viewer.layers.LayerManager;
+import oth.shipeditor.components.viewer.layers.LayerPainter;
 import oth.shipeditor.components.viewer.layers.ViewerLayer;
 import oth.shipeditor.components.viewer.layers.ship.ShipLayer;
+import oth.shipeditor.components.viewer.layers.ship.ShipPainter;
 import oth.shipeditor.components.viewer.layers.weapon.WeaponLayer;
 import oth.shipeditor.representation.Hull;
 import oth.shipeditor.representation.ShipData;
@@ -35,6 +37,7 @@ import java.util.function.ToIntFunction;
  * @author Ontheheavens
  * @since 01.06.2023
  */
+@SuppressWarnings("OverlyCoupledClass")
 @Log4j2
 public final class ViewerLayersPanel extends SortableTabbedPane {
 
@@ -100,9 +103,9 @@ public final class ViewerLayersPanel extends SortableTabbedPane {
             if (event instanceof ActiveLayerUpdated checked) {
                 ViewerLayer eventLayer = checked.updated();
                 LayerTab updated = tabIndex.get(eventLayer);
-                BufferedImage sprite = eventLayer.getSprite();
+                LayerPainter painter = eventLayer.getPainter();
+                BufferedImage sprite = painter.getSprite();
                 if (sprite != null) {
-                    log.info(eventLayer.getSpriteFileName());
                     updated.setSpriteFileName(eventLayer.getSpriteFileName());
                     this.setToolTipTextAt(indexOfComponent(updated), updated.getTabTooltip());
                 }
@@ -114,9 +117,12 @@ public final class ViewerLayersPanel extends SortableTabbedPane {
                     updated.setHullFileName(checkedLayer.getHullFileName());
                     this.setTitleAt(indexOfComponent(updated), hull.getHullName());
                 }
-                Skin skin = shipData.getSkin();
+                ShipPainter layerPainter = checkedLayer.getPainter();
+                if (layerPainter == null) return;
+                Skin skin = layerPainter.getActiveSkin();
                 if (skin != null) {
-                    updated.setSkinFileName(checkedLayer.getSkinFileName());
+                    String skinFileName = skin.getSkinFilePath().getFileName().toString();
+                    updated.setSkinFileName(skinFileName);
                     if (skin.getHullName() != null) {
                         this.setTitleAt(indexOfComponent(updated), skin.getHullName());
                     }
