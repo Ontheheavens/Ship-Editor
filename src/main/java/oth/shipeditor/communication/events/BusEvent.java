@@ -5,5 +5,6 @@ package oth.shipeditor.communication.events;
  * @author Ontheheavens
  * @since 10.05.2023
  */
+@SuppressWarnings("MarkerInterface")
 public interface BusEvent {
 }

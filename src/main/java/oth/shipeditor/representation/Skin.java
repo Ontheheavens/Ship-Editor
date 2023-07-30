@@ -8,7 +8,9 @@ import lombok.Getter;
 import lombok.Setter;
 import oth.shipeditor.parsing.deserialize.ColorArrayRGBADeserializer;
 import oth.shipeditor.parsing.deserialize.ShipTypeHintsDeserializer;
-import oth.shipeditor.utility.StringConstants;
+import oth.shipeditor.representation.weapon.WeaponSlot;
+import oth.shipeditor.utility.graphics.Sprite;
+import oth.shipeditor.utility.text.StringConstants;
 
 import java.awt.*;
 import java.nio.file.Path;
@@ -25,6 +27,8 @@ public class Skin {
 
     @JsonIgnore
     private static final Skin NO_SKIN = new Skin(true);
+
+    public static final String DEFAULT = StringConstants.DEFAULT_ID;
 
     @JsonCreator
     public Skin() {
@@ -47,6 +51,9 @@ public class Skin {
 
     @JsonIgnore
     private transient Path containingPackage;
+
+    @JsonIgnore
+    private transient Sprite loadedSkinSprite;
 
     @JsonProperty(StringConstants.BASE_HULL_ID)
     private String baseHullId;

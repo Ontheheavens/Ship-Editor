@@ -3,7 +3,7 @@ package oth.shipeditor.components.datafiles.entities;
 import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
 import oth.shipeditor.parsing.loading.FileLoading;
-import oth.shipeditor.utility.StringConstants;
+import oth.shipeditor.utility.text.StringConstants;
 
 import java.io.File;
 import java.nio.file.Path;

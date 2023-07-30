@@ -122,6 +122,18 @@ public final class ShapeUtilities {
         return ShapeUtilities.combineShapes(crossLineX, crossLineY);
     }
 
+    public static Line2D createLineInDirection(Point2D startPoint, double angleDegrees, double length) {
+        double angleRadians = Math.toRadians(angleDegrees);
+
+        double deltaX = length * Math.cos(angleRadians);
+        double deltaY = length * Math.sin(angleRadians);
+
+        double endX = startPoint.getX() + deltaX;
+        double endY = startPoint.getY() + deltaY;
+
+        return new Line2D.Double(startPoint.getX(), startPoint.getY(), endX, endY);
+    }
+
     public static Path2D combineShapes(Shape first, Shape second) {
         Path2D combinedPath = new Path2D.Double();
         combinedPath.append(first, false);

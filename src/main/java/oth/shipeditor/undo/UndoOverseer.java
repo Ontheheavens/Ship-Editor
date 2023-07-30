@@ -4,8 +4,8 @@ import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
 import oth.shipeditor.components.viewer.entities.WorldPoint;
 import oth.shipeditor.components.viewer.layers.LayerPainter;
+import oth.shipeditor.components.viewer.layers.ship.ShipPainter;
 import oth.shipeditor.undo.edits.ListeningEdit;
-import oth.shipeditor.undo.edits.PointDragEdit;
 import oth.shipeditor.undo.edits.PointEdit;
 
 import javax.swing.*;
@@ -118,14 +118,18 @@ public final class UndoOverseer {
         seer.redoStack.clear();
     }
 
-    // TODO: introduce trimming mechanism.
-
     private static void clearEditListeners(Iterable<Edit> stack) {
         stack.forEach(edit -> {
             if (edit instanceof ListeningEdit checked) {
                 checked.unregisterListeners();
             }
         });
+    }
+
+    public static void finishAllEdits() {
+        Collection<Edit> allEdits = new ArrayList<>(seer.undoStack);
+        allEdits.addAll(seer.redoStack);
+        allEdits.forEach(edit -> edit.setFinished(true));
     }
 
     public static void cleanupRemovedLayer(LayerPainter painter) {

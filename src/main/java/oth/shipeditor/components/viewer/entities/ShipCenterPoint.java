@@ -1,12 +1,14 @@
 package oth.shipeditor.components.viewer.entities;
 
-import de.javagl.viewer.Painter;
 import lombok.Getter;
 import lombok.Setter;
-import oth.shipeditor.components.viewer.InstrumentMode;
+import oth.shipeditor.components.instrument.ship.ShipInstrumentsPane;
+import oth.shipeditor.components.viewer.ShipInstrument;
 import oth.shipeditor.components.viewer.layers.LayerPainter;
-import oth.shipeditor.components.viewer.painters.CenterPointPainter;
+import oth.shipeditor.components.viewer.layers.ship.ShipPainter;
+import oth.shipeditor.components.viewer.painters.points.CenterPointPainter;
 import oth.shipeditor.utility.Utility;
+import oth.shipeditor.utility.graphics.ColorUtilities;
 import oth.shipeditor.utility.graphics.DrawUtilities;
 import oth.shipeditor.utility.graphics.ShapeUtilities;
 
@@ -30,7 +32,7 @@ public class ShipCenterPoint extends BaseWorldPoint {
 
 
 
-    public ShipCenterPoint(Point2D position, float radius, LayerPainter layer, CenterPointPainter parent) {
+    public ShipCenterPoint(Point2D position, float radius, ShipPainter layer, CenterPointPainter parent) {
         super(position, layer);
         this.collisionRadius = radius;
         this.parentPainter = parent;
@@ -38,14 +40,18 @@ public class ShipCenterPoint extends BaseWorldPoint {
 
     @Override
     protected boolean isInteractable() {
-        LayerPainter layerPainter = super.getParentLayer();
-        CenterPointPainter painter = layerPainter.getCenterPointPainter();
-        return BaseWorldPoint.getInstrumentationMode() == getAssociatedMode() && painter.isInteractionEnabled();
+        LayerPainter shipPainter = super.getParentLayer();
+        if (shipPainter instanceof ShipPainter checkedLayer) {
+            CenterPointPainter painter = checkedLayer.getCenterPointPainter();
+            return ShipInstrumentsPane.getCurrentMode() == getAssociatedMode() && painter.isInteractionEnabled();
+        } else {
+            throw new IllegalStateException("Illegal parent layer of ship center point!");
+        }
     }
 
     @Override
-    public InstrumentMode getAssociatedMode() {
-        return InstrumentMode.CENTERS;
+    public ShipInstrument getAssociatedMode() {
+        return ShipInstrument.COLLISION;
     }
 
     @Override
@@ -54,42 +60,46 @@ public class ShipCenterPoint extends BaseWorldPoint {
     }
 
     @Override
-    public Painter createPointPainter() {
+    public void paint(Graphics2D g, AffineTransform worldToScreen, double w, double h) {
         AffineTransform delegateWorldToScreen = getDelegateWorldToScreen();
-        return (g, worldToScreen, w, h) -> {
-            delegateWorldToScreen.setTransform(worldToScreen);
+        delegateWorldToScreen.setTransform(worldToScreen);
 
-            this.paintCollisionCircle(g, delegateWorldToScreen);
+        this.paintCollisionCircle(g, delegateWorldToScreen);
 
-            Composite old = null;
-            if (parentPainter.getPaintOpacity() != 0.0f) {
-                old = Utility.setFullAlpha(g);
-            }
+        Composite old = null;
+        if (parentPainter.getPaintOpacity() != 0.0f) {
+            old = Utility.setFullAlpha(g);
+        }
 
-            this.paintCenterCross(g, delegateWorldToScreen);
+        this.paintCenterCross(g, delegateWorldToScreen);
 
-            this.paintCoordsLabel(g, delegateWorldToScreen);
+        this.paintCoordsLabel(g, delegateWorldToScreen);
 
-            if (old != null) {
-                g.setComposite(old);
-            }
-        };
+        if (old != null) {
+            g.setComposite(old);
+        }
+    }
+
+    @Override
+    protected Color createBaseColor() {
+        return Color.GRAY;
     }
 
     @Override
     protected Color createHoverColor() {
-        return new Color(0xFF00329B, true);
+        return ColorUtilities.getBlendedColor(createBaseColor(),
+                createSelectColor(), 0.5f);
     }
 
     @Override
     @SuppressWarnings("WeakerAccess")
     protected Color createSelectColor() {
-        return new Color(0xFF0087FF, true);
+        return Color.LIGHT_GRAY;
     }
 
     private void paintCenterCross(Graphics2D g, AffineTransform worldToScreen) {
         Color crossColor = createHoverColor();
-        if (isSelected() && isInteractable()) {
+        if (this.isPointSelected() && isInteractable()) {
             crossColor = createSelectColor();
         }
 
@@ -98,7 +108,7 @@ public class ShipCenterPoint extends BaseWorldPoint {
         Shape transformedCross = ShapeUtilities.ensureDynamicScaleShape(worldToScreen,
                 position, cross, 12);
 
-        DrawUtilities.drawCentroid(g, transformedCross, crossColor);
+        DrawUtilities.drawOutlined(g, transformedCross, crossColor);
     }
 
     private void paintCollisionCircle(Graphics2D g, AffineTransform worldToScreen) {

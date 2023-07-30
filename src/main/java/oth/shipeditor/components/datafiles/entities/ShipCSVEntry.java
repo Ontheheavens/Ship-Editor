@@ -9,11 +9,13 @@ import oth.shipeditor.menubar.FileUtilities;
 import oth.shipeditor.parsing.loading.FileLoading;
 import oth.shipeditor.representation.Hull;
 import oth.shipeditor.representation.Skin;
-import oth.shipeditor.utility.StringConstants;
+import oth.shipeditor.utility.graphics.Sprite;
+import oth.shipeditor.utility.text.StringConstants;
 
 import java.io.File;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -52,7 +54,7 @@ public class ShipCSVEntry {
         this.hullFileName = fileName;
         this.activeSkin = Skin.empty();
         if (this.skins != null) {
-            this.skins.put(StringConstants.DEFAULT, activeSkin);
+            this.skins.put(Skin.DEFAULT, activeSkin);
         }
     }
 
@@ -73,25 +75,36 @@ public class ShipCSVEntry {
     }
 
     public void loadLayerFromEntry() {
-        Path packagePath = this.packageFolder;
         String spriteName = this.hullFile.getSpriteName();
-        boolean skinChosen = !this.activeSkin.isBase();
-        if (skinChosen) {
-            spriteName = this.activeSkin.getSpriteName();
-            packagePath = this.activeSkin.getContainingPackage();
-        }
-        if (spriteName == null || spriteName.isEmpty()) {
-            spriteName = this.hullFile.getSpriteName();
-        }
 
         Path spriteFilePath = Path.of(spriteName);
-        File spriteFile = FileLoading.fetchDataFile(spriteFilePath, packagePath);
+        File spriteFile = FileLoading.fetchDataFile(spriteFilePath, this.packageFolder);
 
-        FileUtilities.createLayerWithSprite(spriteFile);
+        FileUtilities.createShipLayerWithSprite(spriteFile);
         EventBus.publish(new HullFileOpened(this.hullFile, this.getHullFileName()));
-        if (skinChosen) {
-            String skinFileName = this.activeSkin.getSkinFilePath().getFileName().toString();
-            EventBus.publish(new SkinFileOpened(this.activeSkin, skinFileName));
+
+        if (skins == null || skins.isEmpty()) return;
+
+        Map<String, Skin> eligibleSkins = new HashMap<>(skins);
+        eligibleSkins.remove(Skin.DEFAULT);
+        if (eligibleSkins.isEmpty()) return;
+        for (Skin skin : eligibleSkins.values()) {
+            if (skin == null || skin.isBase()) continue;
+
+            String skinSpriteName = skin.getSpriteName();
+            Path skinPackagePath = skin.getContainingPackage();
+
+            if (skinSpriteName == null || skinSpriteName.isEmpty()) {
+                skinSpriteName = this.hullFile.getSpriteName();
+            }
+
+            Path skinSpriteFilePath = Path.of(skinSpriteName);
+            File skinSpriteFile = FileLoading.fetchDataFile(skinSpriteFilePath, skinPackagePath);
+
+            Sprite skinSprite = FileLoading.loadSprite(skinSpriteFile);
+
+            skin.setLoadedSkinSprite(skinSprite);
+            EventBus.publish(new SkinFileOpened(skin));
         }
     }
 
@@ -103,7 +116,10 @@ public class ShipCSVEntry {
         }
         Skin skin = this.activeSkin;
         if (skin != null && !skin.isBase()) {
-            hullmodIDs.addAll(skin.getBuiltInMods());
+            List<String> builtInMods = skin.getBuiltInMods();
+            if (builtInMods != null) {
+                hullmodIDs.addAll(builtInMods);
+            }
         }
         return hullmodIDs;
     }

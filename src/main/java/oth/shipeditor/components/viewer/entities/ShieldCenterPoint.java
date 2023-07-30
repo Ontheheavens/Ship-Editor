@@ -1,24 +1,27 @@
 package oth.shipeditor.components.viewer.entities;
 
-import de.javagl.viewer.Painter;
 import lombok.Getter;
 import lombok.Setter;
-import oth.shipeditor.components.viewer.InstrumentMode;
-import oth.shipeditor.components.viewer.layers.LayerPainter;
-import oth.shipeditor.components.viewer.painters.ShieldPointPainter;
+import oth.shipeditor.components.instrument.ship.ShipInstrumentsPane;
+import oth.shipeditor.components.viewer.ShipInstrument;
+import oth.shipeditor.components.viewer.layers.ship.ShipPainter;
+import oth.shipeditor.components.viewer.painters.points.ShieldPointPainter;
 import oth.shipeditor.representation.HullStyle;
 import oth.shipeditor.utility.Utility;
+import oth.shipeditor.utility.graphics.ColorUtilities;
 import oth.shipeditor.utility.graphics.DrawUtilities;
 import oth.shipeditor.utility.graphics.ShapeUtilities;
 
 import java.awt.*;
-import java.awt.geom.*;
+import java.awt.geom.AffineTransform;
+import java.awt.geom.Ellipse2D;
+import java.awt.geom.Point2D;
 
 /**
  * @author Ontheheavens
  * @since 16.07.2023
  */
-public class ShieldCenterPoint extends BaseWorldPoint{
+public class ShieldCenterPoint extends BaseWorldPoint {
 
     @Getter @Setter
     private float shieldRadius;
@@ -28,7 +31,7 @@ public class ShieldCenterPoint extends BaseWorldPoint{
     @Getter
     private final HullStyle associatedStyle;
 
-    public ShieldCenterPoint(Point2D position, float radius, LayerPainter layer, HullStyle style,
+    public ShieldCenterPoint(Point2D position, float radius, ShipPainter layer, HullStyle style,
                              ShieldPointPainter parent) {
         super(position, layer);
         this.shieldRadius = radius;
@@ -38,12 +41,12 @@ public class ShieldCenterPoint extends BaseWorldPoint{
 
     @Override
     protected boolean isInteractable() {
-        return BaseWorldPoint.getInstrumentationMode() == getAssociatedMode() && parentPainter.isInteractionEnabled();
+        return ShipInstrumentsPane.getCurrentMode() == getAssociatedMode() && parentPainter.isInteractionEnabled();
     }
 
     @Override
-    public InstrumentMode getAssociatedMode() {
-        return InstrumentMode.CENTERS;
+    public ShipInstrument getAssociatedMode() {
+        return ShipInstrument.SHIELD;
     }
 
     @Override
@@ -61,47 +64,46 @@ public class ShieldCenterPoint extends BaseWorldPoint{
     }
 
     @Override
-    public Painter createPointPainter() {
+    public void paint(Graphics2D g, AffineTransform worldToScreen, double w, double h) {
         AffineTransform delegateWorldToScreen = getDelegateWorldToScreen();
-        return (g, worldToScreen, w, h) -> {
-            delegateWorldToScreen.setTransform(worldToScreen);
+        delegateWorldToScreen.setTransform(worldToScreen);
 
-            this.paintShieldCircle(g, delegateWorldToScreen);
+        this.paintShieldCircle(g, delegateWorldToScreen);
 
-            Composite old = null;
-            if (parentPainter.getPaintOpacity() != 0.0f) {
-                old = Utility.setFullAlpha(g);
-            }
+        Composite old = null;
+        if (parentPainter.getPaintOpacity() != 0.0f) {
+            old = Utility.setFullAlpha(g);
+        }
 
-            this.paintShieldCenterCross(g, delegateWorldToScreen);
+        this.paintShieldCenterCross(g, delegateWorldToScreen);
 
-            this.paintCoordsLabel(g, delegateWorldToScreen);
+        this.paintCoordsLabel(g, delegateWorldToScreen);
 
-            if (old != null) {
-                g.setComposite(old);
-            }
-        };
+        if (old != null) {
+            g.setComposite(old);
+        }
     }
 
     @Override
     protected Color createBaseColor() {
-        return new Color(0xFF006E28, true);
+        return Color.GRAY;
     }
 
     @Override
     protected Color createHoverColor() {
-        return new Color(0xFF009B37, true);
+        return ColorUtilities.getBlendedColor(createBaseColor(),
+                createSelectColor(), 0.5f);
     }
 
     @Override
     @SuppressWarnings("WeakerAccess")
     protected Color createSelectColor() {
-        return new Color(0xFF00FF73, true);
+        return Color.LIGHT_GRAY;
     }
 
     private void paintShieldCenterCross(Graphics2D g, AffineTransform worldToScreen) {
         Color crossColor = createHoverColor();
-        if (isSelected() && isInteractable()) {
+        if (this.isPointSelected() && isInteractable()) {
             crossColor = createSelectColor();
         }
 
@@ -112,7 +114,7 @@ public class ShieldCenterPoint extends BaseWorldPoint{
         Shape transformedCross = ShapeUtilities.ensureDynamicScaleShape(worldToScreen,
                 position, diagonalCross, 12);
 
-        DrawUtilities.drawCentroid(g, transformedCross, crossColor);
+        DrawUtilities.drawOutlined(g, transformedCross, crossColor);
     }
 
     private void paintShieldCircle(Graphics2D g, AffineTransform worldToScreen) {

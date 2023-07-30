@@ -1,119 +1,76 @@
 package oth.shipeditor.components.viewer.layers;
 
 import de.javagl.viewer.Painter;
+import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
-import lombok.extern.log4j.Log4j2;
+import oth.shipeditor.communication.BusEventListener;
 import oth.shipeditor.communication.EventBus;
-import oth.shipeditor.communication.events.Events;
-import oth.shipeditor.communication.events.viewer.ViewerRepaintQueued;
 import oth.shipeditor.communication.events.viewer.control.LayerAnchorDragged;
-import oth.shipeditor.communication.events.viewer.layers.ActiveLayerUpdated;
-import oth.shipeditor.communication.events.viewer.layers.LayerShipDataInitialized;
-import oth.shipeditor.communication.events.viewer.layers.ShipLayerRemovalConfirmed;
-import oth.shipeditor.communication.events.viewer.points.AnchorOffsetQueued;
-import oth.shipeditor.components.viewer.PrimaryShipViewer;
-import oth.shipeditor.components.viewer.entities.BaseWorldPoint;
-import oth.shipeditor.components.viewer.entities.BoundPoint;
-import oth.shipeditor.components.viewer.entities.ShipCenterPoint;
-import oth.shipeditor.components.viewer.painters.AbstractPointPainter;
-import oth.shipeditor.components.viewer.painters.BoundPointsPainter;
-import oth.shipeditor.components.viewer.painters.CenterPointPainter;
-import oth.shipeditor.components.viewer.painters.ShieldPointPainter;
-import oth.shipeditor.representation.Hull;
-import oth.shipeditor.representation.ShipData;
+import oth.shipeditor.communication.events.viewer.layers.LayerRotationQueued;
+import oth.shipeditor.communication.events.viewer.layers.ViewerLayerRemovalConfirmed;
+import oth.shipeditor.components.viewer.control.ControlPredicates;
+import oth.shipeditor.components.viewer.painters.points.AbstractPointPainter;
+import oth.shipeditor.undo.EditDispatch;
+import oth.shipeditor.utility.StaticController;
 
 import java.awt.*;
 import java.awt.geom.AffineTransform;
+import java.awt.geom.NoninvertibleTransformException;
 import java.awt.geom.Point2D;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Stream;
 
 /**
- * Distinct from parent ship layer instance: present class has to do with direct visual representation.
- * Painter instance is not concerned with loading and file interactions, and leaves that to other classes.
  * @author Ontheheavens
- * @since 29.05.2023
+ * @since 28.07.2023
  */
-@SuppressWarnings({"ClassWithTooManyFields", "OverlyCoupledClass"})
-@Log4j2
-public final class LayerPainter implements Painter {
+@SuppressWarnings("AbstractClassWithoutAbstractMethods")
+public abstract class LayerPainter implements Painter {
 
-    @Getter @Setter
-    private int paintOrdering;
-
-    @Getter
-    private final BoundPointsPainter boundsPainter;
-    @Getter
-    private final CenterPointPainter centerPointPainter;
-
-    @Getter
-    private final ShieldPointPainter shieldPointPainter;
-
-    /**
-     * Convenience collection for bulk manipulation of layer painters.
-     */
     @Getter
     private final List<AbstractPointPainter> allPainters;
 
-    @Getter
-    private Point2D anchorOffset = new Point2D.Double(0, 0);
+    @Getter @Setter
+    private Point2D anchor = new Point2D.Double(0, 0);
 
     @Getter
     private float spriteOpacity = 1.0f;
 
-    /**
-     * Reference to parent layer is needed here for points cleanup.
-     */
-    @Getter
-    private final ShipLayer parentLayer;
-
-    private final PrimaryShipViewer viewer;
+    @Getter @Setter
+    private double rotationRadians;
 
     @Getter
-    private BufferedImage shipSprite;
+    private final ViewerLayer parentLayer;
 
-    @Getter
+    @Getter @Setter
+    private BufferedImage sprite;
+
+    @Getter @Setter(AccessLevel.PROTECTED)
     private boolean uninitialized = true;
 
-    @SuppressWarnings("ThisEscapedInObjectConstruction")
-    public LayerPainter(ShipLayer layer, PrimaryShipViewer viewerPanel, int order) {
-        this.paintOrdering = order;
+    @Getter
+    private final List<BusEventListener> listeners;
+
+    protected LayerPainter(ViewerLayer layer) {
         this.parentLayer = layer;
-        this.viewer = viewerPanel;
-
-        this.centerPointPainter = new CenterPointPainter(this);
-        this.shieldPointPainter = new ShieldPointPainter(this);
-        this.boundsPainter = new BoundPointsPainter(viewerPanel, this);
-
+        this.sprite = layer.getSprite();
         this.allPainters = new ArrayList<>();
-        allPainters.add(centerPointPainter);
-        allPainters.add(shieldPointPainter);
-        allPainters.add(boundsPainter);
-
-        this.shipSprite = layer.getShipSprite();
-        this.initPainterListeners(layer);
+        this.listeners = new ArrayList<>();
         this.initLayerListeners();
     }
 
-    public boolean isLayerActive() {
-        LayerManager layerManager = viewer.getLayerManager();
-        return (layerManager.getActiveLayer() == this.parentLayer);
-    }
-
     private void initLayerListeners() {
-        EventBus.subscribe(event -> {
-            if (event instanceof ShipLayerRemovalConfirmed checked) {
-                if (checked.removed() != this.parentLayer) return;
-                for (AbstractPointPainter pointPainter : this.getAllPainters()) {
-                    LayerPainter.clearPointPainter(pointPainter);
-                }
+        BusEventListener removalListener = event -> {
+            if (event instanceof ViewerLayerRemovalConfirmed checked) {
+                if (checked.removed() != this.getParentLayer()) return;
+                this.cleanupForRemoval();
             }
-        });
-        EventBus.subscribe(event -> {
+        };
+        listeners.add(removalListener);
+        EventBus.subscribe(removalListener);
+        BusEventListener anchorDragListener = event -> {
             if (event instanceof LayerAnchorDragged checked && checked.selected() == this) {
                 AffineTransform screenToWorld = checked.screenToWorld();
                 Point2D difference = checked.difference();
@@ -122,68 +79,30 @@ public final class LayerPainter implements Painter {
                 double roundedY = Math.round(wP.getY() * 2) / 2.0;
                 Point2D corrected = new Point2D.Double(roundedX, roundedY);
                 updateAnchorOffset(corrected);
-                Events.repaintView();
             }
-        });
+        };
+        listeners.add(anchorDragListener);
+        EventBus.subscribe(anchorDragListener);
+
+        BusEventListener rotationListener = event -> {
+            if (event instanceof LayerRotationQueued checked) {
+                if (checked.layer() != this) return;
+                this.rotateToTarget(checked.worldTarget());
+            }
+        };
+        listeners.add(rotationListener);
+        EventBus.subscribe(rotationListener);
     }
 
-    private static void clearPointPainter(AbstractPointPainter pointPainter) {
-        Iterable<BaseWorldPoint> points = new ArrayList<>(pointPainter.getPointsIndex());
-        for (BaseWorldPoint point : points) {
-            pointPainter.removePoint(point);
+    public boolean isLayerActive() {
+        return StaticController.getActiveLayer() == this.getParentLayer();
+    }
+
+    private void cleanupForRemoval() {
+        for (AbstractPointPainter pointPainter : this.getAllPainters()) {
+            pointPainter.cleanupPointPainter();
         }
-    }
-
-    private void initPainterListeners(ShipLayer layer) {
-        EventBus.subscribe(event -> {
-            if (event instanceof ActiveLayerUpdated checked) {
-                if (checked.updated() != layer) return;
-                if (layer.getShipSprite() != null) {
-                    this.shipSprite = layer.getShipSprite();
-                }
-                if (layer.getShipData() != null && this.uninitialized) {
-                    this.initializeShipData(layer.getShipData());
-                }
-            }
-        });
-    }
-
-    public void updateAnchorOffset(Point2D updated) {
-        Point2D oldOffset = this.anchorOffset;
-        Point2D difference = new Point2D.Double(oldOffset.getX() - updated.getX(),
-                oldOffset.getY() - updated.getY());
-        EventBus.publish(new AnchorOffsetQueued(this, difference));
-        this.anchorOffset = updated;
-    }
-
-    public ShipCenterPoint getShipCenter() {
-        return this.centerPointPainter.getCenterPoint();
-    }
-
-    public Point2D getCenterAnchor() {
-        return new Point2D.Double( anchorOffset.getX(), anchorOffset.getY() + shipSprite.getHeight());
-    }
-
-    public Point2D getSpriteCenter() {
-        return new Point2D.Double((anchorOffset.getX() + shipSprite.getWidth() / 2.0f),
-                (anchorOffset.getY() + shipSprite.getHeight() / 2.0f));
-    }
-
-    @Override
-    public void paint(Graphics2D g, AffineTransform worldToScreen, double w, double h) {
-        AffineTransform oldAT = g.getTransform();
-        g.transform(worldToScreen);
-        int width = shipSprite.getWidth();
-        int height = shipSprite.getHeight();
-        int rule = AlphaComposite.SRC_OVER;
-        float alpha = this.spriteOpacity;
-        Composite old = g.getComposite();
-        Composite opacity = AlphaComposite.getInstance(rule, alpha) ;
-        g.setComposite(opacity);
-        g.drawImage(shipSprite, (int) anchorOffset.getX(),
-                (int) anchorOffset.getY(), width, height, null);
-        g.setComposite(old);
-        g.setTransform(oldAT);
+        listeners.forEach(EventBus::unsubscribe);
     }
 
     void setSpriteOpacity(float opacity) {
@@ -192,49 +111,86 @@ public final class LayerPainter implements Painter {
         } else this.spriteOpacity = Math.min(opacity, 1.0f);
     }
 
-    private void initializeShipData(ShipData shipData) {
-        Hull hull = shipData.getHull();
-
-        Point2D anchor = this.getCenterAnchor();
-        double anchorX = anchor.getX();
-        double anchorY = anchor.getY();
-
-        Point2D.Double hullCenter = hull.getCenter();
-        Point2D.Double translatedCenter = new Point2D.Double(hullCenter.x + anchorX,
-                -hullCenter.y + anchorY);
-
-        this.centerPointPainter.initCenterPoint(translatedCenter, hull);
-
-        shipData.initHullStyle();
-
-        Point2D shieldCenterTranslated = LayerPainter.translatePointByCenter(hull.getShieldCenter(), translatedCenter);
-        this.shieldPointPainter.initShieldPoint(shieldCenterTranslated, shipData);
-
-        Stream<Point2D> boundStream = Arrays.stream(hull.getBounds());
-        boundStream.forEach(bound -> {
-            BoundPoint boundPoint = this.createTranslatedBound(bound, translatedCenter);
-            boundsPainter.addPoint(boundPoint);
-        });
-
-        this.uninitialized = false;
-        log.info("{} initialized!", this);
-        EventBus.publish(new LayerShipDataInitialized(this, this.paintOrdering));
-        EventBus.publish(new ViewerRepaintQueued());
-    }
-
-    private static Point2D translatePointByCenter(Point2D input, Point2D translatedCenter) {
-        double translatedX = -input.getY() + translatedCenter.getX();
-        double translatedY = -input.getX() + translatedCenter.getY();
-        return new Point2D.Double(translatedX, translatedY);
-    }
-
-    private BoundPoint createTranslatedBound(Point2D bound, Point2D translatedCenter) {
-        return new BoundPoint(LayerPainter.translatePointByCenter(bound, translatedCenter), this);
-    }
-
     @Override
     public String toString() {
         return "Layer Painter #" + this.hashCode();
+    }
+
+    private void rotateToTarget(Point2D worldTarget) {
+        Point2D spriteCenter = getSpriteCenter();
+        double deltaX = worldTarget.getX() - spriteCenter.getX();
+        double deltaY = worldTarget.getY() - spriteCenter.getY();
+
+        double radians = -Math.atan2(deltaX, deltaY);
+
+        double rotationDegrees = Math.toDegrees(radians) + 180;
+        double result = rotationDegrees;
+        if (ControlPredicates.isRotationRoundingEnabled()) {
+            result = Math.round(rotationDegrees);
+        }
+        this.rotateLayer(result);
+    }
+
+    @SuppressWarnings("WeakerAccess")
+    public void rotateLayer(double rotationDegrees) {
+        EditDispatch.postLayerRotated(this, this.getRotationRadians(), Math.toRadians(rotationDegrees));
+    }
+
+    public AffineTransform getWithRotation(AffineTransform worldToScreen) {
+        AffineTransform transform = new AffineTransform(worldToScreen);
+        transform.concatenate(getRotationTransform());
+        return transform;
+    }
+
+    public AffineTransform getRotationTransform() {
+        double rotation = this.getRotationRadians();
+        Point2D spriteCenter = this.getSpriteCenter();
+        double centerX = spriteCenter.getX();
+        double centerY = spriteCenter.getY();
+        return AffineTransform.getRotateInstance(rotation, centerX, centerY);
+    }
+
+    public AffineTransform getWithRotationInverse(AffineTransform worldToScreen) {
+        AffineTransform transform;
+        AffineTransform worldToScreenCopy = new AffineTransform(worldToScreen);
+        try {
+            AffineTransform inverseRotation = getRotationTransform();
+            worldToScreenCopy.concatenate(inverseRotation);
+            transform = worldToScreenCopy.createInverse();
+        } catch (NoninvertibleTransformException e) {
+            throw new RuntimeException("Non-invertible rotation transform of layer!", e);
+        }
+        return transform;
+    }
+
+    /**
+     * Note: if called programmatically outside of usual user input flow,
+     * {@link oth.shipeditor.undo.UndoOverseer} needs to finish all edits programmatically as well,
+     * for consistent undo/redo behaviour.
+     * @param updated new position of the anchor offset.
+     */
+    public void updateAnchorOffset(Point2D updated) {
+        EditDispatch.postAnchorOffsetChanged(this, updated);
+    }
+
+    public Point2D getSpriteCenter() {
+        return new Point2D.Double((anchor.getX() + sprite.getWidth() / 2.0f), (anchor.getY() + sprite.getHeight() / 2.0f));
+    }
+
+    @Override
+    public void paint(Graphics2D g, AffineTransform worldToScreen, double w, double h) {
+        AffineTransform oldAT = g.getTransform();
+        g.transform(worldToScreen);
+        int width = sprite.getWidth();
+        int height = sprite.getHeight();
+        int rule = AlphaComposite.SRC_OVER;
+        float alpha = this.spriteOpacity;
+        Composite old = g.getComposite();
+        Composite opacity = AlphaComposite.getInstance(rule, alpha) ;
+        g.setComposite(opacity);
+        g.drawImage(sprite, (int) anchor.getX(), (int) anchor.getY(), width, height, null);
+        g.setComposite(old);
+        g.setTransform(oldAT);
     }
 
 }

@@ -6,9 +6,8 @@ import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.components.WindowGUIShowConfirmed;
 import oth.shipeditor.communication.events.components.WindowRepaintQueued;
 import oth.shipeditor.components.WindowContentPanes;
-import oth.shipeditor.components.viewer.ShipViewable;
+import oth.shipeditor.components.viewer.LayerViewer;
 import oth.shipeditor.components.viewer.control.ControlPredicates;
-import oth.shipeditor.components.viewer.painters.AbstractPointPainter;
 import oth.shipeditor.menubar.PrimaryMenuBar;
 import oth.shipeditor.persistence.Initializations;
 import oth.shipeditor.utility.StaticController;
@@ -63,10 +62,9 @@ public final class PrimaryWindow extends JFrame {
         StaticController.init();
 
         ControlPredicates.initSelectionModeListening();
-        AbstractPointPainter.initCursorListening();
     }
 
-    ShipViewable getShipView() {
+    LayerViewer getShipView() {
         return this.contentPanes.getShipView();
     }
 

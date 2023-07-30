@@ -4,6 +4,7 @@ import lombok.Getter;
 import lombok.Setter;
 import oth.shipeditor.persistence.SettingsManager;
 
+import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -15,12 +16,16 @@ public class ShipData {
 
     private Hull hull;
 
-    private Skin skin;
-
+    /**
+     * Keys are skin IDs.
+     */
+    private final Map<String, Skin> skins;
     private HullStyle hullStyle;
 
     public ShipData(Hull openedHull) {
         this.hull = openedHull;
+        this.skins = new HashMap<>();
+        this.skins.put(Skin.DEFAULT, Skin.empty());
     }
 
     public void initHullStyle() {

@@ -9,12 +9,15 @@ import lombok.extern.log4j.Log4j2;
 import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.viewer.ViewerRepaintQueued;
 import oth.shipeditor.communication.events.viewer.control.ViewerGuidesToggled;
-import oth.shipeditor.components.instrument.InstrumentTabsPane;
-import oth.shipeditor.components.viewer.InstrumentMode;
-import oth.shipeditor.components.viewer.PrimaryShipViewer;
+import oth.shipeditor.components.instrument.ship.ShipInstrumentsPane;
+import oth.shipeditor.components.viewer.ShipInstrument;
+import oth.shipeditor.components.viewer.PrimaryViewer;
+import oth.shipeditor.components.viewer.control.ControlPredicates;
 import oth.shipeditor.components.viewer.entities.BaseWorldPoint;
 import oth.shipeditor.components.viewer.entities.WorldPoint;
 import oth.shipeditor.components.viewer.layers.LayerPainter;
+import oth.shipeditor.components.viewer.layers.ship.ShipPainter;
+import oth.shipeditor.components.viewer.painters.points.BoundPointsPainter;
 import oth.shipeditor.utility.graphics.RectangleCorner;
 import oth.shipeditor.utility.StaticController;
 import oth.shipeditor.utility.Utility;
@@ -49,9 +52,9 @@ public final class GuidesPainters {
     private boolean drawCenter;
     private boolean drawAxes;
 
-    private final PrimaryShipViewer parent;
+    private final PrimaryViewer parent;
 
-    public GuidesPainters(PrimaryShipViewer viewer) {
+    public GuidesPainters(PrimaryViewer viewer) {
         this.parent = viewer;
         this.listenForToggling();
 
@@ -84,22 +87,34 @@ public final class GuidesPainters {
         return (g, worldToScreen, w, h) -> {
             if (!drawGuides) return;
             LayerPainter layer = parent.getSelectedLayer();
-            if (layer == null || layer.getShipSprite() == null) return;
-            RenderedImage shipSprite = layer.getShipSprite();
+            if (layer == null || layer.getSprite() == null) return;
+            RenderedImage shipSprite = layer.getSprite();
 
-            Point2D mousePoint = StaticController.getAdjustedCursor();
-            AffineTransform screenToWorld = this.parent.getScreenToWorld();
-            Point2D transformedMouse = screenToWorld.transform(mousePoint, null);
+            Point2D adjustedCursor = StaticController.getAdjustedCursor();
+
+            AffineTransform screenToWorld = layer.getWithRotationInverse(parent.getWorldToScreen());
+
+            Point2D transformedMouse = screenToWorld.transform(adjustedCursor, null);
             double x = transformedMouse.getX();
             double y = transformedMouse.getY();
 
             double spriteW = shipSprite.getWidth();
             double spriteH = shipSprite.getHeight();
-            Point2D anchor = layer.getAnchorOffset();
-            double xLeft = Math.round((anchor.getX() - 0.5) * 2) / 2.0;
-            double yTop = Math.round((anchor.getY() - 0.5) * 2) / 2.0;
-            double xGuide = Math.round((x - 0.5) * 2) / 2.0;
-            double yGuide = Math.round((y - 0.5) * 2) / 2.0;
+
+            Point2D anchor = layer.getAnchor();
+
+            double xLeft = anchor.getX() - 0.5;
+            double yTop = anchor.getY() - 0.5;
+
+            Point2D transformedRaw = screenToWorld.transform(StaticController.getRawCursor(), null);
+            double xGuide = transformedRaw.getX() - 0.5;
+            double yGuide = transformedRaw.getY() - 0.5;
+            if (ControlPredicates.isCursorSnappingEnabled()) {
+                xLeft = Math.round(xLeft * 2) / 2.0;
+                yTop = Math.round(yTop * 2) / 2.0;
+                xGuide = Math.round((x - 0.5) * 2) / 2.0;
+                yGuide = Math.round((y - 0.5) * 2) / 2.0;
+            }
 
             Point2D crossCenter = new Point2D.Double(xGuide + 0.5, yGuide + 0.5);
 
@@ -111,9 +126,11 @@ public final class GuidesPainters {
             Shape guideY = worldToScreen.createTransformedShape(axisY);
 
             g.setPaint(new Color(0x80232323, true));
-            g.draw(guideX); g.draw(guideY);
+            g.draw(guideX);
+            g.draw(guideY);
             g.setPaint(new Color(0x40FFFFFF, true));
-            g.fill(guideX); g.fill(guideY);
+            g.fill(guideX);
+            g.fill(guideY);
 
             Shape targetSquare = new Rectangle2D.Double(xGuide, yGuide, 1, 1);
             Shape transformed = worldToScreen.createTransformedShape(targetSquare);
@@ -146,11 +163,11 @@ public final class GuidesPainters {
             if (!drawBorders) return;
 
             LayerPainter layer = parent.getSelectedLayer();
-            if (layer == null || layer.getShipSprite() == null) return;
-            RenderedImage shipSprite = layer.getShipSprite();
+            if (layer == null || layer.getSprite() == null) return;
+            RenderedImage shipSprite = layer.getSprite();
             int width = shipSprite.getWidth();
             int height = shipSprite.getHeight();
-            Point2D layerAnchor = layer.getAnchorOffset();
+            Point2D layerAnchor = layer.getAnchor();
             Shape spriteBorder = new Rectangle((int) layerAnchor.getX(), (int) layerAnchor.getY(), width, height);
             Shape transformed = worldToScreen.createTransformedShape(spriteBorder);
 
@@ -198,17 +215,18 @@ public final class GuidesPainters {
         };
     }
 
+    @SuppressWarnings("MethodWithMultipleReturnPoints")
     private static void drawPointPositionHint(Graphics2D g, Point2D position, LayerPainter painter) {
-        if (InstrumentTabsPane.getCurrentMode() == InstrumentMode.BOUNDS) {
+        if (ShipInstrumentsPane.getCurrentMode() == ShipInstrument.BOUNDS) {
             Font hintFont = Utility.getOrbitron(12);
-
-            BoundPointsPainter boundsPainter = painter.getBoundsPainter();
+            if (!(painter instanceof ShipPainter checkedPainter)) return;
+            BoundPointsPainter boundsPainter = checkedPainter.getBoundsPainter();
             if (boundsPainter == null) return;
             WorldPoint selected = boundsPainter.getSelected();
             if (selected == null) return;
             Point2D boundPosition = selected.getCoordinatesForDisplay();
 
-            String toDraw = (int) Math.round(boundPosition.getX()) + ", " + (int) Math.round(boundPosition.getY());
+            String toDraw = boundPosition.getX() + ", " + boundPosition.getY();
             double x = position.getX(), y = position.getY();
 
             Point2D.Double screenPosition = new Point2D.Double(x + 20, y + 14);
@@ -226,9 +244,9 @@ public final class GuidesPainters {
         public void paint(Graphics2D g, AffineTransform worldToScreen, double w, double h) {
             if (!drawCenter) return;
             LayerPainter layer = parent.getSelectedLayer();
-            if (layer == null || layer.getShipSprite() == null) return;
-            RenderedImage shipSprite = layer.getShipSprite();
-            Point2D anchor = layer.getAnchorOffset();
+            if (layer == null || layer.getSprite() == null) return;
+            RenderedImage shipSprite = layer.getSprite();
+            Point2D anchor = layer.getAnchor();
             Point spriteCenter = new Point((int) (anchor.getX() + (shipSprite.getWidth() / 2)),
                     (int) (anchor.getY() + (shipSprite.getHeight() / 2)));
             WorldPoint pointInput = new BaseWorldPoint(spriteCenter);

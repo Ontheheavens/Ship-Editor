@@ -4,9 +4,7 @@ import de.javagl.viewer.InputEventPredicates;
 import de.javagl.viewer.Predicates;
 import lombok.Getter;
 import oth.shipeditor.communication.EventBus;
-import oth.shipeditor.communication.events.viewer.control.MirrorModeChange;
-import oth.shipeditor.communication.events.viewer.control.PointLinkageToleranceChanged;
-import oth.shipeditor.communication.events.viewer.control.PointSelectionModeChange;
+import oth.shipeditor.communication.events.viewer.control.*;
 
 import java.awt.event.MouseEvent;
 import java.util.function.Predicate;
@@ -15,13 +13,26 @@ import java.util.function.Predicate;
  * @author Ontheheavens
  * @since 01.06.2023
  */
+@SuppressWarnings("ClassWithTooManyFields")
 public final class ControlPredicates {
 
+    public static final double MAXIMUM_ZOOM = 1000.0;
+    public static final double MINIMUM_ZOOM = 0.1;
+    @SuppressWarnings("WeakerAccess")
+    public static final double ZOOMING_SPEED = 0.15;
+    @SuppressWarnings("WeakerAccess")
+    public static final double ROTATION_SPEED = 6.0;
     @Getter
     private static PointSelectionMode selectionMode = PointSelectionMode.CLOSEST;
 
     @Getter
     private static boolean mirrorModeEnabled = true;
+
+    @Getter
+    private static boolean cursorSnappingEnabled = true;
+
+    @Getter
+    private static boolean rotationRoundingEnabled = true;
 
     @Getter
     private static int mirrorPointLinkageTolerance;
@@ -35,6 +46,16 @@ public final class ControlPredicates {
         EventBus.subscribe(event -> {
             if (event instanceof MirrorModeChange checked) {
                 mirrorModeEnabled = checked.enabled();
+            }
+        });
+        EventBus.subscribe(event -> {
+            if (event instanceof CursorSnappingToggled checked) {
+                cursorSnappingEnabled = checked.toggled();
+            }
+        });
+        EventBus.subscribe(event -> {
+            if (event instanceof RotationRoundingToggled checked) {
+                rotationRoundingEnabled = checked.toggled();
             }
         });
         EventBus.subscribe(event -> {
@@ -54,6 +75,11 @@ public final class ControlPredicates {
             InputEventPredicates.shiftDown()
     );
 
+    static final Predicate<MouseEvent> layerRotatePredicate = Predicates.and(
+            InputEventPredicates.buttonDown(3),
+            InputEventPredicates.shiftDown()
+    );
+
     static final Predicate<MouseEvent> removePointPredicate = Predicates.and(
             InputEventPredicates.buttonDown(3),
             InputEventPredicates.controlDown()
@@ -61,6 +87,16 @@ public final class ControlPredicates {
 
     static final Predicate<MouseEvent> selectPointPredicate = Predicates.and(
             InputEventPredicates.buttonDown(1),
+            InputEventPredicates.noModifiers()
+    );
+
+    static final Predicate<MouseEvent> changeSlotAnglePredicate = Predicates.and(
+            InputEventPredicates.buttonDown(1),
+            InputEventPredicates.noModifiers()
+    );
+
+    static final Predicate<MouseEvent> changeSlotArcPredicate = Predicates.and(
+            InputEventPredicates.buttonDown(3),
             InputEventPredicates.noModifiers()
     );
 

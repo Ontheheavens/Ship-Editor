@@ -9,26 +9,29 @@ import oth.shipeditor.communication.events.files.HullFileOpened;
 import oth.shipeditor.communication.events.files.HullStylesLoaded;
 import oth.shipeditor.communication.events.files.SpriteOpened;
 import oth.shipeditor.communication.events.viewer.layers.LastLayerSelectQueued;
-import oth.shipeditor.communication.events.viewer.layers.LayerCreationQueued;
-import oth.shipeditor.components.viewer.layers.ShipLayer;
+import oth.shipeditor.communication.events.viewer.layers.ships.ShipLayerCreationQueued;
+import oth.shipeditor.components.viewer.layers.ViewerLayer;
+import oth.shipeditor.components.viewer.layers.ship.ShipLayer;
 import oth.shipeditor.parsing.loading.*;
 import oth.shipeditor.persistence.Settings;
 import oth.shipeditor.persistence.SettingsManager;
 import oth.shipeditor.representation.GameDataRepository;
 import oth.shipeditor.representation.Hull;
 import oth.shipeditor.representation.HullStyle;
+import oth.shipeditor.utility.graphics.Sprite;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
-import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.*;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Stream;
 
 /**
@@ -57,9 +60,14 @@ public final class FileUtilities {
 
     private FileUtilities() {}
 
-    public static void updateActionStates(ShipLayer current) {
-        boolean spriteState = (current != null) && current.getShipSprite() == null && current.getShipData() == null;
-        boolean hullState = (current != null) && current.getShipSprite() != null && current.getShipData() == null;
+    public static void updateActionStates(ViewerLayer currentlySelected) {
+        if (!(currentlySelected instanceof ShipLayer layer)) {
+            openSpriteAction.setEnabled(currentlySelected != null && currentlySelected.getSprite() == null);
+            openShipDataAction.setEnabled(false);
+            return;
+        }
+        boolean spriteState = layer.getSprite() == null && layer.getShipData() == null;
+        boolean hullState = layer.getSprite() != null && layer.getShipData() == null;
         openSpriteAction.setEnabled(spriteState);
         openShipDataAction.setEnabled(hullState);
     }
@@ -81,11 +89,11 @@ public final class FileUtilities {
         }
     }
 
-    public static void createLayerWithSprite(File spriteFile) {
-        EventBus.publish(new LayerCreationQueued());
+    public static void createShipLayerWithSprite(File spriteFile) {
+        EventBus.publish(new ShipLayerCreationQueued());
         EventBus.publish(new LastLayerSelectQueued());
-        BufferedImage sprite = FileLoading.loadSprite(spriteFile);
-        EventBus.publish(new SpriteOpened(sprite, spriteFile.getName()));
+        Sprite sprite = FileLoading.loadSprite(spriteFile);
+        EventBus.publish(new SpriteOpened(sprite));
     }
 
     private static class OpenHullAction extends AbstractAction {

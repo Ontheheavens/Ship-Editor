@@ -26,7 +26,6 @@ public class LoadHullmodDataAction extends AbstractAction {
     private static final String HULLMODS = "hullmods";
     private static final String HULL_MODS_CSV = "hull_mods.csv";
 
-    @SuppressWarnings("DuplicatedCode")
     @Override
     public void actionPerformed(ActionEvent e) {
         Settings settings = SettingsManager.getSettings();

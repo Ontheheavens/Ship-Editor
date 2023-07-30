@@ -4,11 +4,15 @@ import lombok.extern.log4j.Log4j2;
 import org.kordamp.ikonli.Ikon;
 import org.kordamp.ikonli.boxicons.BoxiconsRegular;
 import org.kordamp.ikonli.fluentui.FluentUiRegularAL;
+import org.kordamp.ikonli.fluentui.FluentUiRegularMZ;
 import org.kordamp.ikonli.swing.FontIcon;
 import oth.shipeditor.communication.EventBus;
+import oth.shipeditor.communication.events.viewer.control.CursorSnappingToggled;
 import oth.shipeditor.communication.events.viewer.control.PointSelectionModeChange;
+import oth.shipeditor.communication.events.viewer.control.RotationRoundingToggled;
 import oth.shipeditor.communication.events.viewer.layers.ActiveLayerRemovalQueued;
-import oth.shipeditor.communication.events.viewer.layers.LayerCreationQueued;
+import oth.shipeditor.communication.events.viewer.layers.ships.ShipLayerCreationQueued;
+import oth.shipeditor.communication.events.viewer.layers.weapons.WeaponLayerCreationQueued;
 import oth.shipeditor.components.viewer.control.PointSelectionMode;
 import oth.shipeditor.undo.UndoOverseer;
 
@@ -23,9 +27,13 @@ import java.awt.event.ActionListener;
 @Log4j2
 public final class PrimaryMenuBar extends JMenuBar {
 
+    private JCheckBoxMenuItem toggleCursorSnap;
+
+    private JCheckBoxMenuItem toggleRotationRounding;
+
     public PrimaryMenuBar() {
         this.add(PrimaryMenuBar.createFileMenu());
-        this.add(PrimaryMenuBar.createEditMenu());
+        this.add(this.createEditMenu());
         this.add(PrimaryMenuBar.createViewMenu());
         this.add(PrimaryMenuBar.createLayersMenu());
     }
@@ -42,7 +50,7 @@ public final class PrimaryMenuBar extends JMenuBar {
         return viewMenu;
     }
 
-    private static JMenu createEditMenu() {
+    private JMenu createEditMenu() {
         JMenu editMenu = new JMenu("Edit");
 
         JMenuItem undo = new JMenuItem("Undo");
@@ -66,11 +74,38 @@ public final class PrimaryMenuBar extends JMenuBar {
         JMenuItem pointSelectionMode = PrimaryMenuBar.createPointSelectionModeOptions();
         editMenu.add(pointSelectionMode);
 
+        toggleCursorSnap = new JCheckBoxMenuItem("Toggle cursor snapping");
+        toggleCursorSnap.setIcon(FontIcon.of(FluentUiRegularAL.GROUP_20, 16));
+        toggleCursorSnap.setSelected(true);
+        toggleCursorSnap.addActionListener(event ->
+                EventBus.publish(new CursorSnappingToggled(toggleCursorSnap.isSelected()))
+        );
+        EventBus.subscribe(event -> {
+            if (event instanceof CursorSnappingToggled checked) {
+                toggleCursorSnap.setSelected(checked.toggled());
+            }
+        });
+        editMenu.add(toggleCursorSnap);
+
+        toggleRotationRounding = new JCheckBoxMenuItem("Toggle rotation rounding");
+        toggleRotationRounding.setIcon(FontIcon.of(FluentUiRegularAL.ARROW_ROTATE_CLOCKWISE_20, 16));
+        toggleRotationRounding.setSelected(true);
+        toggleRotationRounding.addActionListener(event ->
+                EventBus.publish(new RotationRoundingToggled(toggleRotationRounding.isSelected()))
+        );
+        EventBus.subscribe(event -> {
+            if (event instanceof RotationRoundingToggled checked) {
+                toggleRotationRounding.setSelected(checked.toggled());
+            }
+        });
+        editMenu.add(toggleRotationRounding);
+
         return editMenu;
     }
 
     private static JMenu createPointSelectionModeOptions() {
         JMenu newSubmenu = new JMenu("Point selection mode");
+        newSubmenu.setIcon(FontIcon.of(FluentUiRegularMZ.TARGET_20, 16));
 
         JMenuItem selectHovered = new JRadioButtonMenuItem("Select clicked");
         selectHovered.addActionListener(e ->
@@ -105,18 +140,27 @@ public final class PrimaryMenuBar extends JMenuBar {
 
         JMenuItem createLayer = new JMenuItem("Create new layer");
         createLayer.setIcon(FontIcon.of(BoxiconsRegular.LAYER_PLUS, 16));
-        createLayer.addActionListener(event -> SwingUtilities.invokeLater(
-                        () -> EventBus.publish(new LayerCreationQueued())
-                )
-        );
+        createLayer.addActionListener(event -> {
+            Object[] options = {"Ship Layer", "Weapon Layer"};
+            int result = JOptionPane.showOptionDialog(null,
+                    "Select new layer type:",
+                    "Create New Layer",
+                    JOptionPane.YES_NO_CANCEL_OPTION,
+                    JOptionPane.QUESTION_MESSAGE,
+                    null,
+                    options,
+                    options[0]);
+            if (result == 0) {
+                EventBus.publish(new ShipLayerCreationQueued());
+            } else {
+                EventBus.publish(new WeaponLayerCreationQueued());
+            }
+        });
         layersMenu.add(createLayer);
 
         JMenuItem removeLayer = new JMenuItem("Remove selected layer");
         removeLayer.setIcon(FontIcon.of(BoxiconsRegular.LAYER_MINUS, 16));
-        removeLayer.addActionListener(event -> SwingUtilities.invokeLater(
-                        () -> EventBus.publish(new ActiveLayerRemovalQueued())
-                )
-        );
+        removeLayer.addActionListener(event -> EventBus.publish(new ActiveLayerRemovalQueued()));
         layersMenu.add(removeLayer);
 
         return layersMenu;

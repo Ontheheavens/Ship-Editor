@@ -4,16 +4,22 @@ import com.formdev.flatlaf.ui.FlatLineBorder;
 import com.formdev.flatlaf.ui.FlatRoundBorder;
 import oth.shipeditor.communication.BusEventListener;
 import oth.shipeditor.communication.EventBus;
+import oth.shipeditor.components.instrument.ship.BoundPointsPanel;
+import oth.shipeditor.components.instrument.ship.PointList;
+import oth.shipeditor.components.viewer.entities.BaseWorldPoint;
+import oth.shipeditor.components.viewer.painters.points.AbstractPointPainter;
+import oth.shipeditor.components.viewer.painters.PainterVisibility;
 import oth.shipeditor.menubar.FileUtilities;
 import oth.shipeditor.utility.Pair;
-import oth.shipeditor.utility.StringConstants;
 import oth.shipeditor.utility.graphics.ColorUtilities;
+import oth.shipeditor.utility.text.StringValues;
 
 import javax.swing.*;
 import javax.swing.border.Border;
 import javax.swing.border.EmptyBorder;
 import javax.swing.event.ChangeListener;
 import java.awt.*;
+import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
 import java.nio.file.Path;
 import java.util.Dictionary;
@@ -24,7 +30,6 @@ import java.util.Hashtable;
  * @since 22.07.2023
  */
 public final class ComponentUtilities {
-
 
     private ComponentUtilities() {
     }
@@ -46,10 +51,15 @@ public final class ComponentUtilities {
     }
 
     public static JPanel createBoxLabelPanel(String leftName, JLabel rightValue) {
+        int sidePadding = 6;
+        return ComponentUtilities.createBoxLabelPanel(leftName, rightValue, sidePadding);
+    }
+
+    @SuppressWarnings("WeakerAccess")
+    public static JPanel createBoxLabelPanel(String leftName, JLabel rightValue, int sidePadding) {
         JPanel infoContainer = new JPanel();
         infoContainer.setLayout(new BoxLayout(infoContainer, BoxLayout.LINE_AXIS));
         JLabel label = new JLabel(leftName);
-        int sidePadding = 6;
         ComponentUtilities.layoutAsOpposites(infoContainer, label, rightValue, sidePadding);
         return infoContainer;
     }
@@ -89,15 +99,16 @@ public final class ComponentUtilities {
         opacitySlider.setPaintLabels(true);
         JLabel opacityLabel = new JLabel();
         opacityLabel.setAlignmentX(0.0f);
+
         return new Pair<>(opacitySlider, opacityLabel);
     }
 
     public static JPopupMenu createPathContextMenu(Path filePath) {
         JPopupMenu openFileMenu = new JPopupMenu();
-        JMenuItem openSourceFile = new JMenuItem(StringConstants.OPEN_SOURCE_FILE);
+        JMenuItem openSourceFile = new JMenuItem(StringValues.OPEN_SOURCE_FILE);
         openSourceFile.addActionListener(e -> FileUtilities.openPathInDesktop(filePath));
         openFileMenu.add(openSourceFile);
-        JMenuItem openContainingFolder = new JMenuItem(StringConstants.OPEN_CONTAINING_FOLDER);
+        JMenuItem openContainingFolder = new JMenuItem(StringValues.OPEN_CONTAINING_FOLDER);
         openContainingFolder.addActionListener(e -> FileUtilities.openPathInDesktop(filePath.getParent()));
         openFileMenu.add(openContainingFolder);
 
@@ -130,6 +141,7 @@ public final class ComponentUtilities {
         return new ImageIcon(image);
     }
 
+    @SuppressWarnings("WeakerAccess")
     public static JLabel createColorIconLabel(Color color) {
         ImageIcon colorIcon = ComponentUtilities.createIconFromColor(color, 10, 10);
         return ComponentUtilities.createIconLabelWithBorder(colorIcon);
@@ -147,6 +159,55 @@ public final class ComponentUtilities {
 
         ComponentUtilities.layoutAsOpposites(container, colorLabel, colorIcon, 0);
         return container;
+    }
+
+    public static JPanel createVisibilityWidget(JComboBox<PainterVisibility> visibilityList,
+                                                Class<? extends AbstractPointPainter> painterClass,
+                                                ActionListener selectionAction, String labelName) {
+        String widgetLabel = labelName;
+        JPanel widgetPanel = new JPanel();
+        widgetPanel.setLayout(new BoxLayout(widgetPanel, BoxLayout.LINE_AXIS));
+
+        visibilityList.setRenderer(PainterVisibility.createCellRenderer());
+        visibilityList.addActionListener(PainterVisibility.createActionListener(visibilityList, painterClass));
+        EventBus.subscribe(PainterVisibility.createBusEventListener(visibilityList, selectionAction));
+
+        visibilityList.setMaximumSize(visibilityList.getPreferredSize());
+
+        if (widgetLabel.isEmpty()) {
+            widgetLabel = StringValues.PAINTER_VIEW;
+        }
+
+        JLabel visibilityWidgetLabel = new JLabel(widgetLabel);
+        visibilityWidgetLabel.setToolTipText(StringValues.TOGGLED_ON_PER_LAYER_BASIS);
+        widgetPanel.setBorder(new EmptyBorder(4, 0, 4, 0));
+
+        int sidePadding = 6;
+        ComponentUtilities.layoutAsOpposites(widgetPanel, visibilityWidgetLabel,
+                visibilityList, sidePadding);
+
+        return widgetPanel;
+    }
+
+    public static Insets createLabelInsets() {
+        return new Insets(0, 3, 2, 4);
+    }
+
+    public static Pair<JPanel, JCheckBox> createReorderCheckboxPanel(PointList<? extends BaseWorldPoint> pointList) {
+        JPanel container = new JPanel();
+        container.setLayout(new BoxLayout(container, BoxLayout.LINE_AXIS));
+        container.setBorder(new EmptyBorder(2, 0, 2, 0));
+
+        JCheckBox reorderCheckbox = new JCheckBox("Reorder by drag");
+        reorderCheckbox.addItemListener(e -> {
+            boolean reorderOn = reorderCheckbox.isSelected();
+            pointList.setDragEnabled(reorderOn);
+        });
+        container.add(Box.createRigidArea(new Dimension(6,0)));
+        container.add(reorderCheckbox);
+        container.add(Box.createHorizontalGlue());
+
+        return new Pair<>(container, reorderCheckbox);
     }
 
 }

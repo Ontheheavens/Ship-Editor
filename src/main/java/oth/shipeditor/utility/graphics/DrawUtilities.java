@@ -14,7 +14,6 @@ import java.awt.geom.Rectangle2D;
  * @author Ontheheavens
  * @since 19.07.2023
  */
-@SuppressWarnings("DuplicatedCode")
 @Log4j2
 public final class DrawUtilities {
 
@@ -25,15 +24,11 @@ public final class DrawUtilities {
                                          Color color, float thickness) {
         Stroke originalStroke = g.getStroke();
         Color originalColor = g.getColor();
-        Object renderingHint = g.getRenderingHint(RenderingHints.KEY_STROKE_CONTROL);
 
-        g.setRenderingHint(RenderingHints.KEY_STROKE_CONTROL, RenderingHints.VALUE_STROKE_PURE);
-        
         g.setColor(color);
         g.setStroke(new BasicStroke(thickness, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
         g.drawLine((int) start.getX(), (int) start.getY(), (int) finish.getX(), (int) finish.getY());
 
-        g.setRenderingHint(RenderingHints.KEY_STROKE_CONTROL, renderingHint);
         g.setStroke(originalStroke);
         g.setColor(originalColor);
     }
@@ -84,15 +79,15 @@ public final class DrawUtilities {
         g.setPaint(old);
     }
 
-    public static void drawCentroid(Graphics2D g, Shape centroid, Paint color) {
+    public static void drawOutlined(Graphics2D g, Shape shape, Paint color) {
         Paint oldPaint = g.getPaint();
         Stroke oldStroke = g.getStroke();
         g.setStroke(new BasicStroke(5));
         g.setPaint(Color.BLACK);
-        g.draw(centroid);
+        g.draw(shape);
         g.setStroke(new BasicStroke(3));
         g.setPaint(color);
-        g.draw(centroid);
+        g.draw(shape);
         g.setStroke(oldStroke);
         g.setPaint(oldPaint);
     }

@@ -6,18 +6,20 @@ import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.files.HullFileOpened;
 import oth.shipeditor.communication.events.files.SpriteOpened;
 import oth.shipeditor.communication.events.viewer.layers.LastLayerSelectQueued;
-import oth.shipeditor.communication.events.viewer.layers.LayerCreationQueued;
+import oth.shipeditor.communication.events.viewer.layers.ships.ShipLayerCreationQueued;
 import oth.shipeditor.components.datafiles.entities.ShipCSVEntry;
-import oth.shipeditor.components.viewer.ShipViewable;
+import oth.shipeditor.components.viewer.LayerViewer;
 import oth.shipeditor.components.viewer.layers.LayerManager;
 import oth.shipeditor.components.viewer.layers.LayerPainter;
-import oth.shipeditor.components.viewer.layers.ShipLayer;
+import oth.shipeditor.components.viewer.layers.ViewerLayer;
 import oth.shipeditor.parsing.loading.FileLoading;
 import oth.shipeditor.persistence.Initializations;
 import oth.shipeditor.persistence.SettingsManager;
 import oth.shipeditor.representation.GameDataRepository;
 import oth.shipeditor.representation.Hull;
 import oth.shipeditor.representation.Skin;
+import oth.shipeditor.undo.UndoOverseer;
+import oth.shipeditor.utility.graphics.Sprite;
 
 import javax.swing.*;
 import java.awt.*;
@@ -27,6 +29,7 @@ import java.io.File;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Map;
@@ -58,6 +61,7 @@ public final class Main {
 
     private static void configureLaf() {
         FlatIntelliJLaf.setup();
+
         UIManager.put("TabbedPane.showTabSeparators", true);
         UIManager.put("TabbedPane.tabSeparatorsFullHeight", true);
         UIManager.put("TabbedPane.selectedBackground", Color.WHITE);
@@ -67,6 +71,9 @@ public final class Main {
         UIManager.put("SplitPane.background", Color.LIGHT_GRAY);
         UIManager.put("SplitPaneDivider.gripColor", Color.DARK_GRAY);
         UIManager.put("SplitPaneDivider.draggingColor", Color.BLACK);
+
+        UIManager.put("TitlePane.background", Color.LIGHT_GRAY);
+        UIManager.put("TitlePane.useWindowDecorations", true);
 
         UIManager.put("Tree.paintLines", true);
         UIManager.put("Tree.showDefaultIcons", true);
@@ -94,11 +101,12 @@ public final class Main {
         legionEntry.setActiveSkin(legionXIV);
         legionEntry.loadLayerFromEntry();
 
-        ShipViewable shipView = window.getShipView();
+        LayerViewer shipView = window.getShipView();
         LayerManager layerManager = shipView.getLayerManager();
-        ShipLayer activeLayer = layerManager.getActiveLayer();
+        ViewerLayer activeLayer = layerManager.getActiveLayer();
         LayerPainter painter = activeLayer.getPainter();
         painter.updateAnchorOffset(new Point2D.Double(-400, 0));
+        UndoOverseer.finishAllEdits();
         shipView.centerViewpoint();
     }
 
@@ -110,16 +118,17 @@ public final class Main {
         String crigHull = "constructionrig.ship";
         Main.loadShip(window, crigSprite, crigHull);
         Main.loadShip(window, legionSprite, legionHull);
-        ShipViewable shipView = window.getShipView();
+        LayerViewer shipView = window.getShipView();
         LayerManager layerManager = shipView.getLayerManager();
-        ShipLayer activeLayer = layerManager.getActiveLayer();
+        ViewerLayer activeLayer = layerManager.getActiveLayer();
         LayerPainter painter = activeLayer.getPainter();
         painter.updateAnchorOffset(new Point2D.Double(-400, 0));
+        UndoOverseer.finishAllEdits();
         shipView.centerViewpoint();
     }
 
     private static void loadShip(PrimaryWindow window, String spriteFilePath, String hullFilePath) {
-        EventBus.publish(new LayerCreationQueued());
+        EventBus.publish(new ShipLayerCreationQueued());
         EventBus.publish(new LastLayerSelectQueued());
         Class<? extends PrimaryWindow> windowClass = window.getClass();
         ClassLoader classLoader = windowClass.getClassLoader();
@@ -127,8 +136,8 @@ public final class Main {
         File spriteFile;
         try {
             spriteFile = new File(spritePath.toURI());
-            BufferedImage sprite = FileLoading.loadSprite(spriteFile);
-            EventBus.publish(new SpriteOpened(sprite, spriteFile.getName()));
+            Sprite sprite = FileLoading.loadSprite(spriteFile);
+            EventBus.publish(new SpriteOpened(sprite));
         } catch (URISyntaxException e) {
             e.printStackTrace();
         }

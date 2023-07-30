@@ -1,10 +1,7 @@
 package oth.shipeditor.components.viewer.entities;
 
-import de.javagl.viewer.Painter;
-import lombok.Getter;
-import lombok.Setter;
-import oth.shipeditor.components.viewer.InstrumentMode;
-import oth.shipeditor.components.viewer.layers.LayerPainter;
+import oth.shipeditor.components.viewer.ShipInstrument;
+import oth.shipeditor.components.viewer.layers.ship.ShipPainter;
 import oth.shipeditor.utility.StaticController;
 import oth.shipeditor.utility.graphics.DrawUtilities;
 import oth.shipeditor.utility.graphics.ShapeUtilities;
@@ -19,20 +16,13 @@ import java.awt.geom.Point2D;
  */
 public class BoundPoint extends BaseWorldPoint{
 
-    @Getter @Setter
-    private double paintSizeMultiplier = 1;
-
-    public BoundPoint(Point2D position) {
-        this(position, null);
-    }
-
-    public BoundPoint(Point2D pointPosition, LayerPainter layer) {
+    public BoundPoint(Point2D pointPosition, ShipPainter layer) {
         super(pointPosition, layer);
     }
 
     @Override
-    public InstrumentMode getAssociatedMode() {
-        return InstrumentMode.BOUNDS;
+    public ShipInstrument getAssociatedMode() {
+        return ShipInstrument.BOUNDS;
     }
 
     public static Shape getShapeForPoint(AffineTransform worldToScreen, Point2D position, double sizeMult) {
@@ -43,20 +33,18 @@ public class BoundPoint extends BaseWorldPoint{
     }
 
     @Override
-    public Painter createPointPainter() {
-        return (g, worldToScreen, w, h) -> {
-            Point2D position = getPosition();
+    public void paint(Graphics2D g, AffineTransform worldToScreen, double w, double h) {
+        Point2D position = getPosition();
 
-            Shape hexagon = BoundPoint.getShapeForPoint(worldToScreen, position, paintSizeMultiplier);
+        Shape hexagon = BoundPoint.getShapeForPoint(worldToScreen, position, getPaintSizeMultiplier());
 
-            boolean cursorInBounds = StaticController.checkIsHovered(hexagon);
-            this.setCursorInBounds(cursorInBounds);
+        boolean cursorInBounds = StaticController.checkIsHovered(hexagon);
+        this.setCursorInBounds(cursorInBounds);
 
-            DrawUtilities.outlineShape(g, hexagon, Color.BLACK, 2);
-            DrawUtilities.fillShape(g, hexagon, getCurrentColor());
+        DrawUtilities.outlineShape(g, hexagon, Color.BLACK, 2);
+        DrawUtilities.fillShape(g, hexagon, getCurrentColor());
 
-            this.paintCoordsLabel(g, worldToScreen);
-        };
+        this.paintCoordsLabel(g, worldToScreen);
     }
 
     @Override

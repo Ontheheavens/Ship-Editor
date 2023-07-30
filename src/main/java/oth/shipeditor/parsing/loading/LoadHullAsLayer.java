@@ -5,8 +5,9 @@ import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.files.HullFileOpened;
 import oth.shipeditor.communication.events.files.SpriteOpened;
 import oth.shipeditor.communication.events.viewer.layers.LastLayerSelectQueued;
-import oth.shipeditor.communication.events.viewer.layers.LayerCreationQueued;
+import oth.shipeditor.communication.events.viewer.layers.ships.ShipLayerCreationQueued;
 import oth.shipeditor.representation.Hull;
+import oth.shipeditor.utility.graphics.Sprite;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;
@@ -32,7 +33,6 @@ public class LoadHullAsLayer extends AbstractAction {
 
             Path spriteFilePath = Path.of(spriteName);
             File spriteFile = FileLoading.fetchDataFile(spriteFilePath, null);
-
             if (spriteFile == null) {
                 log.error("Failed to find sprite for ship file {}", file);
                 JOptionPane.showMessageDialog(null,
@@ -42,10 +42,10 @@ public class LoadHullAsLayer extends AbstractAction {
                 return;
             }
 
-            EventBus.publish(new LayerCreationQueued());
+            EventBus.publish(new ShipLayerCreationQueued());
             EventBus.publish(new LastLayerSelectQueued());
-            BufferedImage sprite = FileLoading.loadSprite(spriteFile);
-            EventBus.publish(new SpriteOpened(sprite, spriteFile.getName()));
+            Sprite sprite = FileLoading.loadSprite(spriteFile);
+            EventBus.publish(new SpriteOpened(sprite));
             EventBus.publish(new HullFileOpened(hull, file.getName()));
         });
     }

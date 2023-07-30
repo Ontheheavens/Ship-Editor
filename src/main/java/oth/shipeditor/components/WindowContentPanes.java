@@ -2,10 +2,10 @@ package oth.shipeditor.components;
 
 import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
-import oth.shipeditor.components.layering.ShipLayersPanel;
-import oth.shipeditor.components.viewer.PrimaryShipViewer;
-import oth.shipeditor.components.viewer.ShipViewable;
-import oth.shipeditor.utility.StringConstants;
+import oth.shipeditor.components.layering.ViewerLayersPanel;
+import oth.shipeditor.components.viewer.PrimaryViewer;
+import oth.shipeditor.components.viewer.LayerViewer;
+import oth.shipeditor.utility.text.StringValues;
 
 import javax.swing.*;
 import java.awt.*;
@@ -17,13 +17,13 @@ import java.awt.*;
 @Log4j2
 public final class WindowContentPanes {
 
-    static final String DEFAULT_LEFTSIDE_PANE = StringConstants.DEFAULT;
+    private static final String DEFAULT_LEFTSIDE_PANE = StringValues.DEFAULT;
 
     /**
      * Complex component responsible for ship layers display.
      */
     @Getter
-    private ShipViewable shipView;
+    private LayerViewer shipView;
 
     /**
      * Status line panel for ship sprite viewer.
@@ -51,13 +51,13 @@ public final class WindowContentPanes {
             // We want to fail fast here, just to be safe and find out quick.
             throw new IllegalStateException("Ship view was null at the time of layer panel initialization!");
         }
-        ShipLayersPanel layersPanel = new ShipLayersPanel(shipView.getLayerManager());
+        ViewerLayersPanel layersPanel = new ViewerLayersPanel(shipView.getLayerManager());
         northPane.add(layersPanel, BorderLayout.CENTER);
         primaryContentPane.add(northPane, BorderLayout.PAGE_START);
     }
 
     public void loadShipView() {
-        this.shipView = new PrimaryShipViewer();
+        this.shipView = new PrimaryViewer().commenceInitialization();
         JPanel southPane = new JPanel();
         southPane.setLayout(new GridLayout());
         this.statusPanel = new ViewerStatusPanel(this.shipView);

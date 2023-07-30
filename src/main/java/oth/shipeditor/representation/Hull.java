@@ -8,7 +8,8 @@ import lombok.Getter;
 import lombok.Setter;
 import oth.shipeditor.parsing.deserialize.Point2DArrayDeserializer;
 import oth.shipeditor.parsing.deserialize.Point2DDeserializer;
-import oth.shipeditor.utility.StringConstants;
+import oth.shipeditor.representation.weapon.WeaponSlot;
+import oth.shipeditor.utility.text.StringConstants;
 
 import java.awt.geom.Point2D;
 import java.nio.file.Path;

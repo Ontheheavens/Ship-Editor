@@ -4,20 +4,17 @@ import de.javagl.viewer.Painter;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
+import oth.shipeditor.communication.BusEventListener;
 import oth.shipeditor.communication.EventBus;
-import oth.shipeditor.communication.events.components.BoundsPanelRepaintQueued;
-import oth.shipeditor.communication.events.components.CentersPanelRepaintQueued;
 import oth.shipeditor.communication.events.viewer.points.AnchorOffsetConfirmed;
 import oth.shipeditor.communication.events.viewer.points.AnchorOffsetQueued;
-import oth.shipeditor.communication.events.viewer.points.InstrumentModeChanged;
-import oth.shipeditor.communication.events.viewer.status.CoordsModeChanged;
-import oth.shipeditor.components.CoordsDisplayMode;
-import oth.shipeditor.components.instrument.InstrumentTabsPane;
-import oth.shipeditor.components.viewer.InstrumentMode;
+import oth.shipeditor.components.instrument.ship.ShipInstrumentsPane;
+import oth.shipeditor.components.viewer.ShipInstrument;
 import oth.shipeditor.components.viewer.layers.LayerPainter;
-import oth.shipeditor.components.viewer.layers.ShipLayer;
+import oth.shipeditor.components.viewer.layers.ship.ShipPainter;
 import oth.shipeditor.components.viewer.painters.TextPainter;
 import oth.shipeditor.utility.StaticController;
+import oth.shipeditor.utility.Utility;
 import oth.shipeditor.utility.graphics.ColorUtilities;
 import oth.shipeditor.utility.graphics.DrawUtilities;
 import oth.shipeditor.utility.graphics.ShapeUtilities;
@@ -31,21 +28,13 @@ import java.awt.geom.Point2D;
  * @since 30.04.2023
  */
 @Log4j2
-public class BaseWorldPoint implements WorldPoint {
-
-    private static CoordsDisplayMode coordsMode = CoordsDisplayMode.WORLD;
+public class BaseWorldPoint implements WorldPoint, Painter {
 
     @Getter @Setter
     private LayerPainter parentLayer;
 
     @Getter
-    private static InstrumentMode instrumentationMode = InstrumentTabsPane.getCurrentMode();
-
-    @Getter
     private final Point2D position;
-
-    @Getter
-    private final Painter painter;
 
     private final TextPainter coordsLabel;
 
@@ -53,31 +42,18 @@ public class BaseWorldPoint implements WorldPoint {
     private boolean cursorInBounds;
 
     @Getter @Setter
-    private boolean selected;
+    private boolean pointSelected;
 
     @Getter
     private final AffineTransform delegateWorldToScreen;
 
-    /**
-     * Note: this method needs to be called as soon as possible when initializing the viewer.
-     */
-    public static void initStaticListening() {
-        EventBus.subscribe(event -> {
-            if (event instanceof CoordsModeChanged checked) {
-                coordsMode = checked.newMode();
-                EventBus.publish(new BoundsPanelRepaintQueued());
-                EventBus.publish(new CentersPanelRepaintQueued());
-            }
-        });
-        EventBus.subscribe(event -> {
-            if (event instanceof InstrumentModeChanged checked) {
-                instrumentationMode = checked.newMode();
-            }
-        });
-    }
+    private BusEventListener anchorDragListener;
 
-    public InstrumentMode getAssociatedMode() {
-        return InstrumentMode.LAYER;
+    @Getter @Setter
+    private double paintSizeMultiplier = 1;
+
+    public ShipInstrument getAssociatedMode() {
+        return ShipInstrument.LAYER;
     }
 
     public BaseWorldPoint() {
@@ -89,11 +65,10 @@ public class BaseWorldPoint implements WorldPoint {
 
     }
 
-    public BaseWorldPoint(Point2D pointPosition, LayerPainter layer) {
+    public BaseWorldPoint(Point2D pointPosition, ShipPainter layer) {
         this.position = new Point2D.Double(pointPosition.getX(), pointPosition.getY());
         this.parentLayer = layer;
         this.delegateWorldToScreen = new AffineTransform();
-        this.painter = this.createPointPainter();
         this.coordsLabel = new TextPainter();
         if (layer != null) {
             this.initLayerListening();
@@ -119,19 +94,24 @@ public class BaseWorldPoint implements WorldPoint {
 
     public String getPositionText() {
         Point2D location = this.getCoordinatesForDisplay();
-        return "[" + location.getX() + "," + location.getY() + "]";
+        return Utility.getPointPositionText(location);
     }
     
     private void initLayerListening() {
-        EventBus.subscribe(event -> {
+        anchorDragListener = event -> {
             if (event instanceof AnchorOffsetQueued checked && checked.layer() == this.parentLayer) {
                 Point2D offset = checked.difference();
-                Point2D oldBoundPosition = this.getPosition();
-                this.setPosition(oldBoundPosition.getX() - offset.getX(),
-                        oldBoundPosition.getY() - offset.getY());
+                Point2D oldPosition = this.getPosition();
+                this.setPosition(oldPosition.getX() - offset.getX(),
+                        oldPosition.getY() - offset.getY());
                 EventBus.publish(new AnchorOffsetConfirmed(this, offset));
             }
-        });
+        };
+        EventBus.subscribe(anchorDragListener);
+    }
+
+    public void cleanupForRemoval() {
+        EventBus.unsubscribe(anchorDragListener);
     }
 
     protected Color createHoverColor() {
@@ -153,14 +133,13 @@ public class BaseWorldPoint implements WorldPoint {
         if (layer == null) {
             return true;
         }
-        return BaseWorldPoint.getInstrumentationMode() == getAssociatedMode() && layer.isLayerActive();
+        return ShipInstrumentsPane.getCurrentMode() == getAssociatedMode() && layer.isLayerActive();
     }
-
 
     @SuppressWarnings("WeakerAccess")
     protected Color getCurrentColor() {
         Color result;
-        if (this.selected && isInteractable()) {
+        if (this.pointSelected && isInteractable()) {
             result = createSelectColor();
         } else if (this.cursorInBounds && isInteractable()) {
             result = createHoverColor();
@@ -170,23 +149,11 @@ public class BaseWorldPoint implements WorldPoint {
         return result;
     }
 
-    @SuppressWarnings("WeakerAccess")
-    public static Shape getShapeForPoint(AffineTransform worldToScreen, Point2D position) {
-        Shape circle = ShapeUtilities.createCircle(position, 0.10f);
+    private Shape getShapeForPoint(AffineTransform worldToScreen) {
+        Shape circle = ShapeUtilities.createCircle(position, (float) (0.10f * paintSizeMultiplier));
 
         return ShapeUtilities.ensureDynamicScaleShape(worldToScreen,
-                position, circle, 12);
-    }
-
-    public Painter createPointPainter() {
-        return (g, worldToScreen, w, h) -> {
-            Shape circle = BaseWorldPoint.getShapeForPoint(worldToScreen, this.position);
-
-            this.cursorInBounds = StaticController.checkIsHovered(circle);
-
-            DrawUtilities.outlineShape(g, circle, Color.BLACK, 2);
-            DrawUtilities.fillShape(g, circle, getCurrentColor());
-        };
+                position, circle, 12 * paintSizeMultiplier);
     }
 
     public void setPosition(double x, double y) {
@@ -199,48 +166,17 @@ public class BaseWorldPoint implements WorldPoint {
 
     public Point2D getCoordinatesForDisplay() {
         Point2D pointPosition = this.getPosition();
-        Point2D result = pointPosition;
-        ShipLayer activeLayer = StaticController.getActiveLayer();
-        if (activeLayer == null) {
-            return result;
-        }
-        LayerPainter layerPainter = activeLayer.getPainter();
-        if (layerPainter == null || layerPainter.isUninitialized()) {
-            return result;
-        }
-        double positionX = pointPosition.getX();
-        double positionY = pointPosition.getY();
-        switch (coordsMode) {
-            case WORLD -> {}
-            case SPRITE_CENTER -> {
-                Point2D center = layerPainter.getSpriteCenter();
-                double centerX = center.getX();
-                double centerY = center.getY();
-                result = new Point2D.Double(positionX - centerX, positionY - centerY);
-            }
-            case SHIPCENTER_ANCHOR -> {
-                Point2D center = layerPainter.getCenterAnchor();
-                double centerX = center.getX();
-                double centerY = center.getY();
-                result = new Point2D.Double(positionX - centerX, (-positionY + centerY));
-            }
-            // This case uses different coordinate system alignment to be consistent with game files.
-            // Otherwise, user might be confused as shown point coordinates won't match with those in file.
-            case SHIP_CENTER -> {
-                BaseWorldPoint shipCenter = layerPainter.getShipCenter();
-                Point2D center = shipCenter.position;
-                double centerX = center.getX();
-                double centerY = center.getY();
-                result = new Point2D.Double(-(positionY - centerY), -(positionX - centerX));
-            }
-        }
-        if (result.getX() == -0.0) {
-            result.setLocation(0, result.getY());
-        }
-        if (result.getY() == -0.0) {
-            result.setLocation(result.getX(), 0);
-        }
-        return result;
+        return Utility.getPointCoordinatesForDisplay(pointPosition);
+    }
+
+    @Override
+    public void paint(Graphics2D g, AffineTransform worldToScreen, double w, double h) {
+        Shape shape = this.getShapeForPoint(worldToScreen);
+
+        this.cursorInBounds = StaticController.checkIsHovered(shape);
+
+        DrawUtilities.outlineShape(g, shape, Color.BLACK, 2);
+        DrawUtilities.fillShape(g, shape, getCurrentColor());
     }
 
 }

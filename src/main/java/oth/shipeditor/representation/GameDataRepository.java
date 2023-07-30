@@ -1,24 +1,12 @@
 package oth.shipeditor.representation;
 
-import com.fasterxml.jackson.core.exc.StreamReadException;
-import com.fasterxml.jackson.databind.DatabindException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.type.TypeFactory;
 import lombok.Getter;
 import lombok.Setter;
 import oth.shipeditor.components.datafiles.entities.HullmodCSVEntry;
 import oth.shipeditor.components.datafiles.entities.ShipCSVEntry;
-import oth.shipeditor.parsing.loading.FileLoading;
-import oth.shipeditor.persistence.Settings;
-import oth.shipeditor.persistence.SettingsManager;
 
-import java.io.File;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.*;
-import java.util.stream.Stream;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * @author Ontheheavens
