@@ -75,7 +75,7 @@ public class BaseWorldPoint implements WorldPoint, Painter {
         }
     }
 
-    void paintCoordsLabel(Graphics2D g, AffineTransform worldToScreen) {
+    protected void paintCoordsLabel(Graphics2D g, AffineTransform worldToScreen) {
         Point2D coordsPoint = getPosition();
         Point2D toDisplay = this.getCoordinatesForDisplay();
 

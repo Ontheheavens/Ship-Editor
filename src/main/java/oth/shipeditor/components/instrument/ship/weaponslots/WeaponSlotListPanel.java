@@ -4,7 +4,7 @@ import lombok.Getter;
 import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.components.SlotsPanelRepaintQueued;
 import oth.shipeditor.communication.events.viewer.layers.LayerWasSelected;
-import oth.shipeditor.components.viewer.entities.WeaponSlotPoint;
+import oth.shipeditor.components.viewer.entities.weapon.WeaponSlotPoint;
 import oth.shipeditor.components.viewer.layers.ViewerLayer;
 import oth.shipeditor.components.viewer.layers.ship.ShipLayer;
 import oth.shipeditor.components.viewer.layers.ship.ShipPainter;

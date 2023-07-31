@@ -28,7 +28,6 @@ import javax.swing.*;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 
 /**
@@ -179,8 +178,8 @@ public class LayerManager {
                                     JOptionPane.ERROR_MESSAGE);
                             throw new IllegalStateException("Illegal skin file opening operation!");
                         }
-                        Map<String, Skin> skins = data.getSkins();
-                        skins.put(skin.getSkinHullId(), skin);
+                        // TODO: pass to layer and convert there.
+                        data.addSkin(skin);
                     } else {
                         throw new IllegalStateException("Skin file loaded onto a null ship data!");
                     }

@@ -39,4 +39,10 @@ public class ShipData {
         this.hullStyle = style;
     }
 
+    // TODO: Refactor raw JSON-class Skin into runtime-adapted SkinData, so we can have easy interaction with the instance.
+
+    public void addSkin(Skin skin) {
+        this.skins.put(skin.getSkinHullId(), skin);
+    }
+
 }

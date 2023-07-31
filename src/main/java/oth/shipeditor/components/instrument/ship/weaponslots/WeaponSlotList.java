@@ -1,7 +1,7 @@
 package oth.shipeditor.components.instrument.ship.weaponslots;
 
 import oth.shipeditor.components.instrument.ship.PointList;
-import oth.shipeditor.components.viewer.entities.WeaponSlotPoint;
+import oth.shipeditor.components.viewer.entities.weapon.WeaponSlotPoint;
 
 import javax.swing.*;
 import java.awt.*;

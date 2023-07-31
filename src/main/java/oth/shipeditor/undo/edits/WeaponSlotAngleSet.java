@@ -1,7 +1,7 @@
 package oth.shipeditor.undo.edits;
 
 import oth.shipeditor.communication.events.Events;
-import oth.shipeditor.components.viewer.entities.WeaponSlotPoint;
+import oth.shipeditor.components.viewer.entities.weapon.WeaponSlotPoint;
 import oth.shipeditor.undo.AbstractEdit;
 
 /**

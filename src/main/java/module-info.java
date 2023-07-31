@@ -63,5 +63,6 @@
     opens oth.shipeditor.components.instrument.ship.weaponslots;
     exports oth.shipeditor.components.instrument.ship.skins;
     opens oth.shipeditor.components.instrument.ship.skins;
+    exports oth.shipeditor.components.viewer.entities.weapon;
 
 }

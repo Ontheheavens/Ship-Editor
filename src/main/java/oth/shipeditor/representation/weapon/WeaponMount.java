@@ -23,4 +23,10 @@ public enum WeaponMount {
         this.displayName = name;
     }
 
+    public static WeaponMount value(String textValue) {
+        if (textValue == null || textValue.isEmpty()) {
+            return null;
+        } else return WeaponMount.valueOf(textValue);
+    }
+
 }

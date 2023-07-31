@@ -1,6 +1,5 @@
 package oth.shipeditor.components.viewer.painters.points;
 
-import de.javagl.viewer.Painter;
 import lombok.Getter;
 import oth.shipeditor.communication.BusEventListener;
 import oth.shipeditor.communication.EventBus;
@@ -11,16 +10,21 @@ import oth.shipeditor.components.instrument.ship.ShipInstrumentsPane;
 import oth.shipeditor.components.viewer.ShipInstrument;
 import oth.shipeditor.components.viewer.control.ControlPredicates;
 import oth.shipeditor.components.viewer.entities.BaseWorldPoint;
-import oth.shipeditor.components.viewer.entities.WeaponSlotPoint;
 import oth.shipeditor.components.viewer.entities.WorldPoint;
+import oth.shipeditor.components.viewer.entities.weapon.WeaponSlotOverride;
+import oth.shipeditor.components.viewer.entities.weapon.WeaponSlotPoint;
 import oth.shipeditor.components.viewer.layers.ship.ShipPainter;
+import oth.shipeditor.representation.Skin;
+import oth.shipeditor.representation.weapon.WeaponMount;
+import oth.shipeditor.representation.weapon.WeaponSize;
+import oth.shipeditor.representation.weapon.WeaponSlot;
+import oth.shipeditor.representation.weapon.WeaponType;
 import oth.shipeditor.utility.Utility;
 
 import java.awt.*;
 import java.awt.event.KeyEvent;
-import java.awt.geom.AffineTransform;
 import java.awt.geom.Point2D;
-import java.util.ArrayList;
+import java.util.*;
 import java.util.List;
 
 /**
@@ -126,16 +130,39 @@ public class WeaponSlotPainter extends MirrorablePointPainter{
         EventBus.subscribe(modeListener);
     }
 
-    // TODO: Create paint overriding and skin validation methods.
-
-    @Override
-    void paintDelegates(Graphics2D g, AffineTransform worldToScreen, double w, double h) {
-        super.paintDelegates(g, worldToScreen, w, h);
+    public void resetSkinSlotOverride() {
+        this.slotPoints.forEach(weaponSlotPoint -> weaponSlotPoint.setSkinOverride(null));
     }
 
-    @Override
-    protected void paintDelegate(Graphics2D g, AffineTransform worldToScreen, double w, double h, Painter painter) {
-        super.paintDelegate(g, worldToScreen, w, h, painter);
+    public void toggleSkinSlotOverride(Skin skin) {
+        Collection<WeaponSlotOverride> overrides = new ArrayList<>();
+        Map<String, WeaponSlot> weaponSlotChanges = skin.getWeaponSlotChanges();
+        weaponSlotChanges.forEach((s, weaponSlot) -> {
+            WeaponSlotOverride.Builder overrideBlueprint = WeaponSlotOverride.Builder.override();
+            WeaponType type = WeaponType.value(weaponSlot.getType());
+            WeaponSize size = WeaponSize.value(weaponSlot.getSize());
+            WeaponMount mount = WeaponMount.value(weaponSlot.getMount());
+            WeaponSlotOverride override = overrideBlueprint.withSlotID(s)
+                    .withWeaponType(type)
+                    .withWeaponSize(size)
+                    .withWeaponMount(mount)
+                    .build();
+            overrides.add(override);
+        });
+        this.slotPoints.forEach(weaponSlotPoint -> {
+            String slotID = weaponSlotPoint.getId();
+            WeaponSlotOverride matchingOverride = WeaponSlotPainter.findMatchingOverride(overrides, slotID);
+            weaponSlotPoint.setSkinOverride(matchingOverride);
+        });
+    }
+
+    private static WeaponSlotOverride findMatchingOverride(Iterable<WeaponSlotOverride> overrides, String slotID) {
+        for (WeaponSlotOverride override : overrides) {
+            if (Objects.equals(override.getSlotID(), slotID)) {
+                return override;
+            }
+        }
+        return null;
     }
 
     @Override

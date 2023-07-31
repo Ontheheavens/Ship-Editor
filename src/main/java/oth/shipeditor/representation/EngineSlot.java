@@ -41,4 +41,7 @@ public class EngineSlot {
     @JsonProperty("styleId")
     private String styleId;
 
+    @JsonProperty("styleSpec")
+    private EngineStyle styleSpec;
+
 }

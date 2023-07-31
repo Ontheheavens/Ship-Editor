@@ -1,8 +1,9 @@
-package oth.shipeditor.components.viewer.entities;
+package oth.shipeditor.components.viewer.entities.weapon;
 
 import lombok.Getter;
 import lombok.Setter;
 import oth.shipeditor.components.viewer.ShipInstrument;
+import oth.shipeditor.components.viewer.entities.BaseWorldPoint;
 import oth.shipeditor.components.viewer.layers.ship.ShipPainter;
 import oth.shipeditor.representation.weapon.WeaponMount;
 import oth.shipeditor.representation.weapon.WeaponSize;
@@ -19,25 +20,73 @@ import java.awt.geom.Point2D;
  * @author Ontheheavens
  * @since 25.07.2023
  */
-@Getter @Setter
+@SuppressWarnings({"WeakerAccess", "unused"})
 public class WeaponSlotPoint extends BaseWorldPoint {
 
+    @Getter @Setter
     private String id;
 
+    @Setter
     private WeaponSize weaponSize;
 
+    @Setter
     private WeaponType weaponType;
 
+    @Setter
     private WeaponMount weaponMount;
 
+    @Getter @Setter
     private int renderOrderMod;
 
+    @Setter
     private double arc;
 
+    @Setter
     private double angle;
+
+    @Getter @Setter
+    private WeaponSlotOverride skinOverride;
 
     public WeaponSlotPoint(Point2D pointPosition, ShipPainter layer) {
         super(pointPosition, layer);
+    }
+
+    public WeaponMount getWeaponMount() {
+        if (skinOverride != null && skinOverride.getWeaponMount() != null) {
+            return skinOverride.getWeaponMount();
+        } else return weaponMount;
+    }
+
+    public WeaponSize getWeaponSize() {
+        if (skinOverride != null && skinOverride.getWeaponSize() != null) {
+            return skinOverride.getWeaponSize();
+        } else {
+            return weaponSize;
+        }
+    }
+
+    public WeaponType getWeaponType() {
+        if (skinOverride != null && skinOverride.getWeaponType() != null) {
+            return skinOverride.getWeaponType();
+        } else {
+            return weaponType;
+        }
+    }
+
+    public double getArc() {
+        if (skinOverride != null && skinOverride.getArc() != null) {
+            return skinOverride.getArc();
+        } else {
+            return arc;
+        }
+    }
+
+    public double getAngle() {
+        if (skinOverride != null && skinOverride.getAngle() != null) {
+            return skinOverride.getAngle();
+        } else {
+            return angle;
+        }
     }
 
     public void changeSlotAngle(double degrees) {
@@ -51,12 +100,14 @@ public class WeaponSlotPoint extends BaseWorldPoint {
 
     @Override
     protected Color createBaseColor() {
-        return weaponType.getColor();
+        WeaponType type = this.getWeaponType();
+        return type.getColor();
     }
 
     @Override
     protected Color createSelectColor() {
-        return weaponType.getColor();
+        WeaponType type = this.getWeaponType();
+        return type.getColor();
     }
 
     public String getNameForLabel() {

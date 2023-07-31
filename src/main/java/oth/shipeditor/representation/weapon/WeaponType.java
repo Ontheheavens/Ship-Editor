@@ -39,4 +39,10 @@ public enum WeaponType {
         this.color = tone;
     }
 
+    public static WeaponType value(String textValue) {
+        if (textValue == null || textValue.isEmpty()) {
+            return null;
+        } else return WeaponType.valueOf(textValue);
+    }
+
 }

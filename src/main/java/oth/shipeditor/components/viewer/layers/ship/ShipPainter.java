@@ -69,6 +69,9 @@ public final class ShipPainter extends LayerPainter {
             this.setSprite(baseHullSprite.getSpriteImage());
             parentLayer.setSpriteFileName(baseHullSprite.getFileName());
             parentLayer.setSkinFileName(StringValues.NOT_LOADED);
+
+            this.weaponSlotPainter.resetSkinSlotOverride();
+
             activeSkin = Skin.empty();
         } else {
             ShipLayer shipLayer = getParentLayer();
@@ -80,6 +83,9 @@ public final class ShipPainter extends LayerPainter {
             Skin retrieved = skins.get(skinID);
             Sprite skinSprite = retrieved.getLoadedSkinSprite();
             this.setSprite(skinSprite.getSpriteImage());
+
+            this.weaponSlotPainter.toggleSkinSlotOverride(retrieved);
+
             parentLayer.setSpriteFileName(skinSprite.getFileName());
             String skinFileName = retrieved.getSkinFilePath().getFileName().toString();
             parentLayer.setSkinFileName(skinFileName);
