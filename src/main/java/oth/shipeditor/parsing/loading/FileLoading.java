@@ -211,8 +211,6 @@ public final class FileLoading {
                 String name = row.get("name");
                 if (id != null && !id.isEmpty() && !name.startsWith("#")) {
                     // We are skipping a row if ID is missing or if row is commented out.
-                    row.remove("number");
-                    row.remove("8/6/5/4%");
                     csvData.add(row);
                 }
             }

@@ -138,6 +138,9 @@ public class WeaponSlotPainter extends MirrorablePointPainter{
         Collection<WeaponSlotOverride> overrides = new ArrayList<>();
         Map<String, WeaponSlot> weaponSlotChanges = skin.getWeaponSlotChanges();
         weaponSlotChanges.forEach((s, weaponSlot) -> {
+
+            // TODO: this is not where instance conversion should happen; move to ShipSkin initialization.
+
             WeaponSlotOverride.Builder overrideBlueprint = WeaponSlotOverride.Builder.override();
             WeaponType type = WeaponType.value(weaponSlot.getType());
             WeaponSize size = WeaponSize.value(weaponSlot.getSize());

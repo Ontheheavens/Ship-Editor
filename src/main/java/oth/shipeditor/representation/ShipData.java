@@ -8,6 +8,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
+ * Responsible for holding of all raw deserialized ship data from JSON. Not intended to be altered by editing workflow.
  * @author Ontheheavens
  * @since 05.05.2023
  */
@@ -20,6 +21,8 @@ public class ShipData {
      * Keys are skin IDs.
      */
     private final Map<String, Skin> skins;
+
+    // TODO: this needs to be moved into dedicated runtime hull data class.
     private HullStyle hullStyle;
 
     public ShipData(Hull openedHull) {

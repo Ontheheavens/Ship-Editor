@@ -18,6 +18,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
+ * Raw serialization class.
  * @author Ontheheavens
  * @since 29.06.2023
  */
@@ -26,7 +27,7 @@ import java.util.Map;
 public class Skin {
 
     @JsonIgnore
-    private static final Skin NO_SKIN = new Skin(true);
+    private static final Skin NO_SKIN_DATA = new Skin(true);
 
     public static final String DEFAULT = StringConstants.DEFAULT_ID;
 
@@ -40,7 +41,7 @@ public class Skin {
     }
 
     public static Skin empty() {
-        return NO_SKIN;
+        return NO_SKIN_DATA;
     }
 
     @JsonIgnore
@@ -124,8 +125,9 @@ public class Skin {
 
     @JsonDeserialize(using = ShipTypeHintsDeserializer.class)
     @JsonProperty(StringConstants.REMOVE_HINTS)
-    private ShipTypeHints[] removeHints;
+    private List<ShipTypeHints> removeHints;
 
+    @JsonDeserialize(using = ShipTypeHintsDeserializer.class)
     @JsonProperty(StringConstants.ADD_HINTS)
     private List<ShipTypeHints> addHints;
 

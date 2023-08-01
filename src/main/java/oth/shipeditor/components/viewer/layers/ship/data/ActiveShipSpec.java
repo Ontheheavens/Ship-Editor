@@ -1,4 +1,4 @@
-package oth.shipeditor.components.viewer.layers.ship;
+package oth.shipeditor.components.viewer.layers.ship.data;
 
 /**
  * @author Ontheheavens

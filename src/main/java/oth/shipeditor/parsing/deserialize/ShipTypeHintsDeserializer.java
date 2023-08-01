@@ -2,10 +2,8 @@ package oth.shipeditor.parsing.deserialize;
 
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;
-import com.fasterxml.jackson.core.ObjectCodec;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonDeserializer;
-import com.fasterxml.jackson.databind.JsonNode;
 import lombok.extern.log4j.Log4j2;
 import oth.shipeditor.representation.ShipTypeHints;
 
@@ -18,10 +16,10 @@ import java.util.List;
  * @since 30.06.2023
  */
 @Log4j2
-public class ShipTypeHintsDeserializer extends JsonDeserializer<ShipTypeHints[]> {
+public class ShipTypeHintsDeserializer extends JsonDeserializer<List<ShipTypeHints>> {
 
     @Override
-    public ShipTypeHints[] deserialize(JsonParser p, DeserializationContext ctxt) throws IOException {
+    public List<ShipTypeHints> deserialize(JsonParser p, DeserializationContext ctxt) throws IOException {
         List<ShipTypeHints> hints = new ArrayList<>();
 
         if (p.currentToken() == JsonToken.START_ARRAY) {
@@ -34,7 +32,7 @@ public class ShipTypeHintsDeserializer extends JsonDeserializer<ShipTypeHints[]>
             }
         }
 
-        return hints.toArray(new ShipTypeHints[0]);
+        return hints;
     }
 
 }

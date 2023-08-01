@@ -4,9 +4,12 @@ import lombok.Getter;
 import lombok.Setter;
 import oth.shipeditor.components.viewer.layers.LayerPainter;
 import oth.shipeditor.components.viewer.layers.ViewerLayer;
+import oth.shipeditor.components.viewer.layers.ship.data.ShipHull;
+import oth.shipeditor.components.viewer.layers.ship.data.ShipSkin;
 import oth.shipeditor.representation.ShipData;
 
 import java.awt.image.BufferedImage;
+import java.util.List;
 
 /**
  * Runtime representation of ship, including sprite and data.
@@ -25,6 +28,10 @@ public class ShipLayer extends ViewerLayer {
     private String hullFileName = "";
 
     private String skinFileName = "";
+
+    private ShipHull hull;
+
+    private List<ShipSkin> skins;
 
     public ShipLayer() {}
 

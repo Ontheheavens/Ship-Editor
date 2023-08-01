@@ -14,6 +14,7 @@ import oth.shipeditor.communication.events.viewer.layers.ships.LayerShipDataInit
 import oth.shipeditor.communication.events.viewer.layers.ships.ShipDataCreated;
 import oth.shipeditor.components.viewer.entities.ShipCenterPoint;
 import oth.shipeditor.components.viewer.layers.LayerPainter;
+import oth.shipeditor.components.viewer.layers.ship.data.ActiveShipSpec;
 import oth.shipeditor.components.viewer.painters.points.*;
 import oth.shipeditor.representation.ShipData;
 import oth.shipeditor.representation.Skin;
@@ -84,7 +85,9 @@ public final class ShipPainter extends LayerPainter {
             Sprite skinSprite = retrieved.getLoadedSkinSprite();
             this.setSprite(skinSprite.getSpriteImage());
 
-            this.weaponSlotPainter.toggleSkinSlotOverride(retrieved);
+            if (retrieved.getWeaponSlotChanges() != null) {
+                this.weaponSlotPainter.toggleSkinSlotOverride(retrieved);
+            }
 
             parentLayer.setSpriteFileName(skinSprite.getFileName());
             String skinFileName = retrieved.getSkinFilePath().getFileName().toString();
