@@ -53,6 +53,10 @@ public final class Initializations {
         loadShipDataAction.actionPerformed(initEvent);
         Action loadHullmodDataAction = FileUtilities.getLoadHullmodDataAction();
         loadHullmodDataAction.actionPerformed(initEvent);
+        Action loadHullStyleDataAction = FileUtilities.getLoadHullStyleDataAction();
+        loadHullStyleDataAction.actionPerformed(initEvent);
+        Action loadShipsystemDataAction = FileUtilities.getLoadShipSystemDataAction();
+        loadShipsystemDataAction.actionPerformed(initEvent);
 
         FileUtilities.loadHullStyles();
     }

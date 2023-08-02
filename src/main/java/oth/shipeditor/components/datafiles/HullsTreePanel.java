@@ -14,7 +14,7 @@ import oth.shipeditor.persistence.SettingsManager;
 import oth.shipeditor.representation.GameDataRepository;
 import oth.shipeditor.representation.Hull;
 import oth.shipeditor.representation.Skin;
-import oth.shipeditor.utility.Utility;
+import oth.shipeditor.utility.Pair;
 
 import javax.swing.*;
 import javax.swing.tree.DefaultMutableTreeNode;
@@ -163,22 +163,13 @@ class HullsTreePanel extends DataTreePanel {
 
     @Override
     JPanel createTopPanel() {
-        JPanel topContainer = new JPanel();
-        topContainer.add(new JLabel("Ship data:"));
-        JButton loadCSVButton = new JButton(FileUtilities.getLoadShipDataAction());
-        loadCSVButton.addActionListener(Utility.scheduleTask(3000,
-                e1 -> {
-                    loadCSVButton.setEnabled(false);
-                    repaint();
-                },
-                e1 -> {
-                    loadCSVButton.setEnabled(true);
-                    repaint();
-                }));
-        loadCSVButton.setText("Reload ship data");
-        loadCSVButton.setToolTipText("Reload all ship, skin and variant files, grouped by package");
-        topContainer.add(loadCSVButton);
-        return topContainer;
+        Pair<JPanel, JButton> singleButtonPanel = DataTreePanel.createSingleButtonPanel("Ship data:",
+                FileUtilities.getLoadShipDataAction());
+        JButton button = singleButtonPanel.getSecond();
+        button.setText("Reload ship data");
+        button.setToolTipText("Reload all ship, skin and variant files, grouped by package");
+
+        return singleButtonPanel.getFirst();
     }
 
     private class LoadLayerFromTree extends AbstractAction {

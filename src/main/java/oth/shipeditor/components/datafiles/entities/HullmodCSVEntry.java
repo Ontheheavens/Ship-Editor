@@ -4,6 +4,7 @@ import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
 import oth.shipeditor.parsing.loading.FileLoading;
 import oth.shipeditor.utility.text.StringConstants;
+import oth.shipeditor.utility.text.StringValues;
 
 import java.io.File;
 import java.nio.file.Path;
@@ -41,7 +42,7 @@ public class HullmodCSVEntry {
     public String toString() {
         String displayedName = rowData.get(StringConstants.NAME);
         if (displayedName.isEmpty()) {
-            displayedName = "UNTITLED";
+            displayedName = StringValues.UNTITLED;
         }
         return displayedName;
     }

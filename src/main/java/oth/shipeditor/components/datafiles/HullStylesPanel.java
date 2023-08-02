@@ -5,6 +5,7 @@ import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.files.HullStylesLoaded;
 import oth.shipeditor.menubar.FileUtilities;
 import oth.shipeditor.representation.HullStyle;
+import oth.shipeditor.utility.Pair;
 import oth.shipeditor.utility.components.ComponentUtilities;
 import oth.shipeditor.utility.components.MouseoverLabelListener;
 import oth.shipeditor.utility.text.StringValues;
@@ -26,6 +27,11 @@ class HullStylesPanel extends JPanel {
 
     HullStylesPanel() {
         this.setLayout(new BorderLayout());
+
+        JPanel topContainer = HullStylesPanel.createTopPanel();
+        topContainer.setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, Color.LIGHT_GRAY));
+        this.add(topContainer, BorderLayout.PAGE_START);
+
         this.scrollerContent = new JPanel();
         scrollerContent.setLayout(new BoxLayout(scrollerContent, BoxLayout.PAGE_AXIS));
         JScrollPane scroller = new JScrollPane(scrollerContent);
@@ -33,6 +39,14 @@ class HullStylesPanel extends JPanel {
         verticalScrollBar.setUnitIncrement(12);
         this.add(scroller, BorderLayout.CENTER);
         this.initListeners();
+    }
+
+    private static JPanel createTopPanel() {
+        Pair<JPanel, JButton> singleButtonPanel = DataTreePanel.createSingleButtonPanel("Hullstyle data:",
+                FileUtilities.getLoadHullStyleDataAction());
+        JButton button = singleButtonPanel.getSecond();
+        button.setText("Reload hullstyle data");
+        return singleButtonPanel.getFirst();
     }
 
     private void initListeners() {
@@ -44,6 +58,7 @@ class HullStylesPanel extends JPanel {
     }
 
     private void populatePanel(Map<String, HullStyle> hullStyles) {
+        scrollerContent.removeAll();
         for (HullStyle style : hullStyles.values()) {
             scrollerContent.add(HullStylesPanel.createHullStylePanel(style));
         }

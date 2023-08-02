@@ -1,6 +1,7 @@
 package oth.shipeditor.components.viewer.layers.ship.data;
 
 import oth.shipeditor.components.datafiles.entities.HullmodCSVEntry;
+import oth.shipeditor.components.datafiles.entities.ShipSystemCSVEntry;
 import oth.shipeditor.components.viewer.entities.weapon.WeaponSlotOverride;
 import oth.shipeditor.representation.EngineSlot;
 import oth.shipeditor.representation.HullStyle;
@@ -29,7 +30,7 @@ public class ShipSkin {
     private String skinHullId;
 
     // TODO: load all systems from CSV and make this an object field.
-    private String systemId;
+    private ShipSystemCSVEntry shipSystem;
 
     private String hullName;
 

@@ -8,7 +8,7 @@ import oth.shipeditor.menubar.FileUtilities;
 import oth.shipeditor.parsing.loading.FileLoading;
 import oth.shipeditor.persistence.SettingsManager;
 import oth.shipeditor.representation.GameDataRepository;
-import oth.shipeditor.utility.Utility;
+import oth.shipeditor.utility.Pair;
 import oth.shipeditor.utility.components.ComponentUtilities;
 
 import javax.swing.*;
@@ -35,22 +35,12 @@ class HullmodsTreePanel extends DataTreePanel{
 
     @Override
     JPanel createTopPanel() {
-        JPanel topContainer = new JPanel();
-        topContainer.add(new JLabel("Hullmod data:"));
-        JButton loadCSVButton = new JButton(FileUtilities.getLoadHullmodDataAction());
-        loadCSVButton.addActionListener(Utility.scheduleTask(3000,
-                e1 -> {
-                    loadCSVButton.setEnabled(false);
-                    repaint();
-                },
-                e1 -> {
-                    loadCSVButton.setEnabled(true);
-                    repaint();
-                }));
-        loadCSVButton.setText("Reload hullmod data");
-        loadCSVButton.setToolTipText("Reload all hullmod entries, grouped by package");
-        topContainer.add(loadCSVButton);
-        return topContainer;
+        Pair<JPanel, JButton> singleButtonPanel = DataTreePanel.createSingleButtonPanel("Hullmod data:",
+                FileUtilities.getLoadHullmodDataAction());
+        JButton button = singleButtonPanel.getSecond();
+        button.setText("Reload hullmod data");
+        button.setToolTipText("Reload all hullmod entries, grouped by package");
+        return singleButtonPanel.getFirst();
     }
 
     @Override
