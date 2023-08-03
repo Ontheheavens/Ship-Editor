@@ -16,7 +16,7 @@ import java.util.Map;
  */
 @Log4j2
 @Getter
-public class HullmodCSVEntry {
+public class HullmodCSVEntry implements CSVEntry {
 
     private final Map<String, String> rowData;
 

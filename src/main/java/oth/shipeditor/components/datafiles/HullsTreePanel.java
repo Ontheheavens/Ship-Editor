@@ -235,7 +235,7 @@ class HullsTreePanel extends DataTreePanel {
         switch (target) {
             case FILE -> toOpen = hullFile.getShipFilePath();
             case CONTAINER -> toOpen = hullFile.getShipFilePath().getParent();
-            default -> toOpen = checked.getPackageFolder();
+            default -> toOpen = checked.getPackageFolderPath();
         }
         FileUtilities.openPathInDesktop(toOpen);
     }

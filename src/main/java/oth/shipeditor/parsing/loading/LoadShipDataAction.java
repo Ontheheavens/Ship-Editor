@@ -10,6 +10,7 @@ import oth.shipeditor.persistence.SettingsManager;
 import oth.shipeditor.representation.GameDataRepository;
 import oth.shipeditor.representation.Hull;
 import oth.shipeditor.representation.Skin;
+import oth.shipeditor.utility.text.StringConstants;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;
@@ -29,16 +30,13 @@ import java.util.stream.Stream;
 public
 class LoadShipDataAction extends AbstractAction {
 
-    private static final String HULLS = "hulls";
-    private static final String SHIP_DATA_CSV = "ship_data.csv";
-
     @Override
     public void actionPerformed(ActionEvent e) {
         Settings settings = SettingsManager.getSettings();
         Collection<String> eligibleFolders = new ArrayList<>();
         eligibleFolders.add(settings.getCoreFolderPath());
 
-        Path targetFile = Paths.get("data", HULLS, SHIP_DATA_CSV);
+        Path targetFile = Paths.get("data", StringConstants.HULLS, StringConstants.SHIP_DATA_CSV);
 
         Collection<Path> modsWithShipData = new ArrayList<>();
         Collection<Path> modsWithSkinFolder = new ArrayList<>();
@@ -52,7 +50,7 @@ class LoadShipDataAction extends AbstractAction {
                             modsWithShipData.add(childDir);
                         }
 
-                        Path skinDataPath = Paths.get(childDir.toString(), "data", HULLS, "skins");
+                        Path skinDataPath = Paths.get(childDir.toString(), "data", StringConstants.HULLS, "skins");
                         Path skinsSubfolder = childDir.resolve(skinDataPath);
                         if (Files.exists(skinsSubfolder) && Files.isDirectory(skinsSubfolder)) {
                             modsWithSkinFolder.add(childDir);
@@ -87,7 +85,7 @@ class LoadShipDataAction extends AbstractAction {
     }
 
     private static void walkHullFolder(String folderPath, Map<String, Skin> skins) {
-        Path shipDataPath = Paths.get(folderPath, "data", HULLS, SHIP_DATA_CSV);
+        Path shipDataPath = Paths.get(folderPath, "data", StringConstants.HULLS, StringConstants.SHIP_DATA_CSV);
 
         log.info("Parsing ship CSV data at: {}..", shipDataPath);
         List<Map<String, String>> csvData = FileLoading.parseCSVTable(shipDataPath);
@@ -116,9 +114,6 @@ class LoadShipDataAction extends AbstractAction {
         EventBus.publish(new HullFolderWalked(csvData, mappedHulls,
                 skins, Paths.get(folderPath, "")));
     }
-
-    // TODO: Refactor to compress tables and IDs!
-    //  Also load hull and engine styles JSONs.
 
     private static Map<String, Skin> walkSkinFolder(Path skinFolder) {
         List<File> skinFiles = new ArrayList<>();

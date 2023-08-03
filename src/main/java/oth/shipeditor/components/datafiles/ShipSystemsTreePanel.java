@@ -3,6 +3,7 @@ package oth.shipeditor.components.datafiles;
 import lombok.extern.log4j.Log4j2;
 import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.files.ShipSystemsLoaded;
+import oth.shipeditor.components.datafiles.entities.CSVEntry;
 import oth.shipeditor.components.datafiles.entities.ShipSystemCSVEntry;
 import oth.shipeditor.menubar.FileUtilities;
 import oth.shipeditor.persistence.SettingsManager;
@@ -63,13 +64,13 @@ class ShipSystemsTreePanel extends DataTreePanel{
             TreePath selectedNode = e.getNewLeadSelectionPath();
             if (selectedNode == null) return;
             DefaultMutableTreeNode node = (DefaultMutableTreeNode) selectedNode.getLastPathComponent();
-            if (node.getUserObject() instanceof ShipSystemCSVEntry checked) {
+            if (node.getUserObject() instanceof CSVEntry checked) {
                 updateEntryPanel(checked);
             }
         });
     }
 
-    private void updateEntryPanel(ShipSystemCSVEntry selected) {
+    private void updateEntryPanel(CSVEntry selected) {
         JPanel rightPanel = getRightPanel();
         rightPanel.removeAll();
         Map<String, String> data = selected.getRowData();

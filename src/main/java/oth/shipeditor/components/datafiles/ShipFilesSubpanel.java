@@ -123,7 +123,7 @@ class ShipFilesSubpanel extends JPanel {
         labelContainer.add(Box.createRigidArea(ShipFilesSubpanel.createPadding()));
 
         File spriteFile = FileLoading.fetchDataFile(Path.of(spriteFileName),
-                selected.getPackageFolder());
+                selected.getPackageFolderPath());
         JLabel spriteFileNameLabel;
         if (spriteFile != null) {
             spriteFileNameLabel = new JLabel("Sprite file: : " + spriteFile.getName());

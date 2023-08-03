@@ -10,11 +10,11 @@ import java.util.Map;
 
 /**
  * @author Ontheheavens
- * @since 01.08.2023
+ * @since 03.08.2023
  */
 @Log4j2
 @Getter
-public class ShipSystemCSVEntry implements CSVEntry {
+public class WingCSVEntry implements CSVEntry {
 
     private final Map<String, String> rowData;
 
@@ -22,13 +22,13 @@ public class ShipSystemCSVEntry implements CSVEntry {
 
     private final Path tableFilePath;
 
-    private final String shipSystemID;
+    private final String wingID;
 
-    public ShipSystemCSVEntry(Map<String, String> row, Path folder, Path tablePath) {
+    public WingCSVEntry(Map<String, String> row, Path folder, Path tablePath) {
         this.rowData = row;
         packageFolderPath = folder;
         this.tableFilePath = tablePath;
-        shipSystemID = this.rowData.get("id");
+        wingID = this.rowData.get("id");
     }
 
     @Override

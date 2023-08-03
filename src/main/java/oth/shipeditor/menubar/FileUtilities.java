@@ -49,6 +49,9 @@ public final class FileUtilities {
     private static final Action loadShipSystemDataAction = new LoadShipSystemDataAction();
 
     @Getter
+    private static final Action loadWingDataAction = new LoadWingDataAction();
+
+    @Getter
     private static final Action openSpriteAction = new OpenSpriteAction();
 
     @Getter

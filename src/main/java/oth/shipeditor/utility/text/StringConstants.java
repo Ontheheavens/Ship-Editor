@@ -79,4 +79,7 @@ public interface StringConstants {
 
     String DEFAULT_ID = "DEFAULT";
 
+    String HULLS = "hulls";
+    String SHIP_DATA_CSV = "ship_data.csv";
+
 }

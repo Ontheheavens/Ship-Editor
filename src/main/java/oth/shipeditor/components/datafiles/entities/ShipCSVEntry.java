@@ -25,7 +25,7 @@ import java.util.Map;
  */
 @Log4j2
 @Getter
-public class ShipCSVEntry {
+public class ShipCSVEntry implements CSVEntry {
 
     private final Map<String, String> rowData;
 
@@ -42,11 +42,11 @@ public class ShipCSVEntry {
 
     private final String hullID;
 
-    private final Path packageFolder;
+    private final Path packageFolderPath;
 
     public ShipCSVEntry(Map<String, String> row, Map.Entry<Hull, Map<String, Skin>> hullWithSkins,
                         Path folder, String fileName) {
-        this.packageFolder = folder;
+        this.packageFolderPath = folder;
         this.hullFile = hullWithSkins.getKey();
         this.skins = hullWithSkins.getValue();
         this.rowData = row;
@@ -78,7 +78,7 @@ public class ShipCSVEntry {
         String spriteName = this.hullFile.getSpriteName();
 
         Path spriteFilePath = Path.of(spriteName);
-        File spriteFile = FileLoading.fetchDataFile(spriteFilePath, this.packageFolder);
+        File spriteFile = FileLoading.fetchDataFile(spriteFilePath, this.packageFolderPath);
 
         FileUtilities.createShipLayerWithSprite(spriteFile);
         EventBus.publish(new HullFileOpened(this.hullFile, this.getHullFileName()));

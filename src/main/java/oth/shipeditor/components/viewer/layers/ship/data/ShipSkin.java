@@ -29,7 +29,6 @@ public class ShipSkin {
 
     private String skinHullId;
 
-    // TODO: load all systems from CSV and make this an object field.
     private ShipSystemCSVEntry shipSystem;
 
     private String hullName;
@@ -62,6 +61,7 @@ public class ShipSkin {
     private List<String> tags;
 
     // TODO: load all tech designations from settings files (optionally, perhaps?) and make this an object field.
+    // Disregard that. Make this an unverifiable string field and place all responsibility on user.
     private String tech;
 
     // TODO: Load all wings and make this an object field.
@@ -81,7 +81,7 @@ public class ShipSkin {
 
     private List<Integer> removeEngineSlots;
 
-    private List<String> removeBuiltInMods;
+    private List<HullmodCSVEntry> removeBuiltInMods;
 
     private List<String> removeBuiltInWeapons;
 
