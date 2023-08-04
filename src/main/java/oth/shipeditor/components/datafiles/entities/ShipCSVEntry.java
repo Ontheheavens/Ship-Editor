@@ -58,6 +58,16 @@ public class ShipCSVEntry implements CSVEntry {
         }
     }
 
+    @Override
+    public String getID() {
+        return hullID;
+    }
+
+    @Override
+    public Path getTableFilePath() {
+        throw new UnsupportedOperationException("References to table file are not supported for ship entries!");
+    }
+
     public void setActiveSkin(Skin input) {
         if (!skins.containsValue(input)) {
             throw new RuntimeException("Attempt to set incompatible skin on ship entry!");

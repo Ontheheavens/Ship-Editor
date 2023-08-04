@@ -39,6 +39,11 @@ public class HullmodCSVEntry implements CSVEntry {
     }
 
     @Override
+    public String getID() {
+        return hullmodID;
+    }
+
+    @Override
     public String toString() {
         String displayedName = rowData.get(StringConstants.NAME);
         if (displayedName.isEmpty()) {

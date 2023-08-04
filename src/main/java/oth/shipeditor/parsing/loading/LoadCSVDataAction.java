@@ -40,10 +40,14 @@ public abstract class LoadCSVDataAction<T extends CSVEntry> extends AbstractActi
 
     protected abstract T instantiateEntry(Map<String, String> row, Path folderPath, Path dataFilePath);
 
+    protected List<Map<String, String>> parseTable(Path dataFilePath) {
+        return FileLoading.parseCSVTable(dataFilePath);
+    }
+
     private List<T> loadPackage(Path folderPath, File table) {
         Path dataFilePath = table.toPath();
 
-        List<Map<String, String>> csvData = FileLoading.parseCSVTable(dataFilePath);
+        List<Map<String, String>> csvData = parseTable(dataFilePath);
 
         List<T> shipSystemList = new ArrayList<>(csvData.size());
         for (Map<String, String> row : csvData) {

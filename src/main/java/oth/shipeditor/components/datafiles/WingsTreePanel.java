@@ -1,9 +1,8 @@
 package oth.shipeditor.components.datafiles;
 
-import lombok.extern.log4j.Log4j2;
 import oth.shipeditor.communication.EventBus;
-import oth.shipeditor.communication.events.files.ShipSystemsLoaded;
-import oth.shipeditor.components.datafiles.entities.ShipSystemCSVEntry;
+import oth.shipeditor.communication.events.files.WingDataLoaded;
+import oth.shipeditor.components.datafiles.entities.WingCSVEntry;
 import oth.shipeditor.menubar.FileUtilities;
 import oth.shipeditor.persistence.SettingsManager;
 import oth.shipeditor.representation.GameDataRepository;
@@ -15,54 +14,51 @@ import java.util.Map;
 
 /**
  * @author Ontheheavens
- * @since 02.08.2023
+ * @since 04.08.2023
  */
-@Log4j2
-class ShipSystemsTreePanel extends CSVDataTreePanel<ShipSystemCSVEntry>{
+public class WingsTreePanel extends CSVDataTreePanel<WingCSVEntry>{
 
-    ShipSystemsTreePanel() {
-        super("Shipsystem files");
+    WingsTreePanel() {
+        super("Wing entries");
     }
 
     @Override
     protected Action getLoadDataAction() {
-        return FileUtilities.getLoadShipSystemDataAction();
+        return FileUtilities.getLoadWingDataAction();
     }
 
     @Override
     protected String getEntryTypeName() {
-        return "shipsystem";
+        return "wing";
     }
 
     @Override
-    protected Map<String, ShipSystemCSVEntry> getRepository() {
+    protected Map<String, WingCSVEntry> getRepository() {
         GameDataRepository gameData = SettingsManager.getGameData();
-        return gameData.getAllShipsystemEntries();
+        return gameData.getAllWingEntries();
     }
 
     @Override
     protected void setLoadedStatus() {
         GameDataRepository gameData = SettingsManager.getGameData();
-        gameData.setShipsystemDataLoaded(true);
+        gameData.setWingDataLoaded(true);
     }
-
 
     @Override
     protected void initWalkerListening() {
         EventBus.subscribe(event -> {
-            if (event instanceof ShipSystemsLoaded checked) {
-                Map<String, List<ShipSystemCSVEntry>> shipsystems = checked.systemsByPackage();
-                if (shipsystems == null) {
-                    throw new RuntimeException("Shipsystem data initialization failed: table data is NULL!");
+            if (event instanceof WingDataLoaded checked) {
+                Map<String, List<WingCSVEntry>> wingsByPackage = checked.wingsByPackage();
+                if (wingsByPackage == null) {
+                    throw new RuntimeException("Wing data initialization failed: table data is NULL!");
                 }
-                populateEntries(shipsystems);
+                populateEntries(wingsByPackage);
             }
         });
     }
 
-
     @Override
-    protected void updateEntryPanel(ShipSystemCSVEntry selected) {
+    protected void updateEntryPanel(WingCSVEntry selected) {
         JPanel rightPanel = getRightPanel();
         rightPanel.removeAll();
         Map<String, String> data = selected.getRowData();
@@ -70,17 +66,17 @@ class ShipSystemsTreePanel extends CSVDataTreePanel<ShipSystemCSVEntry>{
     }
 
     @Override
-    protected ShipSystemCSVEntry getObjectFromNode(DefaultMutableTreeNode node) {
+    protected WingCSVEntry getObjectFromNode(DefaultMutableTreeNode node) {
         Object userObject = node.getUserObject();
-        if (!(userObject instanceof ShipSystemCSVEntry checked)) return null;
+        if (!(userObject instanceof WingCSVEntry checked)) return null;
         return checked;
     }
 
     @Override
     String getTooltipForEntry(Object entry) {
-        if(entry instanceof ShipSystemCSVEntry checked) {
+        if(entry instanceof WingCSVEntry checked) {
             return "<html>" +
-                    "<p>" + "Shipsystem ID: " + checked.getShipSystemID() + "</p>" +
+                    "<p>" + "Wing ID: " + checked.getWingID() + "</p>" +
                     "</html>";
         }
         return null;
@@ -88,7 +84,7 @@ class ShipSystemsTreePanel extends CSVDataTreePanel<ShipSystemCSVEntry>{
 
     @Override
     Class<?> getEntryClass() {
-        return ShipSystemCSVEntry.class;
+        return WingCSVEntry.class;
     }
 
 }

@@ -24,6 +24,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Objects;
 import java.util.function.Function;
 
@@ -49,15 +50,8 @@ public final class Initializations {
      */
     public static void loadGameData(PrimaryWindow window) {
         ActionEvent initEvent = new ActionEvent(window, ActionEvent.ACTION_PERFORMED, null);
-        Action loadShipDataAction = FileUtilities.getLoadShipDataAction();
-        loadShipDataAction.actionPerformed(initEvent);
-        Action loadHullmodDataAction = FileUtilities.getLoadHullmodDataAction();
-        loadHullmodDataAction.actionPerformed(initEvent);
-        Action loadHullStyleDataAction = FileUtilities.getLoadHullStyleDataAction();
-        loadHullStyleDataAction.actionPerformed(initEvent);
-        Action loadShipsystemDataAction = FileUtilities.getLoadShipSystemDataAction();
-        loadShipsystemDataAction.actionPerformed(initEvent);
-
+        List<Action> loadActions = FileUtilities.getLoadDataActions();
+        loadActions.forEach(action -> action.actionPerformed(initEvent));
         FileUtilities.loadHullStyles();
     }
 

@@ -29,6 +29,7 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Predicate;
 
 /**
  * @author Ontheheavens
@@ -190,12 +191,16 @@ public final class FileLoading {
         }
     }
 
+    static List<Map<String, String>> parseCSVTable(Path path) {
+        return FileLoading.parseCSVTable(path, FileLoading.getNormalValidationPredicate());
+    }
+
     /**
      * Target CSV file is expected to have a header row and an ID column designated in said header.
      * @param path address of the target file.
      * @return List of rows where each row is a Map of string keys and string values.
      */
-    static List<Map<String, String>> parseCSVTable(Path path) {
+    static List<Map<String, String>> parseCSVTable(Path path, Predicate<Map<String, String>> validationPredicate) {
         CsvMapper csvMapper = new CsvMapper();
         csvMapper.configure(CsvParser.Feature.IGNORE_TRAILING_UNMAPPABLE, true);
 
@@ -207,10 +212,7 @@ public final class FileLoading {
                 .readValues(csvFile)) {
             while (iterator.hasNext()) {
                 Map<String, String> row = iterator.next();
-                String id = row.get(StringConstants.ID);
-                String name = row.get("name");
-                if (id != null && !id.isEmpty() && !name.startsWith("#")) {
-                    // We are skipping a row if ID is missing or if row is commented out.
+                if (validationPredicate.test(row)) {
                     csvData.add(row);
                 }
             }
@@ -219,6 +221,23 @@ public final class FileLoading {
             exception.printStackTrace();
         }
         return csvData;
+    }
+
+    private static Predicate<Map<String, String>> getNormalValidationPredicate() {
+        return row -> {
+            String id = row.get(StringConstants.ID);
+            String name = row.get("name");
+            boolean validID = id != null && !id.isEmpty();
+            return validID && !name.startsWith("#");
+        };
+    }
+
+    static Predicate<Map<String, String>> getWingValidationPredicate() {
+        return row -> {
+            String id = row.get(StringConstants.ID);
+            boolean validID = id != null && !id.isEmpty();
+            return validID && !id.startsWith("#");
+        };
     }
 
 }

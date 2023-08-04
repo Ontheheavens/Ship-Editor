@@ -14,6 +14,7 @@ import java.awt.geom.Point2D;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.Arrays;
+import java.util.Locale;
 import java.util.stream.Stream;
 
 /**
@@ -153,6 +154,10 @@ public final class Utility {
     public static double flipAngle(double degrees) {
         double flipped = -degrees;
         return (flipped + 360) % 360;
+    }
+
+    public static String capitalizeFirstLetter(String input) {
+        return input.substring(0, 1).toUpperCase(Locale.ROOT) + input.substring(1);
     }
 
 }

@@ -8,17 +8,12 @@ import oth.shipeditor.menubar.FileUtilities;
 import oth.shipeditor.parsing.loading.FileLoading;
 import oth.shipeditor.persistence.SettingsManager;
 import oth.shipeditor.representation.GameDataRepository;
-import oth.shipeditor.utility.Pair;
 import oth.shipeditor.utility.components.ComponentUtilities;
 
 import javax.swing.*;
 import javax.swing.tree.DefaultMutableTreeNode;
-import javax.swing.tree.MutableTreeNode;
-import javax.swing.tree.TreePath;
 import java.awt.*;
 import java.io.File;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.List;
 import java.util.Map;
 
@@ -27,54 +22,55 @@ import java.util.Map;
  * @since 08.07.2023
  */
 @Log4j2
-class HullmodsTreePanel extends DataTreePanel{
+class HullmodsTreePanel extends CSVDataTreePanel<HullmodCSVEntry>{
 
     HullmodsTreePanel() {
         super("Hullmod files");
     }
 
     @Override
-    JPanel createTopPanel() {
-        Pair<JPanel, JButton> singleButtonPanel = DataTreePanel.createSingleButtonPanel("Hullmod data:",
-                FileUtilities.getLoadHullmodDataAction());
-        JButton button = singleButtonPanel.getSecond();
-        button.setText("Reload hullmod data");
-        button.setToolTipText("Reload all hullmod entries, grouped by package");
-        return singleButtonPanel.getFirst();
+    protected String getEntryTypeName() {
+        return "hullmod";
     }
 
     @Override
-    void initTreePanelListeners(JPanel passedTreePanel) {
+    protected Action getLoadDataAction() {
+        return FileUtilities.getLoadHullmodDataAction();
+    }
+
+    @Override
+    protected Map<String, HullmodCSVEntry> getRepository() {
+        GameDataRepository gameData = SettingsManager.getGameData();
+        return gameData.getAllHullmodEntries();
+    }
+
+    @Override
+    protected void setLoadedStatus() {
+        GameDataRepository gameData = SettingsManager.getGameData();
+        gameData.setHullmodDataLoaded(true);
+    }
+
+    @Override
+    protected HullmodCSVEntry getObjectFromNode(DefaultMutableTreeNode node) {
+        Object userObject = node.getUserObject();
+        if (!(userObject instanceof HullmodCSVEntry checked)) return null;
+        return checked;
+    }
+
+    @Override
+    protected void initWalkerListening() {
         EventBus.subscribe(event -> {
             if (event instanceof HullmodFoldersWalked checked) {
                 Map<String, List<HullmodCSVEntry>> hullmods = checked.hullmodsByPackage();
                 if (hullmods == null) {
                     throw new RuntimeException("Hullmod data initialization failed: table data is NULL!");
                 }
-                DefaultMutableTreeNode rootNode = getRootNode();
-                rootNode.removeAllChildren();
-                loadAllHullmods(hullmods);
-                sortAndExpandTree();
-                repaint();
-            }
-        });
-        initComponentListeners();
-    }
-
-    private void initComponentListeners() {
-        JTree tree = getTree();
-        tree.addMouseListener(new ContextMenuListener());
-        tree.addTreeSelectionListener(e -> {
-            TreePath selectedNode = e.getNewLeadSelectionPath();
-            if (selectedNode == null) return;
-            DefaultMutableTreeNode node = (DefaultMutableTreeNode) selectedNode.getLastPathComponent();
-            if (node.getUserObject() instanceof HullmodCSVEntry checked) {
-                updateEntryPanel(checked);
+                populateEntries(hullmods);
             }
         });
     }
 
-    private void updateEntryPanel(HullmodCSVEntry selected) {
+    protected void updateEntryPanel(HullmodCSVEntry selected) {
         JPanel rightPanel = getRightPanel();
         rightPanel.removeAll();
         GridBagConstraints constraints = DataTreePanel.getDefaultConstraints();
@@ -111,39 +107,6 @@ class HullmodsTreePanel extends DataTreePanel{
     @Override
     Class<?> getEntryClass() {
         return HullmodCSVEntry.class;
-    }
-
-    private void loadAllHullmods(Map<String, List<HullmodCSVEntry>> hullmods) {
-        GameDataRepository gameData = SettingsManager.getGameData();
-        Map<String, HullmodCSVEntry> allHullmodEntries = gameData.getAllHullmodEntries();
-        for (Map.Entry<String, List<HullmodCSVEntry>> entry : hullmods.entrySet()) {
-            Path folderPath = Paths.get(entry.getKey(), "");
-            DefaultMutableTreeNode packageRoot = new DefaultMutableTreeNode(folderPath.getFileName().toString());
-
-            List<HullmodCSVEntry> hullmodsInPackage = entry.getValue();
-            for (HullmodCSVEntry hullmodEntry : hullmodsInPackage) {
-                allHullmodEntries.putIfAbsent(hullmodEntry.getHullmodID(), hullmodEntry);
-                MutableTreeNode shipNode = new DefaultMutableTreeNode(hullmodEntry);
-                packageRoot.add(shipNode);
-            }
-            DefaultMutableTreeNode rootNode = getRootNode();
-            rootNode.add(packageRoot);
-        }
-        log.info("Total {} hullmod entries registered.", allHullmodEntries.size());
-        gameData.setHullmodDataLoaded(true);
-    }
-
-    @Override
-    void openEntryPath(OpenDataTarget target) {
-        DefaultMutableTreeNode cachedSelectForMenu = getCachedSelectForMenu();
-        if (!(cachedSelectForMenu.getUserObject() instanceof HullmodCSVEntry checked)) return;
-        Path toOpen;
-        switch (target) {
-            case FILE -> toOpen = checked.getTableFilePath();
-            case CONTAINER -> toOpen = checked.getTableFilePath().getParent();
-            default -> toOpen = checked.getPackageFolderPath();
-        }
-        FileUtilities.openPathInDesktop(toOpen);
     }
 
 }

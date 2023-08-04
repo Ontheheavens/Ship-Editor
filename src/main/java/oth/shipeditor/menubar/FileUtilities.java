@@ -22,6 +22,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -60,7 +61,21 @@ public final class FileUtilities {
     @Getter
     private static final Action loadHullAsLayerAction = new LoadHullAsLayer();
 
+    @SuppressWarnings("StaticCollection")
+    @Getter
+    private static final List<Action> loadDataActions = FileUtilities.initLoadActions();
+
     private FileUtilities() {}
+
+    private static List<Action> initLoadActions() {
+        List<Action> actions = new ArrayList<>();
+        actions.add(loadShipDataAction);
+        actions.add(loadHullmodDataAction);
+        actions.add(loadHullStyleDataAction);
+        actions.add(loadShipSystemDataAction);
+        actions.add(loadWingDataAction);
+        return actions;
+    }
 
     public static void updateActionStates(ViewerLayer currentlySelected) {
         if (!(currentlySelected instanceof ShipLayer layer)) {

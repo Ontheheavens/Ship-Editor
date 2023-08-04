@@ -32,6 +32,11 @@ public class ShipSystemCSVEntry implements CSVEntry {
     }
 
     @Override
+    public String getID() {
+        return shipSystemID;
+    }
+
+    @Override
     public String toString() {
         String displayedName = rowData.get(StringConstants.NAME);
         if (displayedName.isEmpty()) {

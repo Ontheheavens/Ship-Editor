@@ -5,6 +5,7 @@ import lombok.Setter;
 import oth.shipeditor.components.datafiles.entities.HullmodCSVEntry;
 import oth.shipeditor.components.datafiles.entities.ShipCSVEntry;
 import oth.shipeditor.components.datafiles.entities.ShipSystemCSVEntry;
+import oth.shipeditor.components.datafiles.entities.WingCSVEntry;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -31,6 +32,9 @@ public class GameDataRepository {
      */
     private final Map<String, ShipSystemCSVEntry> allShipsystemEntries;
 
+    private final Map<String, WingCSVEntry> allWingEntries;
+
+
     @Setter
     private Map<String, HullStyle> allHullStyles;
 
@@ -43,10 +47,14 @@ public class GameDataRepository {
     @Setter
     private boolean shipsystemDataLoaded;
 
+    @Setter
+    private boolean wingDataLoaded;
+
     public GameDataRepository() {
         this.allShipEntries = new HashMap<>();
         this.allHullmodEntries = new HashMap<>();
         this.allShipsystemEntries = new HashMap<>();
+        this.allWingEntries = new HashMap<>();
     }
 
 }

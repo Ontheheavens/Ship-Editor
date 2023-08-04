@@ -32,8 +32,14 @@ public class WingCSVEntry implements CSVEntry {
     }
 
     @Override
+    public String getID() {
+        return wingID;
+    }
+
+    @Override
     public String toString() {
-        String displayedName = rowData.get(StringConstants.NAME);
+        // TODO: get displayed name from variant.
+        String displayedName = rowData.get(StringConstants.ID);
         if (displayedName.isEmpty()) {
             displayedName = StringValues.UNTITLED;
         }

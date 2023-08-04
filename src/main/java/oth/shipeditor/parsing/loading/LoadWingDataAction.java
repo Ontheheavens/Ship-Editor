@@ -30,4 +30,9 @@ public class LoadWingDataAction extends LoadCSVDataAction<WingCSVEntry>{
         return new WingCSVEntry(row, folderPath, dataFilePath);
     }
 
+    @Override
+    protected List<Map<String, String>> parseTable(Path dataFilePath) {
+        return FileLoading.parseCSVTable(dataFilePath, FileLoading.getWingValidationPredicate());
+    }
+
 }

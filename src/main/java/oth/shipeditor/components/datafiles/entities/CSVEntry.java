@@ -11,6 +11,10 @@ public interface CSVEntry {
 
     Map<String, String> getRowData();
 
+    String getID();
+
     Path getPackageFolderPath();
+
+    Path getTableFilePath();
 
 }
