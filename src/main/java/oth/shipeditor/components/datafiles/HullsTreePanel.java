@@ -12,8 +12,8 @@ import oth.shipeditor.components.datafiles.entities.ShipCSVEntry;
 import oth.shipeditor.menubar.FileUtilities;
 import oth.shipeditor.persistence.SettingsManager;
 import oth.shipeditor.representation.GameDataRepository;
-import oth.shipeditor.representation.Hull;
-import oth.shipeditor.representation.Skin;
+import oth.shipeditor.representation.HullSpecFile;
+import oth.shipeditor.representation.SkinSpecFile;
 import oth.shipeditor.utility.Pair;
 
 import javax.swing.*;
@@ -43,9 +43,9 @@ class HullsTreePanel extends DataTreePanel {
     @Override
     String getTooltipForEntry(Object entry) {
         if(entry instanceof ShipCSVEntry checked) {
-            Hull hullFile = checked.getHullFile();
+            HullSpecFile hullSpecFileFile = checked.getHullSpecFile();
             return "<html>" +
-                    "<p>" + "Hull size: " + hullFile.getHullSize() + "</p>" +
+                    "<p>" + "Hull size: " + hullSpecFileFile.getHullSize() + "</p>" +
                     "<p>" + "Hull ID: " + checked.getHullID() + "</p>" +
                     "<p>" + "(Double-click to load as layer)" + "</p>" +
                     "</html>";
@@ -117,24 +117,24 @@ class HullsTreePanel extends DataTreePanel {
     }
 
     private void loadHullList(Iterable<Map<String, String>> tableData,
-                              Map<String, Hull> hullFiles, Map<String, Skin> skinFiles, Path packagePath) {
+                              Map<String, HullSpecFile> hullFiles, Map<String, SkinSpecFile> skinFiles, Path packagePath) {
         DefaultMutableTreeNode packageRoot = new DefaultMutableTreeNode(packagePath.getFileName().toString());
         for (Map<String, String> row : tableData) {
-            Map.Entry<Hull, Map<String, Skin>> hullWithSkins = null;
+            Map.Entry<HullSpecFile, Map<String, SkinSpecFile>> hullWithSkins = null;
             String fileName = "";
             String rowId = row.get("id");
             for (String shipFileName : hullFiles.keySet()) {
-                Hull shipFile = hullFiles.get(shipFileName);
+                HullSpecFile shipFile = hullFiles.get(shipFileName);
                 String hullId = shipFile.getHullId();
                 if (hullId.equals(rowId)) {
                     fileName = shipFileName;
-                    Map<String, Skin> skins = HullsTreePanel.fetchSkinsByHull(shipFile, skinFiles);
+                    Map<String, SkinSpecFile> skins = HullsTreePanel.fetchSkinsByHull(shipFile, skinFiles);
                     hullWithSkins = new AbstractMap.SimpleEntry<>(shipFile, skins);
                 }
             }
             if (hullWithSkins != null && !fileName.isEmpty()) {
-                ShipCSVEntry newEntry = new ShipCSVEntry(row, hullWithSkins, packagePath, fileName);
                 GameDataRepository gameData = SettingsManager.getGameData();
+                ShipCSVEntry newEntry = new ShipCSVEntry(row, hullWithSkins, packagePath, fileName);
                 Map<String, ShipCSVEntry> allShipEntries = gameData.getAllShipEntries();
                 allShipEntries.putIfAbsent(rowId, newEntry);
                 MutableTreeNode shipNode = new DefaultMutableTreeNode(newEntry);
@@ -145,12 +145,12 @@ class HullsTreePanel extends DataTreePanel {
         rootNode.add(packageRoot);
     }
 
-    private static Map<String, Skin> fetchSkinsByHull(Hull hull, Map<String, Skin> skins) {
+    private static Map<String, SkinSpecFile> fetchSkinsByHull(HullSpecFile hullSpecFile, Map<String, SkinSpecFile> skins) {
         if (skins == null) return null;
-        String hullId = hull.getHullId();
-        Map<String, Skin> associated = new HashMap<>();
-        for (Map.Entry<String, Skin> skin : skins.entrySet()) {
-            Skin value = skin.getValue();
+        String hullId = hullSpecFile.getHullId();
+        Map<String, SkinSpecFile> associated = new HashMap<>();
+        for (Map.Entry<String, SkinSpecFile> skin : skins.entrySet()) {
+            SkinSpecFile value = skin.getValue();
             if (Objects.equals(value.getBaseHullId(), hullId)) {
                 associated.put(skin.getKey(), skin.getValue());
             }
@@ -216,11 +216,11 @@ class HullsTreePanel extends DataTreePanel {
     }
 
     private static JMenuItem addOpenSkinOption(ShipCSVEntry checked) {
-        Skin activeSkin = checked.getActiveSkin();
-        if (activeSkin == null || activeSkin.isBase()) return null;
+        SkinSpecFile activeSkinSpecFile = checked.getActiveSkinSpecFile();
+        if (activeSkinSpecFile == null || activeSkinSpecFile.isBase()) return null;
         JMenuItem openSkin = new JMenuItem("Open skin file");
         openSkin.addActionListener(e -> {
-            Path toOpen = activeSkin.getSkinFilePath();
+            Path toOpen = activeSkinSpecFile.getFilePath();
             FileUtilities.openPathInDesktop(toOpen);
         });
         return openSkin;
@@ -230,11 +230,11 @@ class HullsTreePanel extends DataTreePanel {
     void openEntryPath(OpenDataTarget target) {
         DefaultMutableTreeNode cachedSelectForMenu = getCachedSelectForMenu();
         if (!(cachedSelectForMenu.getUserObject() instanceof ShipCSVEntry checked)) return;
-        Hull hullFile = checked.getHullFile();
+        HullSpecFile hullSpecFileFile = checked.getHullSpecFile();
         Path toOpen;
         switch (target) {
-            case FILE -> toOpen = hullFile.getShipFilePath();
-            case CONTAINER -> toOpen = hullFile.getShipFilePath().getParent();
+            case FILE -> toOpen = hullSpecFileFile.getFilePath();
+            case CONTAINER -> toOpen = hullSpecFileFile.getFilePath().getParent();
             default -> toOpen = checked.getPackageFolderPath();
         }
         FileUtilities.openPathInDesktop(toOpen);
@@ -249,8 +249,8 @@ class HullsTreePanel extends DataTreePanel {
             super.getTreeCellRendererComponent(tree, value, sel, expanded, leaf, row, hasFocus);
             Object object = ((DefaultMutableTreeNode) value).getUserObject();
             if (object instanceof ShipCSVEntry checked && leaf) {
-                Hull hull = checked.getHullFile();
-                String hullSize = hull.getHullSize();
+                HullSpecFile hullSpecFile = checked.getHullSpecFile();
+                String hullSize = hullSpecFile.getHullSize();
                 switch (hullSize) {
                     case "FIGHTER" -> setIcon(FontIcon.of(BoxiconsRegular.DICE_1, 16, Color.DARK_GRAY));
                     case "FRIGATE" -> setIcon(FontIcon.of(BoxiconsRegular.DICE_2, 16, Color.DARK_GRAY));

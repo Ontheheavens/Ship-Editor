@@ -14,7 +14,7 @@ import oth.shipeditor.components.viewer.control.ControlPredicates;
 import oth.shipeditor.components.viewer.entities.BaseWorldPoint;
 import oth.shipeditor.components.viewer.entities.ShipCenterPoint;
 import oth.shipeditor.components.viewer.layers.ship.ShipPainter;
-import oth.shipeditor.representation.Hull;
+import oth.shipeditor.representation.HullSpecFile;
 import oth.shipeditor.undo.EditDispatch;
 
 import java.awt.*;
@@ -105,9 +105,9 @@ public class CenterPointPainter extends SinglePointPainter {
         KeyboardFocusManager.getCurrentKeyboardFocusManager().addKeyEventDispatcher(hotkeyDispatcher);
     }
 
-    public void initCenterPoint(Point2D translatedCenter, Hull hull) {
+    public void initCenterPoint(Point2D translatedCenter, HullSpecFile hullSpecFile) {
         this.centerPoint = new ShipCenterPoint(translatedCenter,
-                (float) hull.getCollisionRadius(), this.getParentLayer(), this);
+                (float) hullSpecFile.getCollisionRadius(), this.getParentLayer(), this);
         this.addPoint(centerPoint);
     }
 

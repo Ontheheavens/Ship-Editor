@@ -42,10 +42,10 @@ public abstract class CSVDataTreePanel<T extends CSVEntry> extends DataTreePanel
         return singleButtonPanel.getFirst();
     }
 
-    void populateEntries(Map<String, List<T>> hullmods) {
+    void populateEntries(Map<String, List<T>> entriesByPackage) {
         DefaultMutableTreeNode rootNode = getRootNode();
         rootNode.removeAllChildren();
-        loadAllEntries(hullmods);
+        loadAllEntries(entriesByPackage);
         sortAndExpandTree();
         repaint();
     }

@@ -20,7 +20,7 @@ public class EngineSlot {
     @JsonDeserialize(using = Point2DDeserializer.class)
     private Point2D.Double location;
 
-    @JsonProperty("length")
+    @JsonProperty(StringConstants.LENGTH)
     private double length;
 
     @JsonProperty(StringConstants.WIDTH)

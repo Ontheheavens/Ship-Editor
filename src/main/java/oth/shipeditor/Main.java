@@ -16,8 +16,8 @@ import oth.shipeditor.parsing.loading.FileLoading;
 import oth.shipeditor.persistence.Initializations;
 import oth.shipeditor.persistence.SettingsManager;
 import oth.shipeditor.representation.GameDataRepository;
-import oth.shipeditor.representation.Hull;
-import oth.shipeditor.representation.Skin;
+import oth.shipeditor.representation.HullSpecFile;
+import oth.shipeditor.representation.SkinSpecFile;
 import oth.shipeditor.undo.UndoOverseer;
 import oth.shipeditor.utility.graphics.Sprite;
 
@@ -28,10 +28,7 @@ import java.io.File;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.function.Function;
 
 /**
@@ -94,9 +91,9 @@ public final class Main {
         crigEntry.loadLayerFromEntry();
 
         ShipCSVEntry legionEntry = allShips.get("legion");
-        Map<String, Skin> legionSkins = legionEntry.getSkins();
-        Skin legionXIV = legionSkins.get("legion_xiv.skin");
-        legionEntry.setActiveSkin(legionXIV);
+        Map<String, SkinSpecFile> legionSkins = legionEntry.getSkins();
+        SkinSpecFile legionXIV = legionSkins.get("legion_xiv.skin");
+        legionEntry.setActiveSkinSpecFile(legionXIV);
         legionEntry.loadLayerFromEntry();
 
         LayerViewer shipView = window.getShipView();
@@ -143,8 +140,8 @@ public final class Main {
         try {
             URI url = dataPath.toURI();
             File hullFile = new File(url);
-            Hull hull = FileLoading.loadHullFile(hullFile);
-            EventBus.publish(new HullFileOpened(hull, hullFile.getName()));
+            HullSpecFile hullSpecFile = FileLoading.loadHullFile(hullFile);
+            EventBus.publish(new HullFileOpened(hullSpecFile, hullFile.getName()));
         } catch (URISyntaxException e) {
             e.printStackTrace();
         }

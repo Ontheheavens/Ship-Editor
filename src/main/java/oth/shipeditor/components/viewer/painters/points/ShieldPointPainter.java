@@ -13,7 +13,7 @@ import oth.shipeditor.components.viewer.control.ControlPredicates;
 import oth.shipeditor.components.viewer.entities.BaseWorldPoint;
 import oth.shipeditor.components.viewer.entities.ShieldCenterPoint;
 import oth.shipeditor.components.viewer.layers.ship.ShipPainter;
-import oth.shipeditor.representation.Hull;
+import oth.shipeditor.representation.HullSpecFile;
 import oth.shipeditor.representation.HullStyle;
 import oth.shipeditor.representation.ShipData;
 import oth.shipeditor.undo.EditDispatch;
@@ -56,13 +56,13 @@ public class ShieldPointPainter extends SinglePointPainter {
     }
 
     public void initShieldPoint(Point2D translated, ShipData data) {
-        Hull hull = data.getHull();
+        HullSpecFile hullSpecFile = data.getHullSpecFile();
         HullStyle style = data.getHullStyle();
         if (style == null) {
             style = new HullStyle();
         }
         this.shieldCenterPoint = new ShieldCenterPoint(translated,
-                (float) hull.getShieldRadius(), this.getParentLayer(), style, this);
+                (float) hullSpecFile.getShieldRadius(), this.getParentLayer(), style, this);
         this.addPoint(shieldCenterPoint);
         Color shieldInnerColor = style.getShieldInnerColor();
         float styleInnerColorOpacity = ColorUtilities.getOpacityFromAlpha(shieldInnerColor.getAlpha());

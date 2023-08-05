@@ -52,7 +52,6 @@ public final class Initializations {
         ActionEvent initEvent = new ActionEvent(window, ActionEvent.ACTION_PERFORMED, null);
         List<Action> loadActions = FileUtilities.getLoadDataActions();
         loadActions.forEach(action -> action.actionPerformed(initEvent));
-        FileUtilities.loadHullStyles();
     }
 
     @SuppressWarnings("ProhibitedExceptionThrown")

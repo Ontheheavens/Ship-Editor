@@ -23,7 +23,7 @@ public final class JsonProcessor {
     }
 
     @SuppressWarnings({"NestedAssignment", "RegExpSimplifiable"})
-    public static String correctJSON(File malformed) {
+    public static String correctJSONUnquotedValues(File malformed) {
         StringBuilder jsonString = new StringBuilder();
         try (BufferedReader reader = new BufferedReader(new FileReader(malformed, StandardCharsets.UTF_8))) {
             String line;
@@ -48,6 +48,25 @@ public final class JsonProcessor {
         }
         preprocessedJson.append(jsonString.substring(previousEnd));
 
+        return preprocessedJson.toString();
+    }
+
+    @SuppressWarnings("RegExpSimplifiable")
+    public static String correctSpuriousSeparators(String inputJSON) {
+        // Pattern to match semicolons used for object separation outside quoted string values.
+        Pattern pattern = Pattern.compile("(?<![\"])\\s*;\\s*(?![^\"]*\"(?:[^\"]*\"[^\"]*\")*[^\"]*$)");
+        Matcher matcher = pattern.matcher(inputJSON);
+        StringBuilder preprocessedJson = new StringBuilder();
+        int previousEnd = 0;
+        while (matcher.find()) {
+            // Append the part before the match.
+            preprocessedJson.append(inputJSON, previousEnd, matcher.start());
+            // Append a comma to replace the semicolon.
+            preprocessedJson.append(",");
+            // Update the previous end position.
+            previousEnd = matcher.end();
+        }
+        preprocessedJson.append(inputJSON.substring(previousEnd));
         return preprocessedJson.toString();
     }
 

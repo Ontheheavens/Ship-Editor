@@ -17,7 +17,7 @@ import oth.shipeditor.components.viewer.layers.LayerPainter;
 import oth.shipeditor.components.viewer.layers.ship.data.ActiveShipSpec;
 import oth.shipeditor.components.viewer.painters.points.*;
 import oth.shipeditor.representation.ShipData;
-import oth.shipeditor.representation.Skin;
+import oth.shipeditor.representation.SkinSpecFile;
 import oth.shipeditor.utility.graphics.Sprite;
 import oth.shipeditor.utility.text.StringValues;
 
@@ -54,7 +54,7 @@ public final class ShipPainter extends LayerPainter {
     private Sprite baseHullSprite;
 
     @Getter @Setter
-    private Skin activeSkin = Skin.empty();
+    private SkinSpecFile activeSkinSpecFile = SkinSpecFile.empty();
 
     public ShipPainter(ShipLayer layer) {
         super(layer);
@@ -73,15 +73,15 @@ public final class ShipPainter extends LayerPainter {
 
             this.weaponSlotPainter.resetSkinSlotOverride();
 
-            activeSkin = Skin.empty();
+            activeSkinSpecFile = SkinSpecFile.empty();
         } else {
             ShipLayer shipLayer = getParentLayer();
             ShipData shipData = shipLayer.getShipData();
-            Map<String, Skin> skins = shipData.getSkins();
+            Map<String, SkinSpecFile> skins = shipData.getSkins();
             if (skinID == null || skinID.isEmpty()) {
                 throw new IllegalArgumentException("Illegal skinID passed to ShipPainter!");
             }
-            Skin retrieved = skins.get(skinID);
+            SkinSpecFile retrieved = skins.get(skinID);
             Sprite skinSprite = retrieved.getLoadedSkinSprite();
             this.setSprite(skinSprite.getSpriteImage());
 
@@ -90,9 +90,9 @@ public final class ShipPainter extends LayerPainter {
             }
 
             parentLayer.setSpriteFileName(skinSprite.getFileName());
-            String skinFileName = retrieved.getSkinFilePath().getFileName().toString();
+            String skinFileName = retrieved.getFilePath().getFileName().toString();
             parentLayer.setSkinFileName(skinFileName);
-            this.activeSkin = retrieved;
+            this.activeSkinSpecFile = retrieved;
         }
         EventBus.publish(new ActiveLayerUpdated(this.getParentLayer()));
         EventBus.publish(new SkinPanelRepaintQueued());

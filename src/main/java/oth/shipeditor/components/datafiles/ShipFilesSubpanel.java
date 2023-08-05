@@ -5,8 +5,9 @@ import oth.shipeditor.components.datafiles.entities.ShipCSVEntry;
 import oth.shipeditor.parsing.loading.FileLoading;
 import oth.shipeditor.persistence.SettingsManager;
 import oth.shipeditor.representation.GameDataRepository;
-import oth.shipeditor.representation.Hull;
-import oth.shipeditor.representation.Skin;
+import oth.shipeditor.representation.HullSpecFile;
+import oth.shipeditor.representation.SkinSpecFile;
+import oth.shipeditor.representation.Variant;
 import oth.shipeditor.utility.components.ComponentUtilities;
 import oth.shipeditor.utility.components.MouseoverLabelListener;
 import oth.shipeditor.utility.text.StringConstants;
@@ -19,6 +20,7 @@ import javax.swing.border.TitledBorder;
 import java.awt.*;
 import java.io.File;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Map;
 
@@ -30,26 +32,28 @@ class ShipFilesSubpanel extends JPanel {
 
     private final JPanel rightPanel;
 
+    private static String currentShipHullID;
 
     ShipFilesSubpanel(JPanel parentPanel) {
         this.rightPanel = parentPanel;
     }
-
 
     JPanel createShipFilesPanel(ShipCSVEntry selected, HullsTreePanel parent) {
         JPanel shipFilesPanel = this;
         shipFilesPanel.setLayout(new BoxLayout(shipFilesPanel, BoxLayout.PAGE_AXIS));
         GridBagConstraints constraints = DataTreePanel.getDefaultConstraints();
 
-        Map<String, Skin> skins = selected.getSkins();
+        currentShipHullID = null;
+
+        Map<String, SkinSpecFile> skins = selected.getSkins();
         if (skins != null) {
-            Collection<Skin> values = skins.values();
-            Skin[] skinArray = values.toArray(new Skin[0]);
-            JComboBox<Skin> skinChooser = new JComboBox<>(skinArray);
-            skinChooser.setSelectedItem(selected.getActiveSkin());
+            Collection<SkinSpecFile> values = skins.values();
+            SkinSpecFile[] skinSpecFileArray = values.toArray(new SkinSpecFile[0]);
+            JComboBox<SkinSpecFile> skinChooser = new JComboBox<>(skinSpecFileArray);
+            skinChooser.setSelectedItem(selected.getActiveSkinSpecFile());
             skinChooser.addActionListener(e -> {
-                Skin chosen = (Skin) skinChooser.getSelectedItem();
-                selected.setActiveSkin(chosen);
+                SkinSpecFile chosen = (SkinSpecFile) skinChooser.getSelectedItem();
+                selected.setActiveSkinSpecFile(chosen);
                 parent.updateEntryPanel(selected);
             });
             skinChooser.setAlignmentX(Component.CENTER_ALIGNMENT);
@@ -61,10 +65,14 @@ class ShipFilesSubpanel extends JPanel {
         }
 
         JPanel labelContainer = ShipFilesSubpanel.createLabelContainer(selected);
-
         shipFilesPanel.add(labelContainer);
 
         ShipFilesSubpanel.addHullmodPanel(shipFilesPanel, selected);
+
+        JPanel variantsPanel = ShipFilesSubpanel.createVariantPanel();
+        if (variantsPanel != null) {
+            shipFilesPanel.add(variantsPanel);
+        }
 
         return shipFilesPanel;
     }
@@ -75,30 +83,31 @@ class ShipFilesSubpanel extends JPanel {
         String shipId = selected.getHullID();
         String hullFileName = selected.getHullFileName();
 
-        Hull selectedHullFile = selected.getHullFile();
-        Skin activeSkin = selected.getActiveSkin();
+        HullSpecFile selectedHullFileSpecFile = selected.getHullSpecFile();
+        SkinSpecFile activeSkinSpecFile = selected.getActiveSkinSpecFile();
         Path skinFilePath = null;
 
-        String spriteFileName = selectedHullFile.getSpriteName();
+        String spriteFileName = selectedHullFileSpecFile.getSpriteName();
         String skinFileName = "";
 
-        if (activeSkin != null && !activeSkin.isBase()) {
-            shipName = activeSkin.getHullName();
-            shipId = activeSkin.getSkinHullId();
-            spriteFileName = activeSkin.getSpriteName();
-            skinFilePath = activeSkin.getSkinFilePath();
+        if (activeSkinSpecFile != null && !activeSkinSpecFile.isBase()) {
+            shipName = activeSkinSpecFile.getHullName();
+            shipId = activeSkinSpecFile.getSkinHullId();
+            spriteFileName = activeSkinSpecFile.getSpriteName();
+            skinFilePath = activeSkinSpecFile.getFilePath();
             skinFileName = skinFilePath.getFileName().toString();
         }
 
         if (spriteFileName == null || spriteFileName.isEmpty()) {
-            spriteFileName = selectedHullFile.getSpriteName();
+            spriteFileName = selectedHullFileSpecFile.getSpriteName();
         }
 
-        Path shipFilePath = selectedHullFile.getShipFilePath();
+        Path shipFilePath = selectedHullFileSpecFile.getFilePath();
         String shipFilePathName = shipFilePath.toString();
 
         JPanel labelContainer = new JPanel();
         labelContainer.setAlignmentX(LEFT_ALIGNMENT);
+        labelContainer.setBorder(new EmptyBorder(0, 4, 0, 0));
 
         labelContainer.setLayout(new BoxLayout(labelContainer, BoxLayout.PAGE_AXIS));
         JLabel shipNameLabel = new JLabel("Ship name: " + shipName);
@@ -106,6 +115,8 @@ class ShipFilesSubpanel extends JPanel {
         labelContainer.add(shipNameLabel);
 
         labelContainer.add(Box.createRigidArea(ShipFilesSubpanel.createPadding()));
+
+        currentShipHullID = shipId;
 
         JLabel shipIDLabel = new JLabel("Ship ID: " + shipId);
         shipIDLabel.setBorder(new EmptyBorder(ComponentUtilities.createLabelInsets()));
@@ -192,6 +203,47 @@ class ShipFilesSubpanel extends JPanel {
         panel.add(hullmodsPanel);
         panel.revalidate();
         panel.repaint();
+    }
+
+    private static JPanel createVariantPanel() {
+        GameDataRepository gameData = SettingsManager.getGameData();
+
+        MatteBorder matteLine = new MatteBorder(1, 0, 0, 0, Color.LIGHT_GRAY);
+        Border titledBorder = new TitledBorder(matteLine, "Variants",
+                TitledBorder.CENTER, TitledBorder.DEFAULT_POSITION);
+        JPanel variantsPanel = new JPanel();
+        variantsPanel.setLayout(new FlowLayout(FlowLayout.LEADING, 0, 0));
+        variantsPanel.setBorder(titledBorder);
+        variantsPanel.setAlignmentX(LEFT_ALIGNMENT);
+
+        JPanel labelContainer = new JPanel();
+        labelContainer.setAlignmentX(LEFT_ALIGNMENT);
+        labelContainer.setBorder(new EmptyBorder(2, 0, 0, 0));
+        labelContainer.setLayout(new BoxLayout(labelContainer, BoxLayout.PAGE_AXIS));
+
+        Collection<Variant> variantsForHull = new ArrayList<>();
+        Map<String, Variant> allVariants = gameData.getAllVariants();
+        for (Variant variant : allVariants.values()) {
+            String hullID = variant.getHullId();
+            if (hullID.equals(currentShipHullID)) {
+                variantsForHull.add(variant);
+            }
+        }
+
+        if (variantsForHull.isEmpty()) return null;
+        variantsForHull.forEach(variant -> {
+            Path variantFilePath = variant.getVariantFilePath();
+            JLabel variantLabel = new JLabel("Variant file : " + variantFilePath.getFileName());
+            variantLabel.setToolTipText(String.valueOf(variantFilePath));
+            variantLabel.setBorder(ComponentUtilities.createLabelSimpleBorder(ComponentUtilities.createLabelInsets()));
+            JPopupMenu pathContextMenu = ComponentUtilities.createPathContextMenu(variantFilePath);
+            variantLabel.addMouseListener(new MouseoverLabelListener(pathContextMenu, variantLabel));
+            labelContainer.add(variantLabel);
+            labelContainer.add(Box.createRigidArea(ShipFilesSubpanel.createPadding()));
+        });
+
+        variantsPanel.add(labelContainer);
+        return variantsPanel;
     }
 
 }

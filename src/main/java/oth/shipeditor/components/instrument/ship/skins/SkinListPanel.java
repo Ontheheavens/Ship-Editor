@@ -9,7 +9,7 @@ import oth.shipeditor.components.viewer.layers.ship.data.ActiveShipSpec;
 import oth.shipeditor.components.viewer.layers.ship.ShipLayer;
 import oth.shipeditor.components.viewer.layers.ship.ShipPainter;
 import oth.shipeditor.representation.ShipData;
-import oth.shipeditor.representation.Skin;
+import oth.shipeditor.representation.SkinSpecFile;
 import oth.shipeditor.utility.StaticController;
 
 import javax.swing.*;
@@ -48,16 +48,16 @@ public class SkinListPanel extends JPanel {
             chooserContainer.add(SkinListPanel.createDisabledChooser());
             return;
         }
-        Map<String, Skin> skins = shipData.getSkins();
+        Map<String, SkinSpecFile> skins = shipData.getSkins();
         ShipPainter painter = ((ShipLayer) selected).getPainter();
 
 
-        Collection<Skin> values = skins.values();
-        Skin[] skinArray = values.toArray(new Skin[0]);
-        JComboBox<Skin> skinChooser = new JComboBox<>(skinArray);
-        skinChooser.setSelectedItem(painter.getActiveSkin());
+        Collection<SkinSpecFile> values = skins.values();
+        SkinSpecFile[] skinSpecFileArray = values.toArray(new SkinSpecFile[0]);
+        JComboBox<SkinSpecFile> skinChooser = new JComboBox<>(skinSpecFileArray);
+        skinChooser.setSelectedItem(painter.getActiveSkinSpecFile());
         skinChooser.addActionListener(e -> {
-            Skin chosen = (Skin) skinChooser.getSelectedItem();
+            SkinSpecFile chosen = (SkinSpecFile) skinChooser.getSelectedItem();
             ActiveShipSpec spec;
             String skinID = "";
             if (chosen != null && !chosen.isBase()) {
@@ -74,10 +74,10 @@ public class SkinListPanel extends JPanel {
         chooserContainer.add(skinChooser);
     }
 
-    private static JComboBox<Skin> createDisabledChooser() {
-        Skin[] skinArray = {Skin.empty()};
-        JComboBox<Skin> skinChooser = new JComboBox<>(skinArray);
-        skinChooser.setSelectedItem(skinArray[0]);
+    private static JComboBox<SkinSpecFile> createDisabledChooser() {
+        SkinSpecFile[] skinSpecFileArray = {SkinSpecFile.empty()};
+        JComboBox<SkinSpecFile> skinChooser = new JComboBox<>(skinSpecFileArray);
+        skinChooser.setSelectedItem(skinSpecFileArray[0]);
         skinChooser.setEnabled(false);
         return skinChooser;
     }

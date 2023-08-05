@@ -14,7 +14,7 @@ import oth.shipeditor.components.viewer.entities.WorldPoint;
 import oth.shipeditor.components.viewer.entities.weapon.WeaponSlotOverride;
 import oth.shipeditor.components.viewer.entities.weapon.WeaponSlotPoint;
 import oth.shipeditor.components.viewer.layers.ship.ShipPainter;
-import oth.shipeditor.representation.Skin;
+import oth.shipeditor.representation.SkinSpecFile;
 import oth.shipeditor.representation.weapon.WeaponMount;
 import oth.shipeditor.representation.weapon.WeaponSize;
 import oth.shipeditor.representation.weapon.WeaponSlot;
@@ -134,9 +134,9 @@ public class WeaponSlotPainter extends MirrorablePointPainter{
         this.slotPoints.forEach(weaponSlotPoint -> weaponSlotPoint.setSkinOverride(null));
     }
 
-    public void toggleSkinSlotOverride(Skin skin) {
+    public void toggleSkinSlotOverride(SkinSpecFile skinSpecFile) {
         Collection<WeaponSlotOverride> overrides = new ArrayList<>();
-        Map<String, WeaponSlot> weaponSlotChanges = skin.getWeaponSlotChanges();
+        Map<String, WeaponSlot> weaponSlotChanges = skinSpecFile.getWeaponSlotChanges();
         weaponSlotChanges.forEach((s, weaponSlot) -> {
 
             // TODO: this is not where instance conversion should happen; move to ShipSkin initialization.

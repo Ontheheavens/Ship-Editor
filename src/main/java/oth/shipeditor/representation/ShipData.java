@@ -15,24 +15,24 @@ import java.util.Map;
 @Getter @Setter
 public class ShipData {
 
-    private Hull hull;
+    private HullSpecFile hullSpecFile;
 
     /**
      * Keys are skin IDs.
      */
-    private final Map<String, Skin> skins;
+    private final Map<String, SkinSpecFile> skins;
 
     // TODO: this needs to be moved into dedicated runtime hull data class.
     private HullStyle hullStyle;
 
-    public ShipData(Hull openedHull) {
-        this.hull = openedHull;
+    public ShipData(HullSpecFile openedHullSpecFile) {
+        this.hullSpecFile = openedHullSpecFile;
         this.skins = new HashMap<>();
-        this.skins.put(Skin.DEFAULT, Skin.empty());
+        this.skins.put(SkinSpecFile.DEFAULT, SkinSpecFile.empty());
     }
 
     public void initHullStyle() {
-        String styleID = hull.getStyle();
+        String styleID = hullSpecFile.getStyle();
         GameDataRepository dataRepository = SettingsManager.getGameData();
         Map<String, HullStyle> allHullStyles = dataRepository.getAllHullStyles();
         HullStyle style = null;
@@ -44,8 +44,8 @@ public class ShipData {
 
     // TODO: Refactor raw JSON-class Skin into runtime-adapted SkinData, so we can have easy interaction with the instance.
 
-    public void addSkin(Skin skin) {
-        this.skins.put(skin.getSkinHullId(), skin);
+    public void addSkin(SkinSpecFile skinSpecFile) {
+        this.skins.put(skinSpecFile.getSkinHullId(), skinSpecFile);
     }
 
 }

@@ -24,31 +24,31 @@ import java.util.Map;
  */
 @Getter @Setter
 @SuppressWarnings({"TransientFieldInNonSerializableClass", "ClassWithTooManyFields", "ClassWithTooManyMethods"})
-public class Skin {
+public class SkinSpecFile implements ShipSpecFile {
 
     @JsonIgnore
-    private static final Skin NO_SKIN_DATA = new Skin(true);
+    private static final SkinSpecFile NO_SKIN_DATA_SPEC_FILE = new SkinSpecFile(true);
 
     public static final String DEFAULT = StringConstants.DEFAULT_ID;
 
     @JsonCreator
-    public Skin() {
+    public SkinSpecFile() {
         base = false;
     }
 
-    private Skin(boolean isBase) {
+    private SkinSpecFile(boolean isBase) {
         base = isBase;
     }
 
-    public static Skin empty() {
-        return NO_SKIN_DATA;
+    public static SkinSpecFile empty() {
+        return NO_SKIN_DATA_SPEC_FILE;
     }
 
     @JsonIgnore
     private final transient boolean base;
 
     @JsonIgnore
-    private transient Path skinFilePath;
+    private transient Path filePath;
 
     @JsonIgnore
     private transient Path containingPackage;

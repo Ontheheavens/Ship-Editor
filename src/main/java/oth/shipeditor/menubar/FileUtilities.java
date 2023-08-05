@@ -12,7 +12,7 @@ import oth.shipeditor.components.viewer.layers.ship.ShipLayer;
 import oth.shipeditor.parsing.loading.*;
 import oth.shipeditor.persistence.Settings;
 import oth.shipeditor.persistence.SettingsManager;
-import oth.shipeditor.representation.Hull;
+import oth.shipeditor.representation.HullSpecFile;
 import oth.shipeditor.utility.graphics.Sprite;
 
 import javax.swing.*;
@@ -32,6 +32,7 @@ import java.util.stream.Stream;
  * @author Ontheheavens
  * @since 09.05.2023
  */
+@SuppressWarnings("ClassWithTooManyFields")
 @Log4j2
 public final class FileUtilities {
 
@@ -51,6 +52,9 @@ public final class FileUtilities {
 
     @Getter
     private static final Action loadWingDataAction = new LoadWingDataAction();
+
+    @Getter
+    private static final Action loadWeaponDataAction = new LoadWeaponsDataAction();
 
     @Getter
     private static final Action openSpriteAction = new OpenSpriteAction();
@@ -74,6 +78,7 @@ public final class FileUtilities {
         actions.add(loadHullStyleDataAction);
         actions.add(loadShipSystemDataAction);
         actions.add(loadWingDataAction);
+        actions.add(loadWeaponDataAction);
         return actions;
     }
 
@@ -119,12 +124,16 @@ public final class FileUtilities {
             FileLoading.openHullAndDo(event -> {
                     JFileChooser shipDataChooser = (JFileChooser) event.getSource();
                     File file = shipDataChooser.getSelectedFile();
-                    Hull hull = FileLoading.loadHullFile(file);
-                    EventBus.publish(new HullFileOpened(hull, file.getName()));
+                    HullSpecFile hullSpecFile = FileLoading.loadHullFile(file);
+                    EventBus.publish(new HullFileOpened(hullSpecFile, file.getName()));
             });
         }
     }
 
+    /**
+     * @param targetFile can be either file (CSV table, usually) or a directory.
+     * @return map of entries where key is package folder and value is file instance of target in package.
+     */
     public static Map<Path, File> getFileFromPackages(Path targetFile) {
         Settings settings = SettingsManager.getSettings();
 
@@ -147,11 +156,5 @@ public final class FileUtilities {
         }
         return matchingFiles;
     }
-
-    public static void loadHullStyles() {
-
-    }
-
-
 
 }

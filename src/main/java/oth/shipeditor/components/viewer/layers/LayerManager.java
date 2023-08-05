@@ -18,9 +18,9 @@ import oth.shipeditor.communication.events.viewer.layers.weapons.WeaponLayerCrea
 import oth.shipeditor.components.viewer.layers.ship.ShipLayer;
 import oth.shipeditor.components.viewer.layers.ship.ShipPainter;
 import oth.shipeditor.components.viewer.layers.weapon.WeaponLayer;
-import oth.shipeditor.representation.Hull;
+import oth.shipeditor.representation.HullSpecFile;
 import oth.shipeditor.representation.ShipData;
-import oth.shipeditor.representation.Skin;
+import oth.shipeditor.representation.SkinSpecFile;
 import oth.shipeditor.utility.StaticController;
 import oth.shipeditor.utility.graphics.Sprite;
 
@@ -145,13 +145,13 @@ public class LayerManager {
     private void initOpenHullListener() {
         EventBus.subscribe(event -> {
             if (event instanceof HullFileOpened checked) {
-                Hull hull = checked.hull();
+                HullSpecFile hullSpecFile = checked.hullSpecFile();
                 if (activeLayer != null && activeLayer instanceof ShipLayer checkedLayer) {
                     ShipData data = checkedLayer.getShipData();
                     if (data != null ) {
-                        data.setHull(hull);
+                        data.setHullSpecFile(hullSpecFile);
                     } else {
-                        ShipData newData = new ShipData(hull);
+                        ShipData newData = new ShipData(hullSpecFile);
                         checkedLayer.setShipData(newData);
                     }
                     checkedLayer.setHullFileName(checked.hullFileName());
@@ -163,23 +163,23 @@ public class LayerManager {
         });
         EventBus.subscribe(event -> {
             if (event instanceof SkinFileOpened checked) {
-                Skin skin = checked.skin();
+                SkinSpecFile skinSpecFile = checked.skinSpecFile();
                 if (activeLayer != null && activeLayer instanceof ShipLayer checkedLayer) {
                     ShipData data = checkedLayer.getShipData();
-                    if (data != null && data.getHull() != null) {
-                        Hull baseHull = data.getHull();
-                        String hullID = baseHull.getHullId();
-                        if (!hullID.equals(skin.getBaseHullId())) {
-                            Path skinFilePath = skin.getSkinFilePath();
+                    if (data != null && data.getHullSpecFile() != null) {
+                        HullSpecFile baseHullSpecFile = data.getHullSpecFile();
+                        String hullID = baseHullSpecFile.getHullId();
+                        if (!hullID.equals(skinSpecFile.getBaseHullId())) {
+                            Path skinFilePath = skinSpecFile.getFilePath();
                             JOptionPane.showMessageDialog(null,
                                     "Hull ID of active layer does not equal base hull ID of skin: " +
-                                            Optional.of(skinFilePath.toString()).orElse(skin.toString()),
+                                            Optional.of(skinFilePath.toString()).orElse(skinSpecFile.toString()),
                                     "Ship ID mismatch!",
                                     JOptionPane.ERROR_MESSAGE);
                             throw new IllegalStateException("Illegal skin file opening operation!");
                         }
                         // TODO: pass to layer and convert there.
-                        data.addSkin(skin);
+                        data.addSkin(skinSpecFile);
                     } else {
                         throw new IllegalStateException("Skin file loaded onto a null ship data!");
                     }
