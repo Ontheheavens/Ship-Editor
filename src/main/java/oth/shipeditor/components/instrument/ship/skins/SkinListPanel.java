@@ -5,9 +5,10 @@ import oth.shipeditor.communication.events.components.SkinPanelRepaintQueued;
 import oth.shipeditor.communication.events.viewer.layers.ActiveLayerUpdated;
 import oth.shipeditor.communication.events.viewer.layers.LayerWasSelected;
 import oth.shipeditor.components.viewer.layers.ViewerLayer;
-import oth.shipeditor.components.viewer.layers.ship.data.ActiveShipSpec;
 import oth.shipeditor.components.viewer.layers.ship.ShipLayer;
 import oth.shipeditor.components.viewer.layers.ship.ShipPainter;
+import oth.shipeditor.components.viewer.layers.ship.data.ActiveShipSpec;
+import oth.shipeditor.components.viewer.layers.ship.data.ShipSkin;
 import oth.shipeditor.representation.ShipData;
 import oth.shipeditor.representation.SkinSpecFile;
 import oth.shipeditor.utility.StaticController;
@@ -15,7 +16,7 @@ import oth.shipeditor.utility.StaticController;
 import javax.swing.*;
 import java.awt.*;
 import java.util.Collection;
-import java.util.Map;
+import java.util.Vector;
 
 /**
  * @author Ontheheavens
@@ -48,25 +49,22 @@ public class SkinListPanel extends JPanel {
             chooserContainer.add(SkinListPanel.createDisabledChooser());
             return;
         }
-        Map<String, SkinSpecFile> skins = shipData.getSkins();
-        ShipPainter painter = ((ShipLayer) selected).getPainter();
+        Collection<ShipSkin> skins = checkedLayer.getSkins();
+        ShipPainter painter = checkedLayer.getPainter();
 
+        Vector<ShipSkin> model = new Vector<>(skins);
 
-        Collection<SkinSpecFile> values = skins.values();
-        SkinSpecFile[] skinSpecFileArray = values.toArray(new SkinSpecFile[0]);
-        JComboBox<SkinSpecFile> skinChooser = new JComboBox<>(skinSpecFileArray);
-        skinChooser.setSelectedItem(painter.getActiveSkinSpecFile());
+        JComboBox<ShipSkin> skinChooser = new JComboBox<>(model);
+        skinChooser.setSelectedItem(painter.getActiveSkin());
         skinChooser.addActionListener(e -> {
-            SkinSpecFile chosen = (SkinSpecFile) skinChooser.getSelectedItem();
+            ShipSkin chosen = (ShipSkin) skinChooser.getSelectedItem();
             ActiveShipSpec spec;
-            String skinID = "";
             if (chosen != null && !chosen.isBase()) {
                 spec = ActiveShipSpec.SKIN;
-                skinID = chosen.getSkinHullId();
             } else {
                 spec = ActiveShipSpec.HULL;
             }
-            painter.setActiveSpec(spec, skinID);
+            painter.setActiveSpec(spec, chosen);
 
         });
         skinChooser.setAlignmentX(Component.CENTER_ALIGNMENT);

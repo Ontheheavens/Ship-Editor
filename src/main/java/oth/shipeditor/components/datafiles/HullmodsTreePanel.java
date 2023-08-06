@@ -95,7 +95,7 @@ class HullmodsTreePanel extends CSVDataTreePanel<HullmodCSVEntry>{
     }
 
     @Override
-    String getTooltipForEntry(Object entry) {
+    protected String getTooltipForEntry(Object entry) {
         if(entry instanceof HullmodCSVEntry checked) {
             return "<html>" +
                     "<p>" + "Hullmod ID: " + checked.getHullmodID() + "</p>" +
@@ -105,7 +105,7 @@ class HullmodsTreePanel extends CSVDataTreePanel<HullmodCSVEntry>{
     }
 
     @Override
-    Class<?> getEntryClass() {
+    protected Class<?> getEntryClass() {
         return HullmodCSVEntry.class;
     }
 

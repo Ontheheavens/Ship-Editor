@@ -10,22 +10,20 @@ import oth.shipeditor.components.instrument.ship.ShipInstrumentsPane;
 import oth.shipeditor.components.viewer.ShipInstrument;
 import oth.shipeditor.components.viewer.control.ControlPredicates;
 import oth.shipeditor.components.viewer.entities.BaseWorldPoint;
+import oth.shipeditor.components.viewer.entities.ShipCenterPoint;
 import oth.shipeditor.components.viewer.entities.WorldPoint;
 import oth.shipeditor.components.viewer.entities.weapon.WeaponSlotOverride;
 import oth.shipeditor.components.viewer.entities.weapon.WeaponSlotPoint;
 import oth.shipeditor.components.viewer.layers.ship.ShipPainter;
-import oth.shipeditor.representation.SkinSpecFile;
-import oth.shipeditor.representation.weapon.WeaponMount;
-import oth.shipeditor.representation.weapon.WeaponSize;
-import oth.shipeditor.representation.weapon.WeaponSlot;
-import oth.shipeditor.representation.weapon.WeaponType;
+import oth.shipeditor.components.viewer.layers.ship.data.ShipSkin;
 import oth.shipeditor.utility.Utility;
 
 import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.awt.geom.Point2D;
-import java.util.*;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Is not supposed to handle launch bays - bays deserialize to different points and painter.
@@ -87,7 +85,17 @@ public class WeaponSlotPainter extends MirrorablePointPainter{
         boolean mirrorMode = ControlPredicates.isMirrorModeEnabled();
         BaseWorldPoint mirroredCounterpart = getMirroredCounterpart(checked);
         if (mirrorMode && mirroredCounterpart instanceof WeaponSlotPoint checkedSlot) {
-            checkedSlot.changeSlotAngle(Utility.flipAngle(result));
+            double angle = Utility.flipAngle(result);
+            Point2D slotPosition = checkedSlot.getPosition();
+            double slotX = slotPosition.getX();
+            ShipPainter parentLayer = getParentLayer();
+            ShipCenterPoint shipCenter = parentLayer.getShipCenter();
+            Point2D centerPosition = shipCenter.getPosition();
+            double centerX = centerPosition.getX();
+            if ((Math.abs(slotX - centerX) < 0.05d)) {
+                angle = result;
+            }
+            checkedSlot.changeSlotAngle(angle);
         }
     }
 
@@ -134,38 +142,13 @@ public class WeaponSlotPainter extends MirrorablePointPainter{
         this.slotPoints.forEach(weaponSlotPoint -> weaponSlotPoint.setSkinOverride(null));
     }
 
-    public void toggleSkinSlotOverride(SkinSpecFile skinSpecFile) {
-        Collection<WeaponSlotOverride> overrides = new ArrayList<>();
-        Map<String, WeaponSlot> weaponSlotChanges = skinSpecFile.getWeaponSlotChanges();
-        weaponSlotChanges.forEach((s, weaponSlot) -> {
-
-            // TODO: this is not where instance conversion should happen; move to ShipSkin initialization.
-
-            WeaponSlotOverride.Builder overrideBlueprint = WeaponSlotOverride.Builder.override();
-            WeaponType type = WeaponType.value(weaponSlot.getType());
-            WeaponSize size = WeaponSize.value(weaponSlot.getSize());
-            WeaponMount mount = WeaponMount.value(weaponSlot.getMount());
-            WeaponSlotOverride override = overrideBlueprint.withSlotID(s)
-                    .withWeaponType(type)
-                    .withWeaponSize(size)
-                    .withWeaponMount(mount)
-                    .build();
-            overrides.add(override);
-        });
+    public void toggleSkinSlotOverride(ShipSkin skin) {
         this.slotPoints.forEach(weaponSlotPoint -> {
             String slotID = weaponSlotPoint.getId();
-            WeaponSlotOverride matchingOverride = WeaponSlotPainter.findMatchingOverride(overrides, slotID);
+            Map<String, WeaponSlotOverride> weaponSlotChanges = skin.getWeaponSlotChanges();
+            WeaponSlotOverride matchingOverride = weaponSlotChanges.get(slotID);
             weaponSlotPoint.setSkinOverride(matchingOverride);
         });
-    }
-
-    private static WeaponSlotOverride findMatchingOverride(Iterable<WeaponSlotOverride> overrides, String slotID) {
-        for (WeaponSlotOverride override : overrides) {
-            if (Objects.equals(override.getSlotID(), slotID)) {
-                return override;
-            }
-        }
-        return null;
     }
 
     @Override

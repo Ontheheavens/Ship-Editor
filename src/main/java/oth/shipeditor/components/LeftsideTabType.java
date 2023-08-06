@@ -5,5 +5,6 @@ package oth.shipeditor.components;
  * @since 24.06.2023
  */
 enum LeftsideTabType {
-    DEFAULT, GAME_DATA
-}
+    GAME_DATA,
+    HELP
+    }

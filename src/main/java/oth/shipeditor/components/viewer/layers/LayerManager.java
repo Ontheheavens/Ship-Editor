@@ -178,8 +178,7 @@ public class LayerManager {
                                     JOptionPane.ERROR_MESSAGE);
                             throw new IllegalStateException("Illegal skin file opening operation!");
                         }
-                        // TODO: pass to layer and convert there.
-                        data.addSkin(skinSpecFile);
+                        checkedLayer.addSkin(skinSpecFile);
                     } else {
                         throw new IllegalStateException("Skin file loaded onto a null ship data!");
                     }

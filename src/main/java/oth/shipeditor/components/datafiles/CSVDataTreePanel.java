@@ -31,7 +31,7 @@ public abstract class CSVDataTreePanel<T extends CSVEntry> extends DataTreePanel
     protected abstract String getEntryTypeName();
 
     @Override
-    JPanel createTopPanel() {
+    protected JPanel createTopPanel() {
         String entryTypeName = getEntryTypeName();
         String capitalized = Utility.capitalizeFirstLetter(entryTypeName);
         Pair<JPanel, JButton> singleButtonPanel = DataTreePanel.createSingleButtonPanel(capitalized + " data:",
@@ -74,7 +74,7 @@ public abstract class CSVDataTreePanel<T extends CSVEntry> extends DataTreePanel
     }
 
     @Override
-    void initTreePanelListeners(JPanel passedTreePanel) {
+    protected void initTreePanelListeners(JPanel passedTreePanel) {
         initComponentListeners();
         initWalkerListening();
     }
@@ -100,7 +100,7 @@ public abstract class CSVDataTreePanel<T extends CSVEntry> extends DataTreePanel
     protected abstract T getObjectFromNode(DefaultMutableTreeNode node);
 
     @Override
-    void openEntryPath(OpenDataTarget target) {
+    protected void openEntryPath(OpenDataTarget target) {
         DefaultMutableTreeNode cachedSelectForMenu = getCachedSelectForMenu();
         T entryObject = getObjectFromNode(cachedSelectForMenu);
         if (entryObject == null) return;

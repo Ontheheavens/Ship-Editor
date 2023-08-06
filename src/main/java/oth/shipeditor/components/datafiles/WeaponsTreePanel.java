@@ -86,7 +86,7 @@ public class WeaponsTreePanel extends CSVDataTreePanel<WeaponCSVEntry>{
     }
 
     @Override
-    String getTooltipForEntry(Object entry) {
+    protected String getTooltipForEntry(Object entry) {
         if(entry instanceof WeaponCSVEntry checked) {
             return "<html>" +
                     "<p>" + "Weapon ID: " + checked.getWeaponID() + "</p>" +
@@ -96,7 +96,7 @@ public class WeaponsTreePanel extends CSVDataTreePanel<WeaponCSVEntry>{
     }
 
     @Override
-    Class<?> getEntryClass() {
+    protected Class<?> getEntryClass() {
         return WeaponCSVEntry.class;
     }
 

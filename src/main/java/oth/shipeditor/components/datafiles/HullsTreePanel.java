@@ -41,7 +41,7 @@ class HullsTreePanel extends DataTreePanel {
     }
 
     @Override
-    String getTooltipForEntry(Object entry) {
+    protected String getTooltipForEntry(Object entry) {
         if(entry instanceof ShipCSVEntry checked) {
             HullSpecFile hullSpecFileFile = checked.getHullSpecFile();
             return "<html>" +
@@ -54,7 +54,7 @@ class HullsTreePanel extends DataTreePanel {
     }
 
     @Override
-    void initTreePanelListeners(JPanel passedTreePanel) {
+    protected void initTreePanelListeners(JPanel passedTreePanel) {
         this.initBusListening();
         this.initComponentListeners();
     }
@@ -162,7 +162,7 @@ class HullsTreePanel extends DataTreePanel {
     }
 
     @Override
-    JPanel createTopPanel() {
+    protected JPanel createTopPanel() {
         Pair<JPanel, JButton> singleButtonPanel = DataTreePanel.createSingleButtonPanel("Ship data:",
                 FileUtilities.getLoadShipDataAction());
         JButton button = singleButtonPanel.getSecond();
@@ -188,7 +188,7 @@ class HullsTreePanel extends DataTreePanel {
     }
 
     @Override
-    Class<?> getEntryClass() {
+    protected Class<?> getEntryClass() {
         return ShipCSVEntry.class;
     }
 
@@ -227,7 +227,7 @@ class HullsTreePanel extends DataTreePanel {
     }
 
     @Override
-    void openEntryPath(OpenDataTarget target) {
+    protected void openEntryPath(OpenDataTarget target) {
         DefaultMutableTreeNode cachedSelectForMenu = getCachedSelectForMenu();
         if (!(cachedSelectForMenu.getUserObject() instanceof ShipCSVEntry checked)) return;
         HullSpecFile hullSpecFileFile = checked.getHullSpecFile();

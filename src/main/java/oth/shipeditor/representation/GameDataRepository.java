@@ -34,6 +34,9 @@ public class GameDataRepository {
 
     private final Map<String, WeaponCSVEntry> allWeaponEntries;
 
+    /**
+     * Styles by their IDs (field names in JSON).
+     */
     @Setter
     private Map<String, HullStyle> allHullStyles;
 

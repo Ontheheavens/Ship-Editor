@@ -8,6 +8,7 @@ import oth.shipeditor.communication.events.components.InstrumentSplitterResized;
 import oth.shipeditor.communication.events.components.WindowGUIShowConfirmed;
 import oth.shipeditor.communication.events.viewer.layers.LayerWasSelected;
 import oth.shipeditor.components.datafiles.GameDataPanel;
+import oth.shipeditor.components.help.HelpMainPanel;
 import oth.shipeditor.components.instrument.AbstractInstrumentsPane;
 import oth.shipeditor.components.instrument.ship.ShipInstrumentsPane;
 import oth.shipeditor.components.instrument.weapon.WeaponInstrumentsPane;
@@ -34,7 +35,7 @@ import java.util.Map;
  * @author Ontheheavens
  * @since 23.06.2023
  */
-@SuppressWarnings("ClassWithTooManyFields")
+@SuppressWarnings({"ClassWithTooManyFields", "OverlyCoupledClass"})
 @Log4j2
 final class TripleSplitContainer extends JSplitPane {
 
@@ -65,7 +66,9 @@ final class TripleSplitContainer extends JSplitPane {
 
     private final Map<Component, Integer> dividerLocations;
 
-    private MouseAdapter cachedDividerHandler;
+    private MouseAdapter primaryDividerHandler;
+
+    private MouseAdapter secondaryDividerHandler;
 
     private int cachedDataPanelWidth;
 
@@ -78,7 +81,7 @@ final class TripleSplitContainer extends JSplitPane {
         this.minimizer = new MinimizerWidget(getMinimizeAction(), getMaximizeAction());
         leftsidePanels = new EnumMap<>(LeftsideTabType.class);
 
-        leftsidePanels.put(LeftsideTabType.DEFAULT, new JPanel());
+        leftsidePanels.put(LeftsideTabType.HELP, new HelpMainPanel());
         this.initDividerListeners(westPane);
     }
 
@@ -87,7 +90,7 @@ final class TripleSplitContainer extends JSplitPane {
             WindowContentPanes.LeftsidePanelTab selected = (WindowContentPanes.LeftsidePanelTab) westPane.getSelectedComponent();
             Component toSelect = null;
             switch (selected.getTabType()) {
-                case DEFAULT -> toSelect = leftsidePanels.get(LeftsideTabType.DEFAULT);
+                case HELP -> toSelect = leftsidePanels.get(LeftsideTabType.HELP);
                 case GAME_DATA -> toSelect = leftsidePanels.get(LeftsideTabType.GAME_DATA);
             }
             this.setLeftComponent(toSelect);
@@ -113,6 +116,7 @@ final class TripleSplitContainer extends JSplitPane {
             if (dividerLeftButton.isVisible()) {
                 minimizer.setMinimized(true);
                 dividerLeftButton.doClick();
+                togglePrimarySplitterOff();
             }
         };
     }
@@ -122,11 +126,23 @@ final class TripleSplitContainer extends JSplitPane {
             if (dividerRightButton.isVisible()) {
                 minimizer.setMinimized(false);
                 dividerRightButton.doClick();
+                togglePrimarySplitterOn();
             }
             else if (minimizer.isRestorationQueued() && minimizer.isMinimized()) {
                 minimizer.setMinimized(false);
+                togglePrimarySplitterOn();
             }
         };
+    }
+
+    private void togglePrimarySplitterOff() {
+        if (this.getMouseListeners().length == 0) return;
+        primaryDividerHandler = (MouseAdapter) this.getMouseListeners()[0];
+        TripleSplitContainer.removeListenerFromSplitter(this, primaryDividerHandler);
+    }
+
+    private void togglePrimarySplitterOn() {
+        TripleSplitContainer.addListenerToSplitter(this, primaryDividerHandler);
     }
 
     @SuppressWarnings("OverlyComplexMethod")
@@ -217,23 +233,31 @@ final class TripleSplitContainer extends JSplitPane {
 
     private void toggleSecondarySplitterOff() {
         if (secondaryLevel.getMouseListeners().length == 0) return;
-        cachedDividerHandler = (MouseAdapter) secondaryLevel.getMouseListeners()[0];
-        secondaryLevel.removeMouseListener(cachedDividerHandler);
-        secondaryLevel.removeMouseMotionListener(cachedDividerHandler);
-        BasicSplitPaneUI splitPaneUI = (BasicSplitPaneUI) secondaryLevel.getUI();
+        secondaryDividerHandler = (MouseAdapter) secondaryLevel.getMouseListeners()[0];
+        TripleSplitContainer.removeListenerFromSplitter(secondaryLevel, secondaryDividerHandler);
+    }
+
+    private static void removeListenerFromSplitter(JSplitPane splitter, MouseAdapter dividerHandler) {
+        splitter.removeMouseListener(dividerHandler);
+        splitter.removeMouseMotionListener(dividerHandler);
+        BasicSplitPaneUI splitPaneUI = (BasicSplitPaneUI) splitter.getUI();
         BasicSplitPaneDivider divider = splitPaneUI.getDivider();
-        divider.removeMouseListener(cachedDividerHandler);
-        divider.removeMouseMotionListener(cachedDividerHandler);
+        divider.removeMouseListener(dividerHandler);
+        divider.removeMouseMotionListener(dividerHandler);
         divider.setEnabled(false);
     }
 
     private void toggleSecondarySplitterOn() {
-        secondaryLevel.addMouseListener(cachedDividerHandler);
-        secondaryLevel.addMouseMotionListener(cachedDividerHandler);
-        BasicSplitPaneUI splitPaneUI = (BasicSplitPaneUI) secondaryLevel.getUI();
+        TripleSplitContainer.addListenerToSplitter(secondaryLevel, secondaryDividerHandler);
+    }
+
+    private static void addListenerToSplitter(JSplitPane splitter, MouseAdapter dividerHandler) {
+        splitter.addMouseListener(dividerHandler);
+        splitter.addMouseMotionListener(dividerHandler);
+        BasicSplitPaneUI splitPaneUI = (BasicSplitPaneUI) splitter.getUI();
         BasicSplitPaneDivider divider = splitPaneUI.getDivider();
-        divider.addMouseListener(cachedDividerHandler);
-        divider.addMouseMotionListener(cachedDividerHandler);
+        divider.addMouseListener(dividerHandler);
+        divider.addMouseMotionListener(dividerHandler);
         divider.setEnabled(true);
     }
 

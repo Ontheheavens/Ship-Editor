@@ -37,6 +37,7 @@ public abstract class PointList<T extends BaseWorldPoint> extends SortableList<T
             this.actOnSelectedPoint(point -> {
                 EventBus.publish(new PointSelectQueued(point));
                 EventBus.publish(new ViewerRepaintQueued());
+                this.handlePointSelection(point);
             });
         });
         this.addMouseListener(new ListContextMenuListener());
@@ -45,6 +46,8 @@ public abstract class PointList<T extends BaseWorldPoint> extends SortableList<T
         this.setBorder(new EmptyBorder(margin, margin, margin, margin));
         this.initListeners();
     }
+
+    protected abstract void handlePointSelection(T point);
 
     @Override
     protected void sortListModel() {

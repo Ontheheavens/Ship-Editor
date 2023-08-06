@@ -2,15 +2,10 @@ package oth.shipeditor.components.datafiles;
 
 import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.files.WingDataLoaded;
-import oth.shipeditor.components.datafiles.entities.ShipCSVEntry;
 import oth.shipeditor.components.datafiles.entities.WingCSVEntry;
 import oth.shipeditor.menubar.FileUtilities;
 import oth.shipeditor.persistence.SettingsManager;
 import oth.shipeditor.representation.GameDataRepository;
-import oth.shipeditor.representation.ShipSpecFile;
-import oth.shipeditor.representation.SkinSpecFile;
-import oth.shipeditor.representation.Variant;
-import oth.shipeditor.utility.text.StringConstants;
 
 import javax.swing.*;
 import javax.swing.tree.DefaultMutableTreeNode;
@@ -87,7 +82,7 @@ public class WingsTreePanel extends CSVDataTreePanel<WingCSVEntry>{
     }
 
     @Override
-    String getTooltipForEntry(Object entry) {
+    protected String getTooltipForEntry(Object entry) {
         if(entry instanceof WingCSVEntry checked) {
             return "<html>" +
                     "<p>" + "Wing ID: " + checked.getWingID() + "</p>" +
@@ -97,7 +92,7 @@ public class WingsTreePanel extends CSVDataTreePanel<WingCSVEntry>{
     }
 
     @Override
-    Class<?> getEntryClass() {
+    protected Class<?> getEntryClass() {
         return WingCSVEntry.class;
     }
 
@@ -110,53 +105,10 @@ public class WingsTreePanel extends CSVDataTreePanel<WingCSVEntry>{
             super.getTreeCellRendererComponent(tree, value, sel, expanded, leaf, row, hasFocus);
             Object object = ((DefaultMutableTreeNode) value).getUserObject();
             if (object instanceof WingCSVEntry checked && leaf) {
-                setText(WingsTreeCellRenderer.getEntryDisplayedName(checked));
+                setText(checked.getEntryName());
             }
 
             return this;
-        }
-
-        private static String getEntryDisplayedName(WingCSVEntry entry) {
-            String displayedName = entry.getDisplayedName();
-            if (displayedName != null) {
-                return displayedName;
-            }
-            Map<String, String> rowData = entry.getRowData();
-            String variantID = rowData.get(StringConstants.VARIANT);
-            GameDataRepository gameData = SettingsManager.getGameData();
-            Map<String, Variant> allVariants = gameData.getAllVariants();
-            Variant variant = allVariants.get(variantID);
-
-            String hullID = variant.getHullId();
-
-            ShipSpecFile desiredSpec = null;
-
-            Map<String, ShipCSVEntry> allShipEntries = gameData.getAllShipEntries();
-            outer: for (ShipCSVEntry shipEntry : allShipEntries.values()) {
-                String shipEntryHullID = shipEntry.getHullID();
-                if (shipEntryHullID.equals(hullID)) {
-                    desiredSpec = shipEntry.getHullSpecFile();
-                    break;
-                } else {
-                    Map<String, SkinSpecFile> skins = shipEntry.getSkins();
-                    if (skins == null || skins.isEmpty()) continue;
-                    for (SkinSpecFile skinSpec : skins.values()) {
-                        String skinHullId = skinSpec.getSkinHullId();
-                        if (skinHullId != null && skinHullId.equals(hullID)) {
-                            desiredSpec = skinSpec;
-                            break outer;
-                        }
-                    }
-                }
-            }
-
-            if (desiredSpec != null) {
-                String result = desiredSpec.getHullName() + " Wing";
-                entry.setDisplayedName(result);
-                return result;
-            }
-
-            return entry.getWingID();
         }
 
     }

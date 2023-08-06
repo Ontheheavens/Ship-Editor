@@ -12,7 +12,9 @@ import oth.shipeditor.components.viewer.ShipInstrument;
 import oth.shipeditor.components.viewer.control.ControlPredicates;
 import oth.shipeditor.components.viewer.entities.BaseWorldPoint;
 import oth.shipeditor.components.viewer.entities.ShieldCenterPoint;
+import oth.shipeditor.components.viewer.layers.ship.ShipLayer;
 import oth.shipeditor.components.viewer.layers.ship.ShipPainter;
+import oth.shipeditor.components.viewer.layers.ship.data.ShipHull;
 import oth.shipeditor.representation.HullSpecFile;
 import oth.shipeditor.representation.HullStyle;
 import oth.shipeditor.representation.ShipData;
@@ -55,9 +57,11 @@ public class ShieldPointPainter extends SinglePointPainter {
         KeyboardFocusManager.getCurrentKeyboardFocusManager().removeKeyEventDispatcher(hotkeyDispatcher);
     }
 
-    public void initShieldPoint(Point2D translated, ShipData data) {
-        HullSpecFile hullSpecFile = data.getHullSpecFile();
-        HullStyle style = data.getHullStyle();
+    public void initShieldPoint(Point2D translated, ShipLayer layer) {
+        ShipData shipData = layer.getShipData();
+        HullSpecFile hullSpecFile = shipData.getHullSpecFile();
+        ShipHull hull = layer.getHull();
+        HullStyle style = hull.getHullStyle();
         if (style == null) {
             style = new HullStyle();
         }

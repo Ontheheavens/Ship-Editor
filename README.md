@@ -16,7 +16,7 @@ Uses JavaGL library for low-level AffineTransform functionality, Jackson for JSO
 - Trial runs for fat JAR packing with Maven-Shade: works as prototype, will need some tweaks at release.
 - Hotkey hints painting.
 - Bound mirroring support.
-- Centers panel, includes collision and shield parts. Deserialization of hullSpecFile styles and their use for displayed shield colors.
+- Centers panel, includes collision and shield parts. Deserialization of hull styles and their use for displayed shield colors.
 
 ### Issues:
 

@@ -25,7 +25,7 @@ import java.util.stream.StreamSupport;
  * @since 08.07.2023
  */
 @Log4j2
-abstract class DataTreePanel extends JPanel {
+public abstract class DataTreePanel extends JPanel {
 
     @Getter
     private DefaultMutableTreeNode rootNode;
@@ -41,17 +41,19 @@ abstract class DataTreePanel extends JPanel {
     @Getter
     private JPanel rightPanel;
 
-    DataTreePanel(String rootName) {
+    protected DataTreePanel(String rootName) {
         this.setLayout(new BorderLayout());
         JPanel topContainer = createTopPanel();
-        topContainer.setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, Color.LIGHT_GRAY));
-        this.add(topContainer, BorderLayout.PAGE_START);
+        if (topContainer != null) {
+            topContainer.setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, Color.LIGHT_GRAY));
+            this.add(topContainer, BorderLayout.PAGE_START);
+        }
         JPanel treePanel = createTreePanel(rootName);
         JSplitPane splitPane = createContentSplitter(treePanel);
         this.add(splitPane, BorderLayout.CENTER);
     }
 
-    abstract JPanel createTopPanel();
+    protected abstract JPanel createTopPanel();
 
     static Pair<JPanel, JButton> createSingleButtonPanel(String labelText, Action buttonAction) {
         JPanel topContainer = new JPanel();
@@ -157,7 +159,7 @@ abstract class DataTreePanel extends JPanel {
         return constraints;
     }
 
-    abstract void initTreePanelListeners(JPanel passedTreePanel);
+    protected abstract void initTreePanelListeners(JPanel passedTreePanel);
 
     protected JTree createCustomTree() {
         return new JTree(getRootNode()) {
@@ -238,6 +240,10 @@ abstract class DataTreePanel extends JPanel {
 
     void createRightPanelDataTable(Map<String, String> data) {
         JScrollPane tableContainer = DataTreePanel.createTableFromMap(data);
+        this.addContentToRightPanel(tableContainer);
+    }
+
+    private void addContentToRightPanel(JComponent component) {
         GridBagConstraints otherConstraints = new GridBagConstraints();
         otherConstraints.gridx = 0;
         otherConstraints.gridy = 2;
@@ -245,14 +251,14 @@ abstract class DataTreePanel extends JPanel {
         otherConstraints.weightx = 1.0;
         otherConstraints.weighty = 1.0;
         otherConstraints.insets = new Insets(0, 0, 0, 0);
-        rightPanel.add(tableContainer, otherConstraints);
+        rightPanel.add(component, otherConstraints);
         rightPanel.revalidate();
         rightPanel.repaint();
     }
 
-    abstract String getTooltipForEntry(Object entry);
+    protected abstract String getTooltipForEntry(Object entry);
 
-    abstract Class<?> getEntryClass();
+    protected abstract Class<?> getEntryClass();
 
     JPopupMenu getContextMenu() {
         JPopupMenu menu = new JPopupMenu();
@@ -272,7 +278,7 @@ abstract class DataTreePanel extends JPanel {
         return menu;
     }
 
-    abstract void openEntryPath(OpenDataTarget target);
+    protected abstract void openEntryPath(OpenDataTarget target);
     
     private ActionListener getCollapseAction() {
         return e -> {

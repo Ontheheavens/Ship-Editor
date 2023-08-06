@@ -18,10 +18,10 @@ import oth.shipeditor.components.viewer.layers.LayerPainter;
 import oth.shipeditor.components.viewer.layers.ViewerLayer;
 import oth.shipeditor.components.viewer.layers.ship.ShipLayer;
 import oth.shipeditor.components.viewer.layers.ship.ShipPainter;
+import oth.shipeditor.components.viewer.layers.ship.data.ShipSkin;
 import oth.shipeditor.components.viewer.layers.weapon.WeaponLayer;
 import oth.shipeditor.representation.HullSpecFile;
 import oth.shipeditor.representation.ShipData;
-import oth.shipeditor.representation.SkinSpecFile;
 import oth.shipeditor.utility.components.SortableTabbedPane;
 import oth.shipeditor.utility.text.StringValues;
 
@@ -120,15 +120,15 @@ public final class ViewerLayersPanel extends SortableTabbedPane {
 
                 ShipPainter layerPainter = checkedLayer.getPainter();
                 if (layerPainter == null) return;
-                SkinSpecFile skinSpecFile = layerPainter.getActiveSkinSpecFile();
-                if (skinSpecFile == null || skinSpecFile.isBase()) {
+                ShipSkin activeSkin = layerPainter.getActiveSkin();
+                if (activeSkin == null || activeSkin.isBase()) {
                     updated.setSkinFileName("");
                     this.setTitleAt(indexOfComponent(updated), hullSpecFile.getHullName());
                 } else {
-                    String skinFileName = skinSpecFile.getFilePath().getFileName().toString();
+                    String skinFileName = activeSkin.getSkinFilePath().getFileName().toString();
                     updated.setSkinFileName(skinFileName);
-                    if (skinSpecFile.getHullName() != null) {
-                        this.setTitleAt(indexOfComponent(updated), skinSpecFile.getHullName());
+                    if (activeSkin.getHullName() != null) {
+                        this.setTitleAt(indexOfComponent(updated), activeSkin.getHullName());
                     }
                 }
                 this.setToolTipTextAt(indexOfComponent(updated), updated.getTabTooltip());

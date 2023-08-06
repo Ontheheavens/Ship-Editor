@@ -3,6 +3,7 @@ package oth.shipeditor.components.viewer.layers.ship;
 import lombok.extern.log4j.Log4j2;
 import oth.shipeditor.components.viewer.entities.BoundPoint;
 import oth.shipeditor.components.viewer.entities.weapon.WeaponSlotPoint;
+import oth.shipeditor.components.viewer.layers.ship.data.ShipHull;
 import oth.shipeditor.components.viewer.painters.points.BoundPointsPainter;
 import oth.shipeditor.components.viewer.painters.points.CenterPointPainter;
 import oth.shipeditor.components.viewer.painters.points.ShieldPointPainter;
@@ -30,15 +31,20 @@ public final class ShipPainterInitialization {
     private ShipPainterInitialization() {
     }
 
-    static void loadShipData(ShipPainter shipPainter, ShipData shipData) {
+    static void loadShipData(ShipPainter shipPainter, ShipLayer layer) {
+        ShipData shipData = layer.getShipData();
+
         HullSpecFile hullSpecFile = shipData.getHullSpecFile();
+
+        ShipHull shipHull = layer.getHull();
+        shipHull.initHullStyle(hullSpecFile);
 
         Point2D anchor = shipPainter.getCenterAnchor();
         Point2D hullCenter = hullSpecFile.getCenter();
 
         Point2D translatedCenter = ShipPainterInitialization.rotateHullCenter(hullCenter, anchor);
 
-        ShipPainterInitialization.initCentroids(shipPainter, shipData, translatedCenter);
+        ShipPainterInitialization.initCentroids(shipPainter, layer, translatedCenter);
 
         ShipPainterInitialization.initBounds(shipPainter, hullSpecFile, translatedCenter);
 
@@ -47,19 +53,18 @@ public final class ShipPainterInitialization {
         shipPainter.finishInitialization();
     }
 
-    private static void initCentroids(ShipPainter shipPainter, ShipData shipData, Point2D translatedCenter) {
+    private static void initCentroids(ShipPainter shipPainter, ShipLayer layer, Point2D translatedCenter) {
+        ShipData shipData = layer.getShipData();
         HullSpecFile hullSpecFile = shipData.getHullSpecFile();
 
         CenterPointPainter centerPointPainter = shipPainter.getCenterPointPainter();
         centerPointPainter.initCenterPoint(translatedCenter, hullSpecFile);
 
-        shipData.initHullStyle();
-
         Point2D shieldCenter = hullSpecFile.getShieldCenter();
 
         Point2D shieldCenterTranslated = ShipPainterInitialization.rotatePointByCenter(shieldCenter, translatedCenter);
         ShieldPointPainter shieldPointPainter = shipPainter.getShieldPointPainter();
-        shieldPointPainter.initShieldPoint(shieldCenterTranslated, shipData);
+        shieldPointPainter.initShieldPoint(shieldCenterTranslated, layer);
     }
 
     private static void initBounds(ShipPainter shipPainter, HullSpecFile hullSpecFile, Point2D translatedCenter) {

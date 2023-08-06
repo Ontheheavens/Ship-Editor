@@ -30,13 +30,14 @@ public class WeaponSlotListPanel extends JPanel {
 
     WeaponSlotListPanel() {
         this.setLayout(new BorderLayout());
-        slotPointContainer = new WeaponSlotList(model);
-        JScrollPane scrollableContainer = new JScrollPane(slotPointContainer);
 
         JPanel northContainer = new JPanel();
         northContainer.setLayout(new BoxLayout(northContainer, BoxLayout.PAGE_AXIS));
 
         northContainer.add(new JPanel());
+
+        slotPointContainer = new WeaponSlotList(model, northContainer);
+        JScrollPane scrollableContainer = new JScrollPane(slotPointContainer);
 
         ComponentUtilities.addSeparatorToBoxPanel(northContainer);
 
