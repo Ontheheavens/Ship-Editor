@@ -14,16 +14,15 @@ import oth.shipeditor.communication.events.viewer.layers.ships.LayerShipDataInit
 import oth.shipeditor.communication.events.viewer.layers.ships.ShipDataCreated;
 import oth.shipeditor.components.viewer.entities.ShipCenterPoint;
 import oth.shipeditor.components.viewer.layers.LayerPainter;
+import oth.shipeditor.components.viewer.layers.ship.data.ActiveShipSpec;
+import oth.shipeditor.components.viewer.layers.ship.data.ShipSkin;
 import oth.shipeditor.components.viewer.painters.points.*;
-import oth.shipeditor.representation.ShipData;
-import oth.shipeditor.representation.Skin;
 import oth.shipeditor.utility.graphics.Sprite;
 import oth.shipeditor.utility.text.StringValues;
 
 import java.awt.geom.Point2D;
 import java.awt.image.BufferedImage;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Distinct from parent ship layer instance: present class has to do with direct visual representation.
@@ -53,37 +52,45 @@ public final class ShipPainter extends LayerPainter {
     private Sprite baseHullSprite;
 
     @Getter @Setter
-    private Skin activeSkin = Skin.empty();
+    private ShipSkin activeSkin;
 
     public ShipPainter(ShipLayer layer) {
         super(layer);
         this.initPainterListeners(layer);
+        this.activateEmptySkin();
+    }
+
+    private void activateEmptySkin() {
+        ShipLayer layer = this.getParentLayer();
+        List<ShipSkin> skins = layer.getSkins();
+        this.setActiveSkin(skins.get(0));
     }
 
     /**
-     * @param skinID only evaluated if spec type is SKIN.
+     * @param skin only evaluated if spec type is SKIN.
      */
-    public void setActiveSpec(ActiveShipSpec type, String skinID) {
+    public void setActiveSpec(ActiveShipSpec type, ShipSkin skin) {
         ShipLayer parentLayer = this.getParentLayer();
         if (type == ActiveShipSpec.HULL) {
             this.setSprite(baseHullSprite.getSpriteImage());
             parentLayer.setSpriteFileName(baseHullSprite.getFileName());
             parentLayer.setSkinFileName(StringValues.NOT_LOADED);
-            activeSkin = Skin.empty();
+
+            this.weaponSlotPainter.resetSkinSlotOverride();
+
+            this.activateEmptySkin();
         } else {
-            ShipLayer shipLayer = getParentLayer();
-            ShipData shipData = shipLayer.getShipData();
-            Map<String, Skin> skins = shipData.getSkins();
-            if (skinID == null || skinID.isEmpty()) {
-                throw new IllegalArgumentException("Illegal skinID passed to ShipPainter!");
+            Sprite loadedSkinSprite = skin.getLoadedSkinSprite();
+            this.setSprite(loadedSkinSprite.getSpriteImage());
+
+            if (skin.getWeaponSlotChanges() != null) {
+                this.weaponSlotPainter.toggleSkinSlotOverride(skin);
             }
-            Skin retrieved = skins.get(skinID);
-            Sprite skinSprite = retrieved.getLoadedSkinSprite();
-            this.setSprite(skinSprite.getSpriteImage());
-            parentLayer.setSpriteFileName(skinSprite.getFileName());
-            String skinFileName = retrieved.getSkinFilePath().getFileName().toString();
+
+            parentLayer.setSpriteFileName(loadedSkinSprite.getFileName());
+            String skinFileName = skin.getSkinFilePath().getFileName().toString();
             parentLayer.setSkinFileName(skinFileName);
-            this.activeSkin = retrieved;
+            this.activeSkin = skin;
         }
         EventBus.publish(new ActiveLayerUpdated(this.getParentLayer()));
         EventBus.publish(new SkinPanelRepaintQueued());
@@ -128,7 +135,7 @@ public final class ShipPainter extends LayerPainter {
                 if (checked.layer() != layer) return;
                 if (layer.getShipData() != null && this.isUninitialized()) {
                     this.createPointPainters();
-                    ShipPainterInitialization.loadShipData(this, layer.getShipData());
+                    ShipPainterInitialization.loadShipData(this, layer);
                 }
             }
         };

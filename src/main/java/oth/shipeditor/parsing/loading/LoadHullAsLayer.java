@@ -6,12 +6,11 @@ import oth.shipeditor.communication.events.files.HullFileOpened;
 import oth.shipeditor.communication.events.files.SpriteOpened;
 import oth.shipeditor.communication.events.viewer.layers.LastLayerSelectQueued;
 import oth.shipeditor.communication.events.viewer.layers.ships.ShipLayerCreationQueued;
-import oth.shipeditor.representation.Hull;
+import oth.shipeditor.representation.HullSpecFile;
 import oth.shipeditor.utility.graphics.Sprite;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;
-import java.awt.image.BufferedImage;
 import java.io.File;
 import java.nio.file.Path;
 
@@ -27,9 +26,9 @@ public class LoadHullAsLayer extends AbstractAction {
         FileLoading.openHullAndDo(e1 -> {
             JFileChooser shipDataChooser = (JFileChooser) e1.getSource();
             File file = shipDataChooser.getSelectedFile();
-            Hull hull = FileLoading.loadHullFile(file);
+            HullSpecFile hullSpecFile = FileLoading.loadHullFile(file);
 
-            String spriteName = hull.getSpriteName();
+            String spriteName = hullSpecFile.getSpriteName();
 
             Path spriteFilePath = Path.of(spriteName);
             File spriteFile = FileLoading.fetchDataFile(spriteFilePath, null);
@@ -46,7 +45,7 @@ public class LoadHullAsLayer extends AbstractAction {
             EventBus.publish(new LastLayerSelectQueued());
             Sprite sprite = FileLoading.loadSprite(spriteFile);
             EventBus.publish(new SpriteOpened(sprite));
-            EventBus.publish(new HullFileOpened(hull, file.getName()));
+            EventBus.publish(new HullFileOpened(hullSpecFile, file.getName()));
         });
     }
 

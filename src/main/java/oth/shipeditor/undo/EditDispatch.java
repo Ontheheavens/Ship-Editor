@@ -7,6 +7,7 @@ import oth.shipeditor.communication.events.Events;
 import oth.shipeditor.communication.events.viewer.control.ViewerMouseReleased;
 import oth.shipeditor.communication.events.viewer.points.AnchorOffsetQueued;
 import oth.shipeditor.components.viewer.entities.*;
+import oth.shipeditor.components.viewer.entities.weapon.WeaponSlotPoint;
 import oth.shipeditor.components.viewer.layers.LayerPainter;
 import oth.shipeditor.components.viewer.painters.points.AbstractPointPainter;
 import oth.shipeditor.components.viewer.painters.points.BoundPointsPainter;

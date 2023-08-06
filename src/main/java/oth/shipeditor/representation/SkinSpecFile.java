@@ -18,36 +18,37 @@ import java.util.List;
 import java.util.Map;
 
 /**
+ * Raw serialization class.
  * @author Ontheheavens
  * @since 29.06.2023
  */
 @Getter @Setter
 @SuppressWarnings({"TransientFieldInNonSerializableClass", "ClassWithTooManyFields", "ClassWithTooManyMethods"})
-public class Skin {
+public class SkinSpecFile implements ShipSpecFile {
 
     @JsonIgnore
-    private static final Skin NO_SKIN = new Skin(true);
+    private static final SkinSpecFile NO_SKIN_DATA_SPEC_FILE = new SkinSpecFile(true);
 
     public static final String DEFAULT = StringConstants.DEFAULT_ID;
 
     @JsonCreator
-    public Skin() {
+    public SkinSpecFile() {
         base = false;
     }
 
-    private Skin(boolean isBase) {
+    private SkinSpecFile(boolean isBase) {
         base = isBase;
     }
 
-    public static Skin empty() {
-        return NO_SKIN;
+    public static SkinSpecFile empty() {
+        return NO_SKIN_DATA_SPEC_FILE;
     }
 
     @JsonIgnore
     private final transient boolean base;
 
     @JsonIgnore
-    private transient Path skinFilePath;
+    private transient Path filePath;
 
     @JsonIgnore
     private transient Path containingPackage;
@@ -124,8 +125,9 @@ public class Skin {
 
     @JsonDeserialize(using = ShipTypeHintsDeserializer.class)
     @JsonProperty(StringConstants.REMOVE_HINTS)
-    private ShipTypeHints[] removeHints;
+    private List<ShipTypeHints> removeHints;
 
+    @JsonDeserialize(using = ShipTypeHintsDeserializer.class)
     @JsonProperty(StringConstants.ADD_HINTS)
     private List<ShipTypeHints> addHints;
 

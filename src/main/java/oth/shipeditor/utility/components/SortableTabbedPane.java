@@ -82,7 +82,7 @@ public abstract class SortableTabbedPane extends JTabbedPane {
         Supplier<Component> componentSupplier = () -> {
             String title = getTitleAt(dragTabIndex);
             Icon icon = getIconAt(dragTabIndex);
-            JLabel label = new JLabel(title, icon, LEADING);
+            JLabel label = new JLabel(title, icon, SwingConstants.LEADING);
             label.setIconTextGap(UIManager.getInt(TABBED_PANE_TEXT_ICON_GAP));
             return label;
         };
@@ -105,7 +105,7 @@ public abstract class SortableTabbedPane extends JTabbedPane {
     }
 
     private static boolean isTopBottomTabPlacement(int tabPlacement) {
-        return tabPlacement == TOP || tabPlacement == BOTTOM;
+        return tabPlacement == SwingConstants.TOP || tabPlacement == SwingConstants.BOTTOM;
     }
 
     protected abstract void sortTabObjects();
@@ -240,12 +240,12 @@ public abstract class SortableTabbedPane extends JTabbedPane {
             int placement = getTabPlacement();
             if (SortableTabbedPane.isTopBottomTabPlacement(placement)) {
                 bounds.height = bounds.height - selectedComponentBounds.height;
-                if (placement == BOTTOM) {
+                if (placement == SwingConstants.BOTTOM) {
                     bounds.y += selectedComponentBounds.y + selectedComponentBounds.height;
                 }
             } else {
                 bounds.width = bounds.width - selectedComponentBounds.width;
-                if (placement == RIGHT) {
+                if (placement == SwingConstants.RIGHT) {
                     bounds.x += selectedComponentBounds.x + selectedComponentBounds.width;
                 }
             }

@@ -22,4 +22,10 @@ public enum WeaponSize {
         this.displayName = name;
     }
 
+    public static WeaponSize value(String textValue) {
+        if (textValue == null || textValue.isEmpty()) {
+            return null;
+        } else return WeaponSize.valueOf(textValue);
+    }
+
 }

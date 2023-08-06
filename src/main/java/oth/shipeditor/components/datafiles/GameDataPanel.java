@@ -17,6 +17,9 @@ public class GameDataPanel extends JPanel {
         container.addTab("Hulls", new HullsTreePanel());
         container.addTab("Hullmods", new HullmodsTreePanel());
         container.addTab("Hull styles", new HullStylesPanel());
+        container.addTab("Shipsystems", new ShipSystemsTreePanel());
+        container.addTab("Wings", new WingsTreePanel());
+        container.addTab("Weapons", new WeaponsTreePanel());
         container.setTabLayoutPolicy(JTabbedPane.SCROLL_TAB_LAYOUT);
         this.setLayout(new BorderLayout());
         this.add(container, BorderLayout.CENTER);

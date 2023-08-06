@@ -31,6 +31,7 @@ public final class StringValues {
     public static final String LAYER = "Layer";
     public static final String RESET_ROTATION = "Reset rotation";
     public static final String NOT_LOADED = "Not loaded";
+    public static final String UNTITLED = "UNTITLED";
 
     private StringValues() {
     }

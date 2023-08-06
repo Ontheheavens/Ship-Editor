@@ -4,7 +4,7 @@ import lombok.Getter;
 import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.components.SlotsPanelRepaintQueued;
 import oth.shipeditor.communication.events.viewer.layers.LayerWasSelected;
-import oth.shipeditor.components.viewer.entities.WeaponSlotPoint;
+import oth.shipeditor.components.viewer.entities.weapon.WeaponSlotPoint;
 import oth.shipeditor.components.viewer.layers.ViewerLayer;
 import oth.shipeditor.components.viewer.layers.ship.ShipLayer;
 import oth.shipeditor.components.viewer.layers.ship.ShipPainter;
@@ -30,13 +30,14 @@ public class WeaponSlotListPanel extends JPanel {
 
     WeaponSlotListPanel() {
         this.setLayout(new BorderLayout());
-        slotPointContainer = new WeaponSlotList(model);
-        JScrollPane scrollableContainer = new JScrollPane(slotPointContainer);
 
         JPanel northContainer = new JPanel();
         northContainer.setLayout(new BoxLayout(northContainer, BoxLayout.PAGE_AXIS));
 
         northContainer.add(new JPanel());
+
+        slotPointContainer = new WeaponSlotList(model, northContainer);
+        JScrollPane scrollableContainer = new JScrollPane(slotPointContainer);
 
         ComponentUtilities.addSeparatorToBoxPanel(northContainer);
 

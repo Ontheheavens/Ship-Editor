@@ -1,5 +1,5 @@
 /**
- * Classes holding data directly parsed from ship JSON files.
+ * Classes holding data directly parsed from ship JSON files. Not for use and change in viewer.
  * @author Ontheheavens
  * @since 10.06.2023
  */

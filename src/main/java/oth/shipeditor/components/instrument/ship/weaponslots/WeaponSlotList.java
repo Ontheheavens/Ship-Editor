@@ -1,7 +1,7 @@
 package oth.shipeditor.components.instrument.ship.weaponslots;
 
 import oth.shipeditor.components.instrument.ship.PointList;
-import oth.shipeditor.components.viewer.entities.WeaponSlotPoint;
+import oth.shipeditor.components.viewer.entities.weapon.WeaponSlotPoint;
 
 import javax.swing.*;
 import java.awt.*;
@@ -13,9 +13,17 @@ import java.util.List;
  */
 public class WeaponSlotList extends PointList<WeaponSlotPoint> {
 
-    WeaponSlotList(ListModel<WeaponSlotPoint> dataModel) {
+    private final JPanel infoPanel;
+
+    WeaponSlotList(ListModel<WeaponSlotPoint> dataModel, JPanel panel) {
         super(dataModel);
+        this.infoPanel = panel;
         this.setCellRenderer(new SlotCellRenderer());
+    }
+
+    @Override
+    protected void handlePointSelection(WeaponSlotPoint point) {
+        infoPanel.removeAll();
     }
 
     @Override

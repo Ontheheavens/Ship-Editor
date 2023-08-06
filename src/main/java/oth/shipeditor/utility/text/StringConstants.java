@@ -79,4 +79,21 @@ public interface StringConstants {
 
     String DEFAULT_ID = "DEFAULT";
 
+    String HULLS = "hulls";
+    String SHIP_DATA_CSV = "ship_data.csv";
+
+    String PARTICLE_COLOR = "particleColor";
+
+    String PARTICLE_SIZE_RANGE = "particleSizeRange";
+
+    String PARTICLE_SIZE_MIN = "particleSizeMin";
+
+    String LENGTH = "length";
+
+    String WEAPONS = "weapons";
+
+    String HULL_ID = "hullId";
+
+    String VARIANT = "variant";
+
 }

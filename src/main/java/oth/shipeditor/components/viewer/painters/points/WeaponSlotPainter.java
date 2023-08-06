@@ -1,6 +1,5 @@
 package oth.shipeditor.components.viewer.painters.points;
 
-import de.javagl.viewer.Painter;
 import lombok.Getter;
 import oth.shipeditor.communication.BusEventListener;
 import oth.shipeditor.communication.EventBus;
@@ -11,17 +10,20 @@ import oth.shipeditor.components.instrument.ship.ShipInstrumentsPane;
 import oth.shipeditor.components.viewer.ShipInstrument;
 import oth.shipeditor.components.viewer.control.ControlPredicates;
 import oth.shipeditor.components.viewer.entities.BaseWorldPoint;
-import oth.shipeditor.components.viewer.entities.WeaponSlotPoint;
+import oth.shipeditor.components.viewer.entities.ShipCenterPoint;
 import oth.shipeditor.components.viewer.entities.WorldPoint;
+import oth.shipeditor.components.viewer.entities.weapon.WeaponSlotOverride;
+import oth.shipeditor.components.viewer.entities.weapon.WeaponSlotPoint;
 import oth.shipeditor.components.viewer.layers.ship.ShipPainter;
+import oth.shipeditor.components.viewer.layers.ship.data.ShipSkin;
 import oth.shipeditor.utility.Utility;
 
 import java.awt.*;
 import java.awt.event.KeyEvent;
-import java.awt.geom.AffineTransform;
 import java.awt.geom.Point2D;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Is not supposed to handle launch bays - bays deserialize to different points and painter.
@@ -83,7 +85,17 @@ public class WeaponSlotPainter extends MirrorablePointPainter{
         boolean mirrorMode = ControlPredicates.isMirrorModeEnabled();
         BaseWorldPoint mirroredCounterpart = getMirroredCounterpart(checked);
         if (mirrorMode && mirroredCounterpart instanceof WeaponSlotPoint checkedSlot) {
-            checkedSlot.changeSlotAngle(Utility.flipAngle(result));
+            double angle = Utility.flipAngle(result);
+            Point2D slotPosition = checkedSlot.getPosition();
+            double slotX = slotPosition.getX();
+            ShipPainter parentLayer = getParentLayer();
+            ShipCenterPoint shipCenter = parentLayer.getShipCenter();
+            Point2D centerPosition = shipCenter.getPosition();
+            double centerX = centerPosition.getX();
+            if ((Math.abs(slotX - centerX) < 0.05d)) {
+                angle = result;
+            }
+            checkedSlot.changeSlotAngle(angle);
         }
     }
 
@@ -126,16 +138,17 @@ public class WeaponSlotPainter extends MirrorablePointPainter{
         EventBus.subscribe(modeListener);
     }
 
-    // TODO: Create paint overriding and skin validation methods.
-
-    @Override
-    void paintDelegates(Graphics2D g, AffineTransform worldToScreen, double w, double h) {
-        super.paintDelegates(g, worldToScreen, w, h);
+    public void resetSkinSlotOverride() {
+        this.slotPoints.forEach(weaponSlotPoint -> weaponSlotPoint.setSkinOverride(null));
     }
 
-    @Override
-    protected void paintDelegate(Graphics2D g, AffineTransform worldToScreen, double w, double h, Painter painter) {
-        super.paintDelegate(g, worldToScreen, w, h, painter);
+    public void toggleSkinSlotOverride(ShipSkin skin) {
+        this.slotPoints.forEach(weaponSlotPoint -> {
+            String slotID = weaponSlotPoint.getId();
+            Map<String, WeaponSlotOverride> weaponSlotChanges = skin.getWeaponSlotChanges();
+            WeaponSlotOverride matchingOverride = weaponSlotChanges.get(slotID);
+            weaponSlotPoint.setSkinOverride(matchingOverride);
+        });
     }
 
     @Override

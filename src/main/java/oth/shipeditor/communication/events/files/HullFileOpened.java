@@ -1,11 +1,11 @@
 package oth.shipeditor.communication.events.files;
 
-import oth.shipeditor.representation.Hull;
+import oth.shipeditor.representation.HullSpecFile;
 
 /**
  * @author Ontheheavens
  * @since 28.05.2023
  */
-public record HullFileOpened(Hull hull, String hullFileName) implements FileEvent {
+public record HullFileOpened(HullSpecFile hullSpecFile, String hullFileName) implements FileEvent {
 
 }

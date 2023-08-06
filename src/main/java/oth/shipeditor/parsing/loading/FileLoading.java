@@ -10,8 +10,10 @@ import com.fasterxml.jackson.dataformat.csv.CsvSchema;
 import lombok.extern.log4j.Log4j2;
 import oth.shipeditor.parsing.JsonProcessor;
 import oth.shipeditor.persistence.SettingsManager;
-import oth.shipeditor.representation.Hull;
-import oth.shipeditor.representation.Skin;
+import oth.shipeditor.representation.HullSpecFile;
+import oth.shipeditor.representation.SkinSpecFile;
+import oth.shipeditor.representation.Variant;
+import oth.shipeditor.representation.weapon.WeaponSpecFile;
 import oth.shipeditor.utility.ImageCache;
 import oth.shipeditor.utility.graphics.Sprite;
 import oth.shipeditor.utility.text.StringConstants;
@@ -29,6 +31,8 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Predicate;
+import java.util.stream.Stream;
 
 /**
  * @author Ontheheavens
@@ -39,7 +43,6 @@ public final class FileLoading {
 
     static final String OPEN_COMMAND_CANCELLED_BY_USER = "Open command cancelled by user.";
     private static final String OPENING_SKIN_FILE = "Opening skin file: {}.";
-    private static final String SKIN_FILE_LOADING_FAILED = "Skin file loading failed: {}";
     private static final String TRIED_TO_RESOLVE_SKIN_FILE_WITH_INVALID_EXTENSION = "Tried to resolve skin file with invalid extension!";
 
     static File lastDirectory;
@@ -47,7 +50,7 @@ public final class FileLoading {
     private FileLoading() {
     }
 
-    public static ObjectMapper getConfigured() {
+    static ObjectMapper getConfigured() {
         ObjectMapper objectMapper = new ObjectMapper();
         objectMapper.configure(JsonParser.Feature.ALLOW_YAML_COMMENTS, true);
         objectMapper.configure(JsonReadFeature.ALLOW_TRAILING_COMMA.mappedFeature(), true);
@@ -125,17 +128,17 @@ public final class FileLoading {
         return null;
     }
 
-    public static Hull loadHullFile(File file) {
+    public static HullSpecFile loadHullFile(File file) {
         String toString = file.getPath();
         if (!toString.endsWith(".ship")) {
             throw new IllegalArgumentException("Tried to resolve hull file with invalid extension!");
         }
-        Hull hull = null;
+        HullSpecFile hullSpecFile = null;
         try {
             ObjectMapper objectMapper = FileLoading.getConfigured();
-            hull = objectMapper.readValue(file, Hull.class);
-            hull.setShipFilePath(file.toPath());
             log.info("Opening hull file: {}", file.getName());
+            hullSpecFile = objectMapper.readValue(file, HullSpecFile.class);
+            hullSpecFile.setFilePath(file.toPath());
         } catch (IOException e) {
             log.error("Hull file loading failed: {}", file.getName());
             JOptionPane.showMessageDialog(null,
@@ -144,30 +147,68 @@ public final class FileLoading {
                     JOptionPane.ERROR_MESSAGE);
             e.printStackTrace();
         }
-        return hull;
+        return hullSpecFile;
     }
 
-    static Skin loadSkinFile(File file) {
+    static WeaponSpecFile loadWeaponFile(File file) {
+        String toString = file.getPath();
+        if (!toString.endsWith(".wpn")) {
+            throw new IllegalArgumentException("Tried to resolve weapon file with invalid extension!");
+        }
+        log.info("Opening weapon file: {}", file.getName());
+        WeaponSpecFile weaponSpecFile = FileLoading.parseCorrectableJSON(file, WeaponSpecFile.class);
+        if (weaponSpecFile == null) {
+            log.error("Weapon file loading failed: {}", file.getName());
+            JOptionPane.showMessageDialog(null,
+                    "Weapon file loading failed, exception thrown at: " + file,
+                    StringValues.FILE_LOADING_ERROR,
+                    JOptionPane.ERROR_MESSAGE);
+        } else {
+            weaponSpecFile.setWeaponSpecFilePath(file.toPath());
+        }
+        return weaponSpecFile;
+    }
+
+    static SkinSpecFile loadSkinFile(File file) {
         String toString = file.getPath();
         if (!toString.endsWith(".skin")) {
             throw new IllegalArgumentException(FileLoading.TRIED_TO_RESOLVE_SKIN_FILE_WITH_INVALID_EXTENSION);
         }
-        return FileLoading.parseSkinAsJSON(file);
+        log.info(FileLoading.OPENING_SKIN_FILE, file.getName());
+        SkinSpecFile result = FileLoading.parseCorrectableJSON(file, SkinSpecFile.class);
+        if (result == null) {
+            throw new NullPointerException("Skin file parsing failed with null result: " + toString);
+        }
+        result.setFilePath(file.toPath());
+        return result;
     }
 
-    private static Skin parseSkinAsJSON(File file) {
-        Skin skin = null;
+    static Variant loadVariantFile(File file) {
+        String toString = file.getPath();
+        if (!toString.endsWith(".variant")) {
+            throw new IllegalArgumentException("Tried to resolve variant file with invalid extension!");
+        }
+        log.info("Opening variant file: {}", file.getName());
+        Variant variant;
+        variant = FileLoading.parseCorrectableJSON(file, Variant.class);
+        variant.setVariantFilePath(file.toPath());
+        return variant;
+    }
+
+    @SuppressWarnings("SameParameterValue")
+    private static <T> T parseCorrectableJSON(File file, Class<T> target) {
+        T result = null;
         ObjectMapper objectMapper = FileLoading.getConfigured();
-        String preprocessed = JsonProcessor.correctJSON(file);
+        objectMapper.configure(JsonReadFeature.ALLOW_LEADING_ZEROS_FOR_NUMBERS.mappedFeature(), true);
+        String preprocessed = JsonProcessor.correctJSONUnquotedValues(file);
+        preprocessed = JsonProcessor.correctSpuriousSeparators(preprocessed);
         try (JsonParser parser = objectMapper.createParser(preprocessed)) {
-            log.info(FileLoading.OPENING_SKIN_FILE, file.getName());
-            skin = objectMapper.readValue(parser, Skin.class);
-            skin.setSkinFilePath(file.toPath());
+            result = objectMapper.readValue(parser, target);
         } catch (IOException e) {
-            log.error(FileLoading.SKIN_FILE_LOADING_FAILED, file.getName());
+            log.error("Corrected JSON parsing failed: {}", file.getName());
             e.printStackTrace();
         }
-        return skin;
+        return result;
     }
 
     public static void openHullAndDo(ActionListener action) {
@@ -190,12 +231,32 @@ public final class FileLoading {
         }
     }
 
+    @SuppressWarnings("WeakerAccess")
+    public static List<File> fetchFilesWithExtension(Path target, String dotlessExtension) {
+        List<File> files = new ArrayList<>();
+        try (Stream<Path> pathStream = Files.walk(target)) {
+            pathStream.filter(path -> {
+                        String toString = path.getFileName().toString();
+                        return toString.endsWith("." + dotlessExtension);
+                    })
+                    .map(Path::toFile)
+                    .forEach(files::add);
+        } catch (IOException exception) {
+            exception.printStackTrace();
+        }
+        return files;
+    }
+
+    static List<Map<String, String>> parseCSVTable(Path path) {
+        return FileLoading.parseCSVTable(path, FileLoading.getNormalValidationPredicate());
+    }
+
     /**
      * Target CSV file is expected to have a header row and an ID column designated in said header.
      * @param path address of the target file.
      * @return List of rows where each row is a Map of string keys and string values.
      */
-    static List<Map<String, String>> parseCSVTable(Path path) {
+    static List<Map<String, String>> parseCSVTable(Path path, Predicate<Map<String, String>> validationPredicate) {
         CsvMapper csvMapper = new CsvMapper();
         csvMapper.configure(CsvParser.Feature.IGNORE_TRAILING_UNMAPPABLE, true);
 
@@ -207,12 +268,7 @@ public final class FileLoading {
                 .readValues(csvFile)) {
             while (iterator.hasNext()) {
                 Map<String, String> row = iterator.next();
-                String id = row.get(StringConstants.ID);
-                String name = row.get("name");
-                if (id != null && !id.isEmpty() && !name.startsWith("#")) {
-                    // We are skipping a row if ID is missing or if row is commented out.
-                    row.remove("number");
-                    row.remove("8/6/5/4%");
+                if (validationPredicate.test(row)) {
                     csvData.add(row);
                 }
             }
@@ -221,6 +277,23 @@ public final class FileLoading {
             exception.printStackTrace();
         }
         return csvData;
+    }
+
+    private static Predicate<Map<String, String>> getNormalValidationPredicate() {
+        return row -> {
+            String id = row.get(StringConstants.ID);
+            String name = row.get("name");
+            boolean validID = id != null && !id.isEmpty();
+            return validID && !name.startsWith("#");
+        };
+    }
+
+    static Predicate<Map<String, String>> getWingValidationPredicate() {
+        return row -> {
+            String id = row.get(StringConstants.ID);
+            boolean validID = id != null && !id.isEmpty();
+            return validID && !id.startsWith("#");
+        };
     }
 
 }

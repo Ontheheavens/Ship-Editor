@@ -4,6 +4,7 @@ import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
 import oth.shipeditor.parsing.loading.FileLoading;
 import oth.shipeditor.utility.text.StringConstants;
+import oth.shipeditor.utility.text.StringValues;
 
 import java.io.File;
 import java.nio.file.Path;
@@ -15,7 +16,7 @@ import java.util.Map;
  */
 @Log4j2
 @Getter
-public class HullmodCSVEntry {
+public class HullmodCSVEntry implements CSVEntry {
 
     private final Map<String, String> rowData;
 
@@ -38,10 +39,15 @@ public class HullmodCSVEntry {
     }
 
     @Override
+    public String getID() {
+        return hullmodID;
+    }
+
+    @Override
     public String toString() {
         String displayedName = rowData.get(StringConstants.NAME);
         if (displayedName.isEmpty()) {
-            displayedName = "UNTITLED";
+            displayedName = StringValues.UNTITLED;
         }
         return displayedName;
     }

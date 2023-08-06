@@ -7,8 +7,8 @@ import oth.shipeditor.communication.events.files.HullFileOpened;
 import oth.shipeditor.communication.events.files.SkinFileOpened;
 import oth.shipeditor.menubar.FileUtilities;
 import oth.shipeditor.parsing.loading.FileLoading;
-import oth.shipeditor.representation.Hull;
-import oth.shipeditor.representation.Skin;
+import oth.shipeditor.representation.HullSpecFile;
+import oth.shipeditor.representation.SkinSpecFile;
 import oth.shipeditor.utility.graphics.Sprite;
 import oth.shipeditor.utility.text.StringConstants;
 
@@ -25,44 +25,54 @@ import java.util.Map;
  */
 @Log4j2
 @Getter
-public class ShipCSVEntry {
+public class ShipCSVEntry implements CSVEntry {
 
     private final Map<String, String> rowData;
 
-    private final Hull hullFile;
+    private final HullSpecFile hullSpecFile;
 
     /**
      * Keys are simple names of skin files, e.g.: legion_xiv.skin.
      */
-    private final Map<String, Skin> skins;
+    private final Map<String, SkinSpecFile> skins;
 
-    private Skin activeSkin;
+    private SkinSpecFile activeSkinSpecFile;
 
     private final String hullFileName;
 
     private final String hullID;
 
-    private final Path packageFolder;
+    private final Path packageFolderPath;
 
-    public ShipCSVEntry(Map<String, String> row, Map.Entry<Hull, Map<String, Skin>> hullWithSkins,
+    public ShipCSVEntry(Map<String, String> row, Map.Entry<HullSpecFile, Map<String, SkinSpecFile>> hullWithSkins,
                         Path folder, String fileName) {
-        this.packageFolder = folder;
-        this.hullFile = hullWithSkins.getKey();
+        this.packageFolderPath = folder;
+        this.hullSpecFile = hullWithSkins.getKey();
         this.skins = hullWithSkins.getValue();
         this.rowData = row;
         this.hullID = row.get(StringConstants.ID);
         this.hullFileName = fileName;
-        this.activeSkin = Skin.empty();
+        this.activeSkinSpecFile = SkinSpecFile.empty();
         if (this.skins != null) {
-            this.skins.put(Skin.DEFAULT, activeSkin);
+            this.skins.put(SkinSpecFile.DEFAULT, activeSkinSpecFile);
         }
     }
 
-    public void setActiveSkin(Skin input) {
+    @Override
+    public String getID() {
+        return hullID;
+    }
+
+    @Override
+    public Path getTableFilePath() {
+        return hullSpecFile.getTableFilePath();
+    }
+
+    public void setActiveSkinSpecFile(SkinSpecFile input) {
         if (!skins.containsValue(input)) {
             throw new RuntimeException("Attempt to set incompatible skin on ship entry!");
         }
-        this.activeSkin = input;
+        this.activeSkinSpecFile = input;
     }
 
     @Override
@@ -75,27 +85,27 @@ public class ShipCSVEntry {
     }
 
     public void loadLayerFromEntry() {
-        String spriteName = this.hullFile.getSpriteName();
+        String spriteName = this.hullSpecFile.getSpriteName();
 
         Path spriteFilePath = Path.of(spriteName);
-        File spriteFile = FileLoading.fetchDataFile(spriteFilePath, this.packageFolder);
+        File spriteFile = FileLoading.fetchDataFile(spriteFilePath, this.packageFolderPath);
 
         FileUtilities.createShipLayerWithSprite(spriteFile);
-        EventBus.publish(new HullFileOpened(this.hullFile, this.getHullFileName()));
+        EventBus.publish(new HullFileOpened(this.hullSpecFile, this.getHullFileName()));
 
         if (skins == null || skins.isEmpty()) return;
 
-        Map<String, Skin> eligibleSkins = new HashMap<>(skins);
-        eligibleSkins.remove(Skin.DEFAULT);
+        Map<String, SkinSpecFile> eligibleSkins = new HashMap<>(skins);
+        eligibleSkins.remove(SkinSpecFile.DEFAULT);
         if (eligibleSkins.isEmpty()) return;
-        for (Skin skin : eligibleSkins.values()) {
-            if (skin == null || skin.isBase()) continue;
+        for (SkinSpecFile skinSpecFile : eligibleSkins.values()) {
+            if (skinSpecFile == null || skinSpecFile.isBase()) continue;
 
-            String skinSpriteName = skin.getSpriteName();
-            Path skinPackagePath = skin.getContainingPackage();
+            String skinSpriteName = skinSpecFile.getSpriteName();
+            Path skinPackagePath = skinSpecFile.getContainingPackage();
 
             if (skinSpriteName == null || skinSpriteName.isEmpty()) {
-                skinSpriteName = this.hullFile.getSpriteName();
+                skinSpriteName = this.hullSpecFile.getSpriteName();
             }
 
             Path skinSpriteFilePath = Path.of(skinSpriteName);
@@ -103,20 +113,20 @@ public class ShipCSVEntry {
 
             Sprite skinSprite = FileLoading.loadSprite(skinSpriteFile);
 
-            skin.setLoadedSkinSprite(skinSprite);
-            EventBus.publish(new SkinFileOpened(skin));
+            skinSpecFile.setLoadedSkinSprite(skinSprite);
+            EventBus.publish(new SkinFileOpened(skinSpecFile));
         }
     }
 
     public List<String> getBuiltInHullmods() {
-        String[] fromHull = hullFile.getBuiltInMods();
+        String[] fromHull = hullSpecFile.getBuiltInMods();
         List<String> hullmodIDs = new ArrayList<>();
         if (fromHull != null) {
             hullmodIDs.addAll(List.of(fromHull));
         }
-        Skin skin = this.activeSkin;
-        if (skin != null && !skin.isBase()) {
-            List<String> builtInMods = skin.getBuiltInMods();
+        SkinSpecFile skinSpecFile = this.activeSkinSpecFile;
+        if (skinSpecFile != null && !skinSpecFile.isBase()) {
+            List<String> builtInMods = skinSpecFile.getBuiltInMods();
             if (builtInMods != null) {
                 hullmodIDs.addAll(builtInMods);
             }

@@ -25,16 +25,20 @@ import java.util.Map;
 @SuppressWarnings("ClassWithTooManyFields")
 @JsonIgnoreProperties(ignoreUnknown = true)
 @Getter
-public class Hull {
+public class HullSpecFile implements ShipSpecFile {
 
     @JsonIgnore
     @Setter
-    Path shipFilePath;
+    Path filePath;
+
+    @JsonIgnore
+    @Setter
+    Path tableFilePath;
 
     @JsonProperty(StringConstants.HULL_NAME)
     String hullName;
 
-    @JsonProperty("hullId")
+    @JsonProperty(StringConstants.HULL_ID)
     private String hullId;
 
     @JsonProperty("hullSize")
@@ -76,7 +80,6 @@ public class Hull {
     @JsonProperty("viewOffset")
     private double viewOffset;
 
-    @Setter
     @JsonProperty(StringConstants.BUILT_IN_MODS)
     private String[] builtInMods;
 

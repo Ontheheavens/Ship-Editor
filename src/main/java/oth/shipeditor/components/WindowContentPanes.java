@@ -80,15 +80,11 @@ public final class WindowContentPanes {
         JTabbedPane westTabsPane = new JTabbedPane();
         westTabsPane.setTabPlacement(SwingConstants.LEFT);
         westTabsPane.addTab("Game data", new LeftsidePanelTab(LeftsideTabType.GAME_DATA));
-        westTabsPane.addTab(DEFAULT_LEFTSIDE_PANE, new LeftsidePanelTab(LeftsideTabType.DEFAULT));
+        westTabsPane.addTab("Help", new LeftsidePanelTab(LeftsideTabType.HELP));
 
-        // TODO: sort out later.
-
-        JPanel placeholder = new JPanel();
-        placeholder.setBackground(Color.LIGHT_GRAY);
-
+        JPanel quickButtonsPanel = new QuickButtonsPanel();
         westPanelsContainer.add(westTabsPane);
-        westPanelsContainer.add(placeholder);
+        westPanelsContainer.add(quickButtonsPanel);
 
         this.primaryContentPane.add(westPanelsContainer, BorderLayout.LINE_START);
 

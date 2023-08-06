@@ -2,41 +2,29 @@ package oth.shipeditor.representation;
 
 import lombok.Getter;
 import lombok.Setter;
-import oth.shipeditor.persistence.SettingsManager;
 
 import java.util.HashMap;
 import java.util.Map;
 
 /**
+ * Responsible for holding of all raw deserialized ship data from JSON. Not intended to be altered by editing workflow.
  * @author Ontheheavens
  * @since 05.05.2023
  */
 @Getter @Setter
 public class ShipData {
 
-    private Hull hull;
+    private HullSpecFile hullSpecFile;
 
     /**
      * Keys are skin IDs.
      */
-    private final Map<String, Skin> skins;
-    private HullStyle hullStyle;
+    private final Map<String, SkinSpecFile> skins;
 
-    public ShipData(Hull openedHull) {
-        this.hull = openedHull;
+    public ShipData(HullSpecFile openedHullSpecFile) {
+        this.hullSpecFile = openedHullSpecFile;
         this.skins = new HashMap<>();
-        this.skins.put(Skin.DEFAULT, Skin.empty());
-    }
-
-    public void initHullStyle() {
-        String styleID = hull.getStyle();
-        GameDataRepository dataRepository = SettingsManager.getGameData();
-        Map<String, HullStyle> allHullStyles = dataRepository.getAllHullStyles();
-        HullStyle style = null;
-        if (allHullStyles != null) {
-            style = allHullStyles.get(styleID);
-        }
-        this.hullStyle = style;
+        this.skins.put(SkinSpecFile.DEFAULT, SkinSpecFile.empty());
     }
 
 }
