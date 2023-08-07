@@ -9,12 +9,12 @@ import oth.shipeditor.representation.weapon.WeaponMount;
 import oth.shipeditor.representation.weapon.WeaponSize;
 import oth.shipeditor.representation.weapon.WeaponType;
 import oth.shipeditor.undo.EditDispatch;
+import oth.shipeditor.utility.Utility;
 import oth.shipeditor.utility.graphics.DrawUtilities;
 import oth.shipeditor.utility.graphics.ShapeUtilities;
 
 import java.awt.*;
-import java.awt.geom.AffineTransform;
-import java.awt.geom.Point2D;
+import java.awt.geom.*;
 
 /**
  * @author Ontheheavens
@@ -46,6 +46,9 @@ public class WeaponSlotPoint extends BaseWorldPoint {
 
     @Getter @Setter
     private WeaponSlotOverride skinOverride;
+
+    @Getter @Setter
+    private double transparency;
 
     public WeaponSlotPoint(Point2D pointPosition, ShipPainter layer) {
         super(pointPosition, layer);
@@ -116,18 +119,47 @@ public class WeaponSlotPoint extends BaseWorldPoint {
 
     @Override
     public void paint(Graphics2D g, AffineTransform worldToScreen, double w, double h) {
-        super.paint(g, worldToScreen, w, h);
+        float alpha = (float) this.getTransparency();
+        Composite old = Utility.setAlphaComposite(g, alpha);
+
+        if (!isPointSelected()) {
+            super.paint(g, worldToScreen, w, h);
+        }
         Point2D position = this.getPosition();
-        double transformedAngle = this.transformAngle(this.angle);
 
-        Shape angleLine = ShapeUtilities.createLineInDirection(position, transformedAngle, 0.4f);
+        double circleRadius = 0.10f;
 
-        Shape transformedAngleLine = ShapeUtilities.ensureDynamicScaleShape(worldToScreen,
-                position, angleLine, 12);
+        Ellipse2D circle = ShapeUtilities.createCircle(position, (float) circleRadius);
 
-        DrawUtilities.drawOutlined(g, transformedAngleLine, createBaseColor());
+        this.drawAnglePointer(g, worldToScreen, position, circle, circleRadius);
+
+        g.setComposite(old);
 
         this.paintCoordsLabel(g, worldToScreen);
+    }
+
+    private void drawAnglePointer(Graphics2D g, AffineTransform worldToScreen,Point2D position,
+                                  Shape circle, double circleRadius) {
+        double transformedAngle = this.transformAngle(this.angle);
+
+        Point2D lineEndpoint = ShapeUtilities.getPointInDirection(position,
+                transformedAngle, 0.45f);
+        Point2D closestIntersection = ShapeUtilities.getPointInDirection(position,
+                transformedAngle, circleRadius);
+
+        Shape angleLine = new Line2D.Double(lineEndpoint, closestIntersection);
+
+        GeneralPath combinedPath = new GeneralPath();
+        combinedPath.append(circle, false);
+        combinedPath.append(angleLine, false);
+
+        Point2D transformedIntersection = worldToScreen.transform(closestIntersection, null);
+        double radiusDistance = transformedIntersection.distance(worldToScreen.transform(position, null));
+
+        Shape transformed = ShapeUtilities.ensureSpecialScaleShape(worldToScreen,
+                position, combinedPath, 8, radiusDistance);
+
+        DrawUtilities.drawOutlined(g, transformed, createBaseColor(), true);
     }
 
     @SuppressWarnings("MethodMayBeStatic")

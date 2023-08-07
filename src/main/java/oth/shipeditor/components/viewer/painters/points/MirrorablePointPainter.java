@@ -71,7 +71,7 @@ public abstract class MirrorablePointPainter extends AbstractPointPainter {
     @SuppressWarnings("NoopMethodInAbstractClass")
     public void paintPainterContent(Graphics2D g, AffineTransform worldToScreen, double w, double h) {}
 
-    private void handleSelectionHighlight() {
+    protected void handleSelectionHighlight() {
         WorldPoint selection = this.getSelected();
         if (selection != null && isInteractionEnabled()) {
             MirrorablePointPainter.enlargePoint(selection);

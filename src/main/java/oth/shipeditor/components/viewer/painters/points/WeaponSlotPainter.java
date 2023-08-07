@@ -20,6 +20,7 @@ import oth.shipeditor.utility.Utility;
 
 import java.awt.*;
 import java.awt.event.KeyEvent;
+import java.awt.geom.AffineTransform;
 import java.awt.geom.Point2D;
 import java.util.ArrayList;
 import java.util.List;
@@ -31,6 +32,8 @@ import java.util.Map;
  * @since 25.07.2023
  */
 public class WeaponSlotPainter extends MirrorablePointPainter{
+
+    private static final String ILLEGAL_POINT_TYPE_FOUND_IN_WEAPON_SLOT_PAINTER = "Illegal point type found in WeaponSlotPainter!";
 
     @Getter
     private final List<WeaponSlotPoint> slotPoints;
@@ -68,7 +71,7 @@ public class WeaponSlotPainter extends MirrorablePointPainter{
     private void changeAngleByTarget(Point2D worldTarget) {
         WorldPoint selected = getSelected();
         if (!(selected instanceof WeaponSlotPoint checked)) {
-            throw new IllegalArgumentException("Illegal point type found in WeaponSlotPainter!");
+            throw new IllegalArgumentException(ILLEGAL_POINT_TYPE_FOUND_IN_WEAPON_SLOT_PAINTER);
         }
         Point2D pointPosition = checked.getPosition();
         double deltaX = worldTarget.getX() - pointPosition.getX();
@@ -180,6 +183,35 @@ public class WeaponSlotPainter extends MirrorablePointPainter{
             return slotPoints.indexOf(checked);
         } else {
             throw new IllegalArgumentException("Attempted to access incompatible point in WeaponSlotPainter!");
+        }
+    }
+
+    @Override
+    void paintDelegates(Graphics2D g, AffineTransform worldToScreen, double w, double h) {
+        super.paintDelegates(g, worldToScreen, w, h);
+        for (WeaponSlotPoint point : getPointsIndex()) {
+            WeaponSlotPainter.setSlotTransparency(point, 0.75d);
+        }
+    }
+
+    @Override
+    protected void handleSelectionHighlight() {
+        WorldPoint selection = this.getSelected();
+        double pronounced = 0.95d;
+        if (selection != null && isInteractionEnabled()) {
+            WeaponSlotPainter.setSlotTransparency(selection, pronounced);
+            WorldPoint counterpart = this.getMirroredCounterpart(selection);
+            if (counterpart != null && ControlPredicates.isMirrorModeEnabled()) {
+                WeaponSlotPainter.setSlotTransparency(counterpart, pronounced);
+            }
+        }
+    }
+
+    private static void setSlotTransparency(WorldPoint point, double value) {
+        if (point instanceof WeaponSlotPoint checked) {
+            checked.setTransparency(value);
+        } else {
+            throw new IllegalStateException(ILLEGAL_POINT_TYPE_FOUND_IN_WEAPON_SLOT_PAINTER);
         }
     }
 
