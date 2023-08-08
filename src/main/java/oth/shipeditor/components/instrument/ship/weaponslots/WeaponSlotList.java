@@ -23,7 +23,21 @@ public class WeaponSlotList extends PointList<WeaponSlotPoint> {
 
     @Override
     protected void handlePointSelection(WeaponSlotPoint point) {
+        refreshSelectedInfo();
+    }
+
+    void refreshSelectedInfo() {
+        WeaponSlotPoint selected = this.getSelectedValue();
+        if (selected == null) return;
         infoPanel.removeAll();
+        // TODO: sort out later.
+        infoPanel.add(new JLabel("Type: " + selected.getWeaponType().getDisplayName()));
+        infoPanel.add(new JLabel("Mount: " + selected.getWeaponMount().getDisplayName()));
+        infoPanel.add(new JLabel("Size: " + selected.getWeaponSize().getDisplayName()));
+        infoPanel.add(new JLabel("Angle: " + selected.getAngle()));
+        infoPanel.add(new JLabel("Arc: " + selected.getArc()));
+        infoPanel.revalidate();
+        infoPanel.repaint();
     }
 
     @Override

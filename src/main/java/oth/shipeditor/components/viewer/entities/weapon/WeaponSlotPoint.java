@@ -122,28 +122,79 @@ public class WeaponSlotPoint extends BaseWorldPoint {
         float alpha = (float) this.getTransparency();
         Composite old = Utility.setAlphaComposite(g, alpha);
 
-        if (!isPointSelected()) {
-            super.paint(g, worldToScreen, w, h);
-        }
         Point2D position = this.getPosition();
 
         double circleRadius = 0.10f;
 
         Ellipse2D circle = ShapeUtilities.createCircle(position, (float) circleRadius);
 
-        this.drawAnglePointer(g, worldToScreen, position, circle, circleRadius);
+        this.drawArc(g, worldToScreen, circle, circleRadius);
+        this.drawAnglePointer(g, worldToScreen, circle, circleRadius);
+
+        if (!isPointSelected()) {
+            super.paint(g, worldToScreen, w, h);
+        }
 
         g.setComposite(old);
 
         this.paintCoordsLabel(g, worldToScreen);
     }
 
-    private void drawAnglePointer(Graphics2D g, AffineTransform worldToScreen,Point2D position,
-                                  Shape circle, double circleRadius) {
+    private void drawArc(Graphics2D g, AffineTransform worldToScreen, Shape circle, double circleRadius) {
+        Point2D position = this.getPosition();
+        double slotArc = this.getArc();
+        double halfArc = slotArc * 0.5d;
         double transformedAngle = this.transformAngle(this.angle);
 
+        double arcStartAngle = transformedAngle - halfArc;
+
+        double lineLength = 0.45f;
+
+        Point2D arcStartEndpoint = ShapeUtilities.getPointInDirection(position, arcStartAngle, lineLength);
+
+        Point2D arcStartCirclePoint = ShapeUtilities.getPointInDirection(position,
+                arcStartAngle, circleRadius);
+
+        double arcEndAngle = transformedAngle + halfArc;
+
+        Point2D arcEndEndpoint = ShapeUtilities.getPointInDirection(position, arcEndAngle, lineLength);
+
+        Point2D arcEndCirclePoint = ShapeUtilities.getPointInDirection(position,
+                arcEndAngle, circleRadius);
+
+        Shape arcStartLine = new Line2D.Double(arcStartEndpoint, arcStartCirclePoint);
+        Shape arcEndLine = new Line2D.Double(arcEndEndpoint, arcEndCirclePoint);
+
+        Ellipse2D enlargedCircle = ShapeUtilities.createCircle(position, 0.30f);
+        Rectangle2D circleBounds = enlargedCircle.getBounds2D();
+        Shape arcFigure = new Arc2D.Double(circleBounds.getX(), circleBounds.getY(),
+                circleBounds.getWidth(), circleBounds.getHeight(), this.transformAngle(arcEndAngle - 90),
+                slotArc, Arc2D.OPEN);
+
+        GeneralPath combinedPath = new GeneralPath();
+        combinedPath.append(circle, false);
+        combinedPath.append(arcStartLine, false);
+        combinedPath.append(arcEndLine, false);
+        combinedPath.append(arcFigure, false);
+
+        double radiusDistance = getScreenCircleRadius(worldToScreen, arcStartCirclePoint);
+
+        this.drawCompositeFigure(g, worldToScreen, combinedPath,
+                radiusDistance * 2.0d, createBaseColor());
+    }
+
+    private double getScreenCircleRadius(AffineTransform worldToScreen, Point2D closestIntersection) {
+        Point2D position = this.getPosition();
+        Point2D transformedIntersection = worldToScreen.transform(closestIntersection, null);
+        return transformedIntersection.distance(worldToScreen.transform(position, null));
+    }
+
+    private void drawAnglePointer(Graphics2D g, AffineTransform worldToScreen, Shape circle, double circleRadius) {
+        double transformedAngle = this.transformAngle(this.angle);
+        Point2D position = this.getPosition();
+
         Point2D lineEndpoint = ShapeUtilities.getPointInDirection(position,
-                transformedAngle, 0.45f);
+                transformedAngle, 0.40f);
         Point2D closestIntersection = ShapeUtilities.getPointInDirection(position,
                 transformedAngle, circleRadius);
 
@@ -153,13 +204,25 @@ public class WeaponSlotPoint extends BaseWorldPoint {
         combinedPath.append(circle, false);
         combinedPath.append(angleLine, false);
 
-        Point2D transformedIntersection = worldToScreen.transform(closestIntersection, null);
-        double radiusDistance = transformedIntersection.distance(worldToScreen.transform(position, null));
+        double radiusDistance = getScreenCircleRadius(worldToScreen, closestIntersection);
+
+        this.drawCompositeFigure(g, worldToScreen, combinedPath, radiusDistance * 2.0d, Color.WHITE);
+
+        Shape baseCircleTransformed = ShapeUtilities.ensureDynamicScaleShape(worldToScreen,
+                position, circle, 12);
+
+        DrawUtilities.drawOutlined(g, baseCircleTransformed, createBaseColor(), true);
+    }
+
+    private void drawCompositeFigure(Graphics2D g, AffineTransform worldToScreen, Shape figure,
+                                     double measurement, Paint color) {
+        Point2D position = this.getPosition();
 
         Shape transformed = ShapeUtilities.ensureSpecialScaleShape(worldToScreen,
-                position, combinedPath, 8, radiusDistance);
+                position, figure, 12, measurement);
 
-        DrawUtilities.drawOutlined(g, transformed, createBaseColor(), true);
+        DrawUtilities.drawOutlined(g, transformed, color, true,
+                new BasicStroke(3.0f), new BasicStroke(2.25f));
     }
 
     @SuppressWarnings("MethodMayBeStatic")

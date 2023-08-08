@@ -34,9 +34,11 @@ public class WeaponSlotListPanel extends JPanel {
         JPanel northContainer = new JPanel();
         northContainer.setLayout(new BoxLayout(northContainer, BoxLayout.PAGE_AXIS));
 
-        northContainer.add(new JPanel());
+        JPanel infoPanel = new JPanel();
+        infoPanel.setLayout(new BoxLayout(infoPanel, BoxLayout.PAGE_AXIS));
+        northContainer.add(infoPanel);
 
-        slotPointContainer = new WeaponSlotList(model, northContainer);
+        slotPointContainer = new WeaponSlotList(model, infoPanel);
         JScrollPane scrollableContainer = new JScrollPane(slotPointContainer);
 
         ComponentUtilities.addSeparatorToBoxPanel(northContainer);
@@ -55,6 +57,7 @@ public class WeaponSlotListPanel extends JPanel {
         EventBus.subscribe(event -> {
             if (event instanceof SlotsPanelRepaintQueued) {
                 this.repaint();
+                slotPointContainer.refreshSelectedInfo();
             }
         });
         EventBus.subscribe(event -> {

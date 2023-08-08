@@ -190,19 +190,19 @@ public class WeaponSlotPainter extends MirrorablePointPainter{
     void paintDelegates(Graphics2D g, AffineTransform worldToScreen, double w, double h) {
         super.paintDelegates(g, worldToScreen, w, h);
         for (WeaponSlotPoint point : getPointsIndex()) {
-            WeaponSlotPainter.setSlotTransparency(point, 0.75d);
+            WeaponSlotPainter.setSlotTransparency(point, 0.8d);
         }
     }
 
     @Override
     protected void handleSelectionHighlight() {
         WorldPoint selection = this.getSelected();
-        double pronounced = 0.95d;
+        double full = 1.0d;
         if (selection != null && isInteractionEnabled()) {
-            WeaponSlotPainter.setSlotTransparency(selection, pronounced);
+            WeaponSlotPainter.setSlotTransparency(selection, full);
             WorldPoint counterpart = this.getMirroredCounterpart(selection);
             if (counterpart != null && ControlPredicates.isMirrorModeEnabled()) {
-                WeaponSlotPainter.setSlotTransparency(counterpart, pronounced);
+                WeaponSlotPainter.setSlotTransparency(counterpart, full);
             }
         }
     }
