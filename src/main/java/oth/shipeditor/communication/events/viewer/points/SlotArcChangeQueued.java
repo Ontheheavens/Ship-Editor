@@ -4,8 +4,8 @@ import java.awt.geom.Point2D;
 
 /**
  * @author Ontheheavens
- * @since 29.07.2023
+ * @since 09.08.2023
  */
-public record SlotAngleChangeQueued(Point2D worldTarget) implements PointEvent {
+public record SlotArcChangeQueued(Point2D worldTarget) implements PointEvent {
 
 }

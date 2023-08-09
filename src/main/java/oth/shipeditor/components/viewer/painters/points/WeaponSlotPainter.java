@@ -6,6 +6,7 @@ import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.Events;
 import oth.shipeditor.communication.events.viewer.points.InstrumentModeChanged;
 import oth.shipeditor.communication.events.viewer.points.SlotAngleChangeQueued;
+import oth.shipeditor.communication.events.viewer.points.SlotArcChangeQueued;
 import oth.shipeditor.components.instrument.ship.ShipInstrumentsPane;
 import oth.shipeditor.components.viewer.ShipInstrument;
 import oth.shipeditor.components.viewer.control.ControlPredicates;
@@ -38,10 +39,10 @@ public class WeaponSlotPainter extends MirrorablePointPainter{
     @Getter
     private final List<WeaponSlotPoint> slotPoints;
 
-    private final int angleHotkey = KeyEvent.VK_A;
+    private final int controlHotkey = KeyEvent.VK_A;
 
     @Getter
-    private static boolean angleHotkeyPressed;
+    private static boolean controlHotkeyPressed;
 
     private KeyEventDispatcher hotkeyDispatcher;
 
@@ -56,24 +57,54 @@ public class WeaponSlotPainter extends MirrorablePointPainter{
         this.setInteractionEnabled(ShipInstrumentsPane.getCurrentMode() == ShipInstrument.WEAPON_SLOTS);
     }
 
+    @SuppressWarnings("ChainOfInstanceofChecks")
     private void initInteractionListeners() {
-        BusEventListener rotationListener = event -> {
+        BusEventListener controlListener = event -> {
             if (event instanceof SlotAngleChangeQueued checked) {
-                if (!isInteractionEnabled() || !angleHotkeyPressed) return;
+                if (!isInteractionEnabled() || !controlHotkeyPressed) return;
                 this.changeAngleByTarget(checked.worldTarget());
+            }
+            else if (event instanceof SlotArcChangeQueued checked) {
+                if (!isInteractionEnabled() || !controlHotkeyPressed) return;
+                this.changeArcByTarget(checked.worldTarget());
             }
         };
         List<BusEventListener> listeners = getListeners();
-        listeners.add(rotationListener);
-        EventBus.subscribe(rotationListener);
+        listeners.add(controlListener);
+        EventBus.subscribe(controlListener);
     }
 
-    private void changeAngleByTarget(Point2D worldTarget) {
+    private void changeArcByTarget(Point2D worldTarget) {
         WorldPoint selected = getSelected();
         if (!(selected instanceof WeaponSlotPoint checked)) {
             throw new IllegalArgumentException(ILLEGAL_POINT_TYPE_FOUND_IN_WEAPON_SLOT_PAINTER);
         }
-        Point2D pointPosition = checked.getPosition();
+        double directionAngle = checked.getAngle();
+        double targetAngle = WeaponSlotPainter.getTargetRotation(checked, worldTarget);
+
+        double angleDifference = targetAngle - directionAngle;
+
+        // Normalize the angle difference to the range from -180 to 180 degrees.
+        if (angleDifference > 180) {
+            angleDifference -= 360;
+        } else if (angleDifference < -180) {
+            angleDifference += 360;
+        }
+
+        // Calculate the arc extent based on the normalized angle difference.
+        double arcExtent = Math.abs(angleDifference) * 2;
+
+        checked.changeSlotArc(arcExtent);
+
+        boolean mirrorMode = ControlPredicates.isMirrorModeEnabled();
+        BaseWorldPoint mirroredCounterpart = getMirroredCounterpart(checked);
+        if (mirrorMode && mirroredCounterpart instanceof WeaponSlotPoint checkedSlot) {
+            checkedSlot.changeSlotArc(arcExtent);
+        }
+    }
+
+    private static double getTargetRotation(WorldPoint selected, Point2D worldTarget) {
+        Point2D pointPosition = selected.getPosition();
         double deltaX = worldTarget.getX() - pointPosition.getX();
         double deltaY = worldTarget.getY() - pointPosition.getY();
 
@@ -84,6 +115,15 @@ public class WeaponSlotPainter extends MirrorablePointPainter{
         if (ControlPredicates.isRotationRoundingEnabled()) {
             result = Math.round(rotationDegrees);
         }
+        return result;
+    }
+
+    private void changeAngleByTarget(Point2D worldTarget) {
+        WorldPoint selected = getSelected();
+        if (!(selected instanceof WeaponSlotPoint checked)) {
+            throw new IllegalArgumentException(ILLEGAL_POINT_TYPE_FOUND_IN_WEAPON_SLOT_PAINTER);
+        }
+        double result = WeaponSlotPainter.getTargetRotation(checked, worldTarget);
         checked.changeSlotAngle(result);
         boolean mirrorMode = ControlPredicates.isMirrorModeEnabled();
         BaseWorldPoint mirroredCounterpart = getMirroredCounterpart(checked);
@@ -111,16 +151,16 @@ public class WeaponSlotPainter extends MirrorablePointPainter{
     private void initHotkeys() {
         hotkeyDispatcher = ke -> {
             int keyCode = ke.getKeyCode();
-            boolean isAngleHotkey = (keyCode == angleHotkey);
+            boolean isAngleHotkey = (keyCode == controlHotkey);
             switch (ke.getID()) {
                 case KeyEvent.KEY_PRESSED:
                     if (isAngleHotkey) {
-                        angleHotkeyPressed = true;
+                        controlHotkeyPressed = true;
                     }
                     break;
                 case KeyEvent.KEY_RELEASED:
                     if (isAngleHotkey) {
-                        angleHotkeyPressed = false;
+                        controlHotkeyPressed = false;
                     }
                     break;
             }

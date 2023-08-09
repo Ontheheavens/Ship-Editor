@@ -97,6 +97,13 @@ public final class EditDispatch {
         Events.repaintView();
     }
 
+    public static void postSlotArcSet(WeaponSlotPoint slotPoint, double old, double updated ) {
+        Edit arcEdit = new WeaponSlotArcSet(slotPoint, old, updated);
+        EditDispatch.handleContinuousEdit(arcEdit);
+        slotPoint.setArc(updated);
+        Events.repaintView();
+    }
+
     public static void postLayerRotated(LayerPainter painter, double old, double updated) {
         Edit rotationEdit = new LayerRotationEdit(painter, old, updated);
         EditDispatch.handleContinuousEdit(rotationEdit);

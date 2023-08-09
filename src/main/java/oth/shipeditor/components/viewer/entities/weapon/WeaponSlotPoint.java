@@ -20,7 +20,7 @@ import java.awt.geom.*;
  * @author Ontheheavens
  * @since 25.07.2023
  */
-@SuppressWarnings({"WeakerAccess", "unused"})
+@SuppressWarnings({"WeakerAccess", "unused", "ClassWithTooManyMethods"})
 public class WeaponSlotPoint extends BaseWorldPoint {
 
     @Getter @Setter
@@ -94,6 +94,10 @@ public class WeaponSlotPoint extends BaseWorldPoint {
 
     public void changeSlotAngle(double degrees) {
         EditDispatch.postSlotAngleSet(this,this.angle,degrees);
+    }
+
+    public void changeSlotArc(double degrees) {
+        EditDispatch.postSlotArcSet(this,this.arc,degrees);
     }
 
     @Override

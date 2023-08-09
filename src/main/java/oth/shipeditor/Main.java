@@ -46,9 +46,9 @@ public final class Main {
             Main.configureLaf();
             PrimaryWindow window = PrimaryWindow.create();
             Initializations.updateStateFromSettings(window);
-            Initializations.loadGameData(window);
+//            Initializations.loadGameData(window);
 
-            Main.testFilesNew(window);
+            Main.testFilesOld(window);
 
             window.showGUI();
         });
