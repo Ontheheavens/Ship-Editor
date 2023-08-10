@@ -132,6 +132,8 @@ public class WeaponSlotPoint extends BaseWorldPoint {
 
         Ellipse2D circle = ShapeUtilities.createCircle(position, (float) circleRadius);
 
+        this.drawMountShape(g, worldToScreen, circle, circleRadius);
+
         this.drawArc(g, worldToScreen, circle, circleRadius);
         this.drawAnglePointer(g, worldToScreen, circle, circleRadius);
 
@@ -144,6 +146,54 @@ public class WeaponSlotPoint extends BaseWorldPoint {
         this.paintCoordsLabel(g, worldToScreen);
     }
 
+    private void drawMountShape(Graphics2D g, AffineTransform worldToScreen, Shape circle, double circleRadius) {
+        Point2D position = this.getPosition();
+        Shape mountShape = null;
+        WeaponMount slotMount = this.getWeaponMount();
+        double enlargedRadius = circleRadius * 1.25f;
+        switch (slotMount) {
+            case TURRET -> mountShape = ShapeUtilities.createCircle(position, (float) enlargedRadius);
+            case HARDPOINT -> mountShape = new Rectangle2D.Double(
+                    position.getX() - enlargedRadius,
+                    position.getY() - enlargedRadius,
+                    enlargedRadius * 2,
+                    enlargedRadius * 2
+            );
+            case HIDDEN -> mountShape = ShapeUtilities.createCircumscribingTriangle(circle);
+        }
+
+        AffineTransform flipVertical = new AffineTransform();
+        flipVertical.translate(position.getX(), position.getY());
+        flipVertical.scale(1, -1);
+        flipVertical.translate(-position.getX(), -position.getY());
+        Shape flippedShape = flipVertical.createTransformedShape(mountShape);
+
+        Shape transformedSmall = ShapeUtilities.ensureDynamicScaleShape(worldToScreen,
+                position, flippedShape, 24);
+
+        DrawUtilities.outlineShape(g, transformedSmall, createBaseColor(), 1.5f);
+
+        WeaponSize slotSize = this.getWeaponSize();
+        if (slotSize == WeaponSize.MEDIUM || slotSize == WeaponSize.LARGE) {
+            double scaleMedium = 1.25d;
+            AffineTransform transformMedium = ShapeUtilities.getScaled(position, scaleMedium, scaleMedium);
+            Shape mediumEnlarged = transformMedium.createTransformedShape(flippedShape);
+            Shape transformedMedium = ShapeUtilities.ensureDynamicScaleShape(worldToScreen,
+                    position, mediumEnlarged, 28);
+
+            DrawUtilities.outlineShape(g, transformedMedium, createBaseColor(), 1.5f);
+            if (slotSize == WeaponSize.LARGE) {
+                double scaleLarge = 1.5d;
+                AffineTransform transformLarge = ShapeUtilities.getScaled(position, scaleLarge, scaleLarge);
+                Shape maximumEnlarged = transformLarge.createTransformedShape(flippedShape);
+                Shape transformedLarge = ShapeUtilities.ensureDynamicScaleShape(worldToScreen,
+                        position, maximumEnlarged, 32);
+
+                DrawUtilities.outlineShape(g, transformedLarge, createBaseColor(), 1.5f);
+            }
+        }
+    }
+
     private void drawArc(Graphics2D g, AffineTransform worldToScreen, Shape circle, double circleRadius) {
         Point2D position = this.getPosition();
         double slotArc = this.getArc();
@@ -152,7 +202,7 @@ public class WeaponSlotPoint extends BaseWorldPoint {
 
         double arcStartAngle = transformedAngle - halfArc;
 
-        double lineLength = 0.45f;
+        double lineLength = 0.55f;
 
         Point2D arcStartEndpoint = ShapeUtilities.getPointInDirection(position, arcStartAngle, lineLength);
 
@@ -169,7 +219,7 @@ public class WeaponSlotPoint extends BaseWorldPoint {
         Shape arcStartLine = new Line2D.Double(arcStartEndpoint, arcStartCirclePoint);
         Shape arcEndLine = new Line2D.Double(arcEndEndpoint, arcEndCirclePoint);
 
-        Ellipse2D enlargedCircle = ShapeUtilities.createCircle(position, 0.30f);
+        Ellipse2D enlargedCircle = ShapeUtilities.createCircle(position, 0.40f);
         Rectangle2D circleBounds = enlargedCircle.getBounds2D();
         Shape arcFigure = new Arc2D.Double(circleBounds.getX(), circleBounds.getY(),
                 circleBounds.getWidth(), circleBounds.getHeight(), this.transformAngle(arcEndAngle - 90),
@@ -198,7 +248,7 @@ public class WeaponSlotPoint extends BaseWorldPoint {
         Point2D position = this.getPosition();
 
         Point2D lineEndpoint = ShapeUtilities.getPointInDirection(position,
-                transformedAngle, 0.40f);
+                transformedAngle, 0.5f);
         Point2D closestIntersection = ShapeUtilities.getPointInDirection(position,
                 transformedAngle, circleRadius);
 

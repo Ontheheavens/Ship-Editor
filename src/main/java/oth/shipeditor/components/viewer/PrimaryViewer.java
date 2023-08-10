@@ -252,8 +252,6 @@ public final class PrimaryViewer extends Viewer implements LayerViewer {
             }
         }
 
-
-
     }
 
 }

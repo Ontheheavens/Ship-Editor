@@ -43,21 +43,26 @@ public final class ShapeUtilities {
      * @param scale scaling factor applied to the transformation. A value greater than 1 scales up, and a value less than 1 scales down.
      * @return new AffineTransform that represents the scaled version of the original world-to-screen transformation.
      */
-    public static AffineTransform getScaledTransform(Point2D center, AffineTransform worldToScreen,
-                                                     double scale) {
-        return ShapeUtilities.getScaledTransform(center, worldToScreen, scale, scale);
+    public static AffineTransform getScaledWtS(Point2D center, AffineTransform worldToScreen,
+                                               double scale) {
+        return ShapeUtilities.getScaledWtS(center, worldToScreen, scale, scale);
     }
 
-    public static AffineTransform getScaledTransform(Point2D center, AffineTransform worldToScreen,
-                                                     double scaleX, double scaleY) {
-        AffineTransform scaleTX = new AffineTransform();
-        scaleTX.translate(center.getX(), center.getY());
-        scaleTX.scale(scaleX, scaleY);
-        scaleTX.translate(-center.getX(), -center.getY());
+    public static AffineTransform getScaledWtS(Point2D center, AffineTransform worldToScreen,
+                                               double scaleX, double scaleY) {
+        AffineTransform scaleTX = ShapeUtilities.getScaled(center, scaleX, scaleY);
         AffineTransform delegateWTS = new AffineTransform();
         delegateWTS.setTransform(worldToScreen);
         delegateWTS.concatenate(scaleTX);
         return delegateWTS;
+    }
+
+    public static AffineTransform getScaled(Point2D center, double scaleX, double scaleY) {
+        AffineTransform scaleTX = new AffineTransform();
+        scaleTX.translate(center.getX(), center.getY());
+        scaleTX.scale(scaleX, scaleY);
+        scaleTX.translate(-center.getX(), -center.getY());
+        return scaleTX;
     }
 
     public static Shape translateShape(Shape shape, double deltaX, double deltaY) {
@@ -178,7 +183,7 @@ public final class ShapeUtilities {
                                                 Shape worldShape, Shape transformed, double scaleFactor) {
         Shape shape = transformed;
         if (scaleFactor > 1) {
-            AffineTransform scaleTX = ShapeUtilities.getScaledTransform(positionWorld, worldToScreen, scaleFactor);
+            AffineTransform scaleTX = ShapeUtilities.getScaledWtS(positionWorld, worldToScreen, scaleFactor);
             shape = scaleTX.createTransformedShape(worldShape);
         }
         return shape;
@@ -218,6 +223,32 @@ public final class ShapeUtilities {
             }
         }
         return new Point2D.Double(x, y);
+    }
+
+    public static Shape createCircumscribingTriangle(Shape circle) {
+        Rectangle2D circleBounds = circle.getBounds2D();
+        double centerX = circleBounds.getCenterX();
+        double centerY = circleBounds.getCenterY();
+        double radius = Math.max(circleBounds.getWidth(), circleBounds.getHeight()) * 1.25d;
+
+        Path2D triangle = new Path2D.Double();
+
+        double[] angles = { 30, -90, 150 };
+        for (double angle : angles) {
+            double radians = Math.toRadians(angle);
+            double x = centerX + radius * Math.cos(radians);
+            double y = centerY + radius * Math.sin(radians);
+
+            if (Math.abs(angle - 30) < 5.96e-08) {
+                triangle.moveTo(x, y);
+            } else {
+                triangle.lineTo(x, y);
+            }
+        }
+
+        triangle.closePath();
+
+        return triangle;
     }
 
 }

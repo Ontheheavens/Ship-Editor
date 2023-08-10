@@ -113,7 +113,7 @@ public class WeaponSlotPainter extends MirrorablePointPainter{
         double rotationDegrees = Math.toDegrees(radians) + 180;
         double result = rotationDegrees;
         if (ControlPredicates.isRotationRoundingEnabled()) {
-            result = Math.round(rotationDegrees);
+            result = Math.round(rotationDegrees * 2.0d) / 2.0d;
         }
         return result;
     }
