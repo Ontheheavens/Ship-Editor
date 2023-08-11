@@ -91,15 +91,16 @@ public class CenterPointPainter extends SinglePointPainter {
                 case KeyEvent.KEY_PRESSED:
                     if (isCollisionHotkey) {
                         this.collisionRadiusHotkeyPressed = true;
+                        EventBus.publish(new ViewerRepaintQueued());
                     }
                     break;
                 case KeyEvent.KEY_RELEASED:
                     if (isCollisionHotkey) {
                         this.collisionRadiusHotkeyPressed = false;
+                        EventBus.publish(new ViewerRepaintQueued());
                     }
                     break;
             }
-            EventBus.publish(new ViewerRepaintQueued());
             return false;
         };
         KeyboardFocusManager.getCurrentKeyboardFocusManager().addKeyEventDispatcher(hotkeyDispatcher);

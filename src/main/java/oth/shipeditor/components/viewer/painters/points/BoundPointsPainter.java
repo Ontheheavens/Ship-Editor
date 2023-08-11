@@ -5,7 +5,7 @@ import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
 import oth.shipeditor.communication.BusEventListener;
 import oth.shipeditor.communication.EventBus;
-import oth.shipeditor.communication.events.Events;
+import oth.shipeditor.communication.events.viewer.ViewerRepaintQueued;
 import oth.shipeditor.communication.events.viewer.points.BoundCreationQueued;
 import oth.shipeditor.communication.events.viewer.points.BoundInsertedConfirmed;
 import oth.shipeditor.communication.events.viewer.points.BoundPointsSorted;
@@ -115,15 +115,16 @@ public final class BoundPointsPainter extends MirrorablePointPainter {
                 case KeyEvent.KEY_PRESSED:
                     if (isAppendHotkey || isInsertHotkey) {
                         BoundPointsPainter.setHotkeyState(isAppendHotkey, true);
+                        EventBus.publish(new ViewerRepaintQueued());
                     }
                     break;
                 case KeyEvent.KEY_RELEASED:
                     if (isAppendHotkey || isInsertHotkey) {
                         BoundPointsPainter.setHotkeyState(isAppendHotkey, false);
+                        EventBus.publish(new ViewerRepaintQueued());
                     }
                     break;
             }
-            Events.repaintView();
             return false;
         };
         KeyboardFocusManager.getCurrentKeyboardFocusManager().addKeyEventDispatcher(hotkeyDispatcher);

@@ -3,7 +3,7 @@ package oth.shipeditor.components.viewer.painters.points;
 import lombok.Getter;
 import oth.shipeditor.communication.BusEventListener;
 import oth.shipeditor.communication.EventBus;
-import oth.shipeditor.communication.events.Events;
+import oth.shipeditor.communication.events.viewer.ViewerRepaintQueued;
 import oth.shipeditor.communication.events.viewer.points.InstrumentModeChanged;
 import oth.shipeditor.communication.events.viewer.points.SlotAngleChangeQueued;
 import oth.shipeditor.communication.events.viewer.points.SlotArcChangeQueued;
@@ -156,15 +156,16 @@ public class WeaponSlotPainter extends MirrorablePointPainter{
                 case KeyEvent.KEY_PRESSED:
                     if (isAngleHotkey) {
                         controlHotkeyPressed = true;
+                        EventBus.publish(new ViewerRepaintQueued());
                     }
                     break;
                 case KeyEvent.KEY_RELEASED:
                     if (isAngleHotkey) {
                         controlHotkeyPressed = false;
+                        EventBus.publish(new ViewerRepaintQueued());
                     }
                     break;
             }
-            Events.repaintView();
             return false;
         };
         KeyboardFocusManager.getCurrentKeyboardFocusManager().addKeyEventDispatcher(hotkeyDispatcher);

@@ -107,15 +107,16 @@ public class ShieldPointPainter extends SinglePointPainter {
                 case KeyEvent.KEY_PRESSED:
                     if (isShieldHotkey) {
                         this.shieldRadiusHotkeyPressed = true;
+                        EventBus.publish(new ViewerRepaintQueued());
                     }
                     break;
                 case KeyEvent.KEY_RELEASED:
                     if (isShieldHotkey) {
                         this.shieldRadiusHotkeyPressed = false;
+                        EventBus.publish(new ViewerRepaintQueued());
                     }
                     break;
             }
-            EventBus.publish(new ViewerRepaintQueued());
             return false;
         };
         KeyboardFocusManager.getCurrentKeyboardFocusManager().addKeyEventDispatcher(hotkeyDispatcher);

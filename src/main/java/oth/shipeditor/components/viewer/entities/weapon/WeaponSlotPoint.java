@@ -150,7 +150,7 @@ public class WeaponSlotPoint extends BaseWorldPoint {
         Point2D position = this.getPosition();
         Shape mountShape = null;
         WeaponMount slotMount = this.getWeaponMount();
-        double enlargedRadius = circleRadius * 1.25f;
+        double enlargedRadius = circleRadius * 1.65f;
         switch (slotMount) {
             case TURRET -> mountShape = ShapeUtilities.createCircle(position, (float) enlargedRadius);
             case HARDPOINT -> mountShape = new Rectangle2D.Double(
@@ -161,37 +161,32 @@ public class WeaponSlotPoint extends BaseWorldPoint {
             );
             case HIDDEN -> mountShape = ShapeUtilities.createCircumscribingTriangle(circle);
         }
-
         AffineTransform flipVertical = new AffineTransform();
         flipVertical.translate(position.getX(), position.getY());
         flipVertical.scale(1, -1);
         flipVertical.translate(-position.getX(), -position.getY());
+
         Shape flippedShape = flipVertical.createTransformedShape(mountShape);
 
-        Shape transformedSmall = ShapeUtilities.ensureDynamicScaleShape(worldToScreen,
-                position, flippedShape, 24);
-
-        DrawUtilities.outlineShape(g, transformedSmall, createBaseColor(), 1.5f);
-
+        this.paintMount(g, worldToScreen, flippedShape, 1.0d, 24);
         WeaponSize slotSize = this.getWeaponSize();
         if (slotSize == WeaponSize.MEDIUM || slotSize == WeaponSize.LARGE) {
             double scaleMedium = 1.25d;
-            AffineTransform transformMedium = ShapeUtilities.getScaled(position, scaleMedium, scaleMedium);
-            Shape mediumEnlarged = transformMedium.createTransformedShape(flippedShape);
-            Shape transformedMedium = ShapeUtilities.ensureDynamicScaleShape(worldToScreen,
-                    position, mediumEnlarged, 28);
-
-            DrawUtilities.outlineShape(g, transformedMedium, createBaseColor(), 1.5f);
+            this.paintMount(g, worldToScreen, flippedShape, scaleMedium, 28);
             if (slotSize == WeaponSize.LARGE) {
                 double scaleLarge = 1.5d;
-                AffineTransform transformLarge = ShapeUtilities.getScaled(position, scaleLarge, scaleLarge);
-                Shape maximumEnlarged = transformLarge.createTransformedShape(flippedShape);
-                Shape transformedLarge = ShapeUtilities.ensureDynamicScaleShape(worldToScreen,
-                        position, maximumEnlarged, 32);
-
-                DrawUtilities.outlineShape(g, transformedLarge, createBaseColor(), 1.5f);
+                this.paintMount(g, worldToScreen, flippedShape, scaleLarge, 32);
             }
         }
+    }
+
+    private void paintMount(Graphics2D g, AffineTransform worldToScreen, Shape input, double scale, double screenSize) {
+        Point2D position = this.getPosition();
+        AffineTransform transform = ShapeUtilities.getScaled(position, scale, scale);
+        Shape enlarged = transform.createTransformedShape(input);
+        Shape transformed = ShapeUtilities.ensureDynamicScaleShape(worldToScreen,
+                position, enlarged, screenSize);
+        DrawUtilities.outlineShape(g, transformed, createBaseColor(), 1.5f);
     }
 
     private void drawArc(Graphics2D g, AffineTransform worldToScreen, Shape circle, double circleRadius) {

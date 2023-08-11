@@ -15,27 +15,28 @@ public class WeaponSlotList extends PointList<WeaponSlotPoint> {
 
     private final JPanel infoPanel;
 
-    WeaponSlotList(ListModel<WeaponSlotPoint> dataModel, JPanel panel) {
+    @SuppressWarnings("FieldCanBeLocal")
+    private SlotDataControlPane slotControlPane;
+
+    WeaponSlotList(ListModel<WeaponSlotPoint> dataModel, JPanel infoPane) {
         super(dataModel);
-        this.infoPanel = panel;
+        this.infoPanel = infoPane;
         this.setCellRenderer(new SlotCellRenderer());
     }
 
     @Override
     protected void handlePointSelection(WeaponSlotPoint point) {
-        refreshSelectedInfo();
+        refreshSlotControlPane();
     }
 
-    void refreshSelectedInfo() {
+    void refreshSlotControlPane() {
         WeaponSlotPoint selected = this.getSelectedValue();
         if (selected == null) return;
+
         infoPanel.removeAll();
-        // TODO: sort out later.
-        infoPanel.add(new JLabel("Type: " + selected.getWeaponType().getDisplayName()));
-        infoPanel.add(new JLabel("Mount: " + selected.getWeaponMount().getDisplayName()));
-        infoPanel.add(new JLabel("Size: " + selected.getWeaponSize().getDisplayName()));
-        infoPanel.add(new JLabel("Angle: " + selected.getAngle()));
-        infoPanel.add(new JLabel("Arc: " + selected.getArc()));
+        slotControlPane = new SlotDataControlPane(selected, this);
+        infoPanel.add(slotControlPane, BorderLayout.CENTER);
+
         infoPanel.revalidate();
         infoPanel.repaint();
     }
