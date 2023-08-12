@@ -2,25 +2,29 @@ package oth.shipeditor.components.viewer.entities.weapon;
 
 import lombok.Getter;
 import lombok.Setter;
+import oth.shipeditor.communication.EventBus;
+import oth.shipeditor.communication.events.components.SlotControlRepaintQueued;
 import oth.shipeditor.components.viewer.ShipInstrument;
 import oth.shipeditor.components.viewer.entities.BaseWorldPoint;
 import oth.shipeditor.components.viewer.layers.ship.ShipPainter;
+import oth.shipeditor.components.viewer.painters.points.WeaponSlotPainter;
 import oth.shipeditor.representation.weapon.WeaponMount;
 import oth.shipeditor.representation.weapon.WeaponSize;
 import oth.shipeditor.representation.weapon.WeaponType;
 import oth.shipeditor.undo.EditDispatch;
 import oth.shipeditor.utility.Utility;
-import oth.shipeditor.utility.graphics.DrawUtilities;
-import oth.shipeditor.utility.graphics.ShapeUtilities;
+import oth.shipeditor.utility.graphics.ColorUtilities;
 
+import javax.swing.*;
 import java.awt.*;
-import java.awt.geom.*;
+import java.awt.geom.AffineTransform;
+import java.awt.geom.Point2D;
 
 /**
  * @author Ontheheavens
  * @since 25.07.2023
  */
-@SuppressWarnings({"WeakerAccess", "unused", "ClassWithTooManyMethods"})
+@SuppressWarnings("WeakerAccess")
 public class WeaponSlotPoint extends BaseWorldPoint {
 
     @Getter @Setter
@@ -48,10 +52,17 @@ public class WeaponSlotPoint extends BaseWorldPoint {
     private WeaponSlotOverride skinOverride;
 
     @Getter @Setter
-    private double transparency;
+    private double transparency = 1.0d;
+
+    private SlotDrawingHelper drawingHelper;
 
     public WeaponSlotPoint(Point2D pointPosition, ShipPainter layer) {
         super(pointPosition, layer);
+        this.initHelper();
+    }
+
+    private void initHelper() {
+        this.drawingHelper = new SlotDrawingHelper(this);
     }
 
     public WeaponMount getWeaponMount() {
@@ -92,6 +103,40 @@ public class WeaponSlotPoint extends BaseWorldPoint {
         }
     }
 
+    public void changeSlotID(String newID) {
+        ShipPainter parent = (ShipPainter) this.getParentLayer();
+        WeaponSlotPainter slotPainter = parent.getWeaponSlotPainter();
+        for (WeaponSlotPoint slotPoint : slotPainter.getSlotPoints()) {
+            String slotPointId = slotPoint.getId();
+            if (slotPointId.equals(newID)) {
+                JOptionPane.showMessageDialog(null,
+                        "Input ID already assigned to slot.",
+                        "Duplicate ID",
+                        JOptionPane.ERROR_MESSAGE);
+                EventBus.publish(new SlotControlRepaintQueued());
+                return;
+            }
+        }
+        this.setId(newID);
+        WeaponSlotPainter.setSlotOverrideFromSkin(this, parent.getActiveSkin());
+        EventBus.publish(new SlotControlRepaintQueued());
+    }
+
+    public void changeSlotType(WeaponType newType) {
+        if (skinOverride != null && skinOverride.getWeaponType() != null) return;
+        EditDispatch.postWeaponSlotTypeChanged(this, newType);
+    }
+
+    public void changeSlotMount(WeaponMount newMount) {
+        if (skinOverride != null && skinOverride.getWeaponType() != null) return;
+        EditDispatch.postWeaponSlotMountChanged(this, newMount);
+    }
+
+    public void changeSlotSize(WeaponSize newSize) {
+        if (skinOverride != null && skinOverride.getWeaponType() != null) return;
+        EditDispatch.postWeaponSlotSizeChanged(this, newSize);
+    }
+
     public void changeSlotAngle(double degrees) {
         EditDispatch.postSlotAngleSet(this,this.angle,degrees);
     }
@@ -113,8 +158,8 @@ public class WeaponSlotPoint extends BaseWorldPoint {
 
     @Override
     protected Color createSelectColor() {
-        WeaponType type = this.getWeaponType();
-        return type.getColor();
+        Color base = this.createBaseColor();
+        return ColorUtilities.getBlendedColor(base, Color.WHITE, 0.5);
     }
 
     public String getNameForLabel() {
@@ -126,16 +171,7 @@ public class WeaponSlotPoint extends BaseWorldPoint {
         float alpha = (float) this.getTransparency();
         Composite old = Utility.setAlphaComposite(g, alpha);
 
-        Point2D position = this.getPosition();
-
-        double circleRadius = 0.10f;
-
-        Ellipse2D circle = ShapeUtilities.createCircle(position, (float) circleRadius);
-
-        this.drawMountShape(g, worldToScreen, circle, circleRadius);
-
-        this.drawArc(g, worldToScreen, circle, circleRadius);
-        this.drawAnglePointer(g, worldToScreen, circle, circleRadius);
+        drawingHelper.paintSlotVisuals(g, worldToScreen);
 
         if (!isPointSelected()) {
             super.paint(g, worldToScreen, w, h);
@@ -144,145 +180,6 @@ public class WeaponSlotPoint extends BaseWorldPoint {
         g.setComposite(old);
 
         this.paintCoordsLabel(g, worldToScreen);
-    }
-
-    private void drawMountShape(Graphics2D g, AffineTransform worldToScreen, Shape circle, double circleRadius) {
-        Point2D position = this.getPosition();
-        Shape mountShape = null;
-        WeaponMount slotMount = this.getWeaponMount();
-        double enlargedRadius = circleRadius * 1.65f;
-        switch (slotMount) {
-            case TURRET -> mountShape = ShapeUtilities.createCircle(position, (float) enlargedRadius);
-            case HARDPOINT -> mountShape = new Rectangle2D.Double(
-                    position.getX() - enlargedRadius,
-                    position.getY() - enlargedRadius,
-                    enlargedRadius * 2,
-                    enlargedRadius * 2
-            );
-            case HIDDEN -> mountShape = ShapeUtilities.createCircumscribingTriangle(circle);
-        }
-        AffineTransform flipVertical = new AffineTransform();
-        flipVertical.translate(position.getX(), position.getY());
-        flipVertical.scale(1, -1);
-        flipVertical.translate(-position.getX(), -position.getY());
-
-        Shape flippedShape = flipVertical.createTransformedShape(mountShape);
-
-        this.paintMount(g, worldToScreen, flippedShape, 1.0d, 24);
-        WeaponSize slotSize = this.getWeaponSize();
-        if (slotSize == WeaponSize.MEDIUM || slotSize == WeaponSize.LARGE) {
-            double scaleMedium = 1.25d;
-            this.paintMount(g, worldToScreen, flippedShape, scaleMedium, 28);
-            if (slotSize == WeaponSize.LARGE) {
-                double scaleLarge = 1.5d;
-                this.paintMount(g, worldToScreen, flippedShape, scaleLarge, 32);
-            }
-        }
-    }
-
-    private void paintMount(Graphics2D g, AffineTransform worldToScreen, Shape input, double scale, double screenSize) {
-        Point2D position = this.getPosition();
-        AffineTransform transform = ShapeUtilities.getScaled(position, scale, scale);
-        Shape enlarged = transform.createTransformedShape(input);
-        Shape transformed = ShapeUtilities.ensureDynamicScaleShape(worldToScreen,
-                position, enlarged, screenSize);
-        DrawUtilities.outlineShape(g, transformed, createBaseColor(), 1.5f);
-    }
-
-    private void drawArc(Graphics2D g, AffineTransform worldToScreen, Shape circle, double circleRadius) {
-        Point2D position = this.getPosition();
-        double slotArc = this.getArc();
-        double halfArc = slotArc * 0.5d;
-        double transformedAngle = this.transformAngle(this.angle);
-
-        double arcStartAngle = transformedAngle - halfArc;
-
-        double lineLength = 0.55f;
-
-        Point2D arcStartEndpoint = ShapeUtilities.getPointInDirection(position, arcStartAngle, lineLength);
-
-        Point2D arcStartCirclePoint = ShapeUtilities.getPointInDirection(position,
-                arcStartAngle, circleRadius);
-
-        double arcEndAngle = transformedAngle + halfArc;
-
-        Point2D arcEndEndpoint = ShapeUtilities.getPointInDirection(position, arcEndAngle, lineLength);
-
-        Point2D arcEndCirclePoint = ShapeUtilities.getPointInDirection(position,
-                arcEndAngle, circleRadius);
-
-        Shape arcStartLine = new Line2D.Double(arcStartEndpoint, arcStartCirclePoint);
-        Shape arcEndLine = new Line2D.Double(arcEndEndpoint, arcEndCirclePoint);
-
-        Ellipse2D enlargedCircle = ShapeUtilities.createCircle(position, 0.40f);
-        Rectangle2D circleBounds = enlargedCircle.getBounds2D();
-        Shape arcFigure = new Arc2D.Double(circleBounds.getX(), circleBounds.getY(),
-                circleBounds.getWidth(), circleBounds.getHeight(), this.transformAngle(arcEndAngle - 90),
-                slotArc, Arc2D.OPEN);
-
-        GeneralPath combinedPath = new GeneralPath();
-        combinedPath.append(circle, false);
-        combinedPath.append(arcStartLine, false);
-        combinedPath.append(arcEndLine, false);
-        combinedPath.append(arcFigure, false);
-
-        double radiusDistance = getScreenCircleRadius(worldToScreen, arcStartCirclePoint);
-
-        this.drawCompositeFigure(g, worldToScreen, combinedPath,
-                radiusDistance * 2.0d, createBaseColor());
-    }
-
-    private double getScreenCircleRadius(AffineTransform worldToScreen, Point2D closestIntersection) {
-        Point2D position = this.getPosition();
-        Point2D transformedIntersection = worldToScreen.transform(closestIntersection, null);
-        return transformedIntersection.distance(worldToScreen.transform(position, null));
-    }
-
-    private void drawAnglePointer(Graphics2D g, AffineTransform worldToScreen, Shape circle, double circleRadius) {
-        double transformedAngle = this.transformAngle(this.angle);
-        Point2D position = this.getPosition();
-
-        Point2D lineEndpoint = ShapeUtilities.getPointInDirection(position,
-                transformedAngle, 0.5f);
-        Point2D closestIntersection = ShapeUtilities.getPointInDirection(position,
-                transformedAngle, circleRadius);
-
-        Shape angleLine = new Line2D.Double(lineEndpoint, closestIntersection);
-
-        GeneralPath combinedPath = new GeneralPath();
-        combinedPath.append(circle, false);
-        combinedPath.append(angleLine, false);
-
-        double radiusDistance = getScreenCircleRadius(worldToScreen, closestIntersection);
-
-        this.drawCompositeFigure(g, worldToScreen, combinedPath, radiusDistance * 2.0d, Color.WHITE);
-
-        Shape baseCircleTransformed = ShapeUtilities.ensureDynamicScaleShape(worldToScreen,
-                position, circle, 12);
-
-        DrawUtilities.drawOutlined(g, baseCircleTransformed, createBaseColor(), true);
-    }
-
-    private void drawCompositeFigure(Graphics2D g, AffineTransform worldToScreen, Shape figure,
-                                     double measurement, Paint color) {
-        Point2D position = this.getPosition();
-
-        Shape transformed = ShapeUtilities.ensureSpecialScaleShape(worldToScreen,
-                position, figure, 12, measurement);
-
-        DrawUtilities.drawOutlined(g, transformed, color, true,
-                new BasicStroke(3.0f), new BasicStroke(2.25f));
-    }
-
-    @SuppressWarnings("MethodMayBeStatic")
-    private double transformAngle(double raw) {
-        double transformed = raw % 360;
-        if (transformed < 0) {
-            transformed += 360;
-        }
-
-        transformed = (360 - transformed) % 360;
-        return transformed - 90;
     }
 
 }

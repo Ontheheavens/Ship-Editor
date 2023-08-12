@@ -1,50 +1,49 @@
-package oth.shipeditor.undo.edits;
+package oth.shipeditor.undo.edits.points.slots;
 
 import oth.shipeditor.communication.EventBus;
-import oth.shipeditor.communication.events.components.SlotsPanelRepaintQueued;
+import oth.shipeditor.communication.events.components.SlotControlRepaintQueued;
 import oth.shipeditor.communication.events.viewer.ViewerRepaintQueued;
 import oth.shipeditor.components.viewer.entities.weapon.WeaponSlotPoint;
 import oth.shipeditor.undo.AbstractEdit;
 
 /**
  * @author Ontheheavens
- * @since 29.07.2023
+ * @since 09.08.2023
  */
-public class WeaponSlotAngleSet extends AbstractEdit {
+public class WeaponSlotArcSet extends AbstractEdit {
 
     private final WeaponSlotPoint slotPoint;
 
-    private final double oldAngle;
+    private final double oldArc;
 
-    private final double updatedAngle;
+    private final double updatedArc;
 
-    public WeaponSlotAngleSet(WeaponSlotPoint point, double old, double updated) {
+    public WeaponSlotArcSet(WeaponSlotPoint point, double old, double updated) {
         this.slotPoint = point;
-        this.oldAngle = old;
-        this.updatedAngle = updated;
+        this.oldArc = old;
+        this.updatedArc = updated;
         this.setFinished(false);
     }
-
 
     @Override
     public void undo() {
         undoSubEdits();
-        slotPoint.setAngle(oldAngle);
+        slotPoint.setArc(oldArc);
         EventBus.publish(new ViewerRepaintQueued());
-        EventBus.publish(new SlotsPanelRepaintQueued());
+        EventBus.publish(new SlotControlRepaintQueued());
     }
 
     @Override
     public void redo() {
-        slotPoint.setAngle(updatedAngle);
+        slotPoint.setArc(updatedArc);
         redoSubEdits();
         EventBus.publish(new ViewerRepaintQueued());
-        EventBus.publish(new SlotsPanelRepaintQueued());
+        EventBus.publish(new SlotControlRepaintQueued());
     }
 
     @Override
     public String getName() {
-        return "Change Slot Angle";
+        return "Change Slot Arc";
     }
 
 }

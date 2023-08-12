@@ -54,6 +54,8 @@ public abstract class MirrorablePointPainter extends AbstractPointPainter {
         return true;
     }
 
+    public abstract void insertPoint(BaseWorldPoint toInsert, int precedingIndex);
+
     @Override
     public void paint(Graphics2D g, AffineTransform worldToScreen, double w, double h) {
         if (!checkVisibility()) return;

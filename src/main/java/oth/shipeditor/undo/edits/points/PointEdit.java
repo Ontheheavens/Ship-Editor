@@ -1,4 +1,4 @@
-package oth.shipeditor.undo.edits;
+package oth.shipeditor.undo.edits.points;
 
 import oth.shipeditor.components.viewer.entities.WorldPoint;
 

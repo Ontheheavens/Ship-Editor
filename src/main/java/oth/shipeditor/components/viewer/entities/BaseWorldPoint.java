@@ -137,7 +137,7 @@ public class BaseWorldPoint implements WorldPoint, Painter {
     }
 
     @SuppressWarnings("WeakerAccess")
-    protected Color getCurrentColor() {
+    public Color getCurrentColor() {
         Color result;
         if (this.pointSelected && isInteractable()) {
             result = createSelectColor();
@@ -175,7 +175,7 @@ public class BaseWorldPoint implements WorldPoint, Painter {
 
         this.cursorInBounds = StaticController.checkIsHovered(shape);
 
-        DrawUtilities.outlineShape(g, shape, Color.BLACK, 2);
+        DrawUtilities.outlineShape(g, shape, Color.BLACK, 1.5d);
         DrawUtilities.fillShape(g, shape, getCurrentColor());
     }
 

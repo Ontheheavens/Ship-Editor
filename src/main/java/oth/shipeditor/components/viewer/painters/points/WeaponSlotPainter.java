@@ -1,12 +1,14 @@
 package oth.shipeditor.components.viewer.painters.points;
 
 import lombok.Getter;
+import lombok.extern.log4j.Log4j2;
 import oth.shipeditor.communication.BusEventListener;
 import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.viewer.ViewerRepaintQueued;
 import oth.shipeditor.communication.events.viewer.points.InstrumentModeChanged;
 import oth.shipeditor.communication.events.viewer.points.SlotAngleChangeQueued;
 import oth.shipeditor.communication.events.viewer.points.SlotArcChangeQueued;
+import oth.shipeditor.communication.events.viewer.points.WeaponSlotInsertedConfirmed;
 import oth.shipeditor.components.instrument.ship.ShipInstrumentsPane;
 import oth.shipeditor.components.viewer.ShipInstrument;
 import oth.shipeditor.components.viewer.control.ControlPredicates;
@@ -17,21 +19,24 @@ import oth.shipeditor.components.viewer.entities.weapon.WeaponSlotOverride;
 import oth.shipeditor.components.viewer.entities.weapon.WeaponSlotPoint;
 import oth.shipeditor.components.viewer.layers.ship.ShipPainter;
 import oth.shipeditor.components.viewer.layers.ship.data.ShipSkin;
+import oth.shipeditor.representation.weapon.WeaponMount;
+import oth.shipeditor.representation.weapon.WeaponSize;
+import oth.shipeditor.representation.weapon.WeaponType;
 import oth.shipeditor.utility.Utility;
 
 import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Point2D;
-import java.util.ArrayList;
+import java.util.*;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Is not supposed to handle launch bays - bays deserialize to different points and painter.
  * @author Ontheheavens
  * @since 25.07.2023
  */
+@Log4j2
 public class WeaponSlotPainter extends MirrorablePointPainter{
 
     private static final String ILLEGAL_POINT_TYPE_FOUND_IN_WEAPON_SLOT_PAINTER = "Illegal point type found in WeaponSlotPainter!";
@@ -74,6 +79,41 @@ public class WeaponSlotPainter extends MirrorablePointPainter{
         EventBus.subscribe(controlListener);
     }
 
+    private Set<WeaponSlotPoint> getSlotsWithCounterparts(Iterable<WeaponSlotPoint> slots) {
+        Set<WeaponSlotPoint> resultSet = new HashSet<>();
+        for (WeaponSlotPoint point : slots) {
+            resultSet.add(point);
+
+            boolean mirrorMode = ControlPredicates.isMirrorModeEnabled();
+            BaseWorldPoint mirroredCounterpart = getMirroredCounterpart(point);
+            if (mirrorMode && mirroredCounterpart instanceof WeaponSlotPoint checkedSlot) {
+                resultSet.add(checkedSlot);
+            }
+        }
+        return resultSet;
+    }
+
+    public void changeSlotsTypeWithMirrorCheck(WeaponType inputType, Iterable<WeaponSlotPoint> slots) {
+        Collection<WeaponSlotPoint> slotsWithCounterparts = this.getSlotsWithCounterparts(slots);
+        for (WeaponSlotPoint slot : slotsWithCounterparts) {
+            slot.changeSlotType(inputType);
+        }
+    }
+
+    public void changeSlotsMountWithMirrorCheck(WeaponMount inputMount, Iterable<WeaponSlotPoint> slots) {
+        Collection<WeaponSlotPoint> slotsWithCounterparts = this.getSlotsWithCounterparts(slots);
+        for (WeaponSlotPoint slot : slotsWithCounterparts) {
+            slot.changeSlotMount(inputMount);
+        }
+    }
+
+    public void changeSlotsSizeWithMirrorCheck(WeaponSize inputSize, Iterable<WeaponSlotPoint> slots) {
+        Collection<WeaponSlotPoint> slotsWithCounterparts = this.getSlotsWithCounterparts(slots);
+        for (WeaponSlotPoint slot : slotsWithCounterparts) {
+            slot.changeSlotSize(inputSize);
+        }
+    }
+
     private void changeArcByTarget(Point2D worldTarget) {
         WorldPoint selected = getSelected();
         if (!(selected instanceof WeaponSlotPoint checked)) {
@@ -94,13 +134,26 @@ public class WeaponSlotPainter extends MirrorablePointPainter{
         // Calculate the arc extent based on the normalized angle difference.
         double arcExtent = Math.abs(angleDifference) * 2;
 
-        checked.changeSlotArc(arcExtent);
+        this.changeArcWithMirrorCheck(checked, arcExtent);
+    }
+
+    public void changeArcWithMirrorCheck(WeaponSlotPoint slotPoint, double arcExtentDegrees) {
+        slotPoint.changeSlotArc(arcExtentDegrees);
 
         boolean mirrorMode = ControlPredicates.isMirrorModeEnabled();
-        BaseWorldPoint mirroredCounterpart = getMirroredCounterpart(checked);
+        BaseWorldPoint mirroredCounterpart = getMirroredCounterpart(slotPoint);
         if (mirrorMode && mirroredCounterpart instanceof WeaponSlotPoint checkedSlot) {
-            checkedSlot.changeSlotArc(arcExtent);
+            checkedSlot.changeSlotArc(arcExtentDegrees);
         }
+    }
+
+    public void insertPoint(BaseWorldPoint toInsert, int precedingIndex) {
+        if (!(toInsert instanceof WeaponSlotPoint checked)) {
+            throw new IllegalStateException("Attempted to insert incompatible point to WeaponSlotPainter!");
+        }
+        slotPoints.add(precedingIndex, checked);
+        EventBus.publish(new WeaponSlotInsertedConfirmed(checked, precedingIndex));
+        log.info("Weapon slot inserted to painter: {}", checked);
     }
 
     private static double getTargetRotation(WorldPoint selected, Point2D worldTarget) {
@@ -124,11 +177,15 @@ public class WeaponSlotPainter extends MirrorablePointPainter{
             throw new IllegalArgumentException(ILLEGAL_POINT_TYPE_FOUND_IN_WEAPON_SLOT_PAINTER);
         }
         double result = WeaponSlotPainter.getTargetRotation(checked, worldTarget);
-        checked.changeSlotAngle(result);
+        this.changeAngleWithMirrorCheck(checked, result);
+    }
+
+    public void changeAngleWithMirrorCheck(WeaponSlotPoint slotPoint, double angleDegrees) {
+        slotPoint.changeSlotAngle(angleDegrees);
         boolean mirrorMode = ControlPredicates.isMirrorModeEnabled();
-        BaseWorldPoint mirroredCounterpart = getMirroredCounterpart(checked);
+        BaseWorldPoint mirroredCounterpart = getMirroredCounterpart(slotPoint);
         if (mirrorMode && mirroredCounterpart instanceof WeaponSlotPoint checkedSlot) {
-            double angle = Utility.flipAngle(result);
+            double angle = Utility.flipAngle(angleDegrees);
             Point2D slotPosition = checkedSlot.getPosition();
             double slotX = slotPosition.getX();
             ShipPainter parentLayer = getParentLayer();
@@ -136,7 +193,7 @@ public class WeaponSlotPainter extends MirrorablePointPainter{
             Point2D centerPosition = shipCenter.getPosition();
             double centerX = centerPosition.getX();
             if ((Math.abs(slotX - centerX) < 0.05d)) {
-                angle = result;
+                angle = angleDegrees;
             }
             checkedSlot.changeSlotAngle(angle);
         }
@@ -187,12 +244,18 @@ public class WeaponSlotPainter extends MirrorablePointPainter{
     }
 
     public void toggleSkinSlotOverride(ShipSkin skin) {
-        this.slotPoints.forEach(weaponSlotPoint -> {
-            String slotID = weaponSlotPoint.getId();
-            Map<String, WeaponSlotOverride> weaponSlotChanges = skin.getWeaponSlotChanges();
-            WeaponSlotOverride matchingOverride = weaponSlotChanges.get(slotID);
-            weaponSlotPoint.setSkinOverride(matchingOverride);
-        });
+        this.slotPoints.forEach(weaponSlotPoint -> WeaponSlotPainter.setSlotOverrideFromSkin(weaponSlotPoint, skin));
+    }
+
+    public static void setSlotOverrideFromSkin(WeaponSlotPoint weaponSlotPoint, ShipSkin skin) {
+        if (skin == null || skin.isBase()) {
+            weaponSlotPoint.setSkinOverride(null);
+            return;
+        }
+        String slotID = weaponSlotPoint.getId();
+        Map<String, WeaponSlotOverride> weaponSlotChanges = skin.getWeaponSlotChanges();
+        WeaponSlotOverride matchingOverride = weaponSlotChanges.get(slotID);
+        weaponSlotPoint.setSkinOverride(matchingOverride);
     }
 
     @Override
@@ -213,6 +276,7 @@ public class WeaponSlotPainter extends MirrorablePointPainter{
     protected void removePointFromIndex(BaseWorldPoint point) {
         if (point instanceof WeaponSlotPoint checked) {
             slotPoints.remove(checked);
+
         } else {
             throw new IllegalArgumentException("Attempted to remove incompatible point from WeaponSlotPainter!");
         }

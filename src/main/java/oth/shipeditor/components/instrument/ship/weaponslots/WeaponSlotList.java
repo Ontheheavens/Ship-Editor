@@ -29,11 +29,10 @@ public class WeaponSlotList extends PointList<WeaponSlotPoint> {
         refreshSlotControlPane();
     }
 
-    void refreshSlotControlPane() {
+    public void refreshSlotControlPane() {
         WeaponSlotPoint selected = this.getSelectedValue();
-        if (selected == null) return;
-
         infoPanel.removeAll();
+
         slotControlPane = new SlotDataControlPane(selected, this);
         infoPanel.add(slotControlPane, BorderLayout.CENTER);
 

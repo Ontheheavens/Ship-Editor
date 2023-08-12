@@ -204,16 +204,13 @@ public final class BoundPointsPainter extends MirrorablePointPainter {
         return twoClosest.get(1);
     }
 
-    @SuppressWarnings("unused")
-    public void insertPoint(BoundPoint toInsert, BoundPoint preceding) {
-        int precedingIndex = boundPoints.indexOf(preceding);
-        this.insertPoint(toInsert, precedingIndex);
-    }
-
-    public void insertPoint(BoundPoint toInsert, int precedingIndex) {
-        boundPoints.add(precedingIndex, toInsert);
-        EventBus.publish(new BoundInsertedConfirmed(toInsert, precedingIndex));
-        log.info("Bound inserted to painter: {}", toInsert);
+    public void insertPoint(BaseWorldPoint toInsert, int precedingIndex) {
+        if (!(toInsert instanceof BoundPoint checked)) {
+            throw new IllegalStateException("Attempted to insert incompatible point to BoundPointsPainter!");
+        }
+        boundPoints.add(precedingIndex, checked);
+        EventBus.publish(new BoundInsertedConfirmed(checked, precedingIndex));
+        log.info("Bound inserted to painter: {}", checked);
     }
 
     private static void setHotkeyState(boolean isAppendHotkey, boolean state) {
