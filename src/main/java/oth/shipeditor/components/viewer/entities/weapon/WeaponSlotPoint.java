@@ -57,8 +57,19 @@ public class WeaponSlotPoint extends BaseWorldPoint {
     private SlotDrawingHelper drawingHelper;
 
     public WeaponSlotPoint(Point2D pointPosition, ShipPainter layer) {
+        this(pointPosition, layer, null);
+    }
+
+    public WeaponSlotPoint(Point2D pointPosition, ShipPainter layer, WeaponSlotPoint valuesSource) {
         super(pointPosition, layer);
         this.initHelper();
+        if (valuesSource != null) {
+            this.setWeaponSize(valuesSource.weaponSize);
+            this.setWeaponType(valuesSource.weaponType);
+            this.setWeaponMount(valuesSource.weaponMount);
+            this.setAngle(valuesSource.angle);
+            this.setArc(valuesSource.arc);
+        }
     }
 
     private void initHelper() {
@@ -171,6 +182,12 @@ public class WeaponSlotPoint extends BaseWorldPoint {
         float alpha = (float) this.getTransparency();
         Composite old = Utility.setAlphaComposite(g, alpha);
 
+        drawingHelper.setPointPosition(this.getPosition());
+        drawingHelper.setType(this.getWeaponType());
+        drawingHelper.setMount(this.getWeaponMount());
+        drawingHelper.setSize(this.getWeaponSize());
+        drawingHelper.setAngle(this.getAngle());
+        drawingHelper.setArc(this.getArc());
         drawingHelper.paintSlotVisuals(g, worldToScreen);
 
         if (!isPointSelected()) {

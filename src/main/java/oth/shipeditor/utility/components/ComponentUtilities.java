@@ -16,6 +16,8 @@ import oth.shipeditor.utility.text.StringValues;
 import javax.swing.*;
 import javax.swing.border.Border;
 import javax.swing.border.EmptyBorder;
+import javax.swing.border.MatteBorder;
+import javax.swing.border.TitledBorder;
 import javax.swing.event.ChangeListener;
 import java.awt.*;
 import java.awt.event.ActionListener;
@@ -146,17 +148,16 @@ public final class ComponentUtilities {
         return ComponentUtilities.createIconLabelWithBorder(colorIcon);
     }
 
-    public static JPanel createColorPropertyPanel(String name, Color color) {
+    public static JPanel createColorPropertyPanel(Component left, Color color) {
         JPanel container = new JPanel();
 
         container.setLayout(new BoxLayout(container, BoxLayout.LINE_AXIS));
         container.setBorder(new EmptyBorder(4, 0, 0, 0));
 
-        JLabel colorLabel = new JLabel(name);
         JLabel colorIcon = ComponentUtilities.createColorIconLabel(color);
         colorIcon.setToolTipText(ColorUtilities.getColorBreakdown(color));
 
-        ComponentUtilities.layoutAsOpposites(container, colorLabel, colorIcon, 0);
+        ComponentUtilities.layoutAsOpposites(container, left, colorIcon, 0);
         return container;
     }
 
@@ -207,6 +208,20 @@ public final class ComponentUtilities {
         container.add(Box.createHorizontalGlue());
 
         return new Pair<>(container, reorderCheckbox);
+    }
+
+    public static JPanel createTitledSeparatorPanel(String text, Insets insets) {
+        JPanel container = new JPanel();
+        container.setLayout(new FlowLayout(FlowLayout.CENTER, 0, 0));
+        ComponentUtilities.outfitPanelWithTitle(container, insets, text);
+        return container;
+    }
+
+    public static void outfitPanelWithTitle(JPanel panel, Insets insets, String text) {
+        MatteBorder matteLine = new MatteBorder(insets, Color.LIGHT_GRAY);
+        Border titledBorder = new TitledBorder(matteLine, text,
+                TitledBorder.CENTER, TitledBorder.DEFAULT_POSITION);
+        panel.setBorder(titledBorder);
     }
 
 }

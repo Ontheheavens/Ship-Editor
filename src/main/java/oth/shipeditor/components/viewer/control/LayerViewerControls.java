@@ -160,7 +160,7 @@ public final class LayerViewerControls implements ViewerControl {
             this.layerDragPoint.setLocation(e.getX() - transformed.getX(), e.getY() - transformed.getY());
         }
         if (e.getButton() == MouseEvent.BUTTON1) {
-            this.tryBoundCreation(point);
+            this.tryPointCreation(point);
         }
         if (ControlPredicates.removePointPredicate.test(e)) {
             EventBus.publish(new PointRemoveQueued(null, false));
@@ -174,7 +174,7 @@ public final class LayerViewerControls implements ViewerControl {
     /**
      * Respective hotkey checks are being done in points painter itself.
      */
-    private void tryBoundCreation(Point2D point) {
+    private void tryPointCreation(Point2D point) {
         AffineTransform screenToWorld = StaticController.getScreenToWorld();
         Point2D position = screenToWorld.transform(point, null);
         if (ControlPredicates.isCursorSnappingEnabled()) {
@@ -182,6 +182,7 @@ public final class LayerViewerControls implements ViewerControl {
             position = Utility.correctAdjustedCursor(screenPoint, screenToWorld);
         }
         EventBus.publish(new BoundCreationQueued(position));
+        EventBus.publish(new SlotCreationQueued(position));
     }
 
     @Override

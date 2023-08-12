@@ -17,7 +17,7 @@ public class WeaponSlotsPanel extends JPanel {
 
         JTabbedPane tabContainer = new JTabbedPane(SwingConstants.BOTTOM);
         tabContainer.addTab("Slot List", new WeaponSlotListPanel());
-        tabContainer.addTab("Add Slot", new JPanel());
+        tabContainer.addTab("Add Slot", new SlotCreationPane());
         tabContainer.setTabLayoutPolicy(JTabbedPane.SCROLL_TAB_LAYOUT);
         tabContainer.putClientProperty(StringConstants.JTABBED_PANE_TAB_AREA_ALIGNMENT, "fill");
         this.add(tabContainer, BorderLayout.CENTER);

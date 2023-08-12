@@ -2,12 +2,10 @@ package oth.shipeditor.components.help;
 
 import lombok.Getter;
 import oth.shipeditor.utility.Utility;
+import oth.shipeditor.utility.components.ComponentUtilities;
 
 import javax.swing.*;
-import javax.swing.border.Border;
 import javax.swing.border.EmptyBorder;
-import javax.swing.border.MatteBorder;
-import javax.swing.border.TitledBorder;
 import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -41,12 +39,8 @@ public class HelpArticle {
     }
 
     void addSectionSeparator(String titleText) {
-        JPanel container = new JPanel();
-        container.setLayout(new FlowLayout(FlowLayout.CENTER, 0, 0));
-        MatteBorder matteLine = new MatteBorder(1, 0, 0, 0, Color.LIGHT_GRAY);
-        Border titledBorder = new TitledBorder(matteLine, titleText,
-                TitledBorder.CENTER, TitledBorder.DEFAULT_POSITION);
-        container.setBorder(titledBorder);
+        JPanel container = ComponentUtilities.createTitledSeparatorPanel(titleText,
+                new Insets(1, 0, 0, 0));
         container.setAlignmentY(0);
         articleParts.add(container);
     }

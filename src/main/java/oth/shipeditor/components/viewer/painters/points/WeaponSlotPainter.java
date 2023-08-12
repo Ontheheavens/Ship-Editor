@@ -5,16 +5,15 @@ import lombok.extern.log4j.Log4j2;
 import oth.shipeditor.communication.BusEventListener;
 import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.viewer.ViewerRepaintQueued;
-import oth.shipeditor.communication.events.viewer.points.InstrumentModeChanged;
-import oth.shipeditor.communication.events.viewer.points.SlotAngleChangeQueued;
-import oth.shipeditor.communication.events.viewer.points.SlotArcChangeQueued;
-import oth.shipeditor.communication.events.viewer.points.WeaponSlotInsertedConfirmed;
+import oth.shipeditor.communication.events.viewer.points.*;
 import oth.shipeditor.components.instrument.ship.ShipInstrumentsPane;
+import oth.shipeditor.components.instrument.ship.weaponslots.SlotCreationPane;
 import oth.shipeditor.components.viewer.ShipInstrument;
 import oth.shipeditor.components.viewer.control.ControlPredicates;
 import oth.shipeditor.components.viewer.entities.BaseWorldPoint;
 import oth.shipeditor.components.viewer.entities.ShipCenterPoint;
 import oth.shipeditor.components.viewer.entities.WorldPoint;
+import oth.shipeditor.components.viewer.entities.weapon.SlotDrawingHelper;
 import oth.shipeditor.components.viewer.entities.weapon.WeaponSlotOverride;
 import oth.shipeditor.components.viewer.entities.weapon.WeaponSlotPoint;
 import oth.shipeditor.components.viewer.layers.ship.ShipPainter;
@@ -22,14 +21,17 @@ import oth.shipeditor.components.viewer.layers.ship.data.ShipSkin;
 import oth.shipeditor.representation.weapon.WeaponMount;
 import oth.shipeditor.representation.weapon.WeaponSize;
 import oth.shipeditor.representation.weapon.WeaponType;
+import oth.shipeditor.undo.EditDispatch;
+import oth.shipeditor.utility.StaticController;
 import oth.shipeditor.utility.Utility;
 
 import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Point2D;
-import java.util.*;
 import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Is not supposed to handle launch bays - bays deserialize to different points and painter.
@@ -40,16 +42,26 @@ import java.util.List;
 public class WeaponSlotPainter extends MirrorablePointPainter{
 
     private static final String ILLEGAL_POINT_TYPE_FOUND_IN_WEAPON_SLOT_PAINTER = "Illegal point type found in WeaponSlotPainter!";
+    private static final char SPACE = ' ';
 
     @Getter
     private final List<WeaponSlotPoint> slotPoints;
 
     private final int controlHotkey = KeyEvent.VK_A;
 
+    private final int creationHotkey = KeyEvent.VK_W;
+
     @Getter
     private static boolean controlHotkeyPressed;
 
+    @Getter
+    private static boolean creationHotkeyPressed;
+
     private KeyEventDispatcher hotkeyDispatcher;
+
+    private SlotDrawingHelper slotMockDrawer = new SlotDrawingHelper(null);
+
+    private SlotDrawingHelper counterpartMockDrawer = new SlotDrawingHelper(null);
 
     public WeaponSlotPainter(ShipPainter parent) {
         super(parent);
@@ -64,6 +76,17 @@ public class WeaponSlotPainter extends MirrorablePointPainter{
 
     @SuppressWarnings("ChainOfInstanceofChecks")
     private void initInteractionListeners() {
+        List<BusEventListener> listeners = getListeners();
+        BusEventListener slotCreationListener = event -> {
+            if (event instanceof SlotCreationQueued checked) {
+                if (!isInteractionEnabled()) return;
+                if (!hasPointAtCoords(checked.position())) {
+                    this.createSlot(checked);
+                }
+            }
+        };
+        listeners.add(slotCreationListener);
+        EventBus.subscribe(slotCreationListener);
         BusEventListener controlListener = event -> {
             if (event instanceof SlotAngleChangeQueued checked) {
                 if (!isInteractionEnabled() || !controlHotkeyPressed) return;
@@ -74,9 +97,88 @@ public class WeaponSlotPainter extends MirrorablePointPainter{
                 this.changeArcByTarget(checked.worldTarget());
             }
         };
-        List<BusEventListener> listeners = getListeners();
         listeners.add(controlListener);
         EventBus.subscribe(controlListener);
+    }
+
+    private void createSlot(SlotCreationQueued event) {
+        if (!creationHotkeyPressed) return;
+
+        ShipPainter parentLayer = this.getParentLayer();
+        Point2D position = event.position();
+        boolean mirrorMode = ControlPredicates.isMirrorModeEnabled();
+
+        WeaponSlotPoint created = null;
+        WeaponSlotPoint counterpart = null;
+
+        String uniqueID = this.generateUniqueID();
+
+        switch (SlotCreationPane.getMode()) {
+            case BY_CLOSEST -> {
+                WeaponSlotPoint closest = (WeaponSlotPoint) findClosestPoint(position);
+                created = new WeaponSlotPoint(position, parentLayer, closest);
+                created.setId(uniqueID);
+            }
+            case BY_DEFAULT -> {
+                created = new WeaponSlotPoint(position, parentLayer);
+                created.setId(uniqueID);
+                created.setWeaponType(SlotCreationPane.getDefaultType());
+                created.setWeaponMount(SlotCreationPane.getDefaultMount());
+                created.setWeaponSize(SlotCreationPane.getDefaultSize());
+                created.setAngle(SlotCreationPane.getDefaultAngle());
+                created.setArc(SlotCreationPane.getDefaultArc());
+            }
+        }
+
+        if (mirrorMode) {
+            if (getMirroredCounterpart(created) == null) {
+                Point2D counterpartPosition = createCounterpartPosition(position);
+                counterpart = new WeaponSlotPoint(counterpartPosition, parentLayer, created);
+                String incrementedID = this.incrementUniqueID(uniqueID);
+                counterpart.setId(incrementedID);
+                double flipAngle = Utility.flipAngle(counterpart.getAngle());
+                counterpart.setAngle(flipAngle);
+            }
+        }
+
+        EditDispatch.postPointAdded(this, created);
+        if (counterpart != null) {
+            EditDispatch.postPointAdded(this, counterpart);
+        }
+    }
+
+    private String generateUniqueID() {
+        Set<String> existingIDs = slotPoints.stream()
+                .map(WeaponSlotPoint::getId)
+                .collect(Collectors.toSet());
+
+        String baseID = "WS";
+        int suffix = 0;
+
+        while (true) {
+            String newID = baseID + " " + String.format("%03d", suffix);
+            if (!existingIDs.contains(newID)) {
+                return newID;
+            }
+            suffix++;
+        }
+    }
+
+    private String incrementUniqueID(String id) {
+        Set<String> existingIDs = slotPoints.stream()
+                .map(WeaponSlotPoint::getId)
+                .collect(Collectors.toSet());
+
+        String baseID = id.substring(0, id.lastIndexOf(SPACE) + 1);
+        int suffix = Integer.parseInt(id.substring(id.lastIndexOf(SPACE) + 1));
+
+        while (true) {
+            suffix++;
+            String newID = baseID + String.format("%03d", suffix);
+            if (!existingIDs.contains(newID)) {
+                return newID;
+            }
+        }
     }
 
     private Set<WeaponSlotPoint> getSlotsWithCounterparts(Iterable<WeaponSlotPoint> slots) {
@@ -208,17 +310,24 @@ public class WeaponSlotPainter extends MirrorablePointPainter{
     private void initHotkeys() {
         hotkeyDispatcher = ke -> {
             int keyCode = ke.getKeyCode();
-            boolean isAngleHotkey = (keyCode == controlHotkey);
+            boolean isControlHotkey = (keyCode == controlHotkey);
+            boolean isCreationHotkey = (keyCode == creationHotkey);
             switch (ke.getID()) {
                 case KeyEvent.KEY_PRESSED:
-                    if (isAngleHotkey) {
+                    if (isControlHotkey) {
                         controlHotkeyPressed = true;
+                        EventBus.publish(new ViewerRepaintQueued());
+                    } else if (isCreationHotkey) {
+                        creationHotkeyPressed = true;
                         EventBus.publish(new ViewerRepaintQueued());
                     }
                     break;
                 case KeyEvent.KEY_RELEASED:
-                    if (isAngleHotkey) {
+                    if (isControlHotkey) {
                         controlHotkeyPressed = false;
+                        EventBus.publish(new ViewerRepaintQueued());
+                    } else if (isCreationHotkey) {
+                        creationHotkeyPressed = false;
                         EventBus.publish(new ViewerRepaintQueued());
                     }
                     break;
@@ -308,6 +417,50 @@ public class WeaponSlotPainter extends MirrorablePointPainter{
             WorldPoint counterpart = this.getMirroredCounterpart(selection);
             if (counterpart != null && ControlPredicates.isMirrorModeEnabled()) {
                 WeaponSlotPainter.setSlotTransparency(counterpart, full);
+            }
+        }
+    }
+
+    @Override
+    public void paintPainterContent(Graphics2D g, AffineTransform worldToScreen, double w, double h) {
+        super.paintPainterContent(g, worldToScreen, w, h);
+
+        if (isInteractionEnabled() && creationHotkeyPressed) {
+            Point2D finalWorldCursor = StaticController.getFinalWorldCursor();
+            Point2D worldCounterpart = this.createCounterpartPosition(finalWorldCursor);
+            boolean mirrorMode = ControlPredicates.isMirrorModeEnabled();
+
+            switch (SlotCreationPane.getMode()) {
+                case BY_CLOSEST -> {
+                    WeaponSlotPoint closest = (WeaponSlotPoint) findClosestPoint(finalWorldCursor);
+                    slotMockDrawer.setType(closest.getWeaponType());
+                    slotMockDrawer.setMount(closest.getWeaponMount());
+                    slotMockDrawer.setSize(closest.getWeaponSize());
+                    slotMockDrawer.setAngle(closest.getAngle());
+                    slotMockDrawer.setArc(closest.getArc());
+                }
+                case BY_DEFAULT -> {
+                    slotMockDrawer.setType(SlotCreationPane.getDefaultType());
+                    slotMockDrawer.setMount(SlotCreationPane.getDefaultMount());
+                    slotMockDrawer.setSize(SlotCreationPane.getDefaultSize());
+                    slotMockDrawer.setAngle(SlotCreationPane.getDefaultAngle());
+                    slotMockDrawer.setArc(SlotCreationPane.getDefaultArc());
+                }
+            }
+
+            slotMockDrawer.setPointPosition(finalWorldCursor);
+            slotMockDrawer.paintSlotVisuals(g, worldToScreen);
+            if (mirrorMode) {
+                counterpartMockDrawer.setType(slotMockDrawer.getType());
+                counterpartMockDrawer.setMount(slotMockDrawer.getMount());
+                counterpartMockDrawer.setSize(slotMockDrawer.getSize());
+
+                double flipAngle = Utility.flipAngle(slotMockDrawer.getAngle());
+                counterpartMockDrawer.setAngle(flipAngle);
+                counterpartMockDrawer.setArc(slotMockDrawer.getArc());
+
+                counterpartMockDrawer.setPointPosition(worldCounterpart);
+                counterpartMockDrawer.paintSlotVisuals(g, worldToScreen);
             }
         }
     }

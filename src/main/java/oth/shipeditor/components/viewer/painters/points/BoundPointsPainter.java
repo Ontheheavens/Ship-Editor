@@ -147,7 +147,7 @@ public final class BoundPointsPainter extends MirrorablePointPainter {
             if (event instanceof BoundCreationQueued checked) {
                 if (!isInteractionEnabled()) return;
                 if (!hasPointAtCoords(checked.position())) {
-                    createBound(checked);
+                    this.createBound(checked);
                 }
             }
         };
@@ -294,12 +294,7 @@ public final class BoundPointsPainter extends MirrorablePointPainter {
 
     private void paintCreationGuidelines(Graphics2D g, AffineTransform worldToScreen,
                                          Point2D prev, Point2D first) {
-        AffineTransform screenToWorld = StaticController.getScreenToWorld();
-        Point2D finalWorldCursor = screenToWorld.transform(StaticController.getRawCursor(), null);
-        if (ControlPredicates.isCursorSnappingEnabled()) {
-            Point2D cursor = StaticController.getAdjustedCursor();
-            finalWorldCursor = Utility.correctAdjustedCursor(cursor, screenToWorld);
-        }
+        Point2D finalWorldCursor = StaticController.getFinalWorldCursor();
         Point2D finalScreenCursor = worldToScreen.transform(finalWorldCursor, null);
         Point2D worldCounterpart = this.createCounterpartPosition(finalWorldCursor);
         Point2D adjustedScreenCounterpart = worldToScreen.transform(worldCounterpart, null);

@@ -52,6 +52,7 @@ public class SlotDataControlPane extends JPanel {
         this.addArcController();
     }
 
+    @SuppressWarnings("DuplicatedCode")
     private void addLabelAndComponent(JLabel label, Component component, int y) {
         GridBagConstraints constraints = new GridBagConstraints();
 
@@ -200,9 +201,9 @@ public class SlotDataControlPane extends JPanel {
 
         double minValue = -360;
         double maxValue = 360;
-        SpinnerNumberModel spinnerListModel = new SpinnerNumberModel(selected.getAngle(),
+        SpinnerNumberModel spinnerNumberModel = new SpinnerNumberModel(selected.getAngle(),
                 minValue, maxValue, 0.5d);
-        JSpinner spinner = new JSpinner(spinnerListModel);
+        JSpinner spinner = new JSpinner(spinnerNumberModel);
 
         WeaponSlotOverride skinOverride = selected.getSkinOverride();
         if (skinOverride != null && skinOverride.getAngle() != null) {
@@ -212,7 +213,7 @@ public class SlotDataControlPane extends JPanel {
             spinner.addChangeListener(new ChangeListener() {
                 @Override
                 public void stateChanged(ChangeEvent e) {
-                    Number modelNumber = spinnerListModel.getNumber();
+                    Number modelNumber = spinnerNumberModel.getNumber();
                     double current = modelNumber.doubleValue();
 
                     ShipPainter slotParent = (ShipPainter) selected.getParentLayer();
@@ -247,9 +248,9 @@ public class SlotDataControlPane extends JPanel {
 
         double minValue = 0;
         double maxValue = 360;
-        SpinnerNumberModel spinnerListModel = new SpinnerNumberModel(selected.getArc(),
+        SpinnerNumberModel spinnerNumberModel = new SpinnerNumberModel(selected.getArc(),
                 minValue, maxValue, 1);
-        JSpinner spinner = new JSpinner(spinnerListModel);
+        JSpinner spinner = new JSpinner(spinnerNumberModel);
 
         WeaponSlotOverride skinOverride = selected.getSkinOverride();
         if (skinOverride != null && skinOverride.getArc() != null) {
@@ -259,7 +260,7 @@ public class SlotDataControlPane extends JPanel {
             spinner.addChangeListener(new ChangeListener() {
                 @Override
                 public void stateChanged(ChangeEvent e) {
-                    Number modelNumber = spinnerListModel.getNumber();
+                    Number modelNumber = spinnerNumberModel.getNumber();
                     double current = modelNumber.doubleValue();
 
                     ShipPainter slotParent = (ShipPainter) selected.getParentLayer();

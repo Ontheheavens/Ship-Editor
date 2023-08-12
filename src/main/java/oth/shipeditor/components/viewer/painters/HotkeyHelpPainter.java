@@ -34,17 +34,17 @@ public class HotkeyHelpPainter implements Painter {
         Collection<String> hints = new ArrayList<>();
         switch (current) {
             case COLLISION -> {
-                String radiusHint = "Alter radius: C";
+                String radiusHint = "Alter radius: C+LMB";
 
                 hints.add(radiusHint);
             }
             case SHIELD -> {
-                String radiusHint = "Alter radius: S";
+                String radiusHint = "Alter radius: S+LMB";
                 hints.add(radiusHint);
             }
             case BOUNDS -> {
-                String insertHint = "Insert: X";
-                String appendHint = "Append: Z";
+                String insertHint = "Insert: X+LMB";
+                String appendHint = "Append: Z+LMB";
                 String removeHint = "Remove: Del";
                 hints.add(removeHint);
                 hints.add(appendHint);
@@ -53,8 +53,10 @@ public class HotkeyHelpPainter implements Painter {
             case WEAPON_SLOTS -> {
                 String angleHint = "Alter angle: A+LMB";
                 String arcHint = "Alter arc: A+RMB";
-                hints.add(arcHint);
+                String addHint = "Add slot: W+LMB";
                 hints.add(angleHint);
+                hints.add(arcHint);
+                hints.add(addHint);
             }
             default -> {
             }

@@ -10,6 +10,7 @@ import oth.shipeditor.communication.events.viewer.layers.LayerWasSelected;
 import oth.shipeditor.communication.events.viewer.status.CoordsModeChanged;
 import oth.shipeditor.components.CoordsDisplayMode;
 import oth.shipeditor.components.viewer.PrimaryViewer;
+import oth.shipeditor.components.viewer.control.ControlPredicates;
 import oth.shipeditor.components.viewer.layers.LayerPainter;
 import oth.shipeditor.components.viewer.layers.ViewerLayer;
 import oth.shipeditor.menubar.FileUtilities;
@@ -64,6 +65,16 @@ public final class StaticController {
             }
         }
         return viewer.getScreenToWorld();
+    }
+
+    public static Point2D getFinalWorldCursor() {
+        AffineTransform screenToWorld = StaticController.getScreenToWorld();
+        Point2D finalWorldCursor = screenToWorld.transform(StaticController.getRawCursor(), null);
+        if (ControlPredicates.isCursorSnappingEnabled()) {
+            Point2D cursor = StaticController.getAdjustedCursor();
+            finalWorldCursor = Utility.correctAdjustedCursor(cursor, screenToWorld);
+        }
+        return finalWorldCursor;
     }
 
     public static AffineTransform getWorldToScreen() {

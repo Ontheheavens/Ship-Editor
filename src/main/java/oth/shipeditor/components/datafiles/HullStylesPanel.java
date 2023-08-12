@@ -116,12 +116,12 @@ class HullStylesPanel extends JPanel {
         JPanel contentContainer = new JPanel();
         contentContainer.setLayout(new BoxLayout(contentContainer, BoxLayout.PAGE_AXIS));
 
-        JPanel ringColorPanel = ComponentUtilities.createColorPropertyPanel("Shield ring color:",
-                style.getShieldRingColor());
+        JLabel ringLabel = new JLabel("Shield ring color:");
+        JPanel ringColorPanel = ComponentUtilities.createColorPropertyPanel(ringLabel, style.getShieldRingColor());
         contentContainer.add(ringColorPanel);
 
-        JPanel innerColorPanel = ComponentUtilities.createColorPropertyPanel("Shield inner color:",
-                style.getShieldInnerColor());
+        JLabel innerLabel = new JLabel("Shield inner color:");
+        JPanel innerColorPanel = ComponentUtilities.createColorPropertyPanel(innerLabel, style.getShieldInnerColor());
         contentContainer.add(innerColorPanel);
 
         return contentContainer;
