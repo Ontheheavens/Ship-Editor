@@ -1,4 +1,4 @@
-package oth.shipeditor.undo.edits;
+package oth.shipeditor.undo.edits.points;
 
 import oth.shipeditor.communication.BusEventListener;
 import oth.shipeditor.communication.EventBus;
@@ -7,6 +7,7 @@ import oth.shipeditor.communication.events.viewer.points.AnchorOffsetConfirmed;
 import oth.shipeditor.components.viewer.entities.WorldPoint;
 import oth.shipeditor.undo.AbstractEdit;
 import oth.shipeditor.undo.Edit;
+import oth.shipeditor.undo.edits.ListeningEdit;
 
 import java.awt.geom.Point2D;
 import java.util.Deque;

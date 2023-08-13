@@ -155,17 +155,30 @@ public final class FileLoading {
         if (!toString.endsWith(".wpn")) {
             throw new IllegalArgumentException("Tried to resolve weapon file with invalid extension!");
         }
-        log.info("Opening weapon file: {}", file.getName());
-        WeaponSpecFile weaponSpecFile = FileLoading.parseCorrectableJSON(file, WeaponSpecFile.class);
-        if (weaponSpecFile == null) {
-            log.error("Weapon file loading failed: {}", file.getName());
-            JOptionPane.showMessageDialog(null,
-                    "Weapon file loading failed, exception thrown at: " + file,
-                    StringValues.FILE_LOADING_ERROR,
-                    JOptionPane.ERROR_MESSAGE);
-        } else {
+
+        WeaponSpecFile weaponSpecFile;
+        try {
+            ObjectMapper objectMapper = FileLoading.getConfigured();
+            log.info("Opening weapon file: {}", file.getName());
+            weaponSpecFile = objectMapper.readValue(file, WeaponSpecFile.class);
             weaponSpecFile.setWeaponSpecFilePath(file.toPath());
+        } catch (IOException e) {
+            log.error("Weapon file loading failed, retrying with correction: {}", file.getName());
+
+            weaponSpecFile = FileLoading.parseCorrectableJSON(file, WeaponSpecFile.class);
+            if (weaponSpecFile == null) {
+                log.error("Weapon file loading failed conclusively: {}", file.getName());
+                JOptionPane.showMessageDialog(null,
+                        "Weapon file loading failed, exception thrown at: " + file,
+                        StringValues.FILE_LOADING_ERROR,
+                        JOptionPane.ERROR_MESSAGE);
+                e.printStackTrace();
+                throw new RuntimeException("Weapon file loading failed conclusively!", e);
+            } else {
+                weaponSpecFile.setWeaponSpecFilePath(file.toPath());
+            }
         }
+
         return weaponSpecFile;
     }
 
@@ -174,13 +187,31 @@ public final class FileLoading {
         if (!toString.endsWith(".skin")) {
             throw new IllegalArgumentException(FileLoading.TRIED_TO_RESOLVE_SKIN_FILE_WITH_INVALID_EXTENSION);
         }
-        log.info(FileLoading.OPENING_SKIN_FILE, file.getName());
-        SkinSpecFile result = FileLoading.parseCorrectableJSON(file, SkinSpecFile.class);
-        if (result == null) {
-            throw new NullPointerException("Skin file parsing failed with null result: " + toString);
+
+        SkinSpecFile skinSpecFile;
+        try {
+            ObjectMapper objectMapper = FileLoading.getConfigured();
+            log.info(FileLoading.OPENING_SKIN_FILE, file.getName());
+            skinSpecFile = objectMapper.readValue(file, SkinSpecFile.class);
+            skinSpecFile.setFilePath(file.toPath());
+        } catch (IOException e) {
+            log.error("Skin file parsing failed, retrying with correction: {}", file.getName());
+
+            skinSpecFile = FileLoading.parseCorrectableJSON(file, SkinSpecFile.class);
+            if (skinSpecFile == null) {
+                log.error("Skin file parsing failed conclusively: {}", file.getName());
+                JOptionPane.showMessageDialog(null,
+                        "Skin file parsing failed, exception thrown at: " + file,
+                        StringValues.FILE_LOADING_ERROR,
+                        JOptionPane.ERROR_MESSAGE);
+                e.printStackTrace();
+                throw new RuntimeException("Skin file parsing failed conclusively!", e);
+            } else {
+                skinSpecFile.setFilePath(file.toPath());
+            }
         }
-        result.setFilePath(file.toPath());
-        return result;
+
+        return skinSpecFile;
     }
 
     static Variant loadVariantFile(File file) {
@@ -188,14 +219,33 @@ public final class FileLoading {
         if (!toString.endsWith(".variant")) {
             throw new IllegalArgumentException("Tried to resolve variant file with invalid extension!");
         }
-        log.info("Opening variant file: {}", file.getName());
-        Variant variant;
-        variant = FileLoading.parseCorrectableJSON(file, Variant.class);
-        variant.setVariantFilePath(file.toPath());
-        return variant;
+
+        Variant variantFile;
+        try {
+            ObjectMapper objectMapper = FileLoading.getConfigured();
+            log.info("Opening variant file: {}", file.getName());
+            variantFile = objectMapper.readValue(file, Variant.class);
+            variantFile.setVariantFilePath(file.toPath());
+        } catch (IOException e) {
+            log.error("Variant file parsing failed, retrying with correction: {}", file.getName());
+
+            variantFile = FileLoading.parseCorrectableJSON(file, Variant.class);
+            if (variantFile == null) {
+                log.error("Variant file parsing failed conclusively: {}", file.getName());
+                JOptionPane.showMessageDialog(null,
+                        "Variant file parsing failed, exception thrown at: " + file,
+                        StringValues.FILE_LOADING_ERROR,
+                        JOptionPane.ERROR_MESSAGE);
+                e.printStackTrace();
+                throw new RuntimeException("Variant file parsing failed conclusively!", e);
+            } else {
+                variantFile.setVariantFilePath(file.toPath());
+            }
+        }
+
+        return variantFile;
     }
 
-    @SuppressWarnings("SameParameterValue")
     private static <T> T parseCorrectableJSON(File file, Class<T> target) {
         T result = null;
         ObjectMapper objectMapper = FileLoading.getConfigured();

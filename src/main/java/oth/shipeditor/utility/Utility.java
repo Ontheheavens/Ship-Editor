@@ -145,7 +145,7 @@ public final class Utility {
         return result;
     }
 
-    public static double clampAngle(double radians) {
+    public static double clampAngleWithRounding(double radians) {
         double rotationDegrees = Math.toDegrees(radians);
         double clampedDegrees = (360 - rotationDegrees) % 360;
         return Utility.round(clampedDegrees, 5);

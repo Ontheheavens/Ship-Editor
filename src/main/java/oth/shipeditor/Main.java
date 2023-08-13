@@ -42,13 +42,12 @@ public final class Main {
 
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> {
-            // First four method calls are initialization block; the order of said calls is important.
+            // First three method calls are initialization block; the order of these calls is important.
             Main.configureLaf();
             PrimaryWindow window = PrimaryWindow.create();
             Initializations.updateStateFromSettings(window);
-            Initializations.loadGameData(window);
 
-            Main.testFilesNew(window);
+            Main.testFilesOld(window);
 
             window.showGUI();
         });

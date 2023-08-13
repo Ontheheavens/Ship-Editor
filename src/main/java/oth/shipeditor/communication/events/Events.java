@@ -3,7 +3,6 @@ package oth.shipeditor.communication.events;
 import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.components.BoundsPanelRepaintQueued;
 import oth.shipeditor.communication.events.components.CenterPanelsRepaintQueued;
-import oth.shipeditor.communication.events.components.SlotsPanelRepaintQueued;
 import oth.shipeditor.communication.events.viewer.ViewerRepaintQueued;
 
 /**
@@ -20,7 +19,6 @@ public final class Events {
         EventBus.publish(new ViewerRepaintQueued());
         EventBus.publish(new BoundsPanelRepaintQueued());
         EventBus.publish(new CenterPanelsRepaintQueued());
-        EventBus.publish(new SlotsPanelRepaintQueued());
     }
 
 }

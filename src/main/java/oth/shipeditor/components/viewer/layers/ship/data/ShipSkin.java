@@ -179,6 +179,7 @@ public final class ShipSkin {
         public Builder withHullStyle(String hullStyle) {
             GameDataRepository gameData = SettingsManager.getGameData();
             Map<String, HullStyle> allHullStyles = gameData.getAllHullStyles();
+            if (allHullStyles == null) return this;
             skin.hullStyle = allHullStyles.get(hullStyle);
             return this;
         }

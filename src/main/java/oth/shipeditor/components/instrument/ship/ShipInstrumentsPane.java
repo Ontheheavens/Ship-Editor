@@ -40,7 +40,7 @@ public final class ShipInstrumentsPane extends AbstractInstrumentsPane {
         this.createTab(new ShieldPanel(), ShipInstrument.SHIELD);
         this.createTab(new BoundPointsPanel(), ShipInstrument.BOUNDS);
         this.createTab(new WeaponSlotsPanel(), ShipInstrument.WEAPON_SLOTS);
-        this.createTab(new JPanel(), ShipInstrument.LAUNCH_BAYS);
+        this.createTab(new LaunchBaysPanel(), ShipInstrument.LAUNCH_BAYS);
         this.createTab(new JPanel(), ShipInstrument.ENGINES);
         this.createTab(new SkinPanel(), ShipInstrument.SKIN);
         updateTooltipText();

@@ -80,16 +80,38 @@ public final class DrawUtilities {
     }
 
     public static void drawOutlined(Graphics2D g, Shape shape, Paint color) {
+        DrawUtilities.drawOutlined(g, shape, color, false,
+                new BasicStroke(5), new BasicStroke(3));
+    }
+
+    @SuppressWarnings("BooleanParameter")
+    public static void drawOutlined(Graphics2D g, Shape shape, Paint color, boolean quality) {
+        DrawUtilities.drawOutlined(g, shape, color, quality,
+                new BasicStroke(5), new BasicStroke(3));
+    }
+
+    @SuppressWarnings({"BooleanParameter", "MethodWithTooManyParameters"})
+    public static void drawOutlined(Graphics2D g, Shape shape, Paint color, boolean quality,
+                                    Stroke outlineStroke, Stroke coreStroke) {
+        RenderingHints originalHints = g.getRenderingHints();
+        if (quality) {
+            g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+            g.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
+
+            g.setRenderingHint(RenderingHints.KEY_STROKE_CONTROL, RenderingHints.VALUE_STROKE_PURE);
+        }
         Paint oldPaint = g.getPaint();
         Stroke oldStroke = g.getStroke();
-        g.setStroke(new BasicStroke(5));
+        g.setStroke(outlineStroke);
         g.setPaint(Color.BLACK);
         g.draw(shape);
-        g.setStroke(new BasicStroke(3));
+        g.setStroke(coreStroke);
         g.setPaint(color);
         g.draw(shape);
+
         g.setStroke(oldStroke);
         g.setPaint(oldPaint);
+        g.setRenderingHints(originalHints);
     }
 
     public static Shape paintScreenTextOutlined(Graphics2D g, String text, Point2D screenPosition) {

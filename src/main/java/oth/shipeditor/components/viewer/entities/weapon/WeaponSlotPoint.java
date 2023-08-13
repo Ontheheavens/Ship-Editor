@@ -2,16 +2,20 @@ package oth.shipeditor.components.viewer.entities.weapon;
 
 import lombok.Getter;
 import lombok.Setter;
+import oth.shipeditor.communication.EventBus;
+import oth.shipeditor.communication.events.components.SlotControlRepaintQueued;
 import oth.shipeditor.components.viewer.ShipInstrument;
 import oth.shipeditor.components.viewer.entities.BaseWorldPoint;
 import oth.shipeditor.components.viewer.layers.ship.ShipPainter;
+import oth.shipeditor.components.viewer.painters.points.WeaponSlotPainter;
 import oth.shipeditor.representation.weapon.WeaponMount;
 import oth.shipeditor.representation.weapon.WeaponSize;
 import oth.shipeditor.representation.weapon.WeaponType;
 import oth.shipeditor.undo.EditDispatch;
-import oth.shipeditor.utility.graphics.DrawUtilities;
-import oth.shipeditor.utility.graphics.ShapeUtilities;
+import oth.shipeditor.utility.Utility;
+import oth.shipeditor.utility.graphics.ColorUtilities;
 
+import javax.swing.*;
 import java.awt.*;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Point2D;
@@ -20,8 +24,8 @@ import java.awt.geom.Point2D;
  * @author Ontheheavens
  * @since 25.07.2023
  */
-@SuppressWarnings({"WeakerAccess", "unused"})
-public class WeaponSlotPoint extends BaseWorldPoint {
+@SuppressWarnings({"WeakerAccess", "ClassWithTooManyMethods"})
+public class WeaponSlotPoint extends BaseWorldPoint implements SlotPoint {
 
     @Getter @Setter
     private String id;
@@ -47,8 +51,29 @@ public class WeaponSlotPoint extends BaseWorldPoint {
     @Getter @Setter
     private WeaponSlotOverride skinOverride;
 
+    @Getter @Setter
+    private double transparency = 0.8d;
+
+    private SlotDrawingHelper drawingHelper;
+
     public WeaponSlotPoint(Point2D pointPosition, ShipPainter layer) {
+        this(pointPosition, layer, null);
+    }
+
+    public WeaponSlotPoint(Point2D pointPosition, ShipPainter layer, WeaponSlotPoint valuesSource) {
         super(pointPosition, layer);
+        this.initHelper();
+        if (valuesSource != null) {
+            this.setWeaponSize(valuesSource.weaponSize);
+            this.setWeaponType(valuesSource.weaponType);
+            this.setWeaponMount(valuesSource.weaponMount);
+            this.setAngle(valuesSource.angle);
+            this.setArc(valuesSource.arc);
+        }
+    }
+
+    private void initHelper() {
+        this.drawingHelper = new SlotDrawingHelper(this);
     }
 
     public WeaponMount getWeaponMount() {
@@ -89,8 +114,46 @@ public class WeaponSlotPoint extends BaseWorldPoint {
         }
     }
 
+    public void changeSlotID(String newID) {
+        ShipPainter parent = (ShipPainter) this.getParentLayer();
+        WeaponSlotPainter slotPainter = parent.getWeaponSlotPainter();
+        for (WeaponSlotPoint slotPoint : slotPainter.getSlotPoints()) {
+            String slotPointId = slotPoint.getId();
+            if (slotPointId.equals(newID)) {
+                JOptionPane.showMessageDialog(null,
+                        "Input ID already assigned to slot.",
+                        "Duplicate ID",
+                        JOptionPane.ERROR_MESSAGE);
+                EventBus.publish(new SlotControlRepaintQueued());
+                return;
+            }
+        }
+        this.setId(newID);
+        WeaponSlotPainter.setSlotOverrideFromSkin(this, parent.getActiveSkin());
+        EventBus.publish(new SlotControlRepaintQueued());
+    }
+
+    public void changeSlotType(WeaponType newType) {
+        if (skinOverride != null && skinOverride.getWeaponType() != null) return;
+        EditDispatch.postWeaponSlotTypeChanged(this, newType);
+    }
+
+    public void changeSlotMount(WeaponMount newMount) {
+        if (skinOverride != null && skinOverride.getWeaponType() != null) return;
+        EditDispatch.postWeaponSlotMountChanged(this, newMount);
+    }
+
+    public void changeSlotSize(WeaponSize newSize) {
+        if (skinOverride != null && skinOverride.getWeaponType() != null) return;
+        EditDispatch.postWeaponSlotSizeChanged(this, newSize);
+    }
+
     public void changeSlotAngle(double degrees) {
         EditDispatch.postSlotAngleSet(this,this.angle,degrees);
+    }
+
+    public void changeSlotArc(double degrees) {
+        EditDispatch.postSlotArcSet(this,this.arc,degrees);
     }
 
     @Override
@@ -106,39 +169,35 @@ public class WeaponSlotPoint extends BaseWorldPoint {
 
     @Override
     protected Color createSelectColor() {
-        WeaponType type = this.getWeaponType();
-        return type.getColor();
+        Color base = this.createBaseColor();
+        return ColorUtilities.getBlendedColor(base, Color.WHITE, 0.5);
     }
 
     public String getNameForLabel() {
-        return weaponType.getDisplayName();
+        WeaponType type = getWeaponType();
+        return type.getDisplayName();
     }
 
     @Override
     public void paint(Graphics2D g, AffineTransform worldToScreen, double w, double h) {
-        super.paint(g, worldToScreen, w, h);
-        Point2D position = this.getPosition();
-        double transformedAngle = this.transformAngle(this.angle);
+        float alpha = (float) this.getTransparency();
+        Composite old = Utility.setAlphaComposite(g, alpha);
 
-        Shape angleLine = ShapeUtilities.createLineInDirection(position, transformedAngle, 0.4f);
+        drawingHelper.setPointPosition(this.getPosition());
+        drawingHelper.setType(this.getWeaponType());
+        drawingHelper.setMount(this.getWeaponMount());
+        drawingHelper.setSize(this.getWeaponSize());
+        drawingHelper.setAngle(this.getAngle());
+        drawingHelper.setArc(this.getArc());
+        drawingHelper.paintSlotVisuals(g, worldToScreen);
 
-        Shape transformedAngleLine = ShapeUtilities.ensureDynamicScaleShape(worldToScreen,
-                position, angleLine, 12);
-
-        DrawUtilities.drawOutlined(g, transformedAngleLine, createBaseColor());
-
-        this.paintCoordsLabel(g, worldToScreen);
-    }
-
-    @SuppressWarnings("MethodMayBeStatic")
-    private double transformAngle(double raw) {
-        double transformed = raw % 360;
-        if (transformed < 0) {
-            transformed += 360;
+        if (!isPointSelected()) {
+            super.paint(g, worldToScreen, w, h);
         }
 
-        transformed = (360 - transformed) % 360;
-        return transformed - 90;
+        g.setComposite(old);
+
+        this.paintCoordsLabel(g, worldToScreen);
     }
 
 }

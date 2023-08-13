@@ -6,7 +6,6 @@ import org.kordamp.ikonli.fluentui.FluentUiRegularMZ;
 import org.kordamp.ikonli.swing.FontIcon;
 import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.Events;
-import oth.shipeditor.communication.events.components.ViewerFocusRequestQueued;
 import oth.shipeditor.communication.events.viewer.control.*;
 import oth.shipeditor.communication.events.viewer.layers.LayerSpriteLoadConfirmed;
 import oth.shipeditor.communication.events.viewer.layers.LayerWasSelected;
@@ -28,8 +27,6 @@ import oth.shipeditor.utility.text.StringValues;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.KeyEvent;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
 import java.awt.geom.Point2D;
 import java.awt.image.BufferedImage;
 
@@ -86,12 +83,12 @@ final class ViewerStatusPanel extends JPanel {
         JPanel container = new JPanel();
         container.setLayout(new BoxLayout(container, BoxLayout.LINE_AXIS));
 
-        Integer[] numbers = {0, 1, 2, 3, 4, 5};
-        SpinnerListModel spinnerListModel = new SpinnerListModel(numbers);
+        SpinnerNumberModel spinnerListModel = new SpinnerNumberModel(1, 0, 5, 1);
         JSpinner spinner = new JSpinner(spinnerListModel);
 
-        Component spinnerEditor = spinner.getEditor();
-        JFormattedTextField textField = ((JSpinner.DefaultEditor) spinnerEditor).getTextField();
+        JSpinner.DefaultEditor spinnerEditor = (JSpinner.DefaultEditor) spinner.getEditor();
+        JFormattedTextField textField = spinnerEditor.getTextField();
+        textField.setEditable(true);
         textField.setColumns(1);
 
         JLabel toleranceLabel = new JLabel("Linkage tolerance:");
@@ -132,12 +129,6 @@ final class ViewerStatusPanel extends JPanel {
             EventBus.publish(new PointLinkageToleranceChanged(current));
         });
         spinner.setValue(5);
-        spinner.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseExited(MouseEvent e) {
-                EventBus.publish(new ViewerFocusRequestQueued());
-            }
-        });
 
         return container;
     }

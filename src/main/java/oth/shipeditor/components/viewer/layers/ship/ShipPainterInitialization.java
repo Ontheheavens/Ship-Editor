@@ -2,12 +2,11 @@ package oth.shipeditor.components.viewer.layers.ship;
 
 import lombok.extern.log4j.Log4j2;
 import oth.shipeditor.components.viewer.entities.BoundPoint;
+import oth.shipeditor.components.viewer.entities.bays.LaunchBay;
+import oth.shipeditor.components.viewer.entities.bays.LaunchPortPoint;
 import oth.shipeditor.components.viewer.entities.weapon.WeaponSlotPoint;
 import oth.shipeditor.components.viewer.layers.ship.data.ShipHull;
-import oth.shipeditor.components.viewer.painters.points.BoundPointsPainter;
-import oth.shipeditor.components.viewer.painters.points.CenterPointPainter;
-import oth.shipeditor.components.viewer.painters.points.ShieldPointPainter;
-import oth.shipeditor.components.viewer.painters.points.WeaponSlotPainter;
+import oth.shipeditor.components.viewer.painters.points.*;
 import oth.shipeditor.representation.HullSpecFile;
 import oth.shipeditor.representation.ShipData;
 import oth.shipeditor.representation.weapon.WeaponMount;
@@ -25,6 +24,7 @@ import java.util.stream.Stream;
  * @author Ontheheavens
  * @since 27.07.2023
  */
+@SuppressWarnings("OverlyCoupledClass")
 @Log4j2
 public final class ShipPainterInitialization {
 
@@ -48,7 +48,7 @@ public final class ShipPainterInitialization {
 
         ShipPainterInitialization.initBounds(shipPainter, hullSpecFile, translatedCenter);
 
-        ShipPainterInitialization.initWeaponSlots(shipPainter, shipData, translatedCenter);
+        ShipPainterInitialization.initSlots(shipPainter, shipData, translatedCenter);
 
         shipPainter.finishInitialization();
     }
@@ -77,35 +77,69 @@ public final class ShipPainterInitialization {
         });
     }
 
-    private static void initWeaponSlots(ShipPainter shipPainter, ShipData shipData, Point2D translatedCenter) {
+    @SuppressWarnings("OverlyCoupledMethod")
+    private static void initSlots(ShipPainter shipPainter, ShipData shipData, Point2D translatedCenter) {
         HullSpecFile hullSpecFile = shipData.getHullSpecFile();
         Stream<WeaponSlot> slotStream = Arrays.stream(hullSpecFile.getWeaponSlots());
-        WeaponSlotPainter slotPainter = shipPainter.getWeaponSlotPainter();
+
         slotStream.forEach(weaponSlot -> {
-            if (Objects.equals(weaponSlot.getType(), StringConstants.LAUNCH_BAY)) return;
-            Point2D location = weaponSlot.getLocations()[0];
-            Point2D rotatedPosition = ShipPainterInitialization.rotatePointByCenter(location, translatedCenter);
+            if (Objects.equals(weaponSlot.getType(), StringConstants.LAUNCH_BAY)) {
+                LaunchBayPainter bayPainter = shipPainter.getBayPainter();
 
-            WeaponSlotPoint slotPoint = new WeaponSlotPoint(rotatedPosition, shipPainter);
-            slotPoint.setId(weaponSlot.getId());
+                Point2D[] locations = weaponSlot.getLocations();
 
-            slotPoint.setAngle(weaponSlot.getAngle());
-            slotPoint.setArc(weaponSlot.getArc());
-            slotPoint.setRenderOrderMod((int) weaponSlot.getRenderOrderMod());
+                LaunchBay bay = new LaunchBay(bayPainter);
 
-            String weaponType = weaponSlot.getType();
-            WeaponType typeInstance = WeaponType.valueOf(weaponType);
-            slotPoint.setWeaponType(typeInstance);
+                bay.setId(weaponSlot.getId());
 
-            String weaponSize = weaponSlot.getSize();
-            WeaponSize sizeInstance = WeaponSize.valueOf(weaponSize);
-            slotPoint.setWeaponSize(sizeInstance);
+                bay.setAngle(weaponSlot.getAngle());
+                bay.setArc(weaponSlot.getArc());
+                bay.setRenderOrderMod((int) weaponSlot.getRenderOrderMod());
 
-            String weaponMount = weaponSlot.getMount();
-            WeaponMount mountInstance = WeaponMount.valueOf(weaponMount);
-            slotPoint.setWeaponMount(mountInstance);
+                String weaponSize = weaponSlot.getSize();
+                WeaponSize sizeInstance = WeaponSize.valueOf(weaponSize);
+                bay.setWeaponSize(sizeInstance);
 
-            slotPainter.addPoint(slotPoint);
+                String weaponMount = weaponSlot.getMount();
+                WeaponMount mountInstance = WeaponMount.valueOf(weaponMount);
+                bay.setWeaponMount(mountInstance);
+
+                bayPainter.addBay(bay);
+
+                for (Point2D location : locations) {
+                    Point2D rotatedPosition = ShipPainterInitialization.rotatePointByCenter(location, translatedCenter);
+
+                    LaunchPortPoint portPoint = new LaunchPortPoint(rotatedPosition, shipPainter, bay);
+                    bayPainter.addPoint(portPoint);
+                }
+            } else {
+                WeaponSlotPainter slotPainter = shipPainter.getWeaponSlotPainter();
+
+                Point2D location = weaponSlot.getLocations()[0];
+                Point2D rotatedPosition = ShipPainterInitialization.rotatePointByCenter(location, translatedCenter);
+
+                WeaponSlotPoint slotPoint = new WeaponSlotPoint(rotatedPosition, shipPainter);
+                slotPoint.setId(weaponSlot.getId());
+
+                slotPoint.setAngle(weaponSlot.getAngle());
+                slotPoint.setArc(weaponSlot.getArc());
+                slotPoint.setRenderOrderMod((int) weaponSlot.getRenderOrderMod());
+
+                String weaponType = weaponSlot.getType();
+                WeaponType typeInstance = WeaponType.valueOf(weaponType);
+                slotPoint.setWeaponType(typeInstance);
+
+                String weaponSize = weaponSlot.getSize();
+                WeaponSize sizeInstance = WeaponSize.valueOf(weaponSize);
+                slotPoint.setWeaponSize(sizeInstance);
+
+                String weaponMount = weaponSlot.getMount();
+                WeaponMount mountInstance = WeaponMount.valueOf(weaponMount);
+                slotPoint.setWeaponMount(mountInstance);
+
+                slotPainter.addPoint(slotPoint);
+            }
+
         });
     }
 

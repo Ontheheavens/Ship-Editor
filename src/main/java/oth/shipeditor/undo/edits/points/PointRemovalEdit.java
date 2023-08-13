@@ -1,13 +1,13 @@
-package oth.shipeditor.undo.edits;
+package oth.shipeditor.undo.edits.points;
 
 import lombok.AllArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import oth.shipeditor.communication.events.Events;
 import oth.shipeditor.components.viewer.entities.BaseWorldPoint;
-import oth.shipeditor.components.viewer.entities.BoundPoint;
 import oth.shipeditor.components.viewer.entities.WorldPoint;
 import oth.shipeditor.components.viewer.painters.points.AbstractPointPainter;
-import oth.shipeditor.components.viewer.painters.points.BoundPointsPainter;
+import oth.shipeditor.components.viewer.painters.points.LaunchBayPainter;
+import oth.shipeditor.components.viewer.painters.points.MirrorablePointPainter;
 import oth.shipeditor.undo.AbstractEdit;
 
 /**
@@ -23,8 +23,8 @@ public class PointRemovalEdit extends AbstractEdit implements PointEdit {
 
     @Override
     public void undo() {
-        if (painter instanceof BoundPointsPainter checked) {
-            checked.insertPoint((BoundPoint) removed, indexOfRemoved);
+        if (painter instanceof MirrorablePointPainter checked && !(painter instanceof LaunchBayPainter)) {
+            checked.insertPoint(removed, indexOfRemoved);
         } else {
             painter.addPoint(removed);
         }
@@ -35,7 +35,6 @@ public class PointRemovalEdit extends AbstractEdit implements PointEdit {
     public WorldPoint getPoint() {
         return removed;
     }
-
 
     @Override
     public void redo() {

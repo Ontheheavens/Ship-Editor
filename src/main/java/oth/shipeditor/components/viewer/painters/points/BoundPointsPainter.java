@@ -5,7 +5,7 @@ import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
 import oth.shipeditor.communication.BusEventListener;
 import oth.shipeditor.communication.EventBus;
-import oth.shipeditor.communication.events.Events;
+import oth.shipeditor.communication.events.viewer.ViewerRepaintQueued;
 import oth.shipeditor.communication.events.viewer.points.BoundCreationQueued;
 import oth.shipeditor.communication.events.viewer.points.BoundInsertedConfirmed;
 import oth.shipeditor.communication.events.viewer.points.BoundPointsSorted;
@@ -115,15 +115,16 @@ public final class BoundPointsPainter extends MirrorablePointPainter {
                 case KeyEvent.KEY_PRESSED:
                     if (isAppendHotkey || isInsertHotkey) {
                         BoundPointsPainter.setHotkeyState(isAppendHotkey, true);
+                        EventBus.publish(new ViewerRepaintQueued());
                     }
                     break;
                 case KeyEvent.KEY_RELEASED:
                     if (isAppendHotkey || isInsertHotkey) {
                         BoundPointsPainter.setHotkeyState(isAppendHotkey, false);
+                        EventBus.publish(new ViewerRepaintQueued());
                     }
                     break;
             }
-            Events.repaintView();
             return false;
         };
         KeyboardFocusManager.getCurrentKeyboardFocusManager().addKeyEventDispatcher(hotkeyDispatcher);
@@ -146,7 +147,7 @@ public final class BoundPointsPainter extends MirrorablePointPainter {
             if (event instanceof BoundCreationQueued checked) {
                 if (!isInteractionEnabled()) return;
                 if (!hasPointAtCoords(checked.position())) {
-                    createBound(checked);
+                    this.createBound(checked);
                 }
             }
         };
@@ -203,16 +204,13 @@ public final class BoundPointsPainter extends MirrorablePointPainter {
         return twoClosest.get(1);
     }
 
-    @SuppressWarnings("unused")
-    public void insertPoint(BoundPoint toInsert, BoundPoint preceding) {
-        int precedingIndex = boundPoints.indexOf(preceding);
-        this.insertPoint(toInsert, precedingIndex);
-    }
-
-    public void insertPoint(BoundPoint toInsert, int precedingIndex) {
-        boundPoints.add(precedingIndex, toInsert);
-        EventBus.publish(new BoundInsertedConfirmed(toInsert, precedingIndex));
-        log.info("Bound inserted to painter: {}", toInsert);
+    public void insertPoint(BaseWorldPoint toInsert, int precedingIndex) {
+        if (!(toInsert instanceof BoundPoint checked)) {
+            throw new IllegalStateException("Attempted to insert incompatible point to BoundPointsPainter!");
+        }
+        boundPoints.add(precedingIndex, checked);
+        EventBus.publish(new BoundInsertedConfirmed(checked, precedingIndex));
+        log.info("Bound inserted to painter: {}", checked);
     }
 
     private static void setHotkeyState(boolean isAppendHotkey, boolean state) {
@@ -296,12 +294,7 @@ public final class BoundPointsPainter extends MirrorablePointPainter {
 
     private void paintCreationGuidelines(Graphics2D g, AffineTransform worldToScreen,
                                          Point2D prev, Point2D first) {
-        AffineTransform screenToWorld = StaticController.getScreenToWorld();
-        Point2D finalWorldCursor = screenToWorld.transform(StaticController.getRawCursor(), null);
-        if (ControlPredicates.isCursorSnappingEnabled()) {
-            Point2D cursor = StaticController.getAdjustedCursor();
-            finalWorldCursor = Utility.correctAdjustedCursor(cursor, screenToWorld);
-        }
+        Point2D finalWorldCursor = StaticController.getFinalWorldCursor();
         Point2D finalScreenCursor = worldToScreen.transform(finalWorldCursor, null);
         Point2D worldCounterpart = this.createCounterpartPosition(finalWorldCursor);
         Point2D adjustedScreenCounterpart = worldToScreen.transform(worldCounterpart, null);

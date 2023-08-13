@@ -1,22 +1,22 @@
-package oth.shipeditor.undo.edits;
+package oth.shipeditor.undo.edits.points;
 
 import oth.shipeditor.communication.events.Events;
-import oth.shipeditor.components.viewer.entities.ShieldCenterPoint;
+import oth.shipeditor.components.viewer.entities.ShipCenterPoint;
 import oth.shipeditor.undo.AbstractEdit;
 
 /**
  * @author Ontheheavens
- * @since 16.07.2023
+ * @since 17.06.2023
  */
-public class ShieldRadiusEdit extends AbstractEdit {
+public final class CollisionRadiusEdit extends AbstractEdit {
 
-    private final ShieldCenterPoint parentPoint;
+    private final ShipCenterPoint parentPoint;
 
     private final float oldRadius;
 
     private final float newRadius;
 
-    public ShieldRadiusEdit(ShieldCenterPoint point, float oldValue, float newValue) {
+    public CollisionRadiusEdit(ShipCenterPoint point, float oldValue, float newValue) {
         this.parentPoint = point;
         this.oldRadius = oldValue;
         this.newRadius = newValue;
@@ -26,20 +26,20 @@ public class ShieldRadiusEdit extends AbstractEdit {
     @Override
     public void undo() {
         undoSubEdits();
-        parentPoint.setShieldRadius(oldRadius);
+        parentPoint.setCollisionRadius(oldRadius);
         Events.repaintView();
     }
 
     @Override
     public void redo() {
         redoSubEdits();
-        parentPoint.setShieldRadius(newRadius);
+        parentPoint.setCollisionRadius(newRadius);
         Events.repaintView();
     }
 
     @Override
     public String getName() {
-        return "Set Shield Radius";
+        return "Set Collision";
     }
 
 }

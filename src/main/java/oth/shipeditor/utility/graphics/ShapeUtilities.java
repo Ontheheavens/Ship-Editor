@@ -43,16 +43,26 @@ public final class ShapeUtilities {
      * @param scale scaling factor applied to the transformation. A value greater than 1 scales up, and a value less than 1 scales down.
      * @return new AffineTransform that represents the scaled version of the original world-to-screen transformation.
      */
-    public static AffineTransform getScaledTransform(Point2D center, AffineTransform worldToScreen,
-                                                     double scale) {
-        AffineTransform scaleTX = new AffineTransform();
-        scaleTX.translate(center.getX(), center.getY());
-        scaleTX.scale(scale, scale);
-        scaleTX.translate(-center.getX(), -center.getY());
+    public static AffineTransform getScaledWtS(Point2D center, AffineTransform worldToScreen,
+                                               double scale) {
+        return ShapeUtilities.getScaledWtS(center, worldToScreen, scale, scale);
+    }
+
+    public static AffineTransform getScaledWtS(Point2D center, AffineTransform worldToScreen,
+                                               double scaleX, double scaleY) {
+        AffineTransform scaleTX = ShapeUtilities.getScaled(center, scaleX, scaleY);
         AffineTransform delegateWTS = new AffineTransform();
         delegateWTS.setTransform(worldToScreen);
         delegateWTS.concatenate(scaleTX);
         return delegateWTS;
+    }
+
+    public static AffineTransform getScaled(Point2D center, double scaleX, double scaleY) {
+        AffineTransform scaleTX = new AffineTransform();
+        scaleTX.translate(center.getX(), center.getY());
+        scaleTX.scale(scaleX, scaleY);
+        scaleTX.translate(-center.getX(), -center.getY());
+        return scaleTX;
     }
 
     public static Shape translateShape(Shape shape, double deltaX, double deltaY) {
@@ -82,7 +92,7 @@ public final class ShapeUtilities {
         return rotationTransform;
     }
 
-    public static RectangularShape createCircle(Point2D position, float radius) {
+    public static Ellipse2D createCircle(Point2D position, float radius) {
         return new Ellipse2D.Double(position.getX() - radius, position.getY() - radius,
                 2 * radius, 2 * radius);
     }
@@ -122,7 +132,7 @@ public final class ShapeUtilities {
         return ShapeUtilities.combineShapes(crossLineX, crossLineY);
     }
 
-    public static Line2D createLineInDirection(Point2D startPoint, double angleDegrees, double length) {
+    public static Point2D getPointInDirection(Point2D startPoint, double angleDegrees, double length) {
         double angleRadians = Math.toRadians(angleDegrees);
 
         double deltaX = length * Math.cos(angleRadians);
@@ -130,8 +140,7 @@ public final class ShapeUtilities {
 
         double endX = startPoint.getX() + deltaX;
         double endY = startPoint.getY() + deltaY;
-
-        return new Line2D.Double(startPoint.getX(), startPoint.getY(), endX, endY);
+        return new Point2D.Double(endX, endY);
     }
 
     public static Path2D combineShapes(Shape first, Shape second) {
@@ -157,11 +166,27 @@ public final class ShapeUtilities {
 
         double scaleFactor = minScreenSize / currentScreenSize;
 
+        return ShapeUtilities.scaleShapeConditionally(worldToScreen, positionWorld,
+                worldShape, transformed, scaleFactor);
+    }
+
+    public static Shape ensureSpecialScaleShape(AffineTransform worldToScreen, Point2D positionWorld,
+                                                Shape worldShape, double minScreenSize, double currentLength) {
+        Shape transformed = worldToScreen.createTransformedShape(worldShape);
+        double scaleFactor = minScreenSize / currentLength;
+
+        return ShapeUtilities.scaleShapeConditionally(worldToScreen, positionWorld,
+                worldShape, transformed, scaleFactor);
+    }
+
+    public static Shape scaleShapeConditionally(AffineTransform worldToScreen, Point2D positionWorld,
+                                                Shape worldShape, Shape transformed, double scaleFactor) {
+        Shape shape = transformed;
         if (scaleFactor > 1) {
-            AffineTransform scaleTX = ShapeUtilities.getScaledTransform(positionWorld, worldToScreen, scaleFactor);
-            transformed = scaleTX.createTransformedShape(worldShape);
+            AffineTransform scaleTX = ShapeUtilities.getScaledWtS(positionWorld, worldToScreen, scaleFactor);
+            shape = scaleTX.createTransformedShape(worldShape);
         }
-        return transformed;
+        return shape;
     }
 
     /**
@@ -198,6 +223,32 @@ public final class ShapeUtilities {
             }
         }
         return new Point2D.Double(x, y);
+    }
+
+    public static Shape createCircumscribingTriangle(Shape circle) {
+        Rectangle2D circleBounds = circle.getBounds2D();
+        double centerX = circleBounds.getCenterX();
+        double centerY = circleBounds.getCenterY();
+        double radius = Math.max(circleBounds.getWidth(), circleBounds.getHeight()) * 1.25d;
+
+        Path2D triangle = new Path2D.Double();
+
+        double[] angles = { 30, -90, 150 };
+        for (double angle : angles) {
+            double radians = Math.toRadians(angle);
+            double x = centerX + radius * Math.cos(radians);
+            double y = centerY + radius * Math.sin(radians);
+
+            if (Math.abs(angle - 30) < 5.96e-08) {
+                triangle.moveTo(x, y);
+            } else {
+                triangle.lineTo(x, y);
+            }
+        }
+
+        triangle.closePath();
+
+        return triangle;
     }
 
 }

@@ -160,7 +160,7 @@ public final class LayerViewerControls implements ViewerControl {
             this.layerDragPoint.setLocation(e.getX() - transformed.getX(), e.getY() - transformed.getY());
         }
         if (e.getButton() == MouseEvent.BUTTON1) {
-            this.tryBoundCreation(point);
+            this.tryPointCreation(point);
         }
         if (ControlPredicates.removePointPredicate.test(e)) {
             EventBus.publish(new PointRemoveQueued(null, false));
@@ -174,7 +174,7 @@ public final class LayerViewerControls implements ViewerControl {
     /**
      * Respective hotkey checks are being done in points painter itself.
      */
-    private void tryBoundCreation(Point2D point) {
+    private void tryPointCreation(Point2D point) {
         AffineTransform screenToWorld = StaticController.getScreenToWorld();
         Point2D position = screenToWorld.transform(point, null);
         if (ControlPredicates.isCursorSnappingEnabled()) {
@@ -182,6 +182,7 @@ public final class LayerViewerControls implements ViewerControl {
             position = Utility.correctAdjustedCursor(screenPoint, screenToWorld);
         }
         EventBus.publish(new BoundCreationQueued(position));
+        EventBus.publish(new SlotCreationQueued(position));
     }
 
     @Override
@@ -202,6 +203,7 @@ public final class LayerViewerControls implements ViewerControl {
         int y = e.getY();
         LayerPainter selected = this.parentViewer.getSelectedLayer();
         AffineTransform screenToWorld = this.parentViewer.getScreenToWorld();
+        AffineTransform rotatedTransform = StaticController.getScreenToWorld();
         if (ControlPredicates.translatePredicate.test(e)) {
             int dx = x - this.previousPoint.x;
             int dy = y - this.previousPoint.y;
@@ -219,12 +221,15 @@ public final class LayerViewerControls implements ViewerControl {
                 Point2D worldTarget = screenToWorld.transform(e.getPoint(), null);
                 EventBus.publish(new LayerRotationQueued(selected, worldTarget));
             }
-        }
-        else if (ControlPredicates.changeSlotAnglePredicate.test(e)) {
+        } else if (ControlPredicates.changeSlotAnglePredicate.test(e)) {
             if (selected instanceof ShipPainter) {
-                AffineTransform rotated = StaticController.getScreenToWorld();
-                Point2D worldTarget = rotated.transform(e.getPoint(), null);
+                Point2D worldTarget = rotatedTransform.transform(e.getPoint(), null);
                 EventBus.publish(new SlotAngleChangeQueued(worldTarget));
+            }
+        } else if (ControlPredicates.changeSlotArcPredicate.test(e)) {
+            if (selected instanceof ShipPainter) {
+                Point2D worldTarget = rotatedTransform.transform(e.getPoint(), null);
+                EventBus.publish(new SlotArcChangeQueued(worldTarget));
             }
         }
         this.previousPoint.setLocation(x, y);
@@ -359,7 +364,7 @@ public final class LayerViewerControls implements ViewerControl {
         if (ControlPredicates.selectPointPredicate.test(event)) {
             boolean appendBoundDown = BoundPointsPainter.isAppendBoundHotkeyPressed();
             boolean insertBoundDown = BoundPointsPainter.isInsertBoundHotkeyPressed();
-            boolean slotAngleDown = WeaponSlotPainter.isAngleHotkeyPressed();
+            boolean slotAngleDown = WeaponSlotPainter.isControlHotkeyPressed();
 
             Point2D cursor = mousePoint;
             if (ControlPredicates.isCursorSnappingEnabled()) {

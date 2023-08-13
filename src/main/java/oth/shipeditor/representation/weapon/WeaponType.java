@@ -14,7 +14,7 @@ public enum WeaponType {
     BALLISTIC("BALLISTIC", "Ballistic", new Color(255,215,0,255)),
     ENERGY("ENERGY", "Energy", new Color(70,200,255,255)),
     MISSILE("MISSILE", "Missile", new Color(155,255,0,255)),
-    LAUNCH_BAY(StringConstants.LAUNCH_BAY, "Launch Bay", new Color(60, 60, 60, 255)),
+    LAUNCH_BAY(StringConstants.LAUNCH_BAY, "Launch Bay", new Color(255, 255, 255, 255)),
     UNIVERSAL("UNIVERSAL", "Universal", new Color(235, 235, 235,255)),
     HYBRID("HYBRID", "Hybrid", new Color(255,165,0,255)),
     SYNERGY("SYNERGY", "Synergy", new Color(0,255,200,255)),

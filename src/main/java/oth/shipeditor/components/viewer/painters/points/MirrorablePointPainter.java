@@ -54,6 +54,8 @@ public abstract class MirrorablePointPainter extends AbstractPointPainter {
         return true;
     }
 
+    public abstract void insertPoint(BaseWorldPoint toInsert, int precedingIndex);
+
     @Override
     public void paint(Graphics2D g, AffineTransform worldToScreen, double w, double h) {
         if (!checkVisibility()) return;
@@ -71,7 +73,7 @@ public abstract class MirrorablePointPainter extends AbstractPointPainter {
     @SuppressWarnings("NoopMethodInAbstractClass")
     public void paintPainterContent(Graphics2D g, AffineTransform worldToScreen, double w, double h) {}
 
-    private void handleSelectionHighlight() {
+    protected void handleSelectionHighlight() {
         WorldPoint selection = this.getSelected();
         if (selection != null && isInteractionEnabled()) {
             MirrorablePointPainter.enlargePoint(selection);
@@ -96,29 +98,38 @@ public abstract class MirrorablePointPainter extends AbstractPointPainter {
 
     @Override
     public BaseWorldPoint getMirroredCounterpart(WorldPoint inputPoint) {
-        List<? extends BaseWorldPoint> pointsIndex = this.getPointsIndex();
         Point2D pointPosition = inputPoint.getPosition();
         Point2D counterpartPosition = this.createCounterpartPosition(pointPosition);
+        BaseWorldPoint closestPoint = this.findClosestPoint(counterpartPosition);
         double threshold = ControlPredicates.getMirrorPointLinkageTolerance();
-        BaseWorldPoint closestPoint = null;
-        double closestDistance = Double.MAX_VALUE;
-        for (BaseWorldPoint point : pointsIndex) {
-            Point2D position = point.getPosition();
-            if (position.equals(counterpartPosition)) {
-                closestPoint = point;
+
+        if (closestPoint != null) {
+            double closestDistance = counterpartPosition.distance(closestPoint.getPosition());
+            if (closestDistance <= threshold) {
                 return closestPoint;
             }
-            double distance = counterpartPosition.distance(position);
+        }
+
+        return null;
+    }
+
+    @SuppressWarnings("WeakerAccess")
+    public BaseWorldPoint findClosestPoint(Point2D target) {
+        List<? extends BaseWorldPoint> pointsIndex = this.getPointsIndex();
+        BaseWorldPoint closestPoint = null;
+        double closestDistance = Double.MAX_VALUE;
+
+        for (BaseWorldPoint point : pointsIndex) {
+            Point2D position = point.getPosition();
+            double distance = target.distance(position);
+
             if (distance < closestDistance) {
                 closestPoint = point;
                 closestDistance = distance;
             }
         }
-        if (closestDistance <= threshold) {
-            return closestPoint; // Found the mirrored counterpart within the threshold.
-        } else {
-            return null; // Mirrored counterpart not found.
-        }
+
+        return closestPoint;
     }
 
 }

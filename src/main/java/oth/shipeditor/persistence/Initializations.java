@@ -48,8 +48,8 @@ public final class Initializations {
     /**
      * To be called only after all components and settings have been initialized.
      */
-    public static void loadGameData(PrimaryWindow window) {
-        ActionEvent initEvent = new ActionEvent(window, ActionEvent.ACTION_PERFORMED, null);
+    public static void loadGameData(Component source) {
+        ActionEvent initEvent = new ActionEvent(source, ActionEvent.ACTION_PERFORMED, null);
         List<Action> loadActions = FileUtilities.getLoadDataActions();
         loadActions.forEach(action -> action.actionPerformed(initEvent));
     }

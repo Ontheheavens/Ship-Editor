@@ -1,5 +1,7 @@
 package oth.shipeditor.components.instrument.ship.weaponslots;
 
+import oth.shipeditor.communication.EventBus;
+import oth.shipeditor.communication.events.viewer.points.SlotPointsSorted;
 import oth.shipeditor.components.instrument.ship.PointList;
 import oth.shipeditor.components.viewer.entities.weapon.WeaponSlotPoint;
 
@@ -15,19 +17,35 @@ public class WeaponSlotList extends PointList<WeaponSlotPoint> {
 
     private final JPanel infoPanel;
 
-    WeaponSlotList(ListModel<WeaponSlotPoint> dataModel, JPanel panel) {
+    @SuppressWarnings("FieldCanBeLocal")
+    private SlotDataControlPane slotControlPane;
+
+    WeaponSlotList(ListModel<WeaponSlotPoint> dataModel, JPanel infoPane) {
         super(dataModel);
-        this.infoPanel = panel;
+        this.infoPanel = infoPane;
         this.setCellRenderer(new SlotCellRenderer());
     }
 
     @Override
     protected void handlePointSelection(WeaponSlotPoint point) {
+        refreshSlotControlPane();
+    }
+
+    void refreshSlotControlPane() {
+        WeaponSlotPoint selected = this.getSelectedValue();
         infoPanel.removeAll();
+
+        slotControlPane = new SlotDataControlPane(selected, this);
+        infoPanel.add(slotControlPane, BorderLayout.CENTER);
+
+        infoPanel.revalidate();
+        infoPanel.repaint();
     }
 
     @Override
-    protected void publishPointsSorted(List<WeaponSlotPoint> rearrangedPoints) {}
+    protected void publishPointsSorted(List<WeaponSlotPoint> rearrangedPoints) {
+        EventBus.publish(new SlotPointsSorted(rearrangedPoints));
+    }
 
     private static class SlotCellRenderer extends DefaultListCellRenderer{
         @Override

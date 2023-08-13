@@ -101,7 +101,7 @@ public class ViewerLayerWidgetsPanel extends JPanel {
         Color labelColor = Color.GRAY;
         if (this.layerPainter != null) {
             double rotation = this.layerPainter.getRotationRadians();
-            rotationValue = Utility.clampAngle(rotation) + "°";
+            rotationValue = Utility.clampAngleWithRounding(rotation) + "°";
             labelColor = Color.BLACK;
         }
         layerRotationLabel.setText(rotationValue);
@@ -192,7 +192,7 @@ public class ViewerLayerWidgetsPanel extends JPanel {
             ViewerLayer activeLayer = StaticController.getActiveLayer();
             LayerPainter activeShipPainter = activeLayer.getPainter();
             double currentRotation = activeShipPainter.getRotationRadians();
-            double currentClamped = Utility.clampAngle(currentRotation);
+            double currentClamped = Utility.clampAngleWithRounding(currentRotation);
             DialogUtilities.showAdjustLayerRotationDialog(activeShipPainter, currentClamped);
         });
         rotationMenu.add(adjustRotation);

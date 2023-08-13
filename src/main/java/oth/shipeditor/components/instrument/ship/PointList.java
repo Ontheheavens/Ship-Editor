@@ -30,6 +30,7 @@ public abstract class PointList<T extends BaseWorldPoint> extends SortableList<T
     protected PointList(ListModel<T> dataModel) {
         super(dataModel);
         this.addListSelectionListener(e -> {
+            this.actOnSelectedPoint(this::handlePointSelection);
             if (propagationBlock) {
                 propagationBlock = false;
                 return;
@@ -37,7 +38,6 @@ public abstract class PointList<T extends BaseWorldPoint> extends SortableList<T
             this.actOnSelectedPoint(point -> {
                 EventBus.publish(new PointSelectQueued(point));
                 EventBus.publish(new ViewerRepaintQueued());
-                this.handlePointSelection(point);
             });
         });
         this.addMouseListener(new ListContextMenuListener());
@@ -77,7 +77,8 @@ public abstract class PointList<T extends BaseWorldPoint> extends SortableList<T
                 DefaultListModel<T> model = (DefaultListModel<T>) this.getModel();
                 if (!model.contains(checked.point())) return;
                 propagationBlock = true;
-                this.setSelectedValue(checked.point(), true);
+                BaseWorldPoint point = (BaseWorldPoint) checked.point();
+                this.setSelectedValue(point, true);
             }
         });
     }

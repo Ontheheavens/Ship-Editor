@@ -45,6 +45,9 @@ public final class ShipPainter extends LayerPainter {
     @Getter
     private WeaponSlotPainter weaponSlotPainter;
 
+    @Getter
+    private LaunchBayPainter bayPainter;
+
     /**
      * Backup for when sprite is switched to skin version.
      */
@@ -109,12 +112,14 @@ public final class ShipPainter extends LayerPainter {
         this.shieldPointPainter = new ShieldPointPainter(this);
         this.boundsPainter = new BoundPointsPainter(this);
         this.weaponSlotPainter = new WeaponSlotPainter(this);
+        this.bayPainter = new LaunchBayPainter(this);
 
         List<AbstractPointPainter> allPainters = getAllPainters();
         allPainters.add(centerPointPainter);
         allPainters.add(shieldPointPainter);
         allPainters.add(boundsPainter);
         allPainters.add(weaponSlotPainter);
+        allPainters.add(bayPainter);
     }
     void finishInitialization() {
         this.setUninitialized(false);

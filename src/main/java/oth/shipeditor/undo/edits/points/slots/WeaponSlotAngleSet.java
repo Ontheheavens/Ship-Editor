@@ -1,6 +1,8 @@
-package oth.shipeditor.undo.edits;
+package oth.shipeditor.undo.edits.points.slots;
 
-import oth.shipeditor.communication.events.Events;
+import oth.shipeditor.communication.EventBus;
+import oth.shipeditor.communication.events.components.SlotControlRepaintQueued;
+import oth.shipeditor.communication.events.viewer.ViewerRepaintQueued;
 import oth.shipeditor.components.viewer.entities.weapon.WeaponSlotPoint;
 import oth.shipeditor.undo.AbstractEdit;
 
@@ -28,14 +30,16 @@ public class WeaponSlotAngleSet extends AbstractEdit {
     public void undo() {
         undoSubEdits();
         slotPoint.setAngle(oldAngle);
-        Events.repaintView();
+        EventBus.publish(new ViewerRepaintQueued());
+        EventBus.publish(new SlotControlRepaintQueued());
     }
 
     @Override
     public void redo() {
         slotPoint.setAngle(updatedAngle);
         redoSubEdits();
-        Events.repaintView();
+        EventBus.publish(new ViewerRepaintQueued());
+        EventBus.publish(new SlotControlRepaintQueued());
     }
 
     @Override
