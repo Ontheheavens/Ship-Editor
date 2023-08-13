@@ -62,6 +62,7 @@ public class SlotCreationPane extends JPanel {
         JScrollPane scrollContainer = new JScrollPane(selectorsPane);
 
         this.add(scrollContainer, BorderLayout.CENTER);
+        this.setPreferredSize(this.getMinimumSize());
     }
 
     private static JPanel createModePanel() {

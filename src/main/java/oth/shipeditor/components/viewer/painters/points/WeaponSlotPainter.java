@@ -1,6 +1,7 @@
 package oth.shipeditor.components.viewer.painters.points;
 
 import lombok.Getter;
+import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
 import oth.shipeditor.communication.BusEventListener;
 import oth.shipeditor.communication.EventBus;
@@ -38,14 +39,15 @@ import java.util.stream.Collectors;
  * @author Ontheheavens
  * @since 25.07.2023
  */
+@SuppressWarnings({"OverlyComplexClass", "OverlyCoupledClass"})
 @Log4j2
 public class WeaponSlotPainter extends MirrorablePointPainter{
 
     private static final String ILLEGAL_POINT_TYPE_FOUND_IN_WEAPON_SLOT_PAINTER = "Illegal point type found in WeaponSlotPainter!";
     private static final char SPACE = ' ';
 
-    @Getter
-    private final List<WeaponSlotPoint> slotPoints;
+    @Getter @Setter
+    private List<WeaponSlotPoint> slotPoints;
 
     private final int controlHotkey = KeyEvent.VK_A;
 
@@ -59,9 +61,9 @@ public class WeaponSlotPainter extends MirrorablePointPainter{
 
     private KeyEventDispatcher hotkeyDispatcher;
 
-    private SlotDrawingHelper slotMockDrawer = new SlotDrawingHelper(null);
+    private final SlotDrawingHelper slotMockDrawer = new SlotDrawingHelper(null);
 
-    private SlotDrawingHelper counterpartMockDrawer = new SlotDrawingHelper(null);
+    private final SlotDrawingHelper counterpartMockDrawer = new SlotDrawingHelper(null);
 
     public WeaponSlotPainter(ShipPainter parent) {
         super(parent);
@@ -99,6 +101,14 @@ public class WeaponSlotPainter extends MirrorablePointPainter{
         };
         listeners.add(controlListener);
         EventBus.subscribe(controlListener);
+        BusEventListener slotSortingListener = event -> {
+            if (event instanceof SlotPointsSorted checked) {
+                if (!isInteractionEnabled()) return;
+                EditDispatch.postSlotsRearranged(this, this.slotPoints, checked.rearranged());
+            }
+        };
+        listeners.add(slotSortingListener);
+        EventBus.subscribe(slotSortingListener);
     }
 
     private void createSlot(SlotCreationQueued event) {

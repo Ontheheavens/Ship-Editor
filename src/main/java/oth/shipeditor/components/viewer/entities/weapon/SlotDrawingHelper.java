@@ -19,7 +19,7 @@ import java.awt.geom.*;
 @Getter @Setter
 public class SlotDrawingHelper {
 
-    private WeaponSlotPoint parentPoint;
+    private SlotPoint parentPoint;
 
     private Point2D pointPosition;
 
@@ -33,7 +33,11 @@ public class SlotDrawingHelper {
 
     private double arc;
 
-    public SlotDrawingHelper(WeaponSlotPoint parent) {
+    private boolean drawArc = true;
+
+    private boolean drawAngle = true;
+
+    public SlotDrawingHelper(SlotPoint parent) {
         this.parentPoint = parent;
     }
 
@@ -46,8 +50,12 @@ public class SlotDrawingHelper {
 
         this.drawMountShape(g, worldToScreen, circle, circleRadius);
 
-        this.drawArc(g, worldToScreen, circle, circleRadius);
-        this.drawAnglePointer(g, worldToScreen, circle, circleRadius);
+        if (drawArc) {
+            this.drawArc(g, worldToScreen, circle, circleRadius);
+        }
+        if (drawAngle) {
+            this.drawAnglePointer(g, worldToScreen, circle, circleRadius);
+        }
     }
 
 
@@ -99,6 +107,7 @@ public class SlotDrawingHelper {
             mountColor = parentPoint.getCurrentColor();
         }
 
+        DrawUtilities.outlineShape(g, transformed, Color.BLACK, 2.5f);
         DrawUtilities.outlineShape(g, transformed, mountColor, 1.5f);
     }
 

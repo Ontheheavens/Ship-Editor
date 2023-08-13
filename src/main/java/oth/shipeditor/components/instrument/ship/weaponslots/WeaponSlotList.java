@@ -1,5 +1,7 @@
 package oth.shipeditor.components.instrument.ship.weaponslots;
 
+import oth.shipeditor.communication.EventBus;
+import oth.shipeditor.communication.events.viewer.points.SlotPointsSorted;
 import oth.shipeditor.components.instrument.ship.PointList;
 import oth.shipeditor.components.viewer.entities.weapon.WeaponSlotPoint;
 
@@ -29,7 +31,7 @@ public class WeaponSlotList extends PointList<WeaponSlotPoint> {
         refreshSlotControlPane();
     }
 
-    public void refreshSlotControlPane() {
+    void refreshSlotControlPane() {
         WeaponSlotPoint selected = this.getSelectedValue();
         infoPanel.removeAll();
 
@@ -41,7 +43,9 @@ public class WeaponSlotList extends PointList<WeaponSlotPoint> {
     }
 
     @Override
-    protected void publishPointsSorted(List<WeaponSlotPoint> rearrangedPoints) {}
+    protected void publishPointsSorted(List<WeaponSlotPoint> rearrangedPoints) {
+        EventBus.publish(new SlotPointsSorted(rearrangedPoints));
+    }
 
     private static class SlotCellRenderer extends DefaultListCellRenderer{
         @Override

@@ -5,9 +5,12 @@ import lombok.extern.log4j.Log4j2;
 import oth.shipeditor.components.layering.ViewerLayersPanel;
 import oth.shipeditor.components.viewer.LayerViewer;
 import oth.shipeditor.components.viewer.PrimaryViewer;
+import oth.shipeditor.persistence.Initializations;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 
 /**
  * @author Ontheheavens
@@ -78,6 +81,23 @@ public final class WindowContentPanes {
         westTabsPane.setTabPlacement(SwingConstants.LEFT);
         westTabsPane.addTab("Game data", new LeftsidePanelTab(LeftsideTabType.GAME_DATA));
         westTabsPane.addTab("Help", new LeftsidePanelTab(LeftsideTabType.HELP));
+
+        westTabsPane.setToolTipTextAt(0, "Right-click to reload data");
+        westTabsPane.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                if (e.getButton() != MouseEvent.BUTTON3) return;
+                int tabIndex = westTabsPane.indexAtLocation(e.getX(), e.getY());
+                if (tabIndex == 0) {
+                    JPopupMenu menu = new JPopupMenu();
+                    JMenuItem reloadAllGameData = new JMenuItem("Reload all game data");
+                    reloadAllGameData.addActionListener(e1 -> Initializations.loadGameData(westTabsPane));
+
+                    menu.add(reloadAllGameData);
+                    menu.show(westTabsPane, e.getPoint().x, e.getPoint().y);
+                }
+            }
+        });
 
         JPanel quickButtonsPanel = new QuickButtonsPanel();
         westPanelsContainer.add(westTabsPane);

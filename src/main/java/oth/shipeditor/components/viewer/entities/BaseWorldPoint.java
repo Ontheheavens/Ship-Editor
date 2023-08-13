@@ -36,6 +36,7 @@ public class BaseWorldPoint implements WorldPoint, Painter {
     @Getter
     private final Point2D position;
 
+    @Getter
     private final TextPainter coordsLabel;
 
     @Getter @Setter

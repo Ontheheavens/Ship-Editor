@@ -35,9 +35,11 @@ public class TextPainter {
     }
 
     public void paintText(Graphics2D g, AffineTransform worldToScreen) {
-        if (text == null || text.isEmpty()) return;
+        paintText(g, worldToScreen, Utility.getOrbitron(16));
+    }
 
-        Font font = Utility.getOrbitron(16);
+    public void paintText(Graphics2D g, AffineTransform worldToScreen, Font font) {
+        if (text == null || text.isEmpty()) return;
 
         double anchorOffsetX = 25;
         if (constantScreenShape) {

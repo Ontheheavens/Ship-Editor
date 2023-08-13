@@ -24,8 +24,8 @@ import java.awt.geom.Point2D;
  * @author Ontheheavens
  * @since 25.07.2023
  */
-@SuppressWarnings("WeakerAccess")
-public class WeaponSlotPoint extends BaseWorldPoint {
+@SuppressWarnings({"WeakerAccess", "ClassWithTooManyMethods"})
+public class WeaponSlotPoint extends BaseWorldPoint implements SlotPoint {
 
     @Getter @Setter
     private String id;
@@ -52,7 +52,7 @@ public class WeaponSlotPoint extends BaseWorldPoint {
     private WeaponSlotOverride skinOverride;
 
     @Getter @Setter
-    private double transparency = 1.0d;
+    private double transparency = 0.8d;
 
     private SlotDrawingHelper drawingHelper;
 
@@ -174,7 +174,8 @@ public class WeaponSlotPoint extends BaseWorldPoint {
     }
 
     public String getNameForLabel() {
-        return weaponType.getDisplayName();
+        WeaponType type = getWeaponType();
+        return type.getDisplayName();
     }
 
     @Override

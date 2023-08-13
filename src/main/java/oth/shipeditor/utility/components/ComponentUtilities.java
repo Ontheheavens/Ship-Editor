@@ -66,9 +66,13 @@ public final class ComponentUtilities {
     }
 
     public static void addSeparatorToBoxPanel(JPanel panel) {
-        panel.add(Box.createVerticalStrut(5));
+        ComponentUtilities.addSeparatorToBoxPanel(panel, 5);
+    }
+
+    public static void addSeparatorToBoxPanel(JPanel panel, int height) {
+        panel.add(Box.createVerticalStrut(height));
         JSeparator separator = new JSeparator(SwingConstants.HORIZONTAL);
-        separator.setMaximumSize(new Dimension(Integer.MAX_VALUE, 5));
+        separator.setMaximumSize(new Dimension(Integer.MAX_VALUE, height));
         panel.add(separator);
     }
 

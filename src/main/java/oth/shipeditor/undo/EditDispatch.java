@@ -14,6 +14,7 @@ import oth.shipeditor.components.viewer.layers.LayerPainter;
 import oth.shipeditor.components.viewer.painters.points.AbstractPointPainter;
 import oth.shipeditor.components.viewer.painters.points.BoundPointsPainter;
 import oth.shipeditor.components.viewer.painters.points.MirrorablePointPainter;
+import oth.shipeditor.components.viewer.painters.points.WeaponSlotPainter;
 import oth.shipeditor.representation.weapon.WeaponMount;
 import oth.shipeditor.representation.weapon.WeaponSize;
 import oth.shipeditor.representation.weapon.WeaponType;
@@ -68,6 +69,15 @@ public final class EditDispatch {
         Edit rearrangeEdit = new BoundsSortEdit(pointPainter, old, changed);
         UndoOverseer.post(rearrangeEdit);
         pointPainter.setBoundPoints(changed);
+        Events.repaintView();
+    }
+
+    public static void postSlotsRearranged(WeaponSlotPainter pointPainter,
+                                           List<WeaponSlotPoint> old,
+                                           List<WeaponSlotPoint> changed) {
+        Edit rearrangeEdit = new WeaponSlotsSortEdit(pointPainter, old, changed);
+        UndoOverseer.post(rearrangeEdit);
+        pointPainter.setSlotPoints(changed);
         Events.repaintView();
     }
 

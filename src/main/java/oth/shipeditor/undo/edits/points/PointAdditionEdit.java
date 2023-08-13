@@ -4,6 +4,7 @@ import oth.shipeditor.communication.events.Events;
 import oth.shipeditor.components.viewer.entities.BaseWorldPoint;
 import oth.shipeditor.components.viewer.entities.WorldPoint;
 import oth.shipeditor.components.viewer.painters.points.AbstractPointPainter;
+import oth.shipeditor.components.viewer.painters.points.LaunchBayPainter;
 import oth.shipeditor.components.viewer.painters.points.MirrorablePointPainter;
 import oth.shipeditor.undo.AbstractEdit;
 
@@ -39,9 +40,10 @@ public class PointAdditionEdit extends AbstractEdit implements PointEdit {
         Events.repaintView();
     }
 
+    @SuppressWarnings("ChainOfInstanceofChecks")
     @Override
     public void redo() {
-        if (insertionIndex == -1) {
+        if (insertionIndex == -1 || pointPainter instanceof LaunchBayPainter) {
             pointPainter.addPoint(point);
         } else if (pointPainter instanceof MirrorablePointPainter checked) {
             checked.insertPoint(point, insertionIndex);

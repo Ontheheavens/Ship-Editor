@@ -12,12 +12,14 @@ import oth.shipeditor.components.viewer.entities.weapon.WeaponSlotPoint;
 import oth.shipeditor.components.viewer.layers.ViewerLayer;
 import oth.shipeditor.components.viewer.layers.ship.ShipLayer;
 import oth.shipeditor.components.viewer.layers.ship.ShipPainter;
+import oth.shipeditor.components.viewer.painters.PainterVisibility;
 import oth.shipeditor.components.viewer.painters.points.WeaponSlotPainter;
 import oth.shipeditor.utility.Pair;
 import oth.shipeditor.utility.components.ComponentUtilities;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ActionListener;
 
 /**
  * @author Ontheheavens
@@ -37,6 +39,12 @@ public class WeaponSlotListPanel extends JPanel {
 
         JPanel northContainer = new JPanel();
         northContainer.setLayout(new BoxLayout(northContainer, BoxLayout.PAGE_AXIS));
+
+        JPanel visibilityWidgetContainer = this.createPainterVisibilityPanel();
+        northContainer.add(visibilityWidgetContainer);
+
+        ComponentUtilities.addSeparatorToBoxPanel(northContainer, 2);
+        northContainer.add(Box.createRigidArea(new Dimension(10, 3)));
 
         JPanel slotInfoPanel = new JPanel();
         slotInfoPanel.setLayout(new BorderLayout());
@@ -114,18 +122,25 @@ public class WeaponSlotListPanel extends JPanel {
                 slotPointContainer.setSelectedIndex(model.indexOf(checked.toInsert()));
             }
         });
-        // TODO: sort out slot creation as well.
-//        EventBus.subscribe(event -> {
-//            if (event instanceof BoundInsertedConfirmed checked) {
-//                model.insertElementAt(checked.toInsert(), checked.precedingIndex());
-//                boundPointContainer.setSelectedIndex(model.indexOf(checked.toInsert()));
-//            }
-//        });
         EventBus.subscribe(event -> {
             if (event instanceof PointRemovedConfirmed checked && checked.point() instanceof WeaponSlotPoint point) {
                 model.removeElement(point);
             }
         });
+    }
+
+    @SuppressWarnings("MethodMayBeStatic")
+    private JPanel createPainterVisibilityPanel() {
+        JComboBox<PainterVisibility> visibilityList = new JComboBox<>(PainterVisibility.values());
+        ActionListener selectionAction = e -> {
+            if (!(e.getSource() instanceof ShipPainter checked)) return;
+            WeaponSlotPainter slotPainter = checked.getWeaponSlotPainter();
+            PainterVisibility valueOfLayer = slotPainter.getVisibilityMode();
+            visibilityList.setSelectedItem(valueOfLayer);
+        };
+
+        return ComponentUtilities.createVisibilityWidget(visibilityList,
+                WeaponSlotPainter.class, selectionAction, "");
     }
 
 }
