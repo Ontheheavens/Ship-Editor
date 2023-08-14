@@ -8,7 +8,7 @@ import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.viewer.ViewerRepaintQueued;
 import oth.shipeditor.communication.events.viewer.points.*;
 import oth.shipeditor.components.instrument.ship.ShipInstrumentsPane;
-import oth.shipeditor.components.instrument.ship.weaponslots.SlotCreationPane;
+import oth.shipeditor.components.instrument.ship.slots.SlotCreationPane;
 import oth.shipeditor.components.viewer.ShipInstrument;
 import oth.shipeditor.components.viewer.control.ControlPredicates;
 import oth.shipeditor.components.viewer.entities.BaseWorldPoint;
@@ -32,7 +32,6 @@ import java.awt.geom.AffineTransform;
 import java.awt.geom.Point2D;
 import java.util.List;
 import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  * Is not supposed to handle launch bays - bays deserialize to different points and painter.
@@ -158,9 +157,8 @@ public class WeaponSlotPainter extends MirrorablePointPainter{
     }
 
     private String generateUniqueID() {
-        Set<String> existingIDs = slotPoints.stream()
-                .map(WeaponSlotPoint::getId)
-                .collect(Collectors.toSet());
+        ShipPainter parentLayer = this.getParentLayer();
+        Set<String> existingIDs = parentLayer.getAllSlotIDs();
 
         String baseID = "WS";
         int suffix = 0;
@@ -175,9 +173,8 @@ public class WeaponSlotPainter extends MirrorablePointPainter{
     }
 
     private String incrementUniqueID(String id) {
-        Set<String> existingIDs = slotPoints.stream()
-                .map(WeaponSlotPoint::getId)
-                .collect(Collectors.toSet());
+        ShipPainter parentLayer = this.getParentLayer();
+        Set<String> existingIDs = parentLayer.getAllSlotIDs();
 
         String baseID = id.substring(0, id.lastIndexOf(SPACE) + 1);
         int suffix = Integer.parseInt(id.substring(id.lastIndexOf(SPACE) + 1));

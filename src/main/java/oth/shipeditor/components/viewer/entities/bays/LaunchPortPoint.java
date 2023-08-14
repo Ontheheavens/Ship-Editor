@@ -5,8 +5,11 @@ import oth.shipeditor.components.viewer.ShipInstrument;
 import oth.shipeditor.components.viewer.entities.BaseWorldPoint;
 import oth.shipeditor.components.viewer.entities.weapon.SlotDrawingHelper;
 import oth.shipeditor.components.viewer.entities.weapon.SlotPoint;
+import oth.shipeditor.components.viewer.entities.weapon.WeaponSlotOverride;
 import oth.shipeditor.components.viewer.layers.ship.ShipPainter;
 import oth.shipeditor.components.viewer.painters.TextPainter;
+import oth.shipeditor.representation.weapon.WeaponMount;
+import oth.shipeditor.representation.weapon.WeaponSize;
 import oth.shipeditor.representation.weapon.WeaponType;
 import oth.shipeditor.utility.Utility;
 import oth.shipeditor.utility.graphics.ColorUtilities;
@@ -35,6 +38,70 @@ public class LaunchPortPoint extends BaseWorldPoint implements SlotPoint {
 
     public String getId() {
         return parentBay.getId();
+    }
+
+    @Override
+    public void changeSlotID(String newId) {
+        ShipPainter parent = (ShipPainter) this.getParentLayer();
+        if (!parent.isGeneratedIDUnassigned(newId)) {
+            return;
+        }
+        parentBay.setId(newId);
+    }
+
+    @Override
+    public WeaponType getWeaponType() {
+        return parentBay.getWeaponType();
+    }
+
+    @Override
+    public void setWeaponType(WeaponType newType) {
+        throw new UnsupportedOperationException("Type change is not relevant for launch bays!");
+    }
+
+    @Override
+    public WeaponMount getWeaponMount() {
+        return parentBay.getWeaponMount();
+    }
+
+    @Override
+    public void setWeaponMount(WeaponMount newMount) {
+        parentBay.setWeaponMount(newMount);
+    }
+
+    @Override
+    public WeaponSize getWeaponSize() {
+        return parentBay.getWeaponSize();
+    }
+
+    @Override
+    public void setWeaponSize(WeaponSize newSize) {
+        parentBay.setWeaponSize(newSize);
+    }
+
+    @Override
+    public double getArc() {
+        return parentBay.getArc();
+    }
+
+    @Override
+    public void setArc(double degrees) {
+        parentBay.setArc(degrees);
+    }
+
+    @Override
+    public double getAngle() {
+        return parentBay.getAngle();
+    }
+
+    @Override
+    public void setAngle(double degrees) {
+        parentBay.setAngle(degrees);
+    }
+
+    @Override
+    public WeaponSlotOverride getSkinOverride() {
+        return null;
     }
 
     private void initHelper() {

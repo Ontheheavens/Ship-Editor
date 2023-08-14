@@ -1,4 +1,4 @@
-package oth.shipeditor.components.instrument.ship;
+package oth.shipeditor.components.instrument.ship.bays;
 
 import lombok.Getter;
 import oth.shipeditor.communication.EventBus;
@@ -24,9 +24,13 @@ public class LaunchBaysTree extends JTree {
     @Getter
     private final DefaultMutableTreeNode baysRoot;
 
+    private DefaultTreeModel model;
+
     LaunchBaysTree(DefaultMutableTreeNode root) {
         super(root);
         this.baysRoot = root;
+        this.model = new DefaultTreeModel(baysRoot);
+        this.setModel(model);
         this.initListeners();
     }
 
@@ -35,20 +39,30 @@ public class LaunchBaysTree extends JTree {
             DefaultMutableTreeNode node = (DefaultMutableTreeNode) this.getLastSelectedPathComponent();
             if (node == null) return;
             Object nodeObject = node.getUserObject();
-            if (!(nodeObject instanceof LaunchPortPoint checked)) return;
+
+            if (!(nodeObject instanceof LaunchPortPoint checked)) {
+                return;
+            }
             EventBus.publish(new PointSelectQueued(checked));
             EventBus.publish(new ViewerRepaintQueued());
         });
         EventBus.subscribe(event -> {
             if (event instanceof PointSelectedConfirmed checked) {
                 if (!(checked.point() instanceof LaunchPortPoint port)) return;
-                actOnPortPoint(port, node -> this.setSelectionPath(new TreePath(node.getPath())));
+                actOnPortPoint(port, node -> {
+                    this.expandTree();
+                    this.setSelectionPath(new TreePath(node.getPath()));
+                    // TODO: finish selection and control panel refresh functionality!
+                });
             }
         });
     }
 
     void addBay(LaunchBay bay) {
-        baysRoot.add(new DefaultMutableTreeNode(bay));
+        MutableTreeNode newChild = new DefaultMutableTreeNode(bay);
+        model.insertNodeInto(newChild, baysRoot, baysRoot.getChildCount());
+        model.reload();
+        this.expandTree();
     }
 
     void removeBay(LaunchBay bay) {
@@ -57,9 +71,11 @@ public class LaunchBaysTree extends JTree {
             DefaultMutableTreeNode bayNode = (DefaultMutableTreeNode) bays.nextElement();
             LaunchBay bayObject = (LaunchBay) bayNode.getUserObject();
             if (bayObject == bay) {
-                baysRoot.remove(bayNode);
+                model.removeNodeFromParent(bayNode);
+                model.reload();
             }
         }
+        this.expandTree();
     }
 
     void addPort(LaunchPortPoint point) {
@@ -69,9 +85,12 @@ public class LaunchBaysTree extends JTree {
             LaunchBay bayObject = (LaunchBay) bayNode.getUserObject();
             if (bayObject == point.getParentBay()) {
                 MutableTreeNode portNode = new DefaultMutableTreeNode(point);
-                bayNode.add(portNode);
+
+                model.insertNodeInto(portNode, bayNode, bayNode.getChildCount());
+                model.reload();
             }
         }
+        this.expandTree();
     }
 
     private void actOnPortPoint(LaunchPortPoint point, Consumer<DefaultMutableTreeNode> action) {
@@ -89,19 +108,24 @@ public class LaunchBaysTree extends JTree {
 
     void removePort(LaunchPortPoint point) {
         actOnPortPoint(point, node -> {
-            System.out.println(point);
-            System.out.println(node);
-
-            // TODO: Everything in this class is wrong. Use the model!
-            node.removeFromParent();
-            this.repaint();
+            model.removeNodeFromParent(node);
+            model.reload();
         });
+        this.expandTree();
     }
 
     void clearRoot() {
         baysRoot.removeAllChildren();
-        this.setModel(new DefaultTreeModel(baysRoot));
+        this.model = new DefaultTreeModel(baysRoot);
+        this.setModel(model);
+        this.model.reload();
         this.repaint();
+    }
+
+    private void expandTree() {
+        for (int i = 0; i < this.getRowCount(); i++) {
+            this.expandRow(i);
+        }
     }
 
     void repopulateTree(LaunchBayPainter bayPainter) {
@@ -113,9 +137,7 @@ public class LaunchBaysTree extends JTree {
                 this.addPort(port);
             }
         }
-        for (int i = 0; i < this.getRowCount(); i++) {
-            this.expandRow(i);
-        }
+        this.expandTree();
     }
 
 }

@@ -1,4 +1,4 @@
-package oth.shipeditor.components.instrument.ship.weaponslots;
+package oth.shipeditor.components.instrument.ship.slots;
 
 import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.viewer.points.SlotPointsSorted;

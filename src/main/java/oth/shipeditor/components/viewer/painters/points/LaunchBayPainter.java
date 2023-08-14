@@ -68,6 +68,9 @@ public class LaunchBayPainter extends MirrorablePointPainter {
     protected void addPointToIndex(BaseWorldPoint point) {
         if (point instanceof LaunchPortPoint checked) {
             LaunchBay targetBay = checked.getParentBay();
+            if (!baysList.contains(targetBay)) {
+                this.addBay(targetBay);
+            }
             List<LaunchPortPoint> portPoints = targetBay.getPortPoints();
             portPoints.add(checked);
             portsIndex.add(checked);

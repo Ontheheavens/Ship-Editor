@@ -1,11 +1,8 @@
-package oth.shipeditor.components.instrument.ship.weaponslots;
+package oth.shipeditor.components.instrument.ship;
 
-import oth.shipeditor.communication.EventBus;
-import oth.shipeditor.communication.events.viewer.ViewerRepaintQueued;
+import lombok.Getter;
+import oth.shipeditor.components.viewer.entities.weapon.SlotPoint;
 import oth.shipeditor.components.viewer.entities.weapon.WeaponSlotOverride;
-import oth.shipeditor.components.viewer.entities.weapon.WeaponSlotPoint;
-import oth.shipeditor.components.viewer.layers.ship.ShipPainter;
-import oth.shipeditor.components.viewer.painters.points.WeaponSlotPainter;
 import oth.shipeditor.representation.weapon.WeaponMount;
 import oth.shipeditor.representation.weapon.WeaponSize;
 import oth.shipeditor.representation.weapon.WeaponType;
@@ -14,34 +11,38 @@ import oth.shipeditor.utility.Utility;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
-import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import java.awt.*;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseWheelEvent;
-import java.util.List;
-import java.util.function.BiConsumer;
 
 /**
  * @author Ontheheavens
- * @since 11.08.2023
+ * @since 14.08.2023
  */
-public class SlotDataControlPane extends JPanel {
+public abstract class AbstractSlotValuesPanel extends JPanel {
 
     private static final String NO_SELECTED_SLOT = "No selected slot";
-    private static final String CHANGE_APPLIES_TO_ALL_SELECTED_SLOTS = "Change applies to all selected slots";
-    private static final String CHANGE_APPLIES_TO_FIRST_SELECTED_SLOT = "Change applies to first selected slot";
+
     private static final String MOUSEWHEEL_TO_CHANGE = "(Mousewheel to change)";
 
-    private final WeaponSlotPoint selected;
+    private static final String CHANGE_APPLIES_TO_ALL_SELECTED_SLOTS = "Change applies to all selected slots";
+    private static final String CHANGE_APPLIES_TO_FIRST_SELECTED_SLOT = "Change applies to first selected slot";
 
-    private final WeaponSlotList slotList;
+    @Getter
+    private final SlotPoint selected;
 
-    SlotDataControlPane(WeaponSlotPoint slotPoint, WeaponSlotList parent) {
+    protected final boolean multiSelectionAllowed;
+
+    protected AbstractSlotValuesPanel(SlotPoint slotPoint, boolean multiSelection) {
         this.selected = slotPoint;
-        this.slotList = parent;
+        this.multiSelectionAllowed = multiSelection;
         this.setLayout(new GridBagLayout());
+        this.addContent();
+    }
 
+    @SuppressWarnings("WeakerAccess")
+    protected void addContent() {
         this.addIDPanel();
 
         this.addTypeSelector();
@@ -52,8 +53,7 @@ public class SlotDataControlPane extends JPanel {
         this.addArcController();
     }
 
-    @SuppressWarnings("DuplicatedCode")
-    private void addLabelAndComponent(JLabel label, Component component, int y) {
+    protected void addLabelAndComponent(JLabel label, Component component, int y) {
         GridBagConstraints constraints = new GridBagConstraints();
 
         constraints.insets = new Insets(3, 6, 0, 3);
@@ -77,26 +77,43 @@ public class SlotDataControlPane extends JPanel {
         this.add(component, constraints);
     }
 
-    private static JLabel getNoSelected() {
+    public static JLabel getNoSelected() {
         JLabel label = new JLabel(NO_SELECTED_SLOT);
         label.setBorder(new EmptyBorder(5, 0, 5, 0));
         return label;
     }
 
+    protected abstract ActionListener getTypeSelectorListener(JComboBox<WeaponType> typeSelector);
+
+    protected abstract ActionListener getMountSelectorListener(JComboBox<WeaponMount> mountSelector);
+
+    protected abstract ActionListener getSizeSelectorListener(JComboBox<WeaponSize> sizeSelector);
+
+    protected abstract ChangeListener getAngleChangeListener(JSpinner spinner,
+                                                             SpinnerNumberModel spinnerNumberModel,
+                                                             SlotPoint slotPoint);
+
+    protected abstract ChangeListener getArcChangeListener(JSpinner spinner,
+                                                             SpinnerNumberModel spinnerNumberModel,
+                                                             SlotPoint slotPoint);
+
     private void addIDPanel() {
         JPanel container = new JPanel();
         container.setLayout(new BoxLayout(container, BoxLayout.LINE_AXIS));
         JLabel label = new JLabel("Slot ID:");
-        label.setToolTipText(CHANGE_APPLIES_TO_FIRST_SELECTED_SLOT);
 
-        Component right = SlotDataControlPane.getNoSelected();
+        if (multiSelectionAllowed) {
+            label.setToolTipText(CHANGE_APPLIES_TO_FIRST_SELECTED_SLOT);
+        }
+
+        Component right = AbstractSlotValuesPanel.getNoSelected();
 
         if (selected != null) {
             JTextField editor = new JTextField(selected.getId());
             editor.setColumns(10);
             editor.addActionListener(e -> {
                 String currentText = editor.getText();
-                EditDispatch.postWeaponSlotIDChanged(selected, currentText);
+                EditDispatch.postSlotIDChanged(selected, currentText);
             });
             right = editor;
         }
@@ -104,23 +121,14 @@ public class SlotDataControlPane extends JPanel {
         this.addLabelAndComponent(label, right, 0);
     }
 
-    private void actOnSelectedValues(BiConsumer<WeaponSlotPainter, List<WeaponSlotPoint>> action) {
-        WeaponSlotPoint selectedValue = slotList.getSelectedValue();
-        if (selectedValue == null) return;
-        ShipPainter parentLayer = (ShipPainter) selectedValue.getParentLayer();
-        WeaponSlotPainter slotPainter = parentLayer.getWeaponSlotPainter();
-        List<WeaponSlotPoint> selectedValuesList = slotList.getSelectedValuesList();
-        if (!selectedValuesList.isEmpty()) {
-            action.accept(slotPainter, selectedValuesList);
-            EventBus.publish(new ViewerRepaintQueued());
-        }
-    }
-
     private void addTypeSelector() {
         JLabel selectorLabel = new JLabel("Slot type:");
-        selectorLabel.setToolTipText(CHANGE_APPLIES_TO_ALL_SELECTED_SLOTS);
+        if (multiSelectionAllowed) {
+            selectorLabel.setToolTipText(CHANGE_APPLIES_TO_ALL_SELECTED_SLOTS);
+        }
+
         if (selected == null) {
-            this.addLabelAndComponent(selectorLabel, SlotDataControlPane.getNoSelected(), 1);
+            this.addLabelAndComponent(selectorLabel, AbstractSlotValuesPanel.getNoSelected(), 1);
             return;
         }
         JComboBox<WeaponType> typeSelector = new JComboBox<>(WeaponType.values());
@@ -133,20 +141,19 @@ public class SlotDataControlPane extends JPanel {
             typeSelector.setToolTipText("Locked: slot type overridden by skin");
             typeSelector.setEnabled(false);
         } else {
-            ActionListener listener = e -> this.actOnSelectedValues((weaponSlotPainter, weaponSlotPoints) -> {
-                WeaponType selectedType = (WeaponType) typeSelector.getSelectedItem();
-                weaponSlotPainter.changeSlotsTypeWithMirrorCheck(selectedType, weaponSlotPoints);
-            });
-            typeSelector.addActionListener(listener);
+            typeSelector.addActionListener(this.getTypeSelectorListener(typeSelector));
         }
         this.addLabelAndComponent(selectorLabel, typeSelector, 1);
     }
 
     private void addMountSelector() {
         JLabel selectorLabel = new JLabel("Slot mount:");
-        selectorLabel.setToolTipText(CHANGE_APPLIES_TO_ALL_SELECTED_SLOTS);
+        if (multiSelectionAllowed) {
+            selectorLabel.setToolTipText(CHANGE_APPLIES_TO_ALL_SELECTED_SLOTS);
+        }
+
         if (selected == null) {
-            this.addLabelAndComponent(selectorLabel, SlotDataControlPane.getNoSelected(), 2);
+            this.addLabelAndComponent(selectorLabel, AbstractSlotValuesPanel.getNoSelected(), 2);
             return;
         }
         JComboBox<WeaponMount> mountSelector = new JComboBox<>(WeaponMount.values());
@@ -157,20 +164,18 @@ public class SlotDataControlPane extends JPanel {
             mountSelector.setToolTipText("Locked: slot mount overridden by skin");
             mountSelector.setEnabled(false);
         } else {
-            ActionListener listener = e -> this.actOnSelectedValues((weaponSlotPainter, weaponSlotPoints) -> {
-                WeaponMount selectedMount = (WeaponMount) mountSelector.getSelectedItem();
-                weaponSlotPainter.changeSlotsMountWithMirrorCheck(selectedMount, weaponSlotPoints);
-            });
-            mountSelector.addActionListener(listener);
+            mountSelector.addActionListener(this.getMountSelectorListener(mountSelector));
         }
         this.addLabelAndComponent(selectorLabel, mountSelector, 2);
     }
 
     private void addSizeSelector() {
         JLabel selectorLabel = new JLabel("Slot size:");
-        selectorLabel.setToolTipText(CHANGE_APPLIES_TO_ALL_SELECTED_SLOTS);
+        if (multiSelectionAllowed) {
+            selectorLabel.setToolTipText(CHANGE_APPLIES_TO_ALL_SELECTED_SLOTS);
+        }
         if (selected == null) {
-            this.addLabelAndComponent(selectorLabel, SlotDataControlPane.getNoSelected(), 3);
+            this.addLabelAndComponent(selectorLabel, AbstractSlotValuesPanel.getNoSelected(), 3);
             return;
         }
         JComboBox<WeaponSize> sizeSelector = new JComboBox<>(WeaponSize.values());
@@ -181,24 +186,26 @@ public class SlotDataControlPane extends JPanel {
             sizeSelector.setToolTipText("Locked: slot size overridden by skin");
             sizeSelector.setEnabled(false);
         } else {
-            ActionListener listener = e -> this.actOnSelectedValues((weaponSlotPainter, weaponSlotPoints) -> {
-                WeaponSize selectedSize = (WeaponSize) sizeSelector.getSelectedItem();
-                weaponSlotPainter.changeSlotsSizeWithMirrorCheck(selectedSize, weaponSlotPoints);
-            });
-            sizeSelector.addActionListener(listener);
+            sizeSelector.addActionListener(this.getSizeSelectorListener(sizeSelector));
         }
         this.addLabelAndComponent(selectorLabel, sizeSelector, 3);
     }
 
     private void addAngleController() {
         JLabel selectorLabel = new JLabel("Slot angle:");
-        String tooltip = Utility.getWithLinebreaks(CHANGE_APPLIES_TO_FIRST_SELECTED_SLOT, MOUSEWHEEL_TO_CHANGE);
+
+        String tooltip;
+        if (multiSelectionAllowed) {
+            tooltip = Utility.getWithLinebreaks(CHANGE_APPLIES_TO_FIRST_SELECTED_SLOT, MOUSEWHEEL_TO_CHANGE);
+        } else {
+            tooltip = MOUSEWHEEL_TO_CHANGE;
+        }
         selectorLabel.setToolTipText(tooltip);
+
         if (selected == null) {
-            this.addLabelAndComponent(selectorLabel, SlotDataControlPane.getNoSelected(), 4);
+            this.addLabelAndComponent(selectorLabel, AbstractSlotValuesPanel.getNoSelected(), 4);
             return;
         }
-
         double minValue = -360;
         double maxValue = 360;
         SpinnerNumberModel spinnerNumberModel = new SpinnerNumberModel(selected.getAngle(),
@@ -210,19 +217,7 @@ public class SlotDataControlPane extends JPanel {
             spinner.setToolTipText("Locked: slot angle overridden by skin");
             spinner.setEnabled(false);
         } else {
-            spinner.addChangeListener(new ChangeListener() {
-                @Override
-                public void stateChanged(ChangeEvent e) {
-                    Number modelNumber = spinnerNumberModel.getNumber();
-                    double current = modelNumber.doubleValue();
-
-                    ShipPainter slotParent = (ShipPainter) selected.getParentLayer();
-                    WeaponSlotPainter weaponSlotPainter = slotParent.getWeaponSlotPainter();
-                    weaponSlotPainter.changeAngleWithMirrorCheck(selected, current);
-
-                    spinner.removeChangeListener(this);
-                }
-            });
+            spinner.addChangeListener(this.getAngleChangeListener(spinner, spinnerNumberModel, selected));
             spinner.addMouseWheelListener(e -> {
                 if (e.getScrollType() != MouseWheelEvent.WHEEL_UNIT_SCROLL) {
                     return;
@@ -239,10 +234,17 @@ public class SlotDataControlPane extends JPanel {
 
     private void addArcController() {
         JLabel selectorLabel = new JLabel("Slot arc:");
-        String tooltip = Utility.getWithLinebreaks(CHANGE_APPLIES_TO_FIRST_SELECTED_SLOT, MOUSEWHEEL_TO_CHANGE);
+
+        String tooltip;
+        if (multiSelectionAllowed) {
+            tooltip = Utility.getWithLinebreaks(CHANGE_APPLIES_TO_FIRST_SELECTED_SLOT, MOUSEWHEEL_TO_CHANGE);
+        } else {
+            tooltip = MOUSEWHEEL_TO_CHANGE;
+        }
         selectorLabel.setToolTipText(tooltip);
+
         if (selected == null) {
-            this.addLabelAndComponent(selectorLabel, SlotDataControlPane.getNoSelected(), 5);
+            this.addLabelAndComponent(selectorLabel, AbstractSlotValuesPanel.getNoSelected(), 5);
             return;
         }
 
@@ -257,19 +259,7 @@ public class SlotDataControlPane extends JPanel {
             spinner.setToolTipText("Locked: slot arc overridden by skin");
             spinner.setEnabled(false);
         } else {
-            spinner.addChangeListener(new ChangeListener() {
-                @Override
-                public void stateChanged(ChangeEvent e) {
-                    Number modelNumber = spinnerNumberModel.getNumber();
-                    double current = modelNumber.doubleValue();
-
-                    ShipPainter slotParent = (ShipPainter) selected.getParentLayer();
-                    WeaponSlotPainter weaponSlotPainter = slotParent.getWeaponSlotPainter();
-                    weaponSlotPainter.changeArcWithMirrorCheck(selected, current);
-
-                    spinner.removeChangeListener(this);
-                }
-            });
+            spinner.addChangeListener(this.getArcChangeListener(spinner, spinnerNumberModel, selected));
             spinner.addMouseWheelListener(e -> {
                 if (e.getScrollType() != MouseWheelEvent.WHEEL_UNIT_SCROLL) {
                     return;

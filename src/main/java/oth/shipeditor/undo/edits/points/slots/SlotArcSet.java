@@ -3,22 +3,22 @@ package oth.shipeditor.undo.edits.points.slots;
 import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.components.SlotControlRepaintQueued;
 import oth.shipeditor.communication.events.viewer.ViewerRepaintQueued;
-import oth.shipeditor.components.viewer.entities.weapon.WeaponSlotPoint;
+import oth.shipeditor.components.viewer.entities.weapon.SlotPoint;
 import oth.shipeditor.undo.AbstractEdit;
 
 /**
  * @author Ontheheavens
  * @since 09.08.2023
  */
-public class WeaponSlotArcSet extends AbstractEdit {
+public class SlotArcSet extends AbstractEdit {
 
-    private final WeaponSlotPoint slotPoint;
+    private final SlotPoint slotPoint;
 
     private final double oldArc;
 
     private final double updatedArc;
 
-    public WeaponSlotArcSet(WeaponSlotPoint point, double old, double updated) {
+    public SlotArcSet(SlotPoint point, double old, double updated) {
         this.slotPoint = point;
         this.oldArc = old;
         this.updatedArc = updated;

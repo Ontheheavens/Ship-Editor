@@ -15,7 +15,6 @@ import oth.shipeditor.undo.EditDispatch;
 import oth.shipeditor.utility.Utility;
 import oth.shipeditor.utility.graphics.ColorUtilities;
 
-import javax.swing.*;
 import java.awt.*;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Point2D;
@@ -24,7 +23,7 @@ import java.awt.geom.Point2D;
  * @author Ontheheavens
  * @since 25.07.2023
  */
-@SuppressWarnings({"WeakerAccess", "ClassWithTooManyMethods"})
+@SuppressWarnings("WeakerAccess")
 public class WeaponSlotPoint extends BaseWorldPoint implements SlotPoint {
 
     @Getter @Setter
@@ -114,38 +113,31 @@ public class WeaponSlotPoint extends BaseWorldPoint implements SlotPoint {
         }
     }
 
-    public void changeSlotID(String newID) {
+    public void changeSlotID(String newId) {
         ShipPainter parent = (ShipPainter) this.getParentLayer();
-        WeaponSlotPainter slotPainter = parent.getWeaponSlotPainter();
-        for (WeaponSlotPoint slotPoint : slotPainter.getSlotPoints()) {
-            String slotPointId = slotPoint.getId();
-            if (slotPointId.equals(newID)) {
-                JOptionPane.showMessageDialog(null,
-                        "Input ID already assigned to slot.",
-                        "Duplicate ID",
-                        JOptionPane.ERROR_MESSAGE);
-                EventBus.publish(new SlotControlRepaintQueued());
-                return;
-            }
+        if (!parent.isGeneratedIDUnassigned(newId)) {
+            EventBus.publish(new SlotControlRepaintQueued());
+            return;
         }
-        this.setId(newID);
+
+        this.setId(newId);
         WeaponSlotPainter.setSlotOverrideFromSkin(this, parent.getActiveSkin());
         EventBus.publish(new SlotControlRepaintQueued());
     }
 
     public void changeSlotType(WeaponType newType) {
         if (skinOverride != null && skinOverride.getWeaponType() != null) return;
-        EditDispatch.postWeaponSlotTypeChanged(this, newType);
+        EditDispatch.postSlotTypeChanged(this, newType);
     }
 
     public void changeSlotMount(WeaponMount newMount) {
         if (skinOverride != null && skinOverride.getWeaponType() != null) return;
-        EditDispatch.postWeaponSlotMountChanged(this, newMount);
+        EditDispatch.postSlotMountChanged(this, newMount);
     }
 
     public void changeSlotSize(WeaponSize newSize) {
         if (skinOverride != null && skinOverride.getWeaponType() != null) return;
-        EditDispatch.postWeaponSlotSizeChanged(this, newSize);
+        EditDispatch.postSlotSizeChanged(this, newSize);
     }
 
     public void changeSlotAngle(double degrees) {

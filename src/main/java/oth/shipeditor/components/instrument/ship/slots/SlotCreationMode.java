@@ -1,4 +1,4 @@
-package oth.shipeditor.components.instrument.ship.weaponslots;
+package oth.shipeditor.components.instrument.ship.slots;
 
 /**
  * @author Ontheheavens

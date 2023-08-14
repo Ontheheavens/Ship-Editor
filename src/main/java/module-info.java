@@ -60,13 +60,15 @@
     exports oth.shipeditor.components.viewer.layers.ship;
     exports oth.shipeditor.components.instrument.ship;
     opens oth.shipeditor.components.instrument.ship;
-    exports oth.shipeditor.components.instrument.ship.weaponslots;
-    opens oth.shipeditor.components.instrument.ship.weaponslots;
+    exports oth.shipeditor.components.instrument.ship.slots;
+    opens oth.shipeditor.components.instrument.ship.slots;
     exports oth.shipeditor.components.instrument.ship.skins;
     opens oth.shipeditor.components.instrument.ship.skins;
     exports oth.shipeditor.components.viewer.entities.weapon;
     exports oth.shipeditor.components.viewer.layers.ship.data;
     exports oth.shipeditor.representation.weapon.animation;
     opens oth.shipeditor.representation.weapon.animation;
+    exports oth.shipeditor.components.instrument.ship.bays;
+    opens oth.shipeditor.components.instrument.ship.bays;
 
 }

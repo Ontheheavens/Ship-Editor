@@ -9,6 +9,7 @@ import oth.shipeditor.communication.events.viewer.ViewerRepaintQueued;
 import oth.shipeditor.communication.events.viewer.control.ViewerMouseReleased;
 import oth.shipeditor.communication.events.viewer.points.AnchorOffsetQueued;
 import oth.shipeditor.components.viewer.entities.*;
+import oth.shipeditor.components.viewer.entities.weapon.SlotPoint;
 import oth.shipeditor.components.viewer.entities.weapon.WeaponSlotPoint;
 import oth.shipeditor.components.viewer.layers.LayerPainter;
 import oth.shipeditor.components.viewer.painters.points.AbstractPointPainter;
@@ -18,7 +19,8 @@ import oth.shipeditor.components.viewer.painters.points.WeaponSlotPainter;
 import oth.shipeditor.representation.weapon.WeaponMount;
 import oth.shipeditor.representation.weapon.WeaponSize;
 import oth.shipeditor.representation.weapon.WeaponType;
-import oth.shipeditor.undo.edits.*;
+import oth.shipeditor.undo.edits.AnchorOffsetEdit;
+import oth.shipeditor.undo.edits.LayerRotationEdit;
 import oth.shipeditor.undo.edits.points.*;
 import oth.shipeditor.undo.edits.points.slots.*;
 
@@ -108,16 +110,16 @@ public final class EditDispatch {
         Events.repaintView();
     }
 
-    public static void postSlotAngleSet(WeaponSlotPoint slotPoint, double old, double updated ) {
-        Edit angleEdit = new WeaponSlotAngleSet(slotPoint, old, updated);
+    public static void postSlotAngleSet(SlotPoint slotPoint, double old, double updated ) {
+        Edit angleEdit = new SlotAngleSet(slotPoint, old, updated);
         EditDispatch.handleContinuousEdit(angleEdit);
         slotPoint.setAngle(updated);
         EventBus.publish(new ViewerRepaintQueued());
         EventBus.publish(new SlotControlRepaintQueued());
     }
 
-    public static void postSlotArcSet(WeaponSlotPoint slotPoint, double old, double updated ) {
-        Edit arcEdit = new WeaponSlotArcSet(slotPoint, old, updated);
+    public static void postSlotArcSet(SlotPoint slotPoint, double old, double updated ) {
+        Edit arcEdit = new SlotArcSet(slotPoint, old, updated);
         EditDispatch.handleContinuousEdit(arcEdit);
         slotPoint.setArc(updated);
         EventBus.publish(new ViewerRepaintQueued());
@@ -157,28 +159,28 @@ public final class EditDispatch {
         Events.repaintView();
     }
 
-    public static void postWeaponSlotIDChanged(WeaponSlotPoint point, String newID) {
+    public static void postSlotIDChanged(SlotPoint point, String newID) {
         String oldID = point.getId();
         Edit renameEdit = new SlotIDChangeEdit(point, newID, oldID);
         UndoOverseer.post(renameEdit);
         point.changeSlotID(newID);
     }
 
-    public static void postWeaponSlotTypeChanged(WeaponSlotPoint point, WeaponType newType) {
+    public static void postSlotTypeChanged(SlotPoint point, WeaponType newType) {
         WeaponType oldType = point.getWeaponType();
         Edit typeChangeEdit = new SlotTypeChangeEdit(point, oldType, newType);
         UndoOverseer.post(typeChangeEdit);
         point.setWeaponType(newType);
     }
 
-    public static void postWeaponSlotMountChanged(WeaponSlotPoint point, WeaponMount newMount) {
+    public static void postSlotMountChanged(SlotPoint point, WeaponMount newMount) {
         WeaponMount oldMount = point.getWeaponMount();
         Edit mountChangeEdit = new SlotMountChangeEdit(point, oldMount, newMount);
         UndoOverseer.post(mountChangeEdit);
         point.setWeaponMount(newMount);
     }
 
-    public static void postWeaponSlotSizeChanged(WeaponSlotPoint point, WeaponSize newSize) {
+    public static void postSlotSizeChanged(SlotPoint point, WeaponSize newSize) {
         WeaponSize oldSize = point.getWeaponSize();
         Edit sizeChangeEdit = new SlotSizeChangeEdit(point, oldSize, newSize);
         UndoOverseer.post(sizeChangeEdit);

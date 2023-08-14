@@ -3,7 +3,7 @@ package oth.shipeditor.undo.edits.points.slots;
 import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.components.SlotControlRepaintQueued;
 import oth.shipeditor.communication.events.viewer.ViewerRepaintQueued;
-import oth.shipeditor.components.viewer.entities.weapon.WeaponSlotPoint;
+import oth.shipeditor.components.viewer.entities.weapon.SlotPoint;
 import oth.shipeditor.representation.weapon.WeaponSize;
 import oth.shipeditor.undo.AbstractEdit;
 
@@ -13,13 +13,13 @@ import oth.shipeditor.undo.AbstractEdit;
  */
 public class SlotSizeChangeEdit extends AbstractEdit {
 
-    private final WeaponSlotPoint slot;
+    private final SlotPoint slot;
 
     private final WeaponSize old;
 
     private final WeaponSize updated;
 
-    public SlotSizeChangeEdit(WeaponSlotPoint point, WeaponSize oldSize, WeaponSize newSize) {
+    public SlotSizeChangeEdit(SlotPoint point, WeaponSize oldSize, WeaponSize newSize) {
         this.slot = point;
         this.old = oldSize;
         this.updated = newSize;
@@ -34,7 +34,7 @@ public class SlotSizeChangeEdit extends AbstractEdit {
 
     @Override
     public void redo() {
-        slot.setWeaponSize(old);
+        slot.setWeaponSize(updated);
         EventBus.publish(new ViewerRepaintQueued());
         EventBus.publish(new SlotControlRepaintQueued());
     }

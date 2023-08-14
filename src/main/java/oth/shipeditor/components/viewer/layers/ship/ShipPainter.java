@@ -13,6 +13,8 @@ import oth.shipeditor.communication.events.viewer.layers.LayerSpriteLoadQueued;
 import oth.shipeditor.communication.events.viewer.layers.ships.LayerShipDataInitialized;
 import oth.shipeditor.communication.events.viewer.layers.ships.ShipDataCreated;
 import oth.shipeditor.components.viewer.entities.ShipCenterPoint;
+import oth.shipeditor.components.viewer.entities.bays.LaunchBay;
+import oth.shipeditor.components.viewer.entities.weapon.WeaponSlotPoint;
 import oth.shipeditor.components.viewer.layers.LayerPainter;
 import oth.shipeditor.components.viewer.layers.ship.data.ActiveShipSpec;
 import oth.shipeditor.components.viewer.layers.ship.data.ShipSkin;
@@ -20,9 +22,12 @@ import oth.shipeditor.components.viewer.painters.points.*;
 import oth.shipeditor.utility.graphics.Sprite;
 import oth.shipeditor.utility.text.StringValues;
 
+import javax.swing.*;
 import java.awt.geom.Point2D;
 import java.awt.image.BufferedImage;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * Distinct from parent ship layer instance: present class has to do with direct visual representation.
@@ -159,6 +164,41 @@ public final class ShipPainter extends LayerPainter {
         Point2D anchor = getAnchor();
         BufferedImage sprite = getSprite();
         return new Point2D.Double( anchor.getX(), anchor.getY() + sprite.getHeight());
+    }
+
+    public Set<String> getAllSlotIDs() {
+        WeaponSlotPainter slotPainter = this.getWeaponSlotPainter();
+        List<WeaponSlotPoint> slotPoints = slotPainter.getSlotPoints();
+
+        Set<String> slotIDs = slotPoints.stream()
+                .map(WeaponSlotPoint::getId)
+                .collect(Collectors.toSet());
+
+        LaunchBayPainter launchBayPainter = this.getBayPainter();
+        List<LaunchBay> layerBays = launchBayPainter.getBaysList();
+
+        Set<String> bayIDs = layerBays.stream()
+                .map(LaunchBay::getId)
+                .collect(Collectors.toSet());
+
+        slotIDs.addAll(bayIDs);
+
+        return slotIDs;
+    }
+
+    public boolean isGeneratedIDUnassigned(String newId) {
+        Set<String> existingIDs = this.getAllSlotIDs();
+
+        for (String slotPointId : existingIDs) {
+            if (slotPointId.equals(newId)) {
+                JOptionPane.showMessageDialog(null,
+                        "Input ID already assigned to slot.",
+                        "Duplicate ID",
+                        JOptionPane.ERROR_MESSAGE);
+                return false;
+            }
+        }
+        return true;
     }
 
 }
