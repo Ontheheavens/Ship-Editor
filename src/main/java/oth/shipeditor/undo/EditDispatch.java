@@ -4,6 +4,7 @@ import oth.shipeditor.communication.BusEventListener;
 import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.BusEvent;
 import oth.shipeditor.communication.events.Events;
+import oth.shipeditor.communication.events.components.BaysPanelRepaintQueued;
 import oth.shipeditor.communication.events.components.SlotControlRepaintQueued;
 import oth.shipeditor.communication.events.viewer.ViewerRepaintQueued;
 import oth.shipeditor.communication.events.viewer.control.ViewerMouseReleased;
@@ -116,6 +117,7 @@ public final class EditDispatch {
         slotPoint.setAngle(updated);
         EventBus.publish(new ViewerRepaintQueued());
         EventBus.publish(new SlotControlRepaintQueued());
+        EventBus.publish(new BaysPanelRepaintQueued());
     }
 
     public static void postSlotArcSet(SlotPoint slotPoint, double old, double updated ) {
@@ -124,6 +126,7 @@ public final class EditDispatch {
         slotPoint.setArc(updated);
         EventBus.publish(new ViewerRepaintQueued());
         EventBus.publish(new SlotControlRepaintQueued());
+        EventBus.publish(new BaysPanelRepaintQueued());
     }
 
     public static void postLayerRotated(LayerPainter painter, double old, double updated) {
@@ -171,6 +174,7 @@ public final class EditDispatch {
         Edit typeChangeEdit = new SlotTypeChangeEdit(point, oldType, newType);
         UndoOverseer.post(typeChangeEdit);
         point.setWeaponType(newType);
+        EventBus.publish(new ViewerRepaintQueued());
     }
 
     public static void postSlotMountChanged(SlotPoint point, WeaponMount newMount) {
@@ -178,6 +182,7 @@ public final class EditDispatch {
         Edit mountChangeEdit = new SlotMountChangeEdit(point, oldMount, newMount);
         UndoOverseer.post(mountChangeEdit);
         point.setWeaponMount(newMount);
+        EventBus.publish(new ViewerRepaintQueued());
     }
 
     public static void postSlotSizeChanged(SlotPoint point, WeaponSize newSize) {
@@ -185,6 +190,7 @@ public final class EditDispatch {
         Edit sizeChangeEdit = new SlotSizeChangeEdit(point, oldSize, newSize);
         UndoOverseer.post(sizeChangeEdit);
         point.setWeaponSize(newSize);
+        EventBus.publish(new ViewerRepaintQueued());
     }
 
 }

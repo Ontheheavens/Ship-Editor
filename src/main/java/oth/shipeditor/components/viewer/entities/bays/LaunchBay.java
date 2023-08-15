@@ -46,9 +46,4 @@ public class LaunchBay {
         this.portPoints = new ArrayList<>();
     }
 
-    @Override
-    public String toString() {
-        return this.id;
-    }
-
 }

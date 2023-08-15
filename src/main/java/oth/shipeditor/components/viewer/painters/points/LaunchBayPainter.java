@@ -10,10 +10,16 @@ import oth.shipeditor.communication.events.viewer.points.LaunchBayRemoveConfirme
 import oth.shipeditor.components.instrument.ship.ShipInstrumentsPane;
 import oth.shipeditor.components.viewer.ShipInstrument;
 import oth.shipeditor.components.viewer.entities.BaseWorldPoint;
+import oth.shipeditor.components.viewer.entities.WorldPoint;
 import oth.shipeditor.components.viewer.entities.bays.LaunchBay;
 import oth.shipeditor.components.viewer.entities.bays.LaunchPortPoint;
 import oth.shipeditor.components.viewer.layers.ship.ShipPainter;
+import oth.shipeditor.utility.StaticController;
+import oth.shipeditor.utility.graphics.DrawUtilities;
 
+import java.awt.*;
+import java.awt.geom.AffineTransform;
+import java.awt.geom.Point2D;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -111,6 +117,20 @@ public class LaunchBayPainter extends MirrorablePointPainter {
     @Override
     public void insertPoint(BaseWorldPoint toInsert, int precedingIndex) {
         throw new UnsupportedOperationException("Point insertion unsupported for LaunchBayPainter!");
+    }
+
+    @Override
+    public void paintPainterContent(Graphics2D g, AffineTransform worldToScreen, double w, double h) {
+        Point2D finalWorldCursor = StaticController.getFinalWorldCursor();
+        Point2D finalScreenCursor = worldToScreen.transform(finalWorldCursor, null);
+        WorldPoint selected = this.getSelected();
+        if (selected != null && isInteractionEnabled()) {
+            Point2D selectedPosition = worldToScreen.transform(selected.getPosition(), null);
+            DrawUtilities.drawScreenLine(g, selectedPosition, finalScreenCursor, Color.BLACK, 4.0f);
+            DrawUtilities.drawScreenLine(g, selectedPosition, finalScreenCursor, Color.LIGHT_GRAY, 2.0f);
+        }
+
+
     }
 
 }

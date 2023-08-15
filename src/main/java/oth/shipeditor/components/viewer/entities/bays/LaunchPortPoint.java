@@ -1,6 +1,9 @@
 package oth.shipeditor.components.viewer.entities.bays;
 
 import lombok.Getter;
+import oth.shipeditor.communication.EventBus;
+import oth.shipeditor.communication.events.components.BaysPanelRepaintQueued;
+import oth.shipeditor.communication.events.viewer.ViewerRepaintQueued;
 import oth.shipeditor.components.viewer.ShipInstrument;
 import oth.shipeditor.components.viewer.entities.BaseWorldPoint;
 import oth.shipeditor.components.viewer.entities.weapon.SlotDrawingHelper;
@@ -44,9 +47,13 @@ public class LaunchPortPoint extends BaseWorldPoint implements SlotPoint {
     public void changeSlotID(String newId) {
         ShipPainter parent = (ShipPainter) this.getParentLayer();
         if (!parent.isGeneratedIDUnassigned(newId)) {
+            EventBus.publish(new ViewerRepaintQueued());
+            EventBus.publish(new BaysPanelRepaintQueued());
             return;
         }
         parentBay.setId(newId);
+        EventBus.publish(new ViewerRepaintQueued());
+        EventBus.publish(new BaysPanelRepaintQueued());
     }
 
     @Override
@@ -164,8 +171,7 @@ public class LaunchPortPoint extends BaseWorldPoint implements SlotPoint {
         coordsLabel.paintText(g, worldToScreen, font);
     }
 
-    @Override
-    public String toString() {
+    public String getIndexToDisplay() {
         List<LaunchPortPoint> portPoints = parentBay.getPortPoints();
         return "#" + portPoints.indexOf(this);
     }

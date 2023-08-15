@@ -4,6 +4,7 @@ import lombok.Getter;
 import lombok.Setter;
 import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.components.SlotControlRepaintQueued;
+import oth.shipeditor.communication.events.viewer.ViewerRepaintQueued;
 import oth.shipeditor.components.viewer.ShipInstrument;
 import oth.shipeditor.components.viewer.entities.BaseWorldPoint;
 import oth.shipeditor.components.viewer.layers.ship.ShipPainter;
@@ -116,12 +117,14 @@ public class WeaponSlotPoint extends BaseWorldPoint implements SlotPoint {
     public void changeSlotID(String newId) {
         ShipPainter parent = (ShipPainter) this.getParentLayer();
         if (!parent.isGeneratedIDUnassigned(newId)) {
+            EventBus.publish(new ViewerRepaintQueued());
             EventBus.publish(new SlotControlRepaintQueued());
             return;
         }
 
         this.setId(newId);
         WeaponSlotPainter.setSlotOverrideFromSkin(this, parent.getActiveSkin());
+        EventBus.publish(new ViewerRepaintQueued());
         EventBus.publish(new SlotControlRepaintQueued());
     }
 

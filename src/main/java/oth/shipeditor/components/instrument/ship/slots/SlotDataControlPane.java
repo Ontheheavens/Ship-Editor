@@ -33,6 +33,11 @@ public class SlotDataControlPane extends AbstractSlotValuesPanel {
     }
 
     @Override
+    protected String getEntityName() {
+        return "Slot";
+    }
+
+    @Override
     protected ActionListener getTypeSelectorListener(JComboBox<WeaponType> typeSelector) {
         return e -> this.actOnSelectedValues((weaponSlotPainter, weaponSlotPoints) -> {
             WeaponType selectedType = (WeaponType) typeSelector.getSelectedItem();

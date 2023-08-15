@@ -184,7 +184,7 @@ public final class ComponentUtilities {
 
         JLabel visibilityWidgetLabel = new JLabel(widgetLabel);
         visibilityWidgetLabel.setToolTipText(StringValues.TOGGLED_ON_PER_LAYER_BASIS);
-        widgetPanel.setBorder(new EmptyBorder(4, 0, 4, 0));
+        widgetPanel.setBorder(new EmptyBorder(6, 0, 4, 0));
 
         int sidePadding = 6;
         ComponentUtilities.layoutAsOpposites(widgetPanel, visibilityWidgetLabel,

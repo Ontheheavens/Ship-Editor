@@ -18,8 +18,24 @@ import java.awt.event.ActionListener;
  */
 public class BayDataControlPane extends AbstractSlotValuesPanel {
 
-    protected BayDataControlPane(SlotPoint slotPoint) {
+    BayDataControlPane(SlotPoint slotPoint) {
         super(slotPoint, false);
+    }
+
+    @Override
+    protected String getEntityName() {
+        return "Bay";
+    }
+
+    @Override
+    protected void addContent() {
+        super.addIDPanel();
+
+        super.addMountSelector();
+        super.addSizeSelector();
+
+        super.addAngleController();
+        super.addArcController();
     }
 
     @Override

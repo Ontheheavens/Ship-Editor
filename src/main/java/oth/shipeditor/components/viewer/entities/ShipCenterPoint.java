@@ -82,7 +82,7 @@ public class ShipCenterPoint extends BaseWorldPoint {
 
     @Override
     protected Color createBaseColor() {
-        return Color.GRAY;
+        return new Color(250, 200, 30);
     }
 
     @Override
@@ -94,7 +94,7 @@ public class ShipCenterPoint extends BaseWorldPoint {
     @Override
     @SuppressWarnings("WeakerAccess")
     protected Color createSelectColor() {
-        return Color.LIGHT_GRAY;
+        return createBaseColor();
     }
 
     private void paintCenterCross(Graphics2D g, AffineTransform worldToScreen) {

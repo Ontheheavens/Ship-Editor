@@ -1,6 +1,7 @@
 package oth.shipeditor.undo.edits.points.slots;
 
 import oth.shipeditor.communication.EventBus;
+import oth.shipeditor.communication.events.components.BaysPanelRepaintQueued;
 import oth.shipeditor.communication.events.components.SlotControlRepaintQueued;
 import oth.shipeditor.communication.events.viewer.ViewerRepaintQueued;
 import oth.shipeditor.components.viewer.entities.weapon.SlotPoint;
@@ -31,6 +32,7 @@ public class SlotArcSet extends AbstractEdit {
         slotPoint.setArc(oldArc);
         EventBus.publish(new ViewerRepaintQueued());
         EventBus.publish(new SlotControlRepaintQueued());
+        EventBus.publish(new BaysPanelRepaintQueued());
     }
 
     @Override
@@ -39,6 +41,7 @@ public class SlotArcSet extends AbstractEdit {
         redoSubEdits();
         EventBus.publish(new ViewerRepaintQueued());
         EventBus.publish(new SlotControlRepaintQueued());
+        EventBus.publish(new BaysPanelRepaintQueued());
     }
 
     @Override

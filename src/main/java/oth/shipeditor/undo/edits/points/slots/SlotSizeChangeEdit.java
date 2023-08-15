@@ -1,6 +1,7 @@
 package oth.shipeditor.undo.edits.points.slots;
 
 import oth.shipeditor.communication.EventBus;
+import oth.shipeditor.communication.events.components.BaysPanelRepaintQueued;
 import oth.shipeditor.communication.events.components.SlotControlRepaintQueued;
 import oth.shipeditor.communication.events.viewer.ViewerRepaintQueued;
 import oth.shipeditor.components.viewer.entities.weapon.SlotPoint;
@@ -30,6 +31,7 @@ public class SlotSizeChangeEdit extends AbstractEdit {
         slot.setWeaponSize(old);
         EventBus.publish(new ViewerRepaintQueued());
         EventBus.publish(new SlotControlRepaintQueued());
+        EventBus.publish(new BaysPanelRepaintQueued());
     }
 
     @Override
@@ -37,6 +39,7 @@ public class SlotSizeChangeEdit extends AbstractEdit {
         slot.setWeaponSize(updated);
         EventBus.publish(new ViewerRepaintQueued());
         EventBus.publish(new SlotControlRepaintQueued());
+        EventBus.publish(new BaysPanelRepaintQueued());
     }
 
     @Override

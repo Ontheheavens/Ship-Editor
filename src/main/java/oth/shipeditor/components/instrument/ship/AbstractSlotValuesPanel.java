@@ -32,7 +32,7 @@ public abstract class AbstractSlotValuesPanel extends JPanel {
     @Getter
     private final SlotPoint selected;
 
-    protected final boolean multiSelectionAllowed;
+    private final boolean multiSelectionAllowed;
 
     protected AbstractSlotValuesPanel(SlotPoint slotPoint, boolean multiSelection) {
         this.selected = slotPoint;
@@ -40,6 +40,8 @@ public abstract class AbstractSlotValuesPanel extends JPanel {
         this.setLayout(new GridBagLayout());
         this.addContent();
     }
+
+    protected abstract String getEntityName();
 
     @SuppressWarnings("WeakerAccess")
     protected void addContent() {
@@ -53,7 +55,7 @@ public abstract class AbstractSlotValuesPanel extends JPanel {
         this.addArcController();
     }
 
-    protected void addLabelAndComponent(JLabel label, Component component, int y) {
+    private void addLabelAndComponent(JLabel label, Component component, int y) {
         GridBagConstraints constraints = new GridBagConstraints();
 
         constraints.insets = new Insets(3, 6, 0, 3);
@@ -77,7 +79,7 @@ public abstract class AbstractSlotValuesPanel extends JPanel {
         this.add(component, constraints);
     }
 
-    public static JLabel getNoSelected() {
+    private static JLabel getNoSelected() {
         JLabel label = new JLabel(NO_SELECTED_SLOT);
         label.setBorder(new EmptyBorder(5, 0, 5, 0));
         return label;
@@ -97,10 +99,10 @@ public abstract class AbstractSlotValuesPanel extends JPanel {
                                                              SpinnerNumberModel spinnerNumberModel,
                                                              SlotPoint slotPoint);
 
-    private void addIDPanel() {
+    protected void addIDPanel() {
         JPanel container = new JPanel();
         container.setLayout(new BoxLayout(container, BoxLayout.LINE_AXIS));
-        JLabel label = new JLabel("Slot ID:");
+        JLabel label = new JLabel(getEntityName() + " ID:");
 
         if (multiSelectionAllowed) {
             label.setToolTipText(CHANGE_APPLIES_TO_FIRST_SELECTED_SLOT);
@@ -122,7 +124,7 @@ public abstract class AbstractSlotValuesPanel extends JPanel {
     }
 
     private void addTypeSelector() {
-        JLabel selectorLabel = new JLabel("Slot type:");
+        JLabel selectorLabel = new JLabel(getEntityName() + " type:");
         if (multiSelectionAllowed) {
             selectorLabel.setToolTipText(CHANGE_APPLIES_TO_ALL_SELECTED_SLOTS);
         }
@@ -146,8 +148,8 @@ public abstract class AbstractSlotValuesPanel extends JPanel {
         this.addLabelAndComponent(selectorLabel, typeSelector, 1);
     }
 
-    private void addMountSelector() {
-        JLabel selectorLabel = new JLabel("Slot mount:");
+    protected void addMountSelector() {
+        JLabel selectorLabel = new JLabel(getEntityName() + " mount:");
         if (multiSelectionAllowed) {
             selectorLabel.setToolTipText(CHANGE_APPLIES_TO_ALL_SELECTED_SLOTS);
         }
@@ -169,8 +171,8 @@ public abstract class AbstractSlotValuesPanel extends JPanel {
         this.addLabelAndComponent(selectorLabel, mountSelector, 2);
     }
 
-    private void addSizeSelector() {
-        JLabel selectorLabel = new JLabel("Slot size:");
+    protected void addSizeSelector() {
+        JLabel selectorLabel = new JLabel(getEntityName() + " size:");
         if (multiSelectionAllowed) {
             selectorLabel.setToolTipText(CHANGE_APPLIES_TO_ALL_SELECTED_SLOTS);
         }
@@ -191,8 +193,8 @@ public abstract class AbstractSlotValuesPanel extends JPanel {
         this.addLabelAndComponent(selectorLabel, sizeSelector, 3);
     }
 
-    private void addAngleController() {
-        JLabel selectorLabel = new JLabel("Slot angle:");
+    protected void addAngleController() {
+        JLabel selectorLabel = new JLabel(getEntityName() + " angle:");
 
         String tooltip;
         if (multiSelectionAllowed) {
@@ -232,8 +234,8 @@ public abstract class AbstractSlotValuesPanel extends JPanel {
         this.addLabelAndComponent(selectorLabel, spinner, 4);
     }
 
-    private void addArcController() {
-        JLabel selectorLabel = new JLabel("Slot arc:");
+    protected void addArcController() {
+        JLabel selectorLabel = new JLabel(getEntityName() + " arc:");
 
         String tooltip;
         if (multiSelectionAllowed) {
