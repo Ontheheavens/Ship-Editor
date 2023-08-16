@@ -25,14 +25,14 @@ public final class MarkPointsPainter extends AbstractPointPainter {
     private MarkPointsPainter() {
         this.markPoints = new ArrayList<>();
         this.initCreationListener();
-        this.setInteractionEnabled(true);
+        this.setInteractionEnabled(false);
     }
 
     private void initCreationListener() {
         EventBus.subscribe(event -> {
             if (event instanceof PointCreationQueued checked) {
                 if (!isInteractionEnabled()) return;
-                this.addPoint(checked.point());
+                this.addPoint(new BaseWorldPoint(checked.position()));
             }
         });
     }

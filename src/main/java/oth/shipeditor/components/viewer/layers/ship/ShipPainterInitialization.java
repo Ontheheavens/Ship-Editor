@@ -88,9 +88,7 @@ public final class ShipPainterInitialization {
 
                 Point2D[] locations = weaponSlot.getLocations();
 
-                LaunchBay bay = new LaunchBay(bayPainter);
-
-                bay.setId(weaponSlot.getId());
+                LaunchBay bay = new LaunchBay(weaponSlot.getId(), bayPainter);
 
                 bay.setAngle(weaponSlot.getAngle());
                 bay.setArc(weaponSlot.getArc());

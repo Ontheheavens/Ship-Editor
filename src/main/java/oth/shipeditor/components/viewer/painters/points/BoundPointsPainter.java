@@ -6,10 +6,7 @@ import lombok.extern.log4j.Log4j2;
 import oth.shipeditor.communication.BusEventListener;
 import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.viewer.ViewerRepaintQueued;
-import oth.shipeditor.communication.events.viewer.points.BoundCreationQueued;
-import oth.shipeditor.communication.events.viewer.points.BoundInsertedConfirmed;
-import oth.shipeditor.communication.events.viewer.points.BoundPointsSorted;
-import oth.shipeditor.communication.events.viewer.points.InstrumentModeChanged;
+import oth.shipeditor.communication.events.viewer.points.*;
 import oth.shipeditor.components.instrument.ship.ShipInstrumentsPane;
 import oth.shipeditor.components.viewer.ShipInstrument;
 import oth.shipeditor.components.viewer.control.ControlPredicates;
@@ -144,7 +141,7 @@ public final class BoundPointsPainter extends MirrorablePointPainter {
     private void initPointListening() {
         List<BusEventListener> listeners = getListeners();
         BusEventListener boundCreationListener = event -> {
-            if (event instanceof BoundCreationQueued checked) {
+            if (event instanceof PointCreationQueued checked) {
                 if (!isInteractionEnabled()) return;
                 if (!hasPointAtCoords(checked.position())) {
                     this.createBound(checked);
@@ -163,7 +160,7 @@ public final class BoundPointsPainter extends MirrorablePointPainter {
         EventBus.subscribe(boundsSortingListener);
     }
 
-    private void createBound(BoundCreationQueued event) {
+    private void createBound(PointCreationQueued event) {
         ShipPainter parentLayer = this.getParentLayer();
         Point2D position = event.position();
         boolean mirrorMode = ControlPredicates.isMirrorModeEnabled();

@@ -1,6 +1,8 @@
 package oth.shipeditor.components.viewer.entities.weapon;
 
+import lombok.Builder;
 import lombok.Getter;
+import lombok.Setter;
 import oth.shipeditor.representation.weapon.WeaponMount;
 import oth.shipeditor.representation.weapon.WeaponSize;
 import oth.shipeditor.representation.weapon.WeaponType;
@@ -9,86 +11,57 @@ import oth.shipeditor.representation.weapon.WeaponType;
  * @author Ontheheavens
  * @since 31.07.2023
  */
-@Getter
-public final class WeaponSlotOverride {
+@Getter @Setter @Builder
+public final class WeaponSlotOverride implements SlotData {
 
-    private final String slotID;
+    private String slotID;
 
-    private final WeaponSize weaponSize;
+    private WeaponSize weaponSize;
 
-    private final WeaponType weaponType;
+    private WeaponType weaponType;
 
-    private final WeaponMount weaponMount;
+    private WeaponMount weaponMount;
 
-    private final Integer renderOrderMod;
+    private Integer renderOrderMod;
 
-    private final Double arc;
+    private Double arc;
 
-    private final Double angle;
+    private Double angle;
 
-    private WeaponSlotOverride(Builder builder) {
-        this.weaponSize = builder.weaponSize;
-        this.weaponType = builder.weaponType;
-        this.weaponMount = builder.weaponMount;
-        this.renderOrderMod = builder.renderOrderMod;
-        this.arc = builder.arc;
-        this.angle = builder.angle;
-        this.slotID = builder.slotID;
+    @Override
+    public String getId() {
+        return slotID;
     }
 
-    @SuppressWarnings({"PublicInnerClass", "unused"})
-    public static class Builder {
+    @Override
+    public void changeSlotID(String newId) {
+        this.setSlotID(newId);
+    }
 
-        private String slotID;
-        private WeaponSize weaponSize;
-        private WeaponType weaponType;
-        private WeaponMount weaponMount;
-        private Integer renderOrderMod;
-        private Double arc;
-        private Double angle;
+    public Double getBoxedArc() {
+        return arc;
+    }
 
-        public static Builder override() {
-            return new Builder();
-        }
+    @Override
+    public double getArc() {
+        return arc;
+    }
 
-        public Builder withWeaponSize(WeaponSize inputSize) {
-            this.weaponSize = inputSize;
-            return this;
-        }
+    public void setArc(double degrees) {
+        this.arc = degrees;
+    }
 
-        public Builder withWeaponType(WeaponType inputType) {
-            this.weaponType = inputType;
-            return this;
-        }
+    @Override
+    public void setAngle(double degrees) {
+        this.angle = degrees;
+    }
 
-        public Builder withWeaponMount(WeaponMount inputMount) {
-            this.weaponMount = inputMount;
-            return this;
-        }
+    public double getAngle() {
+        return angle;
+    }
 
-        public Builder withRenderOrderMod(Integer inputOrderMod) {
-            this.renderOrderMod = inputOrderMod;
-            return this;
-        }
-
-        public Builder withArc(Double inputArc) {
-            this.arc = inputArc;
-            return this;
-        }
-
-        public Builder withAngle(Double inputAngle) {
-            this.angle = inputAngle;
-            return this;
-        }
-
-        public Builder withSlotID(String id) {
-            this.slotID = id;
-            return this;
-        }
-
-        public WeaponSlotOverride build() {
-            return new WeaponSlotOverride(this);
-        }
+    public Double getBoxedAngle() {
+        return angle;
     }
 
 }

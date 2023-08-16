@@ -4,7 +4,7 @@ import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.components.BaysPanelRepaintQueued;
 import oth.shipeditor.communication.events.components.SlotControlRepaintQueued;
 import oth.shipeditor.communication.events.viewer.ViewerRepaintQueued;
-import oth.shipeditor.components.viewer.entities.weapon.SlotPoint;
+import oth.shipeditor.components.viewer.entities.weapon.SlotData;
 import oth.shipeditor.representation.weapon.WeaponMount;
 import oth.shipeditor.undo.AbstractEdit;
 
@@ -14,13 +14,13 @@ import oth.shipeditor.undo.AbstractEdit;
  */
 public class SlotMountChangeEdit extends AbstractEdit {
 
-    private final SlotPoint slot;
+    private final SlotData slot;
 
     private final WeaponMount old;
 
     private final WeaponMount updated;
 
-    public SlotMountChangeEdit(SlotPoint point, WeaponMount oldMount, WeaponMount newMount) {
+    public SlotMountChangeEdit(SlotData point, WeaponMount oldMount, WeaponMount newMount) {
         this.slot = point;
         this.old = oldMount;
         this.updated = newMount;

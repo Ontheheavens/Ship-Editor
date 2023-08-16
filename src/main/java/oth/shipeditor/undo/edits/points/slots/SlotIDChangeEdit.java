@@ -1,6 +1,6 @@
 package oth.shipeditor.undo.edits.points.slots;
 
-import oth.shipeditor.components.viewer.entities.weapon.SlotPoint;
+import oth.shipeditor.components.viewer.entities.weapon.SlotData;
 import oth.shipeditor.undo.AbstractEdit;
 
 /**
@@ -9,13 +9,13 @@ import oth.shipeditor.undo.AbstractEdit;
  */
 public class SlotIDChangeEdit extends AbstractEdit {
 
-    private final SlotPoint slot;
+    private final SlotData slot;
 
     private final String old;
 
     private final String updated;
 
-    public SlotIDChangeEdit(SlotPoint point, String newID, String oldID) {
+    public SlotIDChangeEdit(SlotData point, String newID, String oldID) {
         this.slot = point;
         this.old = oldID;
         this.updated = newID;

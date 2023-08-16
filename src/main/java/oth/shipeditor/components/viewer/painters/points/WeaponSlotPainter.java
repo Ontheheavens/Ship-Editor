@@ -43,7 +43,6 @@ import java.util.*;
 public class WeaponSlotPainter extends MirrorablePointPainter{
 
     private static final String ILLEGAL_POINT_TYPE_FOUND_IN_WEAPON_SLOT_PAINTER = "Illegal point type found in WeaponSlotPainter!";
-    private static final char SPACE = ' ';
 
     @Getter @Setter
     private List<WeaponSlotPoint> slotPoints;
@@ -79,7 +78,7 @@ public class WeaponSlotPainter extends MirrorablePointPainter{
     private void initInteractionListeners() {
         List<BusEventListener> listeners = getListeners();
         BusEventListener slotCreationListener = event -> {
-            if (event instanceof SlotCreationQueued checked) {
+            if (event instanceof PointCreationQueued checked) {
                 if (!isInteractionEnabled()) return;
                 if (!hasPointAtCoords(checked.position())) {
                     this.createSlot(checked);
@@ -110,7 +109,7 @@ public class WeaponSlotPainter extends MirrorablePointPainter{
         EventBus.subscribe(slotSortingListener);
     }
 
-    private void createSlot(SlotCreationQueued event) {
+    private void createSlot(PointCreationQueued event) {
         if (!creationHotkeyPressed) return;
 
         ShipPainter parentLayer = this.getParentLayer();
@@ -120,7 +119,7 @@ public class WeaponSlotPainter extends MirrorablePointPainter{
         WeaponSlotPoint created = null;
         WeaponSlotPoint counterpart = null;
 
-        String uniqueID = this.generateUniqueID();
+        String uniqueID = this.generateUniqueSlotID();
 
         switch (SlotCreationPane.getMode()) {
             case BY_CLOSEST -> {
@@ -143,7 +142,7 @@ public class WeaponSlotPainter extends MirrorablePointPainter{
             if (getMirroredCounterpart(created) == null) {
                 Point2D counterpartPosition = createCounterpartPosition(position);
                 counterpart = new WeaponSlotPoint(counterpartPosition, parentLayer, created);
-                String incrementedID = this.incrementUniqueID(uniqueID);
+                String incrementedID = parentLayer.incrementUniqueSlotID(uniqueID);
                 counterpart.setId(incrementedID);
                 double flipAngle = Utility.flipAngle(counterpart.getAngle());
                 counterpart.setAngle(flipAngle);
@@ -156,36 +155,9 @@ public class WeaponSlotPainter extends MirrorablePointPainter{
         }
     }
 
-    private String generateUniqueID() {
-        ShipPainter parentLayer = this.getParentLayer();
-        Set<String> existingIDs = parentLayer.getAllSlotIDs();
-
-        String baseID = "WS";
-        int suffix = 0;
-
-        while (true) {
-            String newID = baseID + " " + String.format("%03d", suffix);
-            if (!existingIDs.contains(newID)) {
-                return newID;
-            }
-            suffix++;
-        }
-    }
-
-    private String incrementUniqueID(String id) {
-        ShipPainter parentLayer = this.getParentLayer();
-        Set<String> existingIDs = parentLayer.getAllSlotIDs();
-
-        String baseID = id.substring(0, id.lastIndexOf(SPACE) + 1);
-        int suffix = Integer.parseInt(id.substring(id.lastIndexOf(SPACE) + 1));
-
-        while (true) {
-            suffix++;
-            String newID = baseID + String.format("%03d", suffix);
-            if (!existingIDs.contains(newID)) {
-                return newID;
-            }
-        }
+    private String generateUniqueSlotID() {
+        ShipPainter parentLayer = getParentLayer();
+        return parentLayer.generateUniqueSlotID("WS");
     }
 
     private Set<WeaponSlotPoint> getSlotsWithCounterparts(Iterable<WeaponSlotPoint> slots) {
@@ -314,6 +286,7 @@ public class WeaponSlotPainter extends MirrorablePointPainter{
         KeyboardFocusManager.getCurrentKeyboardFocusManager().removeKeyEventDispatcher(hotkeyDispatcher);
     }
 
+    @SuppressWarnings("DuplicatedCode")
     private void initHotkeys() {
         hotkeyDispatcher = ke -> {
             int keyCode = ke.getKeyCode();

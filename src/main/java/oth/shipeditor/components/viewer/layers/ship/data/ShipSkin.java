@@ -352,14 +352,14 @@ public final class ShipSkin {
 
             weaponSlotChanges.forEach((slotID, weaponSlot) -> {
 
-                WeaponSlotOverride.Builder overrideBlueprint = WeaponSlotOverride.Builder.override();
+                WeaponSlotOverride.WeaponSlotOverrideBuilder overrideBlueprint = WeaponSlotOverride.builder();
                 WeaponType type = WeaponType.value(weaponSlot.getType());
                 WeaponSize size = WeaponSize.value(weaponSlot.getSize());
                 WeaponMount mount = WeaponMount.value(weaponSlot.getMount());
-                WeaponSlotOverride override = overrideBlueprint.withSlotID(slotID)
-                        .withWeaponType(type)
-                        .withWeaponSize(size)
-                        .withWeaponMount(mount)
+                WeaponSlotOverride override = overrideBlueprint.slotID(slotID)
+                        .weaponType(type)
+                        .weaponSize(size)
+                        .weaponMount(mount)
                         .build();
                 overrides.put(slotID, override);
             });

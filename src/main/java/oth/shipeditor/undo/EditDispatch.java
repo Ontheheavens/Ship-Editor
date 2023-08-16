@@ -10,7 +10,7 @@ import oth.shipeditor.communication.events.viewer.ViewerRepaintQueued;
 import oth.shipeditor.communication.events.viewer.control.ViewerMouseReleased;
 import oth.shipeditor.communication.events.viewer.points.AnchorOffsetQueued;
 import oth.shipeditor.components.viewer.entities.*;
-import oth.shipeditor.components.viewer.entities.weapon.SlotPoint;
+import oth.shipeditor.components.viewer.entities.weapon.SlotData;
 import oth.shipeditor.components.viewer.entities.weapon.WeaponSlotPoint;
 import oth.shipeditor.components.viewer.layers.LayerPainter;
 import oth.shipeditor.components.viewer.painters.points.AbstractPointPainter;
@@ -111,7 +111,7 @@ public final class EditDispatch {
         Events.repaintView();
     }
 
-    public static void postSlotAngleSet(SlotPoint slotPoint, double old, double updated ) {
+    public static void postSlotAngleSet(SlotData slotPoint, double old, double updated ) {
         Edit angleEdit = new SlotAngleSet(slotPoint, old, updated);
         EditDispatch.handleContinuousEdit(angleEdit);
         slotPoint.setAngle(updated);
@@ -120,7 +120,7 @@ public final class EditDispatch {
         EventBus.publish(new BaysPanelRepaintQueued());
     }
 
-    public static void postSlotArcSet(SlotPoint slotPoint, double old, double updated ) {
+    public static void postSlotArcSet(SlotData slotPoint, double old, double updated ) {
         Edit arcEdit = new SlotArcSet(slotPoint, old, updated);
         EditDispatch.handleContinuousEdit(arcEdit);
         slotPoint.setArc(updated);
@@ -162,14 +162,14 @@ public final class EditDispatch {
         Events.repaintView();
     }
 
-    public static void postSlotIDChanged(SlotPoint point, String newID) {
+    public static void postSlotIDChanged(SlotData point, String newID) {
         String oldID = point.getId();
         Edit renameEdit = new SlotIDChangeEdit(point, newID, oldID);
         UndoOverseer.post(renameEdit);
         point.changeSlotID(newID);
     }
 
-    public static void postSlotTypeChanged(SlotPoint point, WeaponType newType) {
+    public static void postSlotTypeChanged(SlotData point, WeaponType newType) {
         WeaponType oldType = point.getWeaponType();
         Edit typeChangeEdit = new SlotTypeChangeEdit(point, oldType, newType);
         UndoOverseer.post(typeChangeEdit);
@@ -177,7 +177,7 @@ public final class EditDispatch {
         EventBus.publish(new ViewerRepaintQueued());
     }
 
-    public static void postSlotMountChanged(SlotPoint point, WeaponMount newMount) {
+    public static void postSlotMountChanged(SlotData point, WeaponMount newMount) {
         WeaponMount oldMount = point.getWeaponMount();
         Edit mountChangeEdit = new SlotMountChangeEdit(point, oldMount, newMount);
         UndoOverseer.post(mountChangeEdit);
@@ -185,7 +185,7 @@ public final class EditDispatch {
         EventBus.publish(new ViewerRepaintQueued());
     }
 
-    public static void postSlotSizeChanged(SlotPoint point, WeaponSize newSize) {
+    public static void postSlotSizeChanged(SlotData point, WeaponSize newSize) {
         WeaponSize oldSize = point.getWeaponSize();
         Edit sizeChangeEdit = new SlotSizeChangeEdit(point, oldSize, newSize);
         UndoOverseer.post(sizeChangeEdit);

@@ -1,6 +1,7 @@
 package oth.shipeditor.components.instrument.ship;
 
 import lombok.Getter;
+import oth.shipeditor.components.viewer.entities.weapon.SlotData;
 import oth.shipeditor.components.viewer.entities.weapon.SlotPoint;
 import oth.shipeditor.components.viewer.entities.weapon.WeaponSlotOverride;
 import oth.shipeditor.representation.weapon.WeaponMount;
@@ -30,12 +31,12 @@ public abstract class AbstractSlotValuesPanel extends JPanel {
     private static final String CHANGE_APPLIES_TO_FIRST_SELECTED_SLOT = "Change applies to first selected slot";
 
     @Getter
-    private final SlotPoint selected;
+    private final SlotData selected;
 
     private final boolean multiSelectionAllowed;
 
-    protected AbstractSlotValuesPanel(SlotPoint slotPoint, boolean multiSelection) {
-        this.selected = slotPoint;
+    protected AbstractSlotValuesPanel(SlotData slot, boolean multiSelection) {
+        this.selected = slot;
         this.multiSelectionAllowed = multiSelection;
         this.setLayout(new GridBagLayout());
         this.addContent();
@@ -93,11 +94,11 @@ public abstract class AbstractSlotValuesPanel extends JPanel {
 
     protected abstract ChangeListener getAngleChangeListener(JSpinner spinner,
                                                              SpinnerNumberModel spinnerNumberModel,
-                                                             SlotPoint slotPoint);
+                                                             SlotData slotPoint);
 
     protected abstract ChangeListener getArcChangeListener(JSpinner spinner,
                                                              SpinnerNumberModel spinnerNumberModel,
-                                                             SlotPoint slotPoint);
+                                                           SlotData slotPoint);
 
     protected void addIDPanel() {
         JPanel container = new JPanel();
@@ -138,7 +139,11 @@ public abstract class AbstractSlotValuesPanel extends JPanel {
         typeSelector.removeItem(WeaponType.LAUNCH_BAY);
         typeSelector.setSelectedItem(selected.getWeaponType());
 
-        WeaponSlotOverride skinOverride = selected.getSkinOverride();
+        WeaponSlotOverride skinOverride = null;
+        if (selected instanceof SlotPoint checked) {
+            skinOverride = checked.getSkinOverride();
+        }
+
         if (skinOverride != null && skinOverride.getWeaponType() != null) {
             typeSelector.setToolTipText("Locked: slot type overridden by skin");
             typeSelector.setEnabled(false);
@@ -161,7 +166,11 @@ public abstract class AbstractSlotValuesPanel extends JPanel {
         JComboBox<WeaponMount> mountSelector = new JComboBox<>(WeaponMount.values());
         mountSelector.setSelectedItem(selected.getWeaponMount());
 
-        WeaponSlotOverride skinOverride = selected.getSkinOverride();
+        WeaponSlotOverride skinOverride = null;
+        if (selected instanceof SlotPoint checked) {
+            skinOverride = checked.getSkinOverride();
+        }
+
         if (skinOverride != null && skinOverride.getWeaponMount() != null) {
             mountSelector.setToolTipText("Locked: slot mount overridden by skin");
             mountSelector.setEnabled(false);
@@ -183,7 +192,11 @@ public abstract class AbstractSlotValuesPanel extends JPanel {
         JComboBox<WeaponSize> sizeSelector = new JComboBox<>(WeaponSize.values());
         sizeSelector.setSelectedItem(selected.getWeaponSize());
 
-        WeaponSlotOverride skinOverride = selected.getSkinOverride();
+        WeaponSlotOverride skinOverride = null;
+        if (selected instanceof SlotPoint checked) {
+            skinOverride = checked.getSkinOverride();
+        }
+
         if (skinOverride != null && skinOverride.getWeaponSize() != null) {
             sizeSelector.setToolTipText("Locked: slot size overridden by skin");
             sizeSelector.setEnabled(false);
@@ -214,8 +227,12 @@ public abstract class AbstractSlotValuesPanel extends JPanel {
                 minValue, maxValue, 0.5d);
         JSpinner spinner = new JSpinner(spinnerNumberModel);
 
-        WeaponSlotOverride skinOverride = selected.getSkinOverride();
-        if (skinOverride != null && skinOverride.getAngle() != null) {
+        WeaponSlotOverride skinOverride = null;
+        if (selected instanceof SlotPoint checked) {
+            skinOverride = checked.getSkinOverride();
+        }
+
+        if (skinOverride != null && skinOverride.getBoxedAngle() != null) {
             spinner.setToolTipText("Locked: slot angle overridden by skin");
             spinner.setEnabled(false);
         } else {
@@ -256,8 +273,12 @@ public abstract class AbstractSlotValuesPanel extends JPanel {
                 minValue, maxValue, 1);
         JSpinner spinner = new JSpinner(spinnerNumberModel);
 
-        WeaponSlotOverride skinOverride = selected.getSkinOverride();
-        if (skinOverride != null && skinOverride.getArc() != null) {
+        WeaponSlotOverride skinOverride = null;
+        if (selected instanceof SlotPoint checked) {
+            skinOverride = checked.getSkinOverride();
+        }
+
+        if (skinOverride != null && skinOverride.getBoxedArc() != null) {
             spinner.setToolTipText("Locked: slot arc overridden by skin");
             spinner.setEnabled(false);
         } else {

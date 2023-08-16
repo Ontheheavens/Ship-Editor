@@ -1,12 +1,11 @@
 package oth.shipeditor.communication.events.viewer.points;
 
-import oth.shipeditor.components.viewer.entities.BaseWorldPoint;
-import oth.shipeditor.components.viewer.entities.WorldPoint;
+import java.awt.geom.Point2D;
 
 /**
  * @author Ontheheavens
  * @since 19.07.2023
  */
-public record PointCreationQueued(BaseWorldPoint point) implements PointEvent {
+public record PointCreationQueued(Point2D position) implements PointEvent {
 
 }

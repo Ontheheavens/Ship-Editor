@@ -298,6 +298,7 @@ public abstract class AbstractPointPainter implements Painter {
         point.setPointSelected(false);
     }
 
+    @SuppressWarnings("BooleanMethodIsAlwaysInverted")
     boolean hasPointAtCoords(Point2D point2D) {
         boolean pointDoesExist = false;
         for (WorldPoint point : this.getPointsIndex()) {

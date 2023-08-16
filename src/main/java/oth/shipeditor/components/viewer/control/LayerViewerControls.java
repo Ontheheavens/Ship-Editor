@@ -181,8 +181,7 @@ public final class LayerViewerControls implements ViewerControl {
             Point2D screenPoint = this.getAdjustedCursor();
             position = Utility.correctAdjustedCursor(screenPoint, screenToWorld);
         }
-        EventBus.publish(new BoundCreationQueued(position));
-        EventBus.publish(new SlotCreationQueued(position));
+        EventBus.publish(new PointCreationQueued(position));
     }
 
     @Override

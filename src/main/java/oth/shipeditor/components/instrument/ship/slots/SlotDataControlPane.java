@@ -3,7 +3,7 @@ package oth.shipeditor.components.instrument.ship.slots;
 import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.viewer.ViewerRepaintQueued;
 import oth.shipeditor.components.instrument.ship.AbstractSlotValuesPanel;
-import oth.shipeditor.components.viewer.entities.weapon.SlotPoint;
+import oth.shipeditor.components.viewer.entities.weapon.SlotData;
 import oth.shipeditor.components.viewer.entities.weapon.WeaponSlotPoint;
 import oth.shipeditor.components.viewer.layers.ship.ShipPainter;
 import oth.shipeditor.components.viewer.painters.points.WeaponSlotPainter;
@@ -64,7 +64,7 @@ public class SlotDataControlPane extends AbstractSlotValuesPanel {
     @Override
     protected ChangeListener getAngleChangeListener(JSpinner spinner,
                                                     SpinnerNumberModel spinnerNumberModel,
-                                                    SlotPoint slotPoint) {
+                                                    SlotData slotPoint) {
         return new ChangeListener() {
             @Override
             public void stateChanged(ChangeEvent e) {
@@ -84,7 +84,7 @@ public class SlotDataControlPane extends AbstractSlotValuesPanel {
     @Override
     protected ChangeListener getArcChangeListener(JSpinner spinner,
                                                   SpinnerNumberModel spinnerNumberModel,
-                                                  SlotPoint slotPoint) {
+                                                  SlotData slotPoint) {
         return new ChangeListener() {
             @Override
             public void stateChanged(ChangeEvent e) {

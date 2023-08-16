@@ -1,6 +1,7 @@
 package oth.shipeditor.components.instrument.ship.bays;
 
 import oth.shipeditor.components.instrument.ship.AbstractSlotValuesPanel;
+import oth.shipeditor.components.viewer.entities.weapon.SlotData;
 import oth.shipeditor.components.viewer.entities.weapon.SlotPoint;
 import oth.shipeditor.representation.weapon.WeaponMount;
 import oth.shipeditor.representation.weapon.WeaponSize;
@@ -60,7 +61,7 @@ public class BayDataControlPane extends AbstractSlotValuesPanel {
     }
 
     @Override
-    protected ChangeListener getAngleChangeListener(JSpinner spinner, SpinnerNumberModel spinnerNumberModel, SlotPoint slotPoint) {
+    protected ChangeListener getAngleChangeListener(JSpinner spinner, SpinnerNumberModel spinnerNumberModel, SlotData slotPoint) {
         return new ChangeListener() {
             @Override
             public void stateChanged(ChangeEvent e) {
@@ -73,7 +74,7 @@ public class BayDataControlPane extends AbstractSlotValuesPanel {
     }
 
     @Override
-    protected ChangeListener getArcChangeListener(JSpinner spinner, SpinnerNumberModel spinnerNumberModel, SlotPoint slotPoint) {
+    protected ChangeListener getArcChangeListener(JSpinner spinner, SpinnerNumberModel spinnerNumberModel, SlotData slotPoint) {
         return new ChangeListener() {
             @Override
             public void stateChanged(ChangeEvent e) {

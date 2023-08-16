@@ -4,7 +4,7 @@ import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.components.BaysPanelRepaintQueued;
 import oth.shipeditor.communication.events.components.SlotControlRepaintQueued;
 import oth.shipeditor.communication.events.viewer.ViewerRepaintQueued;
-import oth.shipeditor.components.viewer.entities.weapon.SlotPoint;
+import oth.shipeditor.components.viewer.entities.weapon.SlotData;
 import oth.shipeditor.undo.AbstractEdit;
 
 /**
@@ -13,13 +13,13 @@ import oth.shipeditor.undo.AbstractEdit;
  */
 public class SlotArcSet extends AbstractEdit {
 
-    private final SlotPoint slotPoint;
+    private final SlotData slotPoint;
 
     private final double oldArc;
 
     private final double updatedArc;
 
-    public SlotArcSet(SlotPoint point, double old, double updated) {
+    public SlotArcSet(SlotData point, double old, double updated) {
         this.slotPoint = point;
         this.oldArc = old;
         this.updatedArc = updated;

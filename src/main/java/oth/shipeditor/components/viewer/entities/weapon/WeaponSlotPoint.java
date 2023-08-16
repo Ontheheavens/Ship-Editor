@@ -99,15 +99,15 @@ public class WeaponSlotPoint extends BaseWorldPoint implements SlotPoint {
     }
 
     public double getArc() {
-        if (skinOverride != null && skinOverride.getArc() != null) {
-            return skinOverride.getArc();
+        if (skinOverride != null && skinOverride.getBoxedArc() != null) {
+            return skinOverride.getBoxedArc();
         } else {
             return arc;
         }
     }
 
     public double getAngle() {
-        if (skinOverride != null && skinOverride.getAngle() != null) {
+        if (skinOverride != null && skinOverride.getBoxedAngle() != null) {
             return skinOverride.getAngle();
         } else {
             return angle;

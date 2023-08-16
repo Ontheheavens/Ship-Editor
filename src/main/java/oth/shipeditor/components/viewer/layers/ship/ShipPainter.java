@@ -39,6 +39,8 @@ import java.util.stream.Collectors;
 @Log4j2
 public final class ShipPainter extends LayerPainter {
 
+    private static final char SPACE = ' ';
+
     @Getter
     private BoundPointsPainter boundsPainter;
     @Getter
@@ -166,7 +168,7 @@ public final class ShipPainter extends LayerPainter {
         return new Point2D.Double( anchor.getX(), anchor.getY() + sprite.getHeight());
     }
 
-    public Set<String> getAllSlotIDs() {
+    private Set<String> getAllSlotIDs() {
         WeaponSlotPainter slotPainter = this.getWeaponSlotPainter();
         List<WeaponSlotPoint> slotPoints = slotPainter.getSlotPoints();
 
@@ -186,6 +188,7 @@ public final class ShipPainter extends LayerPainter {
         return slotIDs;
     }
 
+    @SuppressWarnings("BooleanMethodIsAlwaysInverted")
     public boolean isGeneratedIDUnassigned(String newId) {
         Set<String> existingIDs = this.getAllSlotIDs();
 
@@ -199,6 +202,35 @@ public final class ShipPainter extends LayerPainter {
             }
         }
         return true;
+    }
+
+    public String generateUniqueSlotID(String baseID) {
+        Set<String> existingIDs = this.getAllSlotIDs();
+
+        int suffix = 0;
+
+        while (true) {
+            String newID = baseID + " " + String.format("%03d", suffix);
+            if (!existingIDs.contains(newID)) {
+                return newID;
+            }
+            suffix++;
+        }
+    }
+
+    public String incrementUniqueSlotID(String id) {
+        Set<String> existingIDs = this.getAllSlotIDs();
+
+        String baseID = id.substring(0, id.lastIndexOf(SPACE) + 1);
+        int suffix = Integer.parseInt(id.substring(id.lastIndexOf(SPACE) + 1));
+
+        while (true) {
+            suffix++;
+            String newID = baseID + String.format("%03d", suffix);
+            if (!existingIDs.contains(newID)) {
+                return newID;
+            }
+        }
     }
 
 }
