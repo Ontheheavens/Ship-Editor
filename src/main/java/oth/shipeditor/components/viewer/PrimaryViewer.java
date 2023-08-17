@@ -79,13 +79,13 @@ public final class PrimaryViewer extends Viewer implements LayerViewer {
             public void mouseEntered(MouseEvent e) {
                 PrimaryViewer.this.requestFocusInWindow();
                 cursorInViewer = true;
-                repaint();
+                setRepaintQueued();
             }
 
             @Override
             public void mouseExited(MouseEvent e) {
                 cursorInViewer = false;
-                repaint();
+                setRepaintQueued();
             }
         });
 
@@ -98,10 +98,19 @@ public final class PrimaryViewer extends Viewer implements LayerViewer {
         return this;
     }
 
+    public void setRepaintQueued() {
+        this.paintOrderController.setRepaintQueued(true);
+    }
+
+    @SuppressWarnings("WeakerAccess")
+    public void setRevalidateQueued() {
+        this.paintOrderController.setRevalidateQueued(true);
+    }
+
     private void initViewerStateListeners() {
         EventBus.subscribe(event -> {
             if(event instanceof ViewerRepaintQueued || event instanceof LayerWasSelected) {
-                this.repaint();
+                setRepaintQueued();
             }
         });
         EventBus.subscribe(event -> {
@@ -121,8 +130,8 @@ public final class PrimaryViewer extends Viewer implements LayerViewer {
                 Color opaque = new Color(background.getRed(),
                         background.getGreen(), background.getBlue(), 255);
                 this.setBackground(opaque);
-                this.revalidate();
-                this.repaint();
+                setRevalidateQueued();
+                setRepaintQueued();
             }
         });
     }
@@ -140,7 +149,7 @@ public final class PrimaryViewer extends Viewer implements LayerViewer {
         EventBus.subscribe(event -> {
             if (event instanceof ViewerLayerRemovalConfirmed checked) {
                 PrimaryViewer.unloadLayer(checked.removed());
-                this.repaint();
+                setRepaintQueued();
             }
         });
     }
@@ -207,7 +216,7 @@ public final class PrimaryViewer extends Viewer implements LayerViewer {
         double dx = midpoint.getX() - centerScreen.getX();
         double dy = midpoint.getY() - centerScreen.getY();
         this.translate(dx, dy);
-        this.repaint();
+        setRepaintQueued();
     }
 
     public Point2D getViewerMidpoint() {
