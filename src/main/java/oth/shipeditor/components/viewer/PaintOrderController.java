@@ -2,16 +2,16 @@ package oth.shipeditor.components.viewer;
 
 import de.javagl.viewer.Painter;
 import lombok.Getter;
+import lombok.Setter;
 import oth.shipeditor.components.viewer.layers.LayerManager;
 import oth.shipeditor.components.viewer.layers.LayerPainter;
 import oth.shipeditor.components.viewer.layers.ViewerLayer;
-import oth.shipeditor.components.viewer.layers.ship.ShipPainter;
-import oth.shipeditor.components.viewer.layers.ship.ShipLayer;
 import oth.shipeditor.components.viewer.painters.GuidesPainters;
 import oth.shipeditor.components.viewer.painters.HotkeyHelpPainter;
 import oth.shipeditor.components.viewer.painters.points.AbstractPointPainter;
 import oth.shipeditor.components.viewer.painters.points.MarkPointsPainter;
 
+import javax.swing.*;
 import java.awt.*;
 import java.awt.geom.AffineTransform;
 import java.util.List;
@@ -36,12 +36,37 @@ public class PaintOrderController implements Painter {
     @Getter
     private final HotkeyHelpPainter hotkeyPainter;
 
+    @Setter
+    private boolean repaintQueued;
+
+    @Setter
+    private boolean revalidateQueued;
+
     PaintOrderController(PrimaryViewer viewer) {
         this.parent = viewer;
 
         this.miscPointsPainter = MarkPointsPainter.create();
         this.guidesPainters = new GuidesPainters(viewer);
         this.hotkeyPainter = new HotkeyHelpPainter();
+
+        Timer repaintTimer = new Timer(2, e -> {
+            if (repaintQueued) {
+                repaintViewer();
+            }
+            if (revalidateQueued) {
+                revalidateViewer();
+            }
+        });
+        repaintTimer.setRepeats(true);
+        repaintTimer.start();
+    }
+
+    private void revalidateViewer() {
+        parent.revalidate();
+    }
+
+    private void repaintViewer() {
+        parent.repaint();
     }
 
     @Override

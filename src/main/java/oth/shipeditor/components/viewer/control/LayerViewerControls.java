@@ -137,7 +137,7 @@ public final class LayerViewerControls implements ViewerControl {
                     }
                     break;
             }
-            this.parentViewer.repaint();
+            this.parentViewer.setRepaintQueued();
             return false;
         });
     }
@@ -250,7 +250,7 @@ public final class LayerViewerControls implements ViewerControl {
         int y = e.getY();
         this.tryRadiusDrag(e);
         this.previousPoint.setLocation(x, y);
-        this.parentViewer.repaint();
+        this.parentViewer.setRepaintQueued();
         if (ControlPredicates.getSelectionMode() == PointSelectionMode.CLOSEST) {
             EventBus.publish(new PointSelectQueued(null));
         }
@@ -373,7 +373,7 @@ public final class LayerViewerControls implements ViewerControl {
                 EventBus.publish(new PointDragQueued(screenToWorld, cursor));
             }
         }
-        parentViewer.repaint();
+        this.parentViewer.setRepaintQueued();
     }
 
 }
