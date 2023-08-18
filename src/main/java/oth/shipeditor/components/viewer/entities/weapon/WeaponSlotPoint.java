@@ -6,7 +6,7 @@ import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.components.SlotControlRepaintQueued;
 import oth.shipeditor.communication.events.viewer.ViewerRepaintQueued;
 import oth.shipeditor.components.viewer.ShipInstrument;
-import oth.shipeditor.components.viewer.entities.BaseWorldPoint;
+import oth.shipeditor.components.viewer.entities.AngledPoint;
 import oth.shipeditor.components.viewer.layers.ship.ShipPainter;
 import oth.shipeditor.components.viewer.painters.points.WeaponSlotPainter;
 import oth.shipeditor.representation.weapon.WeaponMount;
@@ -25,7 +25,7 @@ import java.awt.geom.Point2D;
  * @since 25.07.2023
  */
 @SuppressWarnings("WeakerAccess")
-public class WeaponSlotPoint extends BaseWorldPoint implements SlotPoint {
+public class WeaponSlotPoint extends AngledPoint implements SlotPoint {
 
     @Getter @Setter
     private String id;
@@ -106,6 +106,7 @@ public class WeaponSlotPoint extends BaseWorldPoint implements SlotPoint {
         }
     }
 
+    @Override
     public double getAngle() {
         if (skinOverride != null && skinOverride.getBoxedAngle() != null) {
             return skinOverride.getAngle();

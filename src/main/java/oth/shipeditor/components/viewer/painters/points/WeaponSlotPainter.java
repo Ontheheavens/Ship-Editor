@@ -12,8 +12,8 @@ import oth.shipeditor.components.instrument.ship.slots.SlotCreationPane;
 import oth.shipeditor.components.viewer.ShipInstrument;
 import oth.shipeditor.components.viewer.control.ControlPredicates;
 import oth.shipeditor.components.viewer.entities.BaseWorldPoint;
-import oth.shipeditor.components.viewer.entities.ShipCenterPoint;
 import oth.shipeditor.components.viewer.entities.WorldPoint;
+import oth.shipeditor.components.viewer.entities.weapon.SlotData;
 import oth.shipeditor.components.viewer.entities.weapon.SlotDrawingHelper;
 import oth.shipeditor.components.viewer.entities.weapon.WeaponSlotOverride;
 import oth.shipeditor.components.viewer.entities.weapon.WeaponSlotPoint;
@@ -40,7 +40,7 @@ import java.util.*;
  */
 @SuppressWarnings({"OverlyComplexClass", "OverlyCoupledClass"})
 @Log4j2
-public class WeaponSlotPainter extends MirrorablePointPainter{
+public class WeaponSlotPainter extends AngledPointPainter {
 
     private static final String ILLEGAL_POINT_TYPE_FOUND_IN_WEAPON_SLOT_PAINTER = "Illegal point type found in WeaponSlotPainter!";
 
@@ -90,7 +90,7 @@ public class WeaponSlotPainter extends MirrorablePointPainter{
         BusEventListener controlListener = event -> {
             if (event instanceof SlotAngleChangeQueued checked) {
                 if (!isInteractionEnabled() || !controlHotkeyPressed) return;
-                this.changeAngleByTarget(checked.worldTarget());
+                super.changeAngleByTarget(checked.worldTarget());
             }
             else if (event instanceof SlotArcChangeQueued checked) {
                 if (!isInteractionEnabled() || !controlHotkeyPressed) return;
@@ -201,7 +201,7 @@ public class WeaponSlotPainter extends MirrorablePointPainter{
             throw new IllegalArgumentException(ILLEGAL_POINT_TYPE_FOUND_IN_WEAPON_SLOT_PAINTER);
         }
         double directionAngle = checked.getAngle();
-        double targetAngle = WeaponSlotPainter.getTargetRotation(checked, worldTarget);
+        double targetAngle = AngledPointPainter.getTargetRotation(checked, worldTarget);
 
         double angleDifference = targetAngle - directionAngle;
 
@@ -235,49 +235,6 @@ public class WeaponSlotPainter extends MirrorablePointPainter{
         slotPoints.add(precedingIndex, checked);
         EventBus.publish(new WeaponSlotInsertedConfirmed(checked, precedingIndex));
         log.info("Weapon slot inserted to painter: {}", checked);
-    }
-
-    private static double getTargetRotation(WorldPoint selected, Point2D worldTarget) {
-        Point2D pointPosition = selected.getPosition();
-        double deltaX = worldTarget.getX() - pointPosition.getX();
-        double deltaY = worldTarget.getY() - pointPosition.getY();
-
-        double radians = Math.atan2(deltaX, deltaY);
-
-        double rotationDegrees = Math.toDegrees(radians) + 180;
-        double result = rotationDegrees;
-        if (ControlPredicates.isRotationRoundingEnabled()) {
-            result = Math.round(rotationDegrees * 2.0d) / 2.0d;
-        }
-        return result;
-    }
-
-    private void changeAngleByTarget(Point2D worldTarget) {
-        WorldPoint selected = getSelected();
-        if (!(selected instanceof WeaponSlotPoint checked)) {
-            throw new IllegalArgumentException(ILLEGAL_POINT_TYPE_FOUND_IN_WEAPON_SLOT_PAINTER);
-        }
-        double result = WeaponSlotPainter.getTargetRotation(checked, worldTarget);
-        this.changeAngleWithMirrorCheck(checked, result);
-    }
-
-    public void changeAngleWithMirrorCheck(WeaponSlotPoint slotPoint, double angleDegrees) {
-        slotPoint.changeSlotAngle(angleDegrees);
-        boolean mirrorMode = ControlPredicates.isMirrorModeEnabled();
-        BaseWorldPoint mirroredCounterpart = getMirroredCounterpart(slotPoint);
-        if (mirrorMode && mirroredCounterpart instanceof WeaponSlotPoint checkedSlot) {
-            double angle = Utility.flipAngle(angleDegrees);
-            Point2D slotPosition = checkedSlot.getPosition();
-            double slotX = slotPosition.getX();
-            ShipPainter parentLayer = getParentLayer();
-            ShipCenterPoint shipCenter = parentLayer.getShipCenter();
-            Point2D centerPosition = shipCenter.getPosition();
-            double centerX = centerPosition.getX();
-            if ((Math.abs(slotX - centerX) < 0.05d)) {
-                angle = angleDegrees;
-            }
-            checkedSlot.changeSlotAngle(angle);
-        }
     }
 
     @Override
@@ -412,7 +369,7 @@ public class WeaponSlotPainter extends MirrorablePointPainter{
 
             switch (SlotCreationPane.getMode()) {
                 case BY_CLOSEST -> {
-                    WeaponSlotPoint closest = (WeaponSlotPoint) findClosestPoint(finalWorldCursor);
+                    SlotData closest = (SlotData) findClosestPoint(finalWorldCursor);
                     slotMockDrawer.setType(closest.getWeaponType());
                     slotMockDrawer.setMount(closest.getWeaponMount());
                     slotMockDrawer.setSize(closest.getWeaponSize());

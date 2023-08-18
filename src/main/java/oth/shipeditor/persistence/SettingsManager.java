@@ -96,22 +96,30 @@ public final class SettingsManager {
 
     private static class SettingsFilePrinter extends DefaultPrettyPrinter {
 
-        private static final String blank = DefaultIndenter.SYS_LF;
+        private static final String BLANK_LINE = DefaultIndenter.SYS_LF;
 
         @Override
         public SettingsFilePrinter createInstance() {
-            return new SettingsFilePrinter();
+            SettingsFilePrinter settingsFilePrinter = new SettingsFilePrinter();
+            settingsFilePrinter._spacesInObjectEntries = false;
+            return settingsFilePrinter;
         }
 
         @Override
         public void writeStartObject(JsonGenerator g) throws IOException {
             super.writeStartObject(g);
-            g.writeRaw(blank);
+            g.writeRaw(BLANK_LINE);
+        }
+
+        @Override
+        public void writeObjectFieldValueSeparator(JsonGenerator g) throws IOException {
+            super.writeObjectFieldValueSeparator(g);
+            g.writeRaw(DefaultPrettyPrinter.DEFAULT_ROOT_VALUE_SEPARATOR);
         }
 
         @Override
         public void writeEndObject(JsonGenerator g, int nrOfEntries) throws IOException {
-            g.writeRaw(blank);
+            g.writeRaw(BLANK_LINE);
             super.writeEndObject(g, nrOfEntries);
         }
 
