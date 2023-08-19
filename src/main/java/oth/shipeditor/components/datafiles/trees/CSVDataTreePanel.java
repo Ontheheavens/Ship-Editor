@@ -1,10 +1,12 @@
-package oth.shipeditor.components.datafiles;
+package oth.shipeditor.components.datafiles.trees;
 
 import lombok.extern.log4j.Log4j2;
+import oth.shipeditor.components.datafiles.OpenDataTarget;
 import oth.shipeditor.components.datafiles.entities.CSVEntry;
 import oth.shipeditor.menubar.FileUtilities;
 import oth.shipeditor.utility.Pair;
 import oth.shipeditor.utility.Utility;
+import oth.shipeditor.utility.components.ComponentUtilities;
 
 import javax.swing.*;
 import javax.swing.tree.DefaultMutableTreeNode;
@@ -34,7 +36,7 @@ public abstract class CSVDataTreePanel<T extends CSVEntry> extends DataTreePanel
     protected JPanel createTopPanel() {
         String entryTypeName = getEntryTypeName();
         String capitalized = Utility.capitalizeFirstLetter(entryTypeName);
-        Pair<JPanel, JButton> singleButtonPanel = DataTreePanel.createSingleButtonPanel(capitalized + " data:",
+        Pair<JPanel, JButton> singleButtonPanel = ComponentUtilities.createSingleButtonPanel(capitalized + " data:",
                 getLoadDataAction());
         JButton button = singleButtonPanel.getSecond();
         button.setText("Reload " + entryTypeName + " data");

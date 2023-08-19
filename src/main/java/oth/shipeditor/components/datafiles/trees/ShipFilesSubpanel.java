@@ -1,4 +1,4 @@
-package oth.shipeditor.components.datafiles;
+package oth.shipeditor.components.datafiles.trees;
 
 import oth.shipeditor.components.datafiles.entities.HullmodCSVEntry;
 import oth.shipeditor.components.datafiles.entities.ShipCSVEntry;

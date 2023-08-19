@@ -67,7 +67,7 @@ public final class MarkPointsPainter extends AbstractPointPainter {
         if (point instanceof MarkPoint checked) {
             markPoints.add(checked);
         } else {
-            throw new IllegalArgumentException("Attempted to add incompatible point to MarkPointsPainter!");
+            throwIllegalPoint();
         }
     }
 
@@ -76,7 +76,7 @@ public final class MarkPointsPainter extends AbstractPointPainter {
         if (point instanceof MarkPoint checked) {
             markPoints.remove(checked);
         } else {
-            throw new IllegalArgumentException("Attempted to remove incompatible point from MarkPointsPainter!");
+            throwIllegalPoint();
         }
     }
 
@@ -90,7 +90,8 @@ public final class MarkPointsPainter extends AbstractPointPainter {
         if (point instanceof MarkPoint checked) {
             return markPoints.indexOf(checked);
         } else {
-            throw new IllegalArgumentException("Attempted to access incompatible point in MarkPointsPainter!");
+            throwIllegalPoint();
+            return -1;
         }
     }
 

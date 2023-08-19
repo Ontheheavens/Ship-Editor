@@ -2,14 +2,11 @@ package oth.shipeditor.components.viewer.painters.points;
 
 import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
-import oth.shipeditor.communication.BusEventListener;
 import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.viewer.ViewerRepaintQueued;
-import oth.shipeditor.communication.events.viewer.points.InstrumentModeChanged;
 import oth.shipeditor.communication.events.viewer.points.LaunchBayAddConfirmed;
 import oth.shipeditor.communication.events.viewer.points.LaunchBayRemoveConfirmed;
 import oth.shipeditor.communication.events.viewer.points.PointCreationQueued;
-import oth.shipeditor.components.instrument.ship.ShipInstrumentsPane;
 import oth.shipeditor.components.viewer.ShipInstrument;
 import oth.shipeditor.components.viewer.entities.BaseWorldPoint;
 import oth.shipeditor.components.viewer.entities.WorldPoint;
@@ -55,9 +52,11 @@ public class LaunchBayPainter extends MirrorablePointPainter {
         this.portsIndex = new ArrayList<>();
         this.baysList = new ArrayList<>();
         this.initHotkeys();
-        this.initPointListening();
-        this.initModeListener();
-        this.setInteractionEnabled(ShipInstrumentsPane.getCurrentMode() == ShipInstrument.LAUNCH_BAYS);
+    }
+
+    @Override
+    protected ShipInstrument getInstrumentType() {
+        return ShipInstrument.LAUNCH_BAYS;
     }
 
     @Override
@@ -66,21 +65,8 @@ public class LaunchBayPainter extends MirrorablePointPainter {
         KeyboardFocusManager.getCurrentKeyboardFocusManager().removeKeyEventDispatcher(hotkeyDispatcher);
     }
 
-    private void initPointListening() {
-        List<BusEventListener> listeners = getListeners();
-        BusEventListener boundCreationListener = event -> {
-            if (event instanceof PointCreationQueued checked) {
-                if (!isInteractionEnabled()) return;
-                if (!hasPointAtCoords(checked.position())) {
-                    this.handleCreation(checked);
-                }
-            }
-        };
-        listeners.add(boundCreationListener);
-        EventBus.subscribe(boundCreationListener);
-    }
-
-    private void handleCreation(PointCreationQueued event) {
+    @Override
+    protected void handleCreation(PointCreationQueued event) {
         ShipPainter parentLayer = this.getParentLayer();
         Point2D position = event.position();
         String generatedID = this.generateUniqueBayID();
@@ -139,17 +125,6 @@ public class LaunchBayPainter extends MirrorablePointPainter {
         KeyboardFocusManager.getCurrentKeyboardFocusManager().addKeyEventDispatcher(hotkeyDispatcher);
     }
 
-    private void initModeListener() {
-        List<BusEventListener> listeners = getListeners();
-        BusEventListener modeListener = event -> {
-            if (event instanceof InstrumentModeChanged checked) {
-                setInteractionEnabled(checked.newMode() == ShipInstrument.LAUNCH_BAYS);
-            }
-        };
-        listeners.add(modeListener);
-        EventBus.subscribe(modeListener);
-    }
-
     @Override
     protected void handlePointSelectionEvent(BaseWorldPoint point) {
         if (addPortHotkeyPressed) return;
@@ -182,7 +157,7 @@ public class LaunchBayPainter extends MirrorablePointPainter {
             portPoints.add(checked);
             portsIndex.add(checked);
         } else {
-            throw new IllegalArgumentException("Attempted to add incompatible point to LaunchBayPainter!");
+            throwIllegalPoint();
         }
     }
 
@@ -197,7 +172,7 @@ public class LaunchBayPainter extends MirrorablePointPainter {
                 this.removeBay(parentBay);
             }
         } else {
-            throw new IllegalArgumentException("Attempted to remove incompatible point from LaunchBayPainter!");
+            throwIllegalPoint();
         }
     }
 
@@ -206,7 +181,8 @@ public class LaunchBayPainter extends MirrorablePointPainter {
         if (point instanceof LaunchPortPoint checked) {
             return portsIndex.indexOf(checked);
         } else {
-            throw new IllegalArgumentException("Attempted to access incompatible point in LaunchBayPainter!");
+            throwIllegalPoint();
+            return -1;
         }
     }
 
@@ -217,7 +193,7 @@ public class LaunchBayPainter extends MirrorablePointPainter {
 
     @Override
     public void insertPoint(BaseWorldPoint toInsert, int precedingIndex) {
-        throw new UnsupportedOperationException("Point insertion unsupported for LaunchBayPainter!");
+        throwIllegalPoint();
     }
 
     @Override

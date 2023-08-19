@@ -1,9 +1,8 @@
-package oth.shipeditor.components.datafiles;
+package oth.shipeditor.components.datafiles.trees;
 
 import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
-import oth.shipeditor.utility.Pair;
-import oth.shipeditor.utility.Utility;
+import oth.shipeditor.components.datafiles.OpenDataTarget;
 import oth.shipeditor.utility.text.StringValues;
 
 import javax.swing.*;
@@ -54,23 +53,6 @@ public abstract class DataTreePanel extends JPanel {
     }
 
     protected abstract JPanel createTopPanel();
-
-    static Pair<JPanel, JButton> createSingleButtonPanel(String labelText, Action buttonAction) {
-        JPanel topContainer = new JPanel();
-        topContainer.add(new JLabel(labelText));
-        JButton loadButton = new JButton(buttonAction);
-        loadButton.addActionListener(Utility.scheduleTask(3000,
-                e1 -> {
-                    loadButton.setEnabled(false);
-                    topContainer.repaint();
-                },
-                e1 -> {
-                    loadButton.setEnabled(true);
-                    topContainer.repaint();
-                }));
-        topContainer.add(loadButton);
-        return new Pair<>(topContainer, loadButton);
-    }
 
     void resetInfoPanel() {
         rightPanel.removeAll();

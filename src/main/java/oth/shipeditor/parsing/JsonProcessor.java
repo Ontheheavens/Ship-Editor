@@ -19,11 +19,33 @@ public final class JsonProcessor {
 
     private static final char QUOTES = '"';
 
+    @SuppressWarnings("RegExpSimplifiable")
+    private static final Pattern LETTERS_AFTER_DIGIT = Pattern.compile("(?<=[0-9])f|(?<=[0-9])d");
+
+    /**
+     * Pattern to match unquoted values (non-numeric and non-boolean) excluding already quoted values.
+     */
+    private static final Pattern UNQUOTED_VALUES = Pattern.compile("(?<![\"])\\b(?!true|false|null|\\d+(?:\\.\\d+)?)([a-zA-Z_][\\w]*)\\b(?![\"])(?![^\"]*\"(?:[^\"]*\"[^\"]*\")*[^\"]*$)");
+
+
+    /**
+     * Pattern to match semicolons used for object separation outside quoted string values.
+     */
+    @SuppressWarnings("RegExpSimplifiable")
+    private static final Pattern SEPARATORS = Pattern.compile("(?<![\"])\\s*;\\s*(?![^\"]*\"(?:[^\"]*\"[^\"]*\")*[^\"]*$)");
+
     private JsonProcessor() {
     }
 
+    public static String straightenMalformed(File input) {
+        String preprocessed = JsonProcessor.correctJSONUnquotedValues(input);
+        preprocessed = JsonProcessor.correctSpuriousSeparators(preprocessed);
+        preprocessed = JsonProcessor.correctNumberLetterSignums(preprocessed);
+        return preprocessed;
+    }
+
     @SuppressWarnings({"NestedAssignment", "RegExpSimplifiable"})
-    public static String correctJSONUnquotedValues(File malformed) {
+    private static String correctJSONUnquotedValues(File malformed) {
         StringBuilder jsonString = new StringBuilder();
         try (BufferedReader reader = new BufferedReader(new FileReader(malformed, StandardCharsets.UTF_8))) {
             String line;
@@ -33,9 +55,7 @@ public final class JsonProcessor {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        // Pattern to match unquoted values (non-numeric and non-boolean) excluding already quoted values.
-        Pattern pattern = Pattern.compile("(?<![\"])\\b(?!true|false|null|\\d+(?:\\.\\d+)?)([a-zA-Z_][\\w]*)\\b(?![\"])(?![^\"]*\"(?:[^\"]*\"[^\"]*\")*[^\"]*$)");
-        Matcher matcher = pattern.matcher(jsonString);
+        Matcher matcher = UNQUOTED_VALUES.matcher(jsonString);
         StringBuilder preprocessedJson = new StringBuilder();
         int previousEnd = 0;
         while (matcher.find()) {
@@ -52,10 +72,8 @@ public final class JsonProcessor {
     }
 
     @SuppressWarnings("RegExpSimplifiable")
-    public static String correctSpuriousSeparators(String inputJSON) {
-        // Pattern to match semicolons used for object separation outside quoted string values.
-        Pattern pattern = Pattern.compile("(?<![\"])\\s*;\\s*(?![^\"]*\"(?:[^\"]*\"[^\"]*\")*[^\"]*$)");
-        Matcher matcher = pattern.matcher(inputJSON);
+    private static String correctSpuriousSeparators(String inputJSON) {
+        Matcher matcher = SEPARATORS.matcher(inputJSON);
         StringBuilder preprocessedJson = new StringBuilder();
         int previousEnd = 0;
         while (matcher.find()) {
@@ -68,6 +86,11 @@ public final class JsonProcessor {
         }
         preprocessedJson.append(inputJSON.substring(previousEnd));
         return preprocessedJson.toString();
+    }
+
+    private static String correctNumberLetterSignums(CharSequence inputJSON) {
+        Matcher matcher = LETTERS_AFTER_DIGIT.matcher(inputJSON);
+        return matcher.replaceAll("");
     }
 
 }

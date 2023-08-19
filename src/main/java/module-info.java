@@ -30,8 +30,11 @@
     exports oth.shipeditor.components.viewer.painters;
     exports oth.shipeditor.components.viewer.entities;
     exports oth.shipeditor.components.viewer.entities.bays;
+    exports oth.shipeditor.components.viewer.entities.engine;
+    exports oth.shipeditor.components.viewer.entities.weapon;
     exports oth.shipeditor.communication;
     exports oth.shipeditor.communication.events;
+    exports oth.shipeditor.communication.events.viewer.points;
 
     opens oth.shipeditor.components;
     exports oth.shipeditor.components.viewer.control;
@@ -64,7 +67,6 @@
     opens oth.shipeditor.components.instrument.ship.slots;
     exports oth.shipeditor.components.instrument.ship.skins;
     opens oth.shipeditor.components.instrument.ship.skins;
-    exports oth.shipeditor.components.viewer.entities.weapon;
     exports oth.shipeditor.components.viewer.layers.ship.data;
     exports oth.shipeditor.representation.weapon.animation;
     opens oth.shipeditor.representation.weapon.animation;

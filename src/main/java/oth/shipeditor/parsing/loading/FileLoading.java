@@ -2,11 +2,13 @@ package oth.shipeditor.parsing.loading;
 
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.json.JsonReadFeature;
-import com.fasterxml.jackson.databind.MappingIterator;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.*;
+import com.fasterxml.jackson.databind.module.SimpleModule;
+import com.fasterxml.jackson.databind.type.TypeFactory;
 import com.fasterxml.jackson.dataformat.csv.CsvMapper;
 import com.fasterxml.jackson.dataformat.csv.CsvParser;
 import com.fasterxml.jackson.dataformat.csv.CsvSchema;
+import com.formdev.flatlaf.util.StringUtils;
 import lombok.extern.log4j.Log4j2;
 import oth.shipeditor.parsing.JsonProcessor;
 import oth.shipeditor.persistence.SettingsManager;
@@ -26,12 +28,17 @@ import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.net.URISyntaxException;
+import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.function.Predicate;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
 /**
@@ -44,6 +51,7 @@ public final class FileLoading {
     static final String OPEN_COMMAND_CANCELLED_BY_USER = "Open command cancelled by user.";
     private static final String OPENING_SKIN_FILE = "Opening skin file: {}.";
     private static final String TRIED_TO_RESOLVE_SKIN_FILE_WITH_INVALID_EXTENSION = "Tried to resolve skin file with invalid extension!";
+    private static final Pattern LETTERS = Pattern.compile("[a-zA-Z]");
 
     static File lastDirectory;
 
@@ -55,6 +63,21 @@ public final class FileLoading {
         objectMapper.configure(JsonParser.Feature.ALLOW_YAML_COMMENTS, true);
         objectMapper.configure(JsonReadFeature.ALLOW_TRAILING_COMMA.mappedFeature(), true);
         objectMapper.configure(JsonReadFeature.ALLOW_LEADING_DECIMAL_POINT_FOR_NUMBERS.mappedFeature(), true);
+
+        SimpleModule testModule = new SimpleModule("DoubleCustomDeserializer")
+                .addDeserializer(Double.class, new JsonDeserializer<>() {
+                    @Override
+                    public Double deserialize(JsonParser p, DeserializationContext ctxt) throws IOException {
+                        String valueAsString = p.getValueAsString();
+                        if (StringUtils.isEmpty(valueAsString)) {
+                            return null;
+                        }
+                        Matcher matcher = LETTERS.matcher(valueAsString);
+                        return Double.parseDouble(matcher.replaceAll("").replace(",", "."));
+                    }
+                });
+        objectMapper.registerModule(testModule);
+
         return objectMapper;
     }
 
@@ -77,6 +100,20 @@ public final class FileLoading {
             e.printStackTrace();
             return null;
         }
+    }
+
+    public static BufferedImage loadImageResource(String imageFilename) {
+        Class<FileLoading> loadingClass = FileLoading.class;
+        ClassLoader classLoader = loadingClass.getClassLoader();
+
+        URL spritePath = Objects.requireNonNull(classLoader.getResource(imageFilename));
+        File spriteFile;
+        try {
+            spriteFile = new File(spritePath.toURI());
+        } catch (URISyntaxException e) {
+            throw new RuntimeException(e);
+        }
+        return FileLoading.loadSpriteAsImage(spriteFile);
     }
 
     public static BufferedImage loadSpriteAsImage(File file) {
@@ -246,14 +283,24 @@ public final class FileLoading {
         return variantFile;
     }
 
+    @SuppressWarnings("TypeMayBeWeakened")
     private static <T> T parseCorrectableJSON(File file, Class<T> target) {
+        ObjectMapper objectMapper = FileLoading.getConfigured();
+
+        TypeFactory typeFactory = objectMapper.getTypeFactory();
+        JavaType javaType = typeFactory.constructType(target);
+
+        return FileLoading.parseCorrectableJSON(file, javaType);
+    }
+
+    static <T> T parseCorrectableJSON(File file, JavaType targetType) {
         T result = null;
         ObjectMapper objectMapper = FileLoading.getConfigured();
         objectMapper.configure(JsonReadFeature.ALLOW_LEADING_ZEROS_FOR_NUMBERS.mappedFeature(), true);
-        String preprocessed = JsonProcessor.correctJSONUnquotedValues(file);
-        preprocessed = JsonProcessor.correctSpuriousSeparators(preprocessed);
-        try (JsonParser parser = objectMapper.createParser(preprocessed)) {
-            result = objectMapper.readValue(parser, target);
+
+        String content = JsonProcessor.straightenMalformed(file);
+        try (JsonParser parser = objectMapper.createParser(content)) {
+            result = objectMapper.readValue(parser, targetType);
         } catch (IOException e) {
             log.error("Corrected JSON parsing failed: {}", file.getName());
             e.printStackTrace();

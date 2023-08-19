@@ -2,7 +2,7 @@ package oth.shipeditor.components.help;
 
 import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.components.GameDataPanelResized;
-import oth.shipeditor.components.datafiles.DataTreePanel;
+import oth.shipeditor.components.datafiles.trees.DataTreePanel;
 import oth.shipeditor.components.datafiles.OpenDataTarget;
 
 import javax.swing.*;

@@ -6,8 +6,9 @@ import lombok.extern.log4j.Log4j2;
 import oth.shipeditor.communication.BusEventListener;
 import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.viewer.ViewerRepaintQueued;
-import oth.shipeditor.communication.events.viewer.points.*;
-import oth.shipeditor.components.instrument.ship.ShipInstrumentsPane;
+import oth.shipeditor.communication.events.viewer.points.BoundInsertedConfirmed;
+import oth.shipeditor.communication.events.viewer.points.BoundPointsSorted;
+import oth.shipeditor.communication.events.viewer.points.PointCreationQueued;
 import oth.shipeditor.components.viewer.ShipInstrument;
 import oth.shipeditor.components.viewer.control.ControlPredicates;
 import oth.shipeditor.components.viewer.entities.BaseWorldPoint;
@@ -53,9 +54,12 @@ public final class BoundPointsPainter extends MirrorablePointPainter {
         super(parent);
         this.boundPoints = new ArrayList<>();
         this.initHotkeys();
-        this.initModeListener();
         this.initPointListening();
-        this.setInteractionEnabled(ShipInstrumentsPane.getCurrentMode() == ShipInstrument.BOUNDS);
+    }
+
+    @Override
+    protected ShipInstrument getInstrumentType() {
+        return ShipInstrument.BOUNDS;
     }
 
     @Override
@@ -79,7 +83,7 @@ public final class BoundPointsPainter extends MirrorablePointPainter {
         if (point instanceof BoundPoint checked) {
             boundPoints.add(checked);
         } else {
-            throw new IllegalArgumentException("Attempted to add incompatible point to BoundPointsPainter!");
+            throwIllegalPoint();
         }
     }
 
@@ -88,7 +92,7 @@ public final class BoundPointsPainter extends MirrorablePointPainter {
         if (point instanceof BoundPoint checked) {
             boundPoints.remove(checked);
         } else {
-            throw new IllegalArgumentException("Attempted to remove incompatible point from BoundPointsPainter!");
+            throwIllegalPoint();
         }
     }
 
@@ -97,7 +101,8 @@ public final class BoundPointsPainter extends MirrorablePointPainter {
         if (point instanceof BoundPoint checked) {
             return boundPoints.indexOf(checked);
         } else {
-            throw new IllegalArgumentException("Attempted to access incompatible point in BoundPointsPainter!");
+            throwIllegalPoint();
+            return -1;
         }
     }
 
@@ -127,29 +132,8 @@ public final class BoundPointsPainter extends MirrorablePointPainter {
         KeyboardFocusManager.getCurrentKeyboardFocusManager().addKeyEventDispatcher(hotkeyDispatcher);
     }
 
-    private void initModeListener() {
-        List<BusEventListener> listeners = getListeners();
-        BusEventListener modeListener = event -> {
-            if (event instanceof InstrumentModeChanged checked) {
-                setInteractionEnabled(checked.newMode() == ShipInstrument.BOUNDS);
-            }
-        };
-        listeners.add(modeListener);
-        EventBus.subscribe(modeListener);
-    }
-
     private void initPointListening() {
         List<BusEventListener> listeners = getListeners();
-        BusEventListener boundCreationListener = event -> {
-            if (event instanceof PointCreationQueued checked) {
-                if (!isInteractionEnabled()) return;
-                if (!hasPointAtCoords(checked.position())) {
-                    this.createBound(checked);
-                }
-            }
-        };
-        listeners.add(boundCreationListener);
-        EventBus.subscribe(boundCreationListener);
         BusEventListener boundsSortingListener = event -> {
             if (event instanceof BoundPointsSorted checked) {
                 if (!isInteractionEnabled()) return;
@@ -160,7 +144,7 @@ public final class BoundPointsPainter extends MirrorablePointPainter {
         EventBus.subscribe(boundsSortingListener);
     }
 
-    private void createBound(PointCreationQueued event) {
+    protected void handleCreation(PointCreationQueued event) {
         ShipPainter parentLayer = this.getParentLayer();
         Point2D position = event.position();
         boolean mirrorMode = ControlPredicates.isMirrorModeEnabled();
@@ -202,12 +186,14 @@ public final class BoundPointsPainter extends MirrorablePointPainter {
     }
 
     public void insertPoint(BaseWorldPoint toInsert, int precedingIndex) {
-        if (!(toInsert instanceof BoundPoint checked)) {
-            throw new IllegalStateException("Attempted to insert incompatible point to BoundPointsPainter!");
+        if (toInsert instanceof BoundPoint checked) {
+            boundPoints.add(precedingIndex, checked);
+            EventBus.publish(new BoundInsertedConfirmed(checked, precedingIndex));
+            log.info("Bound inserted to painter: {}", checked);
         }
-        boundPoints.add(precedingIndex, checked);
-        EventBus.publish(new BoundInsertedConfirmed(checked, precedingIndex));
-        log.info("Bound inserted to painter: {}", checked);
+        else {
+            throwIllegalPoint();
+        }
     }
 
     private static void setHotkeyState(boolean isAppendHotkey, boolean state) {

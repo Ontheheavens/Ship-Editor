@@ -1,4 +1,4 @@
-package oth.shipeditor.components.datafiles;
+package oth.shipeditor.components.datafiles.trees;
 
 import lombok.extern.log4j.Log4j2;
 import oth.shipeditor.communication.EventBus;
@@ -18,9 +18,10 @@ import java.util.Map;
  * @since 02.08.2023
  */
 @Log4j2
+public
 class ShipSystemsTreePanel extends CSVDataTreePanel<ShipSystemCSVEntry>{
 
-    ShipSystemsTreePanel() {
+    public ShipSystemsTreePanel() {
         super("Shipsystem files");
     }
 

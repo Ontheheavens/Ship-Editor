@@ -1,4 +1,4 @@
-package oth.shipeditor.components.datafiles;
+package oth.shipeditor.components.datafiles.trees;
 
 import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.files.WeaponDataLoaded;
@@ -21,7 +21,7 @@ import java.util.Map;
  */
 public class WeaponsTreePanel extends CSVDataTreePanel<WeaponCSVEntry>{
 
-    WeaponsTreePanel() {
+    public WeaponsTreePanel() {
         super("Weapon files");
     }
 

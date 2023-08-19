@@ -96,4 +96,6 @@ public interface StringConstants {
 
     String VARIANT = "variant";
 
+    String CONFIG = "config";
+
 }

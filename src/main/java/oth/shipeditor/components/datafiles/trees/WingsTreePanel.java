@@ -1,4 +1,4 @@
-package oth.shipeditor.components.datafiles;
+package oth.shipeditor.components.datafiles.trees;
 
 import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.files.WingDataLoaded;
@@ -20,7 +20,7 @@ import java.util.Map;
  */
 public class WingsTreePanel extends CSVDataTreePanel<WingCSVEntry>{
 
-    WingsTreePanel() {
+    public WingsTreePanel() {
         super("Wing entries");
     }
 

@@ -7,7 +7,6 @@ import oth.shipeditor.communication.BusEventListener;
 import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.viewer.ViewerRepaintQueued;
 import oth.shipeditor.communication.events.viewer.points.*;
-import oth.shipeditor.components.instrument.ship.ShipInstrumentsPane;
 import oth.shipeditor.components.instrument.ship.slots.SlotCreationPane;
 import oth.shipeditor.components.viewer.ShipInstrument;
 import oth.shipeditor.components.viewer.control.ControlPredicates;
@@ -38,7 +37,7 @@ import java.util.*;
  * @author Ontheheavens
  * @since 25.07.2023
  */
-@SuppressWarnings({"OverlyComplexClass", "OverlyCoupledClass"})
+@SuppressWarnings("OverlyCoupledClass")
 @Log4j2
 public class WeaponSlotPainter extends AngledPointPainter {
 
@@ -68,31 +67,23 @@ public class WeaponSlotPainter extends AngledPointPainter {
         this.slotPoints = new ArrayList<>();
 
         this.initHotkeys();
-        this.initModeListener();
         this.initInteractionListeners();
+    }
 
-        this.setInteractionEnabled(ShipInstrumentsPane.getCurrentMode() == ShipInstrument.WEAPON_SLOTS);
+    @Override
+    protected ShipInstrument getInstrumentType() {
+        return ShipInstrument.WEAPON_SLOTS;
     }
 
     @SuppressWarnings("ChainOfInstanceofChecks")
-    private void initInteractionListeners() {
+    protected void initInteractionListeners() {
+        super.initInteractionListeners();
         List<BusEventListener> listeners = getListeners();
-        BusEventListener slotCreationListener = event -> {
-            if (event instanceof PointCreationQueued checked) {
-                if (!isInteractionEnabled()) return;
-                if (!hasPointAtCoords(checked.position())) {
-                    this.createSlot(checked);
-                }
-            }
-        };
-        listeners.add(slotCreationListener);
-        EventBus.subscribe(slotCreationListener);
         BusEventListener controlListener = event -> {
             if (event instanceof SlotAngleChangeQueued checked) {
                 if (!isInteractionEnabled() || !controlHotkeyPressed) return;
                 super.changeAngleByTarget(checked.worldTarget());
-            }
-            else if (event instanceof SlotArcChangeQueued checked) {
+            } else if (event instanceof SlotArcChangeQueued checked) {
                 if (!isInteractionEnabled() || !controlHotkeyPressed) return;
                 this.changeArcByTarget(checked.worldTarget());
             }
@@ -109,7 +100,8 @@ public class WeaponSlotPainter extends AngledPointPainter {
         EventBus.subscribe(slotSortingListener);
     }
 
-    private void createSlot(PointCreationQueued event) {
+    @Override
+    protected void handleCreation(PointCreationQueued event) {
         if (!creationHotkeyPressed) return;
 
         ShipPainter parentLayer = this.getParentLayer();
@@ -274,16 +266,7 @@ public class WeaponSlotPainter extends AngledPointPainter {
         KeyboardFocusManager.getCurrentKeyboardFocusManager().addKeyEventDispatcher(hotkeyDispatcher);
     }
 
-    private void initModeListener() {
-        List<BusEventListener> listeners = getListeners();
-        BusEventListener modeListener = event -> {
-            if (event instanceof InstrumentModeChanged checked) {
-                setInteractionEnabled(checked.newMode() == ShipInstrument.WEAPON_SLOTS);
-            }
-        };
-        listeners.add(modeListener);
-        EventBus.subscribe(modeListener);
-    }
+
 
     public void resetSkinSlotOverride() {
         this.slotPoints.forEach(weaponSlotPoint -> weaponSlotPoint.setSkinOverride(null));
@@ -314,7 +297,7 @@ public class WeaponSlotPainter extends AngledPointPainter {
         if (point instanceof WeaponSlotPoint checked) {
             slotPoints.add(checked);
         } else {
-            throw new IllegalArgumentException("Attempted to add incompatible point to WeaponSlotPainter!");
+            throwIllegalPoint();
         }
     }
 
@@ -322,9 +305,8 @@ public class WeaponSlotPainter extends AngledPointPainter {
     protected void removePointFromIndex(BaseWorldPoint point) {
         if (point instanceof WeaponSlotPoint checked) {
             slotPoints.remove(checked);
-
         } else {
-            throw new IllegalArgumentException("Attempted to remove incompatible point from WeaponSlotPainter!");
+            throwIllegalPoint();
         }
     }
 
@@ -333,7 +315,8 @@ public class WeaponSlotPainter extends AngledPointPainter {
         if (point instanceof WeaponSlotPoint checked) {
             return slotPoints.indexOf(checked);
         } else {
-            throw new IllegalArgumentException("Attempted to access incompatible point in WeaponSlotPainter!");
+            throwIllegalPoint();
+            return -1;
         }
     }
 
@@ -341,7 +324,7 @@ public class WeaponSlotPainter extends AngledPointPainter {
     void paintDelegates(Graphics2D g, AffineTransform worldToScreen, double w, double h) {
         super.paintDelegates(g, worldToScreen, w, h);
         for (WeaponSlotPoint point : getPointsIndex()) {
-            WeaponSlotPainter.setSlotTransparency(point, 0.8d);
+            this.setSlotTransparency(point, 0.8d);
         }
     }
 
@@ -350,10 +333,10 @@ public class WeaponSlotPainter extends AngledPointPainter {
         WorldPoint selection = this.getSelected();
         double full = 1.0d;
         if (selection != null && isInteractionEnabled()) {
-            WeaponSlotPainter.setSlotTransparency(selection, full);
+            this.setSlotTransparency(selection, full);
             WorldPoint counterpart = this.getMirroredCounterpart(selection);
             if (counterpart != null && ControlPredicates.isMirrorModeEnabled()) {
-                WeaponSlotPainter.setSlotTransparency(counterpart, full);
+                this.setSlotTransparency(counterpart, full);
             }
         }
     }
@@ -402,11 +385,11 @@ public class WeaponSlotPainter extends AngledPointPainter {
         }
     }
 
-    private static void setSlotTransparency(WorldPoint point, double value) {
+    private void setSlotTransparency(WorldPoint point, double value) {
         if (point instanceof WeaponSlotPoint checked) {
             checked.setTransparency(value);
         } else {
-            throw new IllegalStateException(ILLEGAL_POINT_TYPE_FOUND_IN_WEAPON_SLOT_PAINTER);
+            throwIllegalPoint();
         }
     }
 

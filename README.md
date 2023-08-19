@@ -88,3 +88,9 @@ Due to diligent refactoring and much thought dedicated to app hierarchy, almost 
 ### Issues: 
 
  - Poorly thought-out architecture leading to quick spaghetti code pile-up - needs rework with Event Bus system, which will provide robust loose coupling.
+
+## First draft:
+
+![](showcase/history/Sample%200.jpg)
+
+Used bespoke zoom/translate system, which would have taken quite a bit more time to implement right. It was decided to use JavaGL lib instead for out-of-the-box AffineTransform functionality.

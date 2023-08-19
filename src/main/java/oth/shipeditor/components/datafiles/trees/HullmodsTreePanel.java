@@ -1,4 +1,4 @@
-package oth.shipeditor.components.datafiles;
+package oth.shipeditor.components.datafiles.trees;
 
 import lombok.extern.log4j.Log4j2;
 import oth.shipeditor.communication.EventBus;
@@ -22,9 +22,10 @@ import java.util.Map;
  * @since 08.07.2023
  */
 @Log4j2
+public
 class HullmodsTreePanel extends CSVDataTreePanel<HullmodCSVEntry>{
 
-    HullmodsTreePanel() {
+    public HullmodsTreePanel() {
         super("Hullmod files");
     }
 

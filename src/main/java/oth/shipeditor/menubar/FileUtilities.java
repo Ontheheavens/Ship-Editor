@@ -32,7 +32,7 @@ import java.util.stream.Stream;
  * @author Ontheheavens
  * @since 09.05.2023
  */
-@SuppressWarnings("ClassWithTooManyFields")
+@SuppressWarnings({"ClassWithTooManyFields", "OverlyCoupledClass"})
 @Log4j2
 public final class FileUtilities {
 
@@ -46,6 +46,9 @@ public final class FileUtilities {
 
     @Getter
     private static final Action loadHullStyleDataAction = new LoadHullStyleDataAction();
+
+    @Getter
+    private static final Action loadEngineStyleDataAction = new LoadEngineStyleDataAction();
 
     @Getter
     private static final Action loadShipSystemDataAction = new LoadShipSystemDataAction();
@@ -76,6 +79,7 @@ public final class FileUtilities {
         actions.add(loadShipDataAction);
         actions.add(loadHullmodDataAction);
         actions.add(loadHullStyleDataAction);
+        actions.add(loadEngineStyleDataAction);
         actions.add(loadShipSystemDataAction);
         actions.add(loadWingDataAction);
         actions.add(loadWeaponDataAction);

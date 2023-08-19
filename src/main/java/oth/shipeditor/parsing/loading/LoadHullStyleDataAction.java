@@ -9,6 +9,7 @@ import oth.shipeditor.menubar.FileUtilities;
 import oth.shipeditor.persistence.SettingsManager;
 import oth.shipeditor.representation.GameDataRepository;
 import oth.shipeditor.representation.HullStyle;
+import oth.shipeditor.utility.text.StringConstants;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;
@@ -29,7 +30,7 @@ public class LoadHullStyleDataAction extends AbstractAction {
 
     @Override
     public void actionPerformed(ActionEvent e) {
-        Path targetFile = Paths.get("data", "config", "hull_styles.json");
+        Path targetFile = Paths.get("data", StringConstants.CONFIG, "hull_styles.json");
 
         Map<Path, File> hullStyleFiles = FileUtilities.getFileFromPackages(targetFile);
 

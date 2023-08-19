@@ -351,4 +351,13 @@ public abstract class AbstractPointPainter implements Painter {
         return identity.getSimpleName() + " @" + this.hashCode();
     }
 
+    /**
+     * @throws IllegalArgumentException as a fail-fast precaution when illegal point type is detected.
+     */
+    @SuppressWarnings("WeakerAccess")
+    protected void throwIllegalPoint() {
+        Class<? extends AbstractPointPainter> identity = this.getClass();
+        throw new IllegalArgumentException("Illegal point type in " + identity.getSimpleName());
+    }
+
 }

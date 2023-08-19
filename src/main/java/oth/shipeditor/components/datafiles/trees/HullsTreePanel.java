@@ -1,4 +1,4 @@
-package oth.shipeditor.components.datafiles;
+package oth.shipeditor.components.datafiles.trees;
 
 import lombok.extern.log4j.Log4j2;
 import org.kordamp.ikonli.boxicons.BoxiconsRegular;
@@ -8,6 +8,7 @@ import oth.shipeditor.communication.events.components.GameDataPanelResized;
 import oth.shipeditor.communication.events.files.HullFolderWalked;
 import oth.shipeditor.communication.events.files.HullTreeCleanupQueued;
 import oth.shipeditor.communication.events.files.HullTreeExpansionQueued;
+import oth.shipeditor.components.datafiles.OpenDataTarget;
 import oth.shipeditor.components.datafiles.entities.ShipCSVEntry;
 import oth.shipeditor.menubar.FileUtilities;
 import oth.shipeditor.persistence.SettingsManager;
@@ -15,6 +16,7 @@ import oth.shipeditor.representation.GameDataRepository;
 import oth.shipeditor.representation.HullSpecFile;
 import oth.shipeditor.representation.SkinSpecFile;
 import oth.shipeditor.utility.Pair;
+import oth.shipeditor.utility.components.ComponentUtilities;
 
 import javax.swing.*;
 import javax.swing.tree.DefaultMutableTreeNode;
@@ -34,9 +36,10 @@ import java.util.*;
  * @since 25.06.2023
  */
 @Log4j2
+public
 class HullsTreePanel extends DataTreePanel {
 
-    HullsTreePanel() {
+    public HullsTreePanel() {
         super("Hull files");
     }
 
@@ -163,7 +166,7 @@ class HullsTreePanel extends DataTreePanel {
 
     @Override
     protected JPanel createTopPanel() {
-        Pair<JPanel, JButton> singleButtonPanel = DataTreePanel.createSingleButtonPanel("Ship data:",
+        Pair<JPanel, JButton> singleButtonPanel = ComponentUtilities.createSingleButtonPanel("Ship data:",
                 FileUtilities.getLoadShipDataAction());
         JButton button = singleButtonPanel.getSecond();
         button.setText("Reload ship data");

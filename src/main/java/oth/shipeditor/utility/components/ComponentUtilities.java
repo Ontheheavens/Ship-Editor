@@ -10,6 +10,7 @@ import oth.shipeditor.components.viewer.painters.PainterVisibility;
 import oth.shipeditor.components.viewer.painters.points.AbstractPointPainter;
 import oth.shipeditor.menubar.FileUtilities;
 import oth.shipeditor.utility.Pair;
+import oth.shipeditor.utility.Utility;
 import oth.shipeditor.utility.graphics.ColorUtilities;
 import oth.shipeditor.utility.text.StringValues;
 
@@ -30,6 +31,7 @@ import java.util.Hashtable;
  * @author Ontheheavens
  * @since 22.07.2023
  */
+@SuppressWarnings("ClassWithTooManyMethods")
 public final class ComponentUtilities {
 
     private ComponentUtilities() {
@@ -152,6 +154,34 @@ public final class ComponentUtilities {
         return ComponentUtilities.createIconLabelWithBorder(colorIcon);
     }
 
+    public static JPanel createFileTitlePanel(Path filePath, Path packagePath, String titleText) {
+        JLabel label = new JLabel(titleText);
+        Insets empty = new Insets(0, 3, 2, 4);
+        label.setBorder(ComponentUtilities.createLabelSimpleBorder(empty));
+
+        JPopupMenu contextMenu = ComponentUtilities.createPathContextMenu(filePath);
+
+        JMenuItem openContainingPackage = new JMenuItem(StringValues.OPEN_DATA_PACKAGE);
+        openContainingPackage.addActionListener(e -> FileUtilities.openPathInDesktop(packagePath));
+        contextMenu.add(openContainingPackage);
+
+        label.addMouseListener(new MouseoverLabelListener(contextMenu, label, Color.GRAY));
+        label.setToolTipText(filePath.toString());
+
+        JPanel titleContainer = new JPanel();
+        titleContainer.setLayout(new BoxLayout(titleContainer, BoxLayout.LINE_AXIS));
+        titleContainer.add(label);
+
+        JSeparator separator = new JSeparator(SwingConstants.HORIZONTAL);
+        separator.setMaximumSize(new Dimension(Integer.MAX_VALUE, 0));
+
+        titleContainer.add(separator);
+
+        titleContainer.setBorder(new FlatRoundBorder());
+        titleContainer.setBackground(Color.LIGHT_GRAY);
+        return titleContainer;
+    }
+
     public static JPanel createColorPropertyPanel(Component left, Color color) {
         JPanel container = new JPanel();
 
@@ -226,6 +256,23 @@ public final class ComponentUtilities {
         Border titledBorder = new TitledBorder(matteLine, text,
                 TitledBorder.CENTER, TitledBorder.DEFAULT_POSITION);
         panel.setBorder(titledBorder);
+    }
+
+    public static Pair<JPanel, JButton> createSingleButtonPanel(String labelText, Action buttonAction) {
+        JPanel topContainer = new JPanel();
+        topContainer.add(new JLabel(labelText));
+        JButton loadButton = new JButton(buttonAction);
+        loadButton.addActionListener(Utility.scheduleTask(3000,
+                e1 -> {
+                    loadButton.setEnabled(false);
+                    topContainer.repaint();
+                },
+                e1 -> {
+                    loadButton.setEnabled(true);
+                    topContainer.repaint();
+                }));
+        topContainer.add(loadButton);
+        return new Pair<>(topContainer, loadButton);
     }
 
 }
