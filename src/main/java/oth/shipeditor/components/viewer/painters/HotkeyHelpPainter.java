@@ -62,11 +62,11 @@ public class HotkeyHelpPainter implements Painter {
         List<String> hints = new ArrayList<>();
         switch (current) {
             case COLLISION -> {
-                String radiusHint = "Alter radius: C+LMB";
+                String radiusHint = "Alter radius: C";
                 hints.add(radiusHint);
             }
             case SHIELD -> {
-                String radiusHint = "Alter radius: S+LMB";
+                String radiusHint = "Alter radius: S";
                 hints.add(radiusHint);
             }
             case BOUNDS -> {

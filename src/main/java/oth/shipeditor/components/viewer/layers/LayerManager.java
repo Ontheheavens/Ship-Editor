@@ -110,6 +110,11 @@ public class LayerManager {
                 EventBus.publish(new ActiveLayerUpdated(this.getActiveLayer()));
             }
         });
+        EventBus.subscribe(event -> {
+            if (event instanceof ActiveLayerUpdated checked) {
+                setActiveLayer(checked.updated());
+            }
+        });
     }
 
     private void publishLayerRemoval(ViewerLayer layer) {

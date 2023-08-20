@@ -1,5 +1,5 @@
 # Ship-Editor
-Visualizer and editor of object data in JSON and CSV format using GUI written with Swing.
+Visualizer and editor of object data in JSON and CSV format. Developed as utility tool for the purposes of working with data files of a game Starsector.
 
 ## Stack:
 

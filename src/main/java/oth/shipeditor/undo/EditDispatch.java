@@ -5,18 +5,17 @@ import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.BusEvent;
 import oth.shipeditor.communication.events.Events;
 import oth.shipeditor.communication.events.components.BaysPanelRepaintQueued;
+import oth.shipeditor.communication.events.components.EnginesPanelRepaintQueued;
 import oth.shipeditor.communication.events.components.SlotControlRepaintQueued;
 import oth.shipeditor.communication.events.viewer.ViewerRepaintQueued;
 import oth.shipeditor.communication.events.viewer.control.ViewerMouseReleased;
 import oth.shipeditor.communication.events.viewer.points.AnchorOffsetQueued;
 import oth.shipeditor.components.viewer.entities.*;
+import oth.shipeditor.components.viewer.entities.engine.EnginePoint;
 import oth.shipeditor.components.viewer.entities.weapon.SlotData;
 import oth.shipeditor.components.viewer.entities.weapon.WeaponSlotPoint;
 import oth.shipeditor.components.viewer.layers.LayerPainter;
-import oth.shipeditor.components.viewer.painters.points.AbstractPointPainter;
-import oth.shipeditor.components.viewer.painters.points.BoundPointsPainter;
-import oth.shipeditor.components.viewer.painters.points.MirrorablePointPainter;
-import oth.shipeditor.components.viewer.painters.points.WeaponSlotPainter;
+import oth.shipeditor.components.viewer.painters.points.*;
 import oth.shipeditor.representation.weapon.WeaponMount;
 import oth.shipeditor.representation.weapon.WeaponSize;
 import oth.shipeditor.representation.weapon.WeaponType;
@@ -24,6 +23,7 @@ import oth.shipeditor.undo.edits.AnchorOffsetEdit;
 import oth.shipeditor.undo.edits.LayerRotationEdit;
 import oth.shipeditor.undo.edits.points.*;
 import oth.shipeditor.undo.edits.points.slots.*;
+import oth.shipeditor.utility.Size2D;
 
 import java.awt.geom.Point2D;
 import java.util.List;
@@ -81,7 +81,16 @@ public final class EditDispatch {
         Edit rearrangeEdit = new WeaponSlotsSortEdit(pointPainter, old, changed);
         UndoOverseer.post(rearrangeEdit);
         pointPainter.setSlotPoints(changed);
-        Events.repaintView();
+        EventBus.publish(new SlotControlRepaintQueued());
+    }
+
+    public static void postEnginesRearranged(EngineSlotPainter pointPainter,
+                                             List<EnginePoint> old,
+                                             List<EnginePoint> changed) {
+        Edit rearrangeEdit = new EnginesSortEdit(pointPainter, old, changed);
+        UndoOverseer.post(rearrangeEdit);
+        pointPainter.setEnginePoints(changed);
+        EventBus.publish(new EnginesPanelRepaintQueued());
     }
 
     public static void postPointAdded(AbstractPointPainter pointPainter, BaseWorldPoint point) {
@@ -118,6 +127,23 @@ public final class EditDispatch {
         EventBus.publish(new ViewerRepaintQueued());
         EventBus.publish(new SlotControlRepaintQueued());
         EventBus.publish(new BaysPanelRepaintQueued());
+    }
+
+    public static void postEngineAngleSet(EnginePoint enginePoint, double old, double updated ) {
+        Edit angleEdit = new EngineAngleSet(enginePoint, old, updated);
+        EditDispatch.handleContinuousEdit(angleEdit);
+        enginePoint.setAngle(updated);
+        EventBus.publish(new ViewerRepaintQueued());
+        EventBus.publish(new EnginesPanelRepaintQueued());
+    }
+
+    public static void postEngineSizeChanged(EnginePoint enginePoint, Size2D updated) {
+        Size2D oldSize = enginePoint.getSize();
+        Edit sizeEdit = new EngineSizeSet(enginePoint, oldSize, updated);
+        EditDispatch.handleContinuousEdit(sizeEdit);
+        enginePoint.setSize(updated);
+        EventBus.publish(new ViewerRepaintQueued());
+        EventBus.publish(new EnginesPanelRepaintQueued());
     }
 
     public static void postSlotArcSet(SlotData slotPoint, double old, double updated ) {

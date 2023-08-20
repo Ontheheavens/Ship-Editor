@@ -5,7 +5,6 @@ import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
 import oth.shipeditor.communication.BusEventListener;
 import oth.shipeditor.communication.EventBus;
-import oth.shipeditor.communication.events.viewer.ViewerRepaintQueued;
 import oth.shipeditor.communication.events.viewer.points.*;
 import oth.shipeditor.components.instrument.ship.slots.SlotCreationPane;
 import oth.shipeditor.components.viewer.ShipInstrument;
@@ -41,22 +40,17 @@ import java.util.*;
 @Log4j2
 public class WeaponSlotPainter extends AngledPointPainter {
 
-    private static final String ILLEGAL_POINT_TYPE_FOUND_IN_WEAPON_SLOT_PAINTER = "Illegal point type found in WeaponSlotPainter!";
+    @Getter
+    private boolean controlHotkeyPressed;
+
+    @Getter @Setter
+    private boolean creationHotkeyPressed;
+
+    @Getter
+    private static boolean controlHotkeyStaticPressed;
 
     @Getter @Setter
     private List<WeaponSlotPoint> slotPoints;
-
-    private final int controlHotkey = KeyEvent.VK_A;
-
-    private final int creationHotkey = KeyEvent.VK_W;
-
-    @Getter
-    private static boolean controlHotkeyPressed;
-
-    @Getter
-    private static boolean creationHotkeyPressed;
-
-    private KeyEventDispatcher hotkeyDispatcher;
 
     private final SlotDrawingHelper slotMockDrawer = new SlotDrawingHelper(null);
 
@@ -65,14 +59,34 @@ public class WeaponSlotPainter extends AngledPointPainter {
     public WeaponSlotPainter(ShipPainter parent) {
         super(parent);
         this.slotPoints = new ArrayList<>();
-
-        this.initHotkeys();
         this.initInteractionListeners();
+    }
+
+    @Override
+    public void setControlHotkeyPressed(boolean pressed) {
+        this.controlHotkeyPressed = pressed;
+        controlHotkeyStaticPressed = pressed;
+    }
+
+    @Override
+    protected int getControlHotkey() {
+        return KeyEvent.VK_A;
+    }
+
+    @Override
+    protected int getCreationHotkey() {
+        return KeyEvent.VK_W;
     }
 
     @Override
     protected ShipInstrument getInstrumentType() {
         return ShipInstrument.WEAPON_SLOTS;
+    }
+
+    @Override
+    protected void handlePointSelectionEvent(BaseWorldPoint point) {
+        if (controlHotkeyStaticPressed) return;
+        super.handlePointSelectionEvent(point);
     }
 
     @SuppressWarnings("ChainOfInstanceofChecks")
@@ -81,10 +95,10 @@ public class WeaponSlotPainter extends AngledPointPainter {
         List<BusEventListener> listeners = getListeners();
         BusEventListener controlListener = event -> {
             if (event instanceof SlotAngleChangeQueued checked) {
-                if (!isInteractionEnabled() || !controlHotkeyPressed) return;
-                super.changeAngleByTarget(checked.worldTarget());
+                if (!isInteractionEnabled() || !isControlHotkeyPressed()) return;
+                super.changePointAngleByTarget(checked.worldTarget());
             } else if (event instanceof SlotArcChangeQueued checked) {
-                if (!isInteractionEnabled() || !controlHotkeyPressed) return;
+                if (!isInteractionEnabled() || !isControlHotkeyPressed()) return;
                 this.changeArcByTarget(checked.worldTarget());
             }
         };
@@ -102,7 +116,7 @@ public class WeaponSlotPainter extends AngledPointPainter {
 
     @Override
     protected void handleCreation(PointCreationQueued event) {
-        if (!creationHotkeyPressed) return;
+        if (!isCreationHotkeyPressed()) return;
 
         ShipPainter parentLayer = this.getParentLayer();
         Point2D position = event.position();
@@ -189,25 +203,25 @@ public class WeaponSlotPainter extends AngledPointPainter {
 
     private void changeArcByTarget(Point2D worldTarget) {
         WorldPoint selected = getSelected();
-        if (!(selected instanceof WeaponSlotPoint checked)) {
-            throw new IllegalArgumentException(ILLEGAL_POINT_TYPE_FOUND_IN_WEAPON_SLOT_PAINTER);
+        if (selected instanceof WeaponSlotPoint checked) {
+            double directionAngle = checked.getAngle();
+            double targetAngle = AngledPointPainter.getTargetRotation(checked, worldTarget);
+
+            double angleDifference = targetAngle - directionAngle;
+            // Normalize the angle difference to the range from -180 to 180 degrees.
+            if (angleDifference > 180) {
+                angleDifference -= 360;
+            } else if (angleDifference < -180) {
+                angleDifference += 360;
+            }
+
+            // Calculate the arc extent based on the normalized angle difference.
+            double arcExtent = Math.abs(angleDifference) * 2;
+            this.changeArcWithMirrorCheck(checked, arcExtent);
         }
-        double directionAngle = checked.getAngle();
-        double targetAngle = AngledPointPainter.getTargetRotation(checked, worldTarget);
-
-        double angleDifference = targetAngle - directionAngle;
-
-        // Normalize the angle difference to the range from -180 to 180 degrees.
-        if (angleDifference > 180) {
-            angleDifference -= 360;
-        } else if (angleDifference < -180) {
-            angleDifference += 360;
+        else {
+            throwIllegalPoint();
         }
-
-        // Calculate the arc extent based on the normalized angle difference.
-        double arcExtent = Math.abs(angleDifference) * 2;
-
-        this.changeArcWithMirrorCheck(checked, arcExtent);
     }
 
     public void changeArcWithMirrorCheck(WeaponSlotPoint slotPoint, double arcExtentDegrees) {
@@ -228,45 +242,6 @@ public class WeaponSlotPainter extends AngledPointPainter {
         EventBus.publish(new WeaponSlotInsertedConfirmed(checked, precedingIndex));
         log.info("Weapon slot inserted to painter: {}", checked);
     }
-
-    @Override
-    public void cleanupListeners() {
-        super.cleanupListeners();
-        KeyboardFocusManager.getCurrentKeyboardFocusManager().removeKeyEventDispatcher(hotkeyDispatcher);
-    }
-
-    @SuppressWarnings("DuplicatedCode")
-    private void initHotkeys() {
-        hotkeyDispatcher = ke -> {
-            int keyCode = ke.getKeyCode();
-            boolean isControlHotkey = (keyCode == controlHotkey);
-            boolean isCreationHotkey = (keyCode == creationHotkey);
-            switch (ke.getID()) {
-                case KeyEvent.KEY_PRESSED:
-                    if (isControlHotkey) {
-                        controlHotkeyPressed = true;
-                        EventBus.publish(new ViewerRepaintQueued());
-                    } else if (isCreationHotkey) {
-                        creationHotkeyPressed = true;
-                        EventBus.publish(new ViewerRepaintQueued());
-                    }
-                    break;
-                case KeyEvent.KEY_RELEASED:
-                    if (isControlHotkey) {
-                        controlHotkeyPressed = false;
-                        EventBus.publish(new ViewerRepaintQueued());
-                    } else if (isCreationHotkey) {
-                        creationHotkeyPressed = false;
-                        EventBus.publish(new ViewerRepaintQueued());
-                    }
-                    break;
-            }
-            return false;
-        };
-        KeyboardFocusManager.getCurrentKeyboardFocusManager().addKeyEventDispatcher(hotkeyDispatcher);
-    }
-
-
 
     public void resetSkinSlotOverride() {
         this.slotPoints.forEach(weaponSlotPoint -> weaponSlotPoint.setSkinOverride(null));
@@ -345,7 +320,7 @@ public class WeaponSlotPainter extends AngledPointPainter {
     public void paintPainterContent(Graphics2D g, AffineTransform worldToScreen, double w, double h) {
         super.paintPainterContent(g, worldToScreen, w, h);
 
-        if (isInteractionEnabled() && creationHotkeyPressed) {
+        if (isInteractionEnabled() && isCreationHotkeyPressed()) {
             Point2D finalWorldCursor = StaticController.getFinalWorldCursor();
             Point2D worldCounterpart = this.createCounterpartPosition(finalWorldCursor);
             boolean mirrorMode = ControlPredicates.isMirrorModeEnabled();

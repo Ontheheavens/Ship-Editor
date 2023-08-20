@@ -275,4 +275,37 @@ public final class ComponentUtilities {
         return new Pair<>(topContainer, loadButton);
     }
 
+    /**
+     * @param parent assumes that JPanel instance has GridBagLayout set as component layout.
+     */
+    public static void addLabelAndComponent(JPanel parent, JLabel label, Component component, int y) {
+        GridBagConstraints constraints = new GridBagConstraints();
+
+        constraints.insets = new Insets(3, 6, 0, 3);
+        constraints.gridx = 0;
+        constraints.gridy = y;
+        constraints.weightx = 0.0;
+        constraints.anchor = GridBagConstraints.LINE_START;
+        parent.add(label, constraints);
+
+        constraints.gridx = 1;
+        constraints.weightx = 1.0;
+        constraints.gridy = y;
+        if (component instanceof JLabel) {
+            constraints.fill = GridBagConstraints.NONE;
+            constraints.insets = new Insets(3, 3, 0, 9);
+        } else {
+            constraints.fill = GridBagConstraints.HORIZONTAL;
+            constraints.insets = new Insets(3, 3, 0, 6);
+        }
+        constraints.anchor = GridBagConstraints.LINE_END;
+        parent.add(component, constraints);
+    }
+
+    public static JLabel getNoSelected() {
+        JLabel label = new JLabel(StringValues.NO_SELECTED);
+        label.setBorder(new EmptyBorder(5, 0, 5, 0));
+        return label;
+    }
+
 }

@@ -12,8 +12,8 @@ import oth.shipeditor.communication.events.viewer.points.PointAddConfirmed;
 import oth.shipeditor.communication.events.viewer.points.PointRemovedConfirmed;
 import oth.shipeditor.components.viewer.entities.BoundPoint;
 import oth.shipeditor.components.viewer.layers.ViewerLayer;
-import oth.shipeditor.components.viewer.layers.ship.ShipPainter;
 import oth.shipeditor.components.viewer.layers.ship.ShipLayer;
+import oth.shipeditor.components.viewer.layers.ship.ShipPainter;
 import oth.shipeditor.components.viewer.painters.PainterVisibility;
 import oth.shipeditor.components.viewer.painters.points.BoundPointsPainter;
 import oth.shipeditor.utility.Pair;
@@ -43,6 +43,8 @@ public final class BoundPointsPanel extends JPanel {
     private final JCheckBox reorderCheckbox;
 
     private DefaultListModel<BoundPoint> model = new DefaultListModel<>();
+
+    private BoundPointsPainter cachedPainter;
 
     public BoundPointsPanel() {
         this.setLayout(new BorderLayout());
@@ -137,6 +139,14 @@ public final class BoundPointsPanel extends JPanel {
     private void initPointListener() {
         EventBus.subscribe(event -> {
             if (event instanceof BoundsPanelRepaintQueued) {
+                if (cachedPainter != null) {
+                    DefaultListModel<BoundPoint> newModel = new DefaultListModel<>();
+                    newModel.addAll(cachedPainter.getPointsIndex());
+
+                    this.model = newModel;
+                    this.boundPointContainer.setModel(newModel);
+                }
+
                 this.repaint();
             }
         });
@@ -175,6 +185,7 @@ public final class BoundPointsPanel extends JPanel {
                 ShipPainter painter = checkedLayer.getPainter();
                 if (painter != null && !painter.isUninitialized()) {
                     BoundPointsPainter newBoundsPainter = painter.getBoundsPainter();
+                    cachedPainter = newBoundsPainter;
                     newModel.addAll(newBoundsPainter.getPointsIndex());
                     opacitySlider.setEnabled(true);
                     reorderCheckbox.setEnabled(true);

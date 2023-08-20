@@ -74,7 +74,7 @@ public class SlotDataControlPane extends AbstractSlotValuesPanel {
 
                 ShipPainter slotParent = (ShipPainter) weaponSlotPoint.getParentLayer();
                 WeaponSlotPainter weaponSlotPainter = slotParent.getWeaponSlotPainter();
-                weaponSlotPainter.changeAngleWithMirrorCheck(weaponSlotPoint, current);
+                weaponSlotPainter.changePointAngleWithMirrorCheck(weaponSlotPoint, current);
 
                 spinner.removeChangeListener(this);
             }

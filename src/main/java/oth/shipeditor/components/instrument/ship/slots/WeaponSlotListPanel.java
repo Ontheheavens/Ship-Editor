@@ -34,6 +34,8 @@ public class WeaponSlotListPanel extends JPanel {
 
     private DefaultListModel<WeaponSlotPoint> model = new DefaultListModel<>();
 
+    private WeaponSlotPainter cachedPainter;
+
     WeaponSlotListPanel() {
         this.setLayout(new BorderLayout());
 
@@ -77,6 +79,16 @@ public class WeaponSlotListPanel extends JPanel {
         });
         EventBus.subscribe(event -> {
             if (event instanceof SlotControlRepaintQueued) {
+                if (cachedPainter != null) {
+                    WeaponSlotPoint cachedSelected = this.slotPointContainer.getSelectedValue();
+                    DefaultListModel<WeaponSlotPoint> newModel = new DefaultListModel<>();
+                    newModel.addAll(cachedPainter.getPointsIndex());
+
+                    this.model = newModel;
+                    this.slotPointContainer.setModel(newModel);
+                    this.slotPointContainer.setSelectedValue(cachedSelected, true);
+                }
+
                 slotPointContainer.refreshSlotControlPane();
                 slotPointContainer.repaint();
             }
@@ -95,6 +107,7 @@ public class WeaponSlotListPanel extends JPanel {
                 ShipPainter painter = checkedLayer.getPainter();
                 if (painter != null && !painter.isUninitialized()) {
                     WeaponSlotPainter weaponSlotPainter = painter.getWeaponSlotPainter();
+                    cachedPainter = weaponSlotPainter;
                     newModel.addAll(weaponSlotPainter.getPointsIndex());
                     this.slotPointContainer.setEnabled(true);
                     reorderCheckbox.setEnabled(true);

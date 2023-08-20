@@ -150,7 +150,9 @@ public final class ShipPainterInitialization {
         HullSpecFile hullSpecFile = shipData.getHullSpecFile();
 
         EngineSlotPainter engineSlotPainter = shipPainter.getEnginePainter();
-        Stream<EngineSlot> engineSlotStream = Arrays.stream(hullSpecFile.getEngineSlots());
+        EngineSlot[] engineSlots = hullSpecFile.getEngineSlots();
+        if (engineSlots == null) return;
+        Stream<EngineSlot> engineSlotStream = Arrays.stream(engineSlots);
         engineSlotStream.forEach(engineSlot -> {
             Point2D rawEnginePosition = engineSlot.getLocation();
             Point2D rotatedPosition = ShipPainterInitialization.rotatePointByCenter(rawEnginePosition, translatedCenter);

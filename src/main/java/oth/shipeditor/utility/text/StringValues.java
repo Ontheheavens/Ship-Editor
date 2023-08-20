@@ -32,6 +32,8 @@ public final class StringValues {
     public static final String RESET_ROTATION = "Reset rotation";
     public static final String NOT_LOADED = "Not loaded";
     public static final String UNTITLED = "UNTITLED";
+    public static final String MOUSEWHEEL_TO_CHANGE = "(Mousewheel to change)";
+    public static final String NO_SELECTED = "No selected slot";
 
     private StringValues() {
     }

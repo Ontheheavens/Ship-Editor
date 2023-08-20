@@ -45,6 +45,7 @@ public abstract class AbstractPointPainter implements Painter {
     /**
      * The world-to-screen transform that will be passed to the delegates
      */
+    @Getter
     private final AffineTransform delegateWorldToScreen;
 
     @Getter

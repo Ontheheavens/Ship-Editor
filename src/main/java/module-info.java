@@ -72,5 +72,7 @@
     opens oth.shipeditor.representation.weapon.animation;
     exports oth.shipeditor.components.instrument.ship.bays;
     opens oth.shipeditor.components.instrument.ship.bays;
+    exports oth.shipeditor.components.instrument.ship.engines;
+    opens oth.shipeditor.components.instrument.ship.engines;
 
 }

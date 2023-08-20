@@ -9,9 +9,10 @@ import oth.shipeditor.representation.weapon.WeaponSize;
 import oth.shipeditor.representation.weapon.WeaponType;
 import oth.shipeditor.undo.EditDispatch;
 import oth.shipeditor.utility.Utility;
+import oth.shipeditor.utility.components.ComponentUtilities;
+import oth.shipeditor.utility.text.StringValues;
 
 import javax.swing.*;
-import javax.swing.border.EmptyBorder;
 import javax.swing.event.ChangeListener;
 import java.awt.*;
 import java.awt.event.ActionListener;
@@ -22,10 +23,6 @@ import java.awt.event.MouseWheelEvent;
  * @since 14.08.2023
  */
 public abstract class AbstractSlotValuesPanel extends JPanel {
-
-    private static final String NO_SELECTED_SLOT = "No selected slot";
-
-    private static final String MOUSEWHEEL_TO_CHANGE = "(Mousewheel to change)";
 
     private static final String CHANGE_APPLIES_TO_ALL_SELECTED_SLOTS = "Change applies to all selected slots";
     private static final String CHANGE_APPLIES_TO_FIRST_SELECTED_SLOT = "Change applies to first selected slot";
@@ -56,36 +53,6 @@ public abstract class AbstractSlotValuesPanel extends JPanel {
         this.addArcController();
     }
 
-    private void addLabelAndComponent(JLabel label, Component component, int y) {
-        GridBagConstraints constraints = new GridBagConstraints();
-
-        constraints.insets = new Insets(3, 6, 0, 3);
-        constraints.gridx = 0;
-        constraints.gridy = y;
-        constraints.weightx = 0.0;
-        constraints.anchor = GridBagConstraints.LINE_START;
-        this.add(label, constraints);
-
-        constraints.gridx = 1;
-        constraints.weightx = 1.0;
-        constraints.gridy = y;
-        if (component instanceof JLabel) {
-            constraints.fill = GridBagConstraints.NONE;
-            constraints.insets = new Insets(3, 3, 0, 9);
-        } else {
-            constraints.fill = GridBagConstraints.HORIZONTAL;
-            constraints.insets = new Insets(3, 3, 0, 6);
-        }
-        constraints.anchor = GridBagConstraints.LINE_END;
-        this.add(component, constraints);
-    }
-
-    private static JLabel getNoSelected() {
-        JLabel label = new JLabel(NO_SELECTED_SLOT);
-        label.setBorder(new EmptyBorder(5, 0, 5, 0));
-        return label;
-    }
-
     protected abstract ActionListener getTypeSelectorListener(JComboBox<WeaponType> typeSelector);
 
     protected abstract ActionListener getMountSelectorListener(JComboBox<WeaponMount> mountSelector);
@@ -109,7 +76,7 @@ public abstract class AbstractSlotValuesPanel extends JPanel {
             label.setToolTipText(CHANGE_APPLIES_TO_FIRST_SELECTED_SLOT);
         }
 
-        Component right = AbstractSlotValuesPanel.getNoSelected();
+        Component right = ComponentUtilities.getNoSelected();
 
         if (selected != null) {
             JTextField editor = new JTextField(selected.getId());
@@ -121,7 +88,7 @@ public abstract class AbstractSlotValuesPanel extends JPanel {
             right = editor;
         }
 
-        this.addLabelAndComponent(label, right, 0);
+        ComponentUtilities.addLabelAndComponent(this, label, right, 0);
     }
 
     private void addTypeSelector() {
@@ -131,7 +98,7 @@ public abstract class AbstractSlotValuesPanel extends JPanel {
         }
 
         if (selected == null) {
-            this.addLabelAndComponent(selectorLabel, AbstractSlotValuesPanel.getNoSelected(), 1);
+            ComponentUtilities.addLabelAndComponent(this, selectorLabel, ComponentUtilities.getNoSelected(), 1);
             return;
         }
         JComboBox<WeaponType> typeSelector = new JComboBox<>(WeaponType.values());
@@ -150,7 +117,7 @@ public abstract class AbstractSlotValuesPanel extends JPanel {
         } else {
             typeSelector.addActionListener(this.getTypeSelectorListener(typeSelector));
         }
-        this.addLabelAndComponent(selectorLabel, typeSelector, 1);
+        ComponentUtilities.addLabelAndComponent(this, selectorLabel, typeSelector, 1);
     }
 
     protected void addMountSelector() {
@@ -160,7 +127,7 @@ public abstract class AbstractSlotValuesPanel extends JPanel {
         }
 
         if (selected == null) {
-            this.addLabelAndComponent(selectorLabel, AbstractSlotValuesPanel.getNoSelected(), 2);
+            ComponentUtilities.addLabelAndComponent(this, selectorLabel, ComponentUtilities.getNoSelected(), 2);
             return;
         }
         JComboBox<WeaponMount> mountSelector = new JComboBox<>(WeaponMount.values());
@@ -177,7 +144,7 @@ public abstract class AbstractSlotValuesPanel extends JPanel {
         } else {
             mountSelector.addActionListener(this.getMountSelectorListener(mountSelector));
         }
-        this.addLabelAndComponent(selectorLabel, mountSelector, 2);
+        ComponentUtilities.addLabelAndComponent(this, selectorLabel, mountSelector, 2);
     }
 
     protected void addSizeSelector() {
@@ -186,7 +153,7 @@ public abstract class AbstractSlotValuesPanel extends JPanel {
             selectorLabel.setToolTipText(CHANGE_APPLIES_TO_ALL_SELECTED_SLOTS);
         }
         if (selected == null) {
-            this.addLabelAndComponent(selectorLabel, AbstractSlotValuesPanel.getNoSelected(), 3);
+            ComponentUtilities.addLabelAndComponent(this, selectorLabel, ComponentUtilities.getNoSelected(), 3);
             return;
         }
         JComboBox<WeaponSize> sizeSelector = new JComboBox<>(WeaponSize.values());
@@ -203,7 +170,7 @@ public abstract class AbstractSlotValuesPanel extends JPanel {
         } else {
             sizeSelector.addActionListener(this.getSizeSelectorListener(sizeSelector));
         }
-        this.addLabelAndComponent(selectorLabel, sizeSelector, 3);
+        ComponentUtilities.addLabelAndComponent(this, selectorLabel, sizeSelector, 3);
     }
 
     protected void addAngleController() {
@@ -211,14 +178,14 @@ public abstract class AbstractSlotValuesPanel extends JPanel {
 
         String tooltip;
         if (multiSelectionAllowed) {
-            tooltip = Utility.getWithLinebreaks(CHANGE_APPLIES_TO_FIRST_SELECTED_SLOT, MOUSEWHEEL_TO_CHANGE);
+            tooltip = Utility.getWithLinebreaks(CHANGE_APPLIES_TO_FIRST_SELECTED_SLOT, StringValues.MOUSEWHEEL_TO_CHANGE);
         } else {
-            tooltip = MOUSEWHEEL_TO_CHANGE;
+            tooltip = StringValues.MOUSEWHEEL_TO_CHANGE;
         }
         selectorLabel.setToolTipText(tooltip);
 
         if (selected == null) {
-            this.addLabelAndComponent(selectorLabel, AbstractSlotValuesPanel.getNoSelected(), 4);
+            ComponentUtilities.addLabelAndComponent(this, selectorLabel, ComponentUtilities.getNoSelected(), 4);
             return;
         }
         double minValue = -360;
@@ -248,7 +215,7 @@ public abstract class AbstractSlotValuesPanel extends JPanel {
             });
         }
 
-        this.addLabelAndComponent(selectorLabel, spinner, 4);
+        ComponentUtilities.addLabelAndComponent(this, selectorLabel, spinner, 4);
     }
 
     protected void addArcController() {
@@ -256,14 +223,14 @@ public abstract class AbstractSlotValuesPanel extends JPanel {
 
         String tooltip;
         if (multiSelectionAllowed) {
-            tooltip = Utility.getWithLinebreaks(CHANGE_APPLIES_TO_FIRST_SELECTED_SLOT, MOUSEWHEEL_TO_CHANGE);
+            tooltip = Utility.getWithLinebreaks(CHANGE_APPLIES_TO_FIRST_SELECTED_SLOT, StringValues.MOUSEWHEEL_TO_CHANGE);
         } else {
-            tooltip = MOUSEWHEEL_TO_CHANGE;
+            tooltip = StringValues.MOUSEWHEEL_TO_CHANGE;
         }
         selectorLabel.setToolTipText(tooltip);
 
         if (selected == null) {
-            this.addLabelAndComponent(selectorLabel, AbstractSlotValuesPanel.getNoSelected(), 5);
+            ComponentUtilities.addLabelAndComponent(this, selectorLabel, ComponentUtilities.getNoSelected(), 5);
             return;
         }
 
@@ -294,7 +261,7 @@ public abstract class AbstractSlotValuesPanel extends JPanel {
             });
         }
 
-        this.addLabelAndComponent(selectorLabel, spinner, 5);
+        ComponentUtilities.addLabelAndComponent(this, selectorLabel, spinner, 5);
     }
 
 }
