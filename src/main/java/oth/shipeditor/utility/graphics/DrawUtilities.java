@@ -211,4 +211,20 @@ public final class DrawUtilities {
         g.setComposite(old);
     }
 
+    public static void drawWithRotationTransform(Graphics2D g, AffineTransform worldToScreen,
+                                                 Point2D anchor, double radiansRotation, GraphicsAction action) {
+        AffineTransform oldAT = g.getTransform();
+        AffineTransform oldWtS = new AffineTransform(worldToScreen);
+        AffineTransform rotateInstance = AffineTransform.getRotateInstance(radiansRotation,
+                anchor.getX(), anchor.getY());
+        worldToScreen.concatenate(rotateInstance);
+
+        g.transform(worldToScreen);
+
+        action.draw(g);
+
+        worldToScreen.setTransform(oldWtS);
+        g.setTransform(oldAT);
+    }
+
 }

@@ -160,4 +160,14 @@ public final class Utility {
         return input.substring(0, 1).toUpperCase(Locale.ROOT) + input.substring(1);
     }
 
+    public static double transformAngle(double raw) {
+        double transformed = raw % 360;
+        if (transformed < 0) {
+            transformed += 360;
+        }
+
+        transformed = (360 - transformed) % 360;
+        return transformed - 90;
+    }
+
 }

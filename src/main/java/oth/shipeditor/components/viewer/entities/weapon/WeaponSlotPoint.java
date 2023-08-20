@@ -4,8 +4,9 @@ import lombok.Getter;
 import lombok.Setter;
 import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.components.SlotControlRepaintQueued;
+import oth.shipeditor.communication.events.viewer.ViewerRepaintQueued;
 import oth.shipeditor.components.viewer.ShipInstrument;
-import oth.shipeditor.components.viewer.entities.BaseWorldPoint;
+import oth.shipeditor.components.viewer.entities.AngledPoint;
 import oth.shipeditor.components.viewer.layers.ship.ShipPainter;
 import oth.shipeditor.components.viewer.painters.points.WeaponSlotPainter;
 import oth.shipeditor.representation.weapon.WeaponMount;
@@ -15,7 +16,6 @@ import oth.shipeditor.undo.EditDispatch;
 import oth.shipeditor.utility.Utility;
 import oth.shipeditor.utility.graphics.ColorUtilities;
 
-import javax.swing.*;
 import java.awt.*;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Point2D;
@@ -24,8 +24,8 @@ import java.awt.geom.Point2D;
  * @author Ontheheavens
  * @since 25.07.2023
  */
-@SuppressWarnings({"WeakerAccess", "ClassWithTooManyMethods"})
-public class WeaponSlotPoint extends BaseWorldPoint implements SlotPoint {
+@SuppressWarnings("WeakerAccess")
+public class WeaponSlotPoint extends AngledPoint implements SlotPoint {
 
     @Getter @Setter
     private String id;
@@ -99,53 +99,49 @@ public class WeaponSlotPoint extends BaseWorldPoint implements SlotPoint {
     }
 
     public double getArc() {
-        if (skinOverride != null && skinOverride.getArc() != null) {
-            return skinOverride.getArc();
+        if (skinOverride != null && skinOverride.getBoxedArc() != null) {
+            return skinOverride.getBoxedArc();
         } else {
             return arc;
         }
     }
 
+    @Override
     public double getAngle() {
-        if (skinOverride != null && skinOverride.getAngle() != null) {
+        if (skinOverride != null && skinOverride.getBoxedAngle() != null) {
             return skinOverride.getAngle();
         } else {
             return angle;
         }
     }
 
-    public void changeSlotID(String newID) {
+    public void changeSlotID(String newId) {
         ShipPainter parent = (ShipPainter) this.getParentLayer();
-        WeaponSlotPainter slotPainter = parent.getWeaponSlotPainter();
-        for (WeaponSlotPoint slotPoint : slotPainter.getSlotPoints()) {
-            String slotPointId = slotPoint.getId();
-            if (slotPointId.equals(newID)) {
-                JOptionPane.showMessageDialog(null,
-                        "Input ID already assigned to slot.",
-                        "Duplicate ID",
-                        JOptionPane.ERROR_MESSAGE);
-                EventBus.publish(new SlotControlRepaintQueued());
-                return;
-            }
+        if (!parent.isGeneratedIDUnassigned(newId)) {
+            EventBus.publish(new ViewerRepaintQueued());
+            EventBus.publish(new SlotControlRepaintQueued());
+            return;
         }
-        this.setId(newID);
+
+        this.setId(newId);
         WeaponSlotPainter.setSlotOverrideFromSkin(this, parent.getActiveSkin());
+        EventBus.publish(new ViewerRepaintQueued());
         EventBus.publish(new SlotControlRepaintQueued());
     }
 
     public void changeSlotType(WeaponType newType) {
         if (skinOverride != null && skinOverride.getWeaponType() != null) return;
-        EditDispatch.postWeaponSlotTypeChanged(this, newType);
+        EditDispatch.postSlotTypeChanged(this, newType);
     }
 
     public void changeSlotMount(WeaponMount newMount) {
         if (skinOverride != null && skinOverride.getWeaponType() != null) return;
-        EditDispatch.postWeaponSlotMountChanged(this, newMount);
+        EditDispatch.postSlotMountChanged(this, newMount);
     }
 
     public void changeSlotSize(WeaponSize newSize) {
         if (skinOverride != null && skinOverride.getWeaponType() != null) return;
-        EditDispatch.postWeaponSlotSizeChanged(this, newSize);
+        EditDispatch.postSlotSizeChanged(this, newSize);
     }
 
     public void changeSlotAngle(double degrees) {

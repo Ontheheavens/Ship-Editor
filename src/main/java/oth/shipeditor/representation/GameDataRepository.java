@@ -35,10 +35,16 @@ public class GameDataRepository {
     private final Map<String, WeaponCSVEntry> allWeaponEntries;
 
     /**
-     * Styles by their IDs (field names in JSON).
+     * Hull styles by their IDs (field names in JSON).
      */
     @Setter
     private Map<String, HullStyle> allHullStyles;
+
+    /**
+     * Engine styles by their IDs (field names in JSON).
+     */
+    @Setter
+    private Map<String, EngineStyle> allEngineStyles;
 
     /**
      * All variant files by variant IDs.

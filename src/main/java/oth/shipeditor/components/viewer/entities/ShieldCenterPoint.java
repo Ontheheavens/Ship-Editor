@@ -86,7 +86,7 @@ public class ShieldCenterPoint extends BaseWorldPoint {
 
     @Override
     protected Color createBaseColor() {
-        return Color.GRAY;
+        return new Color(0, 175, 240);
     }
 
     @Override
@@ -98,7 +98,7 @@ public class ShieldCenterPoint extends BaseWorldPoint {
     @Override
     @SuppressWarnings("WeakerAccess")
     protected Color createSelectColor() {
-        return Color.LIGHT_GRAY;
+        return createBaseColor();
     }
 
     private void paintShieldCenterCross(Graphics2D g, AffineTransform worldToScreen) {

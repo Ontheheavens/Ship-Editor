@@ -21,12 +21,12 @@ public class LaunchBay {
     private String id;
 
     @Setter
-    private WeaponSize weaponSize;
+    private WeaponSize weaponSize = WeaponSize.SMALL;
 
     private final WeaponType weaponType = WeaponType.LAUNCH_BAY;
 
     @Setter
-    private WeaponMount weaponMount;
+    private WeaponMount weaponMount = WeaponMount.HIDDEN;
 
     @Setter
     private int renderOrderMod;
@@ -41,14 +41,10 @@ public class LaunchBay {
 
     private final LaunchBayPainter bayPainter;
 
-    public LaunchBay(LaunchBayPainter painter) {
+    public LaunchBay(String inputID, LaunchBayPainter painter) {
+        this.id = inputID;
         this.bayPainter = painter;
         this.portPoints = new ArrayList<>();
-    }
-
-    @Override
-    public String toString() {
-        return this.id;
     }
 
 }

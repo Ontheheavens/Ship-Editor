@@ -15,6 +15,7 @@ import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 
 /**
  * @author Ontheheavens
@@ -29,39 +30,7 @@ public class HotkeyHelpPainter implements Painter {
         if (activeLayer == null) return;
         LayerPainter painter = activeLayer.getPainter();
         if (painter == null || painter.isUninitialized()) return;
-
-        ShipInstrument current = ShipInstrumentsPane.getCurrentMode();
-        Collection<String> hints = new ArrayList<>();
-        switch (current) {
-            case COLLISION -> {
-                String radiusHint = "Alter radius: C+LMB";
-
-                hints.add(radiusHint);
-            }
-            case SHIELD -> {
-                String radiusHint = "Alter radius: S+LMB";
-                hints.add(radiusHint);
-            }
-            case BOUNDS -> {
-                String insertHint = "Insert: X+LMB";
-                String appendHint = "Append: Z+LMB";
-                String removeHint = "Remove: Del";
-                hints.add(removeHint);
-                hints.add(appendHint);
-                hints.add(insertHint);
-            }
-            case WEAPON_SLOTS -> {
-                String angleHint = "Alter angle: A+LMB";
-                String arcHint = "Alter arc: A+RMB";
-                String addHint = "Add slot: W+LMB";
-                hints.add(angleHint);
-                hints.add(arcHint);
-                hints.add(addHint);
-            }
-            default -> {
-            }
-        }
-
+        Collection<String> hints = HotkeyHelpPainter.getHintsToDisplay();
         if (hints.isEmpty()) return;
         double verticalPadding = 0;
         double x = w - 10;
@@ -86,6 +55,46 @@ public class HotkeyHelpPainter implements Painter {
             double topRightY = resultBounds.getY();
             anchor = new Point2D.Double(topRightX, topRightY - verticalPadding);
         }
+    }
+
+    private static List<String> getHintsToDisplay() {
+        ShipInstrument current = ShipInstrumentsPane.getCurrentMode();
+        List<String> hints = new ArrayList<>();
+        switch (current) {
+            case COLLISION -> {
+                String radiusHint = "Alter radius: C";
+                hints.add(radiusHint);
+            }
+            case SHIELD -> {
+                String radiusHint = "Alter radius: S";
+                hints.add(radiusHint);
+            }
+            case BOUNDS -> {
+                String insertHint = "Insert: X+LMB";
+                String appendHint = "Append: Z+LMB";
+                String removeHint = "Remove: Del";
+                hints.add(removeHint);
+                hints.add(appendHint);
+                hints.add(insertHint);
+            }
+            case WEAPON_SLOTS -> {
+                String angleHint = "Alter angle: A+LMB";
+                String arcHint = "Alter arc: A+RMB";
+                String addHint = "Add slot: W+LMB";
+                hints.add(angleHint);
+                hints.add(arcHint);
+                hints.add(addHint);
+            }
+            case LAUNCH_BAYS -> {
+                String addPort = "Add port: P+LMB";
+                String addBay = "Add bay: B+LMB";
+                hints.add(addPort);
+                hints.add(addBay);
+            }
+            default -> {
+            }
+        }
+        return hints;
     }
 
 }

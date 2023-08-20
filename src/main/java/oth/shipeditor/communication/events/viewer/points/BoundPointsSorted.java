@@ -8,6 +8,6 @@ import java.util.List;
  * @author Ontheheavens
  * @since 25.07.2023
  */
-public record BoundPointsSorted(List<BoundPoint> rearranged) implements PointEvent{
+public record BoundPointsSorted(List<BoundPoint> rearranged) implements PointEvent {
 
 }

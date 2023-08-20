@@ -6,6 +6,7 @@ import oth.shipeditor.representation.weapon.WeaponMount;
 import oth.shipeditor.representation.weapon.WeaponSize;
 import oth.shipeditor.representation.weapon.WeaponType;
 import oth.shipeditor.utility.StaticController;
+import oth.shipeditor.utility.Utility;
 import oth.shipeditor.utility.graphics.DrawUtilities;
 import oth.shipeditor.utility.graphics.ShapeUtilities;
 
@@ -115,7 +116,7 @@ public class SlotDrawingHelper {
         Point2D position = this.pointPosition;
         double slotArc = this.arc;
         double halfArc = slotArc * 0.5d;
-        double transformedAngle = this.transformAngle(this.angle);
+        double transformedAngle = Utility.transformAngle(this.angle);
 
         double arcStartAngle = transformedAngle - halfArc;
 
@@ -139,7 +140,7 @@ public class SlotDrawingHelper {
         Ellipse2D enlargedCircle = ShapeUtilities.createCircle(position, 0.40f);
         Rectangle2D circleBounds = enlargedCircle.getBounds2D();
         Shape arcFigure = new Arc2D.Double(circleBounds.getX(), circleBounds.getY(),
-                circleBounds.getWidth(), circleBounds.getHeight(), this.transformAngle(arcEndAngle - 90),
+                circleBounds.getWidth(), circleBounds.getHeight(), Utility.transformAngle(arcEndAngle - 90),
                 slotArc, Arc2D.OPEN);
 
         GeneralPath combinedPath = new GeneralPath();
@@ -166,7 +167,7 @@ public class SlotDrawingHelper {
     }
 
     private void drawAnglePointer(Graphics2D g, AffineTransform worldToScreen, Shape circle, double circleRadius) {
-        double transformedAngle = this.transformAngle(this.angle);
+        double transformedAngle = Utility.transformAngle(this.angle);
         Point2D position = this.pointPosition;
 
         Point2D lineEndpoint = ShapeUtilities.getPointInDirection(position,
@@ -204,17 +205,6 @@ public class SlotDrawingHelper {
 
         DrawUtilities.drawOutlined(g, transformed, color, false,
                 new BasicStroke(3.0f), new BasicStroke(2.25f));
-    }
-
-    @SuppressWarnings("MethodMayBeStatic")
-    private double transformAngle(double raw) {
-        double transformed = raw % 360;
-        if (transformed < 0) {
-            transformed += 360;
-        }
-
-        transformed = (360 - transformed) % 360;
-        return transformed - 90;
     }
 
 }

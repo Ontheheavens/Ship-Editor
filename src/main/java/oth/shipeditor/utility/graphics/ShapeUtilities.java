@@ -70,6 +70,11 @@ public final class ShapeUtilities {
         return translation.createTransformedShape(shape);
     }
 
+    public static Shape rotateShape(Shape shape, Point2D anchor, double degrees) {
+        AffineTransform rotation = AffineTransform.getRotateInstance(degrees, anchor.getX(), anchor.getY());
+        return rotation.createTransformedShape(shape);
+    }
+
     @SuppressWarnings("unused")
     public static AffineTransform getScreenToWorldRotation(AffineTransform worldToScreen, Point2D positionWorld) {
         Point2D positionScreen = worldToScreen.transform(positionWorld, null);

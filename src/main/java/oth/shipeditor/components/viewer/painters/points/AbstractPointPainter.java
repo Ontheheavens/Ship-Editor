@@ -45,6 +45,7 @@ public abstract class AbstractPointPainter implements Painter {
     /**
      * The world-to-screen transform that will be passed to the delegates
      */
+    @Getter
     private final AffineTransform delegateWorldToScreen;
 
     @Getter
@@ -298,6 +299,7 @@ public abstract class AbstractPointPainter implements Painter {
         point.setPointSelected(false);
     }
 
+    @SuppressWarnings("BooleanMethodIsAlwaysInverted")
     boolean hasPointAtCoords(Point2D point2D) {
         boolean pointDoesExist = false;
         for (WorldPoint point : this.getPointsIndex()) {
@@ -348,6 +350,15 @@ public abstract class AbstractPointPainter implements Painter {
     public String toString() {
         Class<? extends AbstractPointPainter> identity = this.getClass();
         return identity.getSimpleName() + " @" + this.hashCode();
+    }
+
+    /**
+     * @throws IllegalArgumentException as a fail-fast precaution when illegal point type is detected.
+     */
+    @SuppressWarnings("WeakerAccess")
+    protected void throwIllegalPoint() {
+        Class<? extends AbstractPointPainter> identity = this.getClass();
+        throw new IllegalArgumentException("Illegal point type in " + identity.getSimpleName());
     }
 
 }

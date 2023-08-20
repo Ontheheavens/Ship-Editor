@@ -10,6 +10,7 @@ import oth.shipeditor.components.viewer.PrimaryViewer;
 import oth.shipeditor.components.viewer.layers.LayerPainter;
 import oth.shipeditor.components.viewer.layers.ship.ShipPainter;
 import oth.shipeditor.components.viewer.painters.points.BoundPointsPainter;
+import oth.shipeditor.components.viewer.painters.points.EngineSlotPainter;
 import oth.shipeditor.components.viewer.painters.points.WeaponSlotPainter;
 import oth.shipeditor.utility.StaticController;
 import oth.shipeditor.utility.Utility;
@@ -137,7 +138,7 @@ public final class LayerViewerControls implements ViewerControl {
                     }
                     break;
             }
-            this.parentViewer.repaint();
+            this.parentViewer.setRepaintQueued();
             return false;
         });
     }
@@ -181,8 +182,7 @@ public final class LayerViewerControls implements ViewerControl {
             Point2D screenPoint = this.getAdjustedCursor();
             position = Utility.correctAdjustedCursor(screenPoint, screenToWorld);
         }
-        EventBus.publish(new BoundCreationQueued(position));
-        EventBus.publish(new SlotCreationQueued(position));
+        EventBus.publish(new PointCreationQueued(position));
     }
 
     @Override
@@ -221,15 +221,17 @@ public final class LayerViewerControls implements ViewerControl {
                 Point2D worldTarget = screenToWorld.transform(e.getPoint(), null);
                 EventBus.publish(new LayerRotationQueued(selected, worldTarget));
             }
-        } else if (ControlPredicates.changeSlotAnglePredicate.test(e)) {
+        } else if (ControlPredicates.changeAnglePredicate.test(e)) {
             if (selected instanceof ShipPainter) {
                 Point2D worldTarget = rotatedTransform.transform(e.getPoint(), null);
                 EventBus.publish(new SlotAngleChangeQueued(worldTarget));
+                EventBus.publish(new EngineAngleChangeQueued(worldTarget));
             }
-        } else if (ControlPredicates.changeSlotArcPredicate.test(e)) {
+        } else if (ControlPredicates.changeArcOrSizePredicate.test(e)) {
             if (selected instanceof ShipPainter) {
                 Point2D worldTarget = rotatedTransform.transform(e.getPoint(), null);
                 EventBus.publish(new SlotArcChangeQueued(worldTarget));
+                EventBus.publish(new EngineSizeChangeQueued(worldTarget));
             }
         }
         this.previousPoint.setLocation(x, y);
@@ -251,7 +253,7 @@ public final class LayerViewerControls implements ViewerControl {
         int y = e.getY();
         this.tryRadiusDrag(e);
         this.previousPoint.setLocation(x, y);
-        this.parentViewer.repaint();
+        this.parentViewer.setRepaintQueued();
         if (ControlPredicates.getSelectionMode() == PointSelectionMode.CLOSEST) {
             EventBus.publish(new PointSelectQueued(null));
         }
@@ -364,17 +366,19 @@ public final class LayerViewerControls implements ViewerControl {
         if (ControlPredicates.selectPointPredicate.test(event)) {
             boolean appendBoundDown = BoundPointsPainter.isAppendBoundHotkeyPressed();
             boolean insertBoundDown = BoundPointsPainter.isInsertBoundHotkeyPressed();
-            boolean slotAngleDown = WeaponSlotPainter.isControlHotkeyPressed();
+            boolean slotAngleDown = WeaponSlotPainter.isControlHotkeyStaticPressed();
+            boolean engineAngleDown = EngineSlotPainter.isControlHotkeyStaticPressed();
+            boolean angleHotkeysDown = slotAngleDown || engineAngleDown;
 
             Point2D cursor = mousePoint;
             if (ControlPredicates.isCursorSnappingEnabled()) {
                 cursor = adjusted;
             }
-            if (!appendBoundDown && !insertBoundDown && !slotAngleDown) {
+            if (!appendBoundDown && !insertBoundDown && !angleHotkeysDown) {
                 EventBus.publish(new PointDragQueued(screenToWorld, cursor));
             }
         }
-        parentViewer.repaint();
+        this.parentViewer.setRepaintQueued();
     }
 
 }

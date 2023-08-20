@@ -5,15 +5,13 @@ import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
 import oth.shipeditor.communication.BusEventListener;
 import oth.shipeditor.communication.EventBus;
-import oth.shipeditor.communication.events.viewer.ViewerRepaintQueued;
 import oth.shipeditor.communication.events.viewer.points.*;
-import oth.shipeditor.components.instrument.ship.ShipInstrumentsPane;
-import oth.shipeditor.components.instrument.ship.weaponslots.SlotCreationPane;
+import oth.shipeditor.components.instrument.ship.slots.SlotCreationPane;
 import oth.shipeditor.components.viewer.ShipInstrument;
 import oth.shipeditor.components.viewer.control.ControlPredicates;
 import oth.shipeditor.components.viewer.entities.BaseWorldPoint;
-import oth.shipeditor.components.viewer.entities.ShipCenterPoint;
 import oth.shipeditor.components.viewer.entities.WorldPoint;
+import oth.shipeditor.components.viewer.entities.weapon.SlotData;
 import oth.shipeditor.components.viewer.entities.weapon.SlotDrawingHelper;
 import oth.shipeditor.components.viewer.entities.weapon.WeaponSlotOverride;
 import oth.shipeditor.components.viewer.entities.weapon.WeaponSlotPoint;
@@ -32,34 +30,27 @@ import java.awt.geom.AffineTransform;
 import java.awt.geom.Point2D;
 import java.util.List;
 import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  * Is not supposed to handle launch bays - bays deserialize to different points and painter.
  * @author Ontheheavens
  * @since 25.07.2023
  */
-@SuppressWarnings({"OverlyComplexClass", "OverlyCoupledClass"})
+@SuppressWarnings("OverlyCoupledClass")
 @Log4j2
-public class WeaponSlotPainter extends MirrorablePointPainter{
+public class WeaponSlotPainter extends AngledPointPainter {
 
-    private static final String ILLEGAL_POINT_TYPE_FOUND_IN_WEAPON_SLOT_PAINTER = "Illegal point type found in WeaponSlotPainter!";
-    private static final char SPACE = ' ';
+    @Getter
+    private boolean controlHotkeyPressed;
+
+    @Getter @Setter
+    private boolean creationHotkeyPressed;
+
+    @Getter
+    private static boolean controlHotkeyStaticPressed;
 
     @Getter @Setter
     private List<WeaponSlotPoint> slotPoints;
-
-    private final int controlHotkey = KeyEvent.VK_A;
-
-    private final int creationHotkey = KeyEvent.VK_W;
-
-    @Getter
-    private static boolean controlHotkeyPressed;
-
-    @Getter
-    private static boolean creationHotkeyPressed;
-
-    private KeyEventDispatcher hotkeyDispatcher;
 
     private final SlotDrawingHelper slotMockDrawer = new SlotDrawingHelper(null);
 
@@ -68,34 +59,46 @@ public class WeaponSlotPainter extends MirrorablePointPainter{
     public WeaponSlotPainter(ShipPainter parent) {
         super(parent);
         this.slotPoints = new ArrayList<>();
-
-        this.initHotkeys();
-        this.initModeListener();
         this.initInteractionListeners();
+    }
 
-        this.setInteractionEnabled(ShipInstrumentsPane.getCurrentMode() == ShipInstrument.WEAPON_SLOTS);
+    @Override
+    public void setControlHotkeyPressed(boolean pressed) {
+        this.controlHotkeyPressed = pressed;
+        controlHotkeyStaticPressed = pressed;
+    }
+
+    @Override
+    protected int getControlHotkey() {
+        return KeyEvent.VK_A;
+    }
+
+    @Override
+    protected int getCreationHotkey() {
+        return KeyEvent.VK_W;
+    }
+
+    @Override
+    protected ShipInstrument getInstrumentType() {
+        return ShipInstrument.WEAPON_SLOTS;
+    }
+
+    @Override
+    protected void handlePointSelectionEvent(BaseWorldPoint point) {
+        if (controlHotkeyStaticPressed) return;
+        super.handlePointSelectionEvent(point);
     }
 
     @SuppressWarnings("ChainOfInstanceofChecks")
-    private void initInteractionListeners() {
+    protected void initInteractionListeners() {
+        super.initInteractionListeners();
         List<BusEventListener> listeners = getListeners();
-        BusEventListener slotCreationListener = event -> {
-            if (event instanceof SlotCreationQueued checked) {
-                if (!isInteractionEnabled()) return;
-                if (!hasPointAtCoords(checked.position())) {
-                    this.createSlot(checked);
-                }
-            }
-        };
-        listeners.add(slotCreationListener);
-        EventBus.subscribe(slotCreationListener);
         BusEventListener controlListener = event -> {
             if (event instanceof SlotAngleChangeQueued checked) {
-                if (!isInteractionEnabled() || !controlHotkeyPressed) return;
-                this.changeAngleByTarget(checked.worldTarget());
-            }
-            else if (event instanceof SlotArcChangeQueued checked) {
-                if (!isInteractionEnabled() || !controlHotkeyPressed) return;
+                if (!isInteractionEnabled() || !isControlHotkeyPressed()) return;
+                super.changePointAngleByTarget(checked.worldTarget());
+            } else if (event instanceof SlotArcChangeQueued checked) {
+                if (!isInteractionEnabled() || !isControlHotkeyPressed()) return;
                 this.changeArcByTarget(checked.worldTarget());
             }
         };
@@ -111,8 +114,9 @@ public class WeaponSlotPainter extends MirrorablePointPainter{
         EventBus.subscribe(slotSortingListener);
     }
 
-    private void createSlot(SlotCreationQueued event) {
-        if (!creationHotkeyPressed) return;
+    @Override
+    protected void handleCreation(PointCreationQueued event) {
+        if (!isCreationHotkeyPressed()) return;
 
         ShipPainter parentLayer = this.getParentLayer();
         Point2D position = event.position();
@@ -121,7 +125,7 @@ public class WeaponSlotPainter extends MirrorablePointPainter{
         WeaponSlotPoint created = null;
         WeaponSlotPoint counterpart = null;
 
-        String uniqueID = this.generateUniqueID();
+        String uniqueID = this.generateUniqueSlotID();
 
         switch (SlotCreationPane.getMode()) {
             case BY_CLOSEST -> {
@@ -144,7 +148,7 @@ public class WeaponSlotPainter extends MirrorablePointPainter{
             if (getMirroredCounterpart(created) == null) {
                 Point2D counterpartPosition = createCounterpartPosition(position);
                 counterpart = new WeaponSlotPoint(counterpartPosition, parentLayer, created);
-                String incrementedID = this.incrementUniqueID(uniqueID);
+                String incrementedID = parentLayer.incrementUniqueSlotID(uniqueID);
                 counterpart.setId(incrementedID);
                 double flipAngle = Utility.flipAngle(counterpart.getAngle());
                 counterpart.setAngle(flipAngle);
@@ -157,38 +161,9 @@ public class WeaponSlotPainter extends MirrorablePointPainter{
         }
     }
 
-    private String generateUniqueID() {
-        Set<String> existingIDs = slotPoints.stream()
-                .map(WeaponSlotPoint::getId)
-                .collect(Collectors.toSet());
-
-        String baseID = "WS";
-        int suffix = 0;
-
-        while (true) {
-            String newID = baseID + " " + String.format("%03d", suffix);
-            if (!existingIDs.contains(newID)) {
-                return newID;
-            }
-            suffix++;
-        }
-    }
-
-    private String incrementUniqueID(String id) {
-        Set<String> existingIDs = slotPoints.stream()
-                .map(WeaponSlotPoint::getId)
-                .collect(Collectors.toSet());
-
-        String baseID = id.substring(0, id.lastIndexOf(SPACE) + 1);
-        int suffix = Integer.parseInt(id.substring(id.lastIndexOf(SPACE) + 1));
-
-        while (true) {
-            suffix++;
-            String newID = baseID + String.format("%03d", suffix);
-            if (!existingIDs.contains(newID)) {
-                return newID;
-            }
-        }
+    private String generateUniqueSlotID() {
+        ShipPainter parentLayer = getParentLayer();
+        return parentLayer.generateUniqueSlotID("WS");
     }
 
     private Set<WeaponSlotPoint> getSlotsWithCounterparts(Iterable<WeaponSlotPoint> slots) {
@@ -228,25 +203,25 @@ public class WeaponSlotPainter extends MirrorablePointPainter{
 
     private void changeArcByTarget(Point2D worldTarget) {
         WorldPoint selected = getSelected();
-        if (!(selected instanceof WeaponSlotPoint checked)) {
-            throw new IllegalArgumentException(ILLEGAL_POINT_TYPE_FOUND_IN_WEAPON_SLOT_PAINTER);
+        if (selected instanceof WeaponSlotPoint checked) {
+            double directionAngle = checked.getAngle();
+            double targetAngle = AngledPointPainter.getTargetRotation(checked, worldTarget);
+
+            double angleDifference = targetAngle - directionAngle;
+            // Normalize the angle difference to the range from -180 to 180 degrees.
+            if (angleDifference > 180) {
+                angleDifference -= 360;
+            } else if (angleDifference < -180) {
+                angleDifference += 360;
+            }
+
+            // Calculate the arc extent based on the normalized angle difference.
+            double arcExtent = Math.abs(angleDifference) * 2;
+            this.changeArcWithMirrorCheck(checked, arcExtent);
         }
-        double directionAngle = checked.getAngle();
-        double targetAngle = WeaponSlotPainter.getTargetRotation(checked, worldTarget);
-
-        double angleDifference = targetAngle - directionAngle;
-
-        // Normalize the angle difference to the range from -180 to 180 degrees.
-        if (angleDifference > 180) {
-            angleDifference -= 360;
-        } else if (angleDifference < -180) {
-            angleDifference += 360;
+        else {
+            throwIllegalPoint();
         }
-
-        // Calculate the arc extent based on the normalized angle difference.
-        double arcExtent = Math.abs(angleDifference) * 2;
-
-        this.changeArcWithMirrorCheck(checked, arcExtent);
     }
 
     public void changeArcWithMirrorCheck(WeaponSlotPoint slotPoint, double arcExtentDegrees) {
@@ -266,96 +241,6 @@ public class WeaponSlotPainter extends MirrorablePointPainter{
         slotPoints.add(precedingIndex, checked);
         EventBus.publish(new WeaponSlotInsertedConfirmed(checked, precedingIndex));
         log.info("Weapon slot inserted to painter: {}", checked);
-    }
-
-    private static double getTargetRotation(WorldPoint selected, Point2D worldTarget) {
-        Point2D pointPosition = selected.getPosition();
-        double deltaX = worldTarget.getX() - pointPosition.getX();
-        double deltaY = worldTarget.getY() - pointPosition.getY();
-
-        double radians = Math.atan2(deltaX, deltaY);
-
-        double rotationDegrees = Math.toDegrees(radians) + 180;
-        double result = rotationDegrees;
-        if (ControlPredicates.isRotationRoundingEnabled()) {
-            result = Math.round(rotationDegrees * 2.0d) / 2.0d;
-        }
-        return result;
-    }
-
-    private void changeAngleByTarget(Point2D worldTarget) {
-        WorldPoint selected = getSelected();
-        if (!(selected instanceof WeaponSlotPoint checked)) {
-            throw new IllegalArgumentException(ILLEGAL_POINT_TYPE_FOUND_IN_WEAPON_SLOT_PAINTER);
-        }
-        double result = WeaponSlotPainter.getTargetRotation(checked, worldTarget);
-        this.changeAngleWithMirrorCheck(checked, result);
-    }
-
-    public void changeAngleWithMirrorCheck(WeaponSlotPoint slotPoint, double angleDegrees) {
-        slotPoint.changeSlotAngle(angleDegrees);
-        boolean mirrorMode = ControlPredicates.isMirrorModeEnabled();
-        BaseWorldPoint mirroredCounterpart = getMirroredCounterpart(slotPoint);
-        if (mirrorMode && mirroredCounterpart instanceof WeaponSlotPoint checkedSlot) {
-            double angle = Utility.flipAngle(angleDegrees);
-            Point2D slotPosition = checkedSlot.getPosition();
-            double slotX = slotPosition.getX();
-            ShipPainter parentLayer = getParentLayer();
-            ShipCenterPoint shipCenter = parentLayer.getShipCenter();
-            Point2D centerPosition = shipCenter.getPosition();
-            double centerX = centerPosition.getX();
-            if ((Math.abs(slotX - centerX) < 0.05d)) {
-                angle = angleDegrees;
-            }
-            checkedSlot.changeSlotAngle(angle);
-        }
-    }
-
-    @Override
-    public void cleanupListeners() {
-        super.cleanupListeners();
-        KeyboardFocusManager.getCurrentKeyboardFocusManager().removeKeyEventDispatcher(hotkeyDispatcher);
-    }
-
-    private void initHotkeys() {
-        hotkeyDispatcher = ke -> {
-            int keyCode = ke.getKeyCode();
-            boolean isControlHotkey = (keyCode == controlHotkey);
-            boolean isCreationHotkey = (keyCode == creationHotkey);
-            switch (ke.getID()) {
-                case KeyEvent.KEY_PRESSED:
-                    if (isControlHotkey) {
-                        controlHotkeyPressed = true;
-                        EventBus.publish(new ViewerRepaintQueued());
-                    } else if (isCreationHotkey) {
-                        creationHotkeyPressed = true;
-                        EventBus.publish(new ViewerRepaintQueued());
-                    }
-                    break;
-                case KeyEvent.KEY_RELEASED:
-                    if (isControlHotkey) {
-                        controlHotkeyPressed = false;
-                        EventBus.publish(new ViewerRepaintQueued());
-                    } else if (isCreationHotkey) {
-                        creationHotkeyPressed = false;
-                        EventBus.publish(new ViewerRepaintQueued());
-                    }
-                    break;
-            }
-            return false;
-        };
-        KeyboardFocusManager.getCurrentKeyboardFocusManager().addKeyEventDispatcher(hotkeyDispatcher);
-    }
-
-    private void initModeListener() {
-        List<BusEventListener> listeners = getListeners();
-        BusEventListener modeListener = event -> {
-            if (event instanceof InstrumentModeChanged checked) {
-                setInteractionEnabled(checked.newMode() == ShipInstrument.WEAPON_SLOTS);
-            }
-        };
-        listeners.add(modeListener);
-        EventBus.subscribe(modeListener);
     }
 
     public void resetSkinSlotOverride() {
@@ -387,7 +272,7 @@ public class WeaponSlotPainter extends MirrorablePointPainter{
         if (point instanceof WeaponSlotPoint checked) {
             slotPoints.add(checked);
         } else {
-            throw new IllegalArgumentException("Attempted to add incompatible point to WeaponSlotPainter!");
+            throwIllegalPoint();
         }
     }
 
@@ -395,9 +280,8 @@ public class WeaponSlotPainter extends MirrorablePointPainter{
     protected void removePointFromIndex(BaseWorldPoint point) {
         if (point instanceof WeaponSlotPoint checked) {
             slotPoints.remove(checked);
-
         } else {
-            throw new IllegalArgumentException("Attempted to remove incompatible point from WeaponSlotPainter!");
+            throwIllegalPoint();
         }
     }
 
@@ -406,7 +290,8 @@ public class WeaponSlotPainter extends MirrorablePointPainter{
         if (point instanceof WeaponSlotPoint checked) {
             return slotPoints.indexOf(checked);
         } else {
-            throw new IllegalArgumentException("Attempted to access incompatible point in WeaponSlotPainter!");
+            throwIllegalPoint();
+            return -1;
         }
     }
 
@@ -414,7 +299,7 @@ public class WeaponSlotPainter extends MirrorablePointPainter{
     void paintDelegates(Graphics2D g, AffineTransform worldToScreen, double w, double h) {
         super.paintDelegates(g, worldToScreen, w, h);
         for (WeaponSlotPoint point : getPointsIndex()) {
-            WeaponSlotPainter.setSlotTransparency(point, 0.8d);
+            this.setSlotTransparency(point, 0.8d);
         }
     }
 
@@ -423,10 +308,10 @@ public class WeaponSlotPainter extends MirrorablePointPainter{
         WorldPoint selection = this.getSelected();
         double full = 1.0d;
         if (selection != null && isInteractionEnabled()) {
-            WeaponSlotPainter.setSlotTransparency(selection, full);
+            this.setSlotTransparency(selection, full);
             WorldPoint counterpart = this.getMirroredCounterpart(selection);
             if (counterpart != null && ControlPredicates.isMirrorModeEnabled()) {
-                WeaponSlotPainter.setSlotTransparency(counterpart, full);
+                this.setSlotTransparency(counterpart, full);
             }
         }
     }
@@ -435,14 +320,14 @@ public class WeaponSlotPainter extends MirrorablePointPainter{
     public void paintPainterContent(Graphics2D g, AffineTransform worldToScreen, double w, double h) {
         super.paintPainterContent(g, worldToScreen, w, h);
 
-        if (isInteractionEnabled() && creationHotkeyPressed) {
+        if (isInteractionEnabled() && isCreationHotkeyPressed()) {
             Point2D finalWorldCursor = StaticController.getFinalWorldCursor();
             Point2D worldCounterpart = this.createCounterpartPosition(finalWorldCursor);
             boolean mirrorMode = ControlPredicates.isMirrorModeEnabled();
 
             switch (SlotCreationPane.getMode()) {
                 case BY_CLOSEST -> {
-                    WeaponSlotPoint closest = (WeaponSlotPoint) findClosestPoint(finalWorldCursor);
+                    SlotData closest = (SlotData) findClosestPoint(finalWorldCursor);
                     slotMockDrawer.setType(closest.getWeaponType());
                     slotMockDrawer.setMount(closest.getWeaponMount());
                     slotMockDrawer.setSize(closest.getWeaponSize());
@@ -475,11 +360,11 @@ public class WeaponSlotPainter extends MirrorablePointPainter{
         }
     }
 
-    private static void setSlotTransparency(WorldPoint point, double value) {
+    private void setSlotTransparency(WorldPoint point, double value) {
         if (point instanceof WeaponSlotPoint checked) {
             checked.setTransparency(value);
         } else {
-            throw new IllegalStateException(ILLEGAL_POINT_TYPE_FOUND_IN_WEAPON_SLOT_PAINTER);
+            throwIllegalPoint();
         }
     }
 

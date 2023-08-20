@@ -1,7 +1,43 @@
 # Ship-Editor
-Visualizer and editor of object data in JSON and CSV format using GUI written with Swing.
+Visualizer and editor of object data in JSON and CSV format. Developed as utility tool for the purposes of working with data files of a game Starsector.
 
-Uses JavaGL library for low-level AffineTransform functionality, Jackson for JSON handling and Lombok for boilerplate code.
+## Stack:
+
+ - Java 19
+ - Swing
+ - Maven
+ - Jackson
+ - Lombok
+ - Log4j2
+
+## Used libraries:
+
+ - JavaGL: https://github.com/javagl/Viewer
+ - Ikonli: https://github.com/kordamp/ikonli
+ - Flatlaf: https://github.com/JFormDesigner/FlatLaf
+
+## Development Note 17.08.23:
+
+![](showcase/history/Sample%204.png)
+
+### Implemented:
+
+- Major refactors all around: point painting, layer hierarchy.
+- Streamlined string painting with TextPainter: supports outlines and arbitrary shape interactions via GlyphVector.
+- Robust layer ordering through sortable tabbed pane and PaintOrderController.
+- Functional layer rotation with AffineTransform preserving all interactions.
+- Finished deserialization of all important data types and their runtime wrappers.
+- Skin and variant groundwork.
+- Weapon slots functionality done, with reusable components also fit for skin slot overrides.
+- Launch bays functionality done.
+
+### Issues:
+
+Due to diligent refactoring and much thought dedicated to app hierarchy, almost all important issues seem to be either solved or not a roadblock anymore:
+
+ - EventBus listener pile-up is resolved through cleanup methods on layer removal, and did not prove a significant performance issue after tests and profiling.
+ - Performance issues with point drawing after start-up are seemingly fixed with a timed repaint technique.
+ - However, the issue with blank tooltips (most likely coming from FlatLaf interactions) still persists.
 
 ## Development Note 17.07.23:
 
@@ -52,3 +88,9 @@ Uses JavaGL library for low-level AffineTransform functionality, Jackson for JSO
 ### Issues: 
 
  - Poorly thought-out architecture leading to quick spaghetti code pile-up - needs rework with Event Bus system, which will provide robust loose coupling.
+
+## First draft:
+
+![](showcase/history/Sample%200.jpg)
+
+Used bespoke zoom/translate system, which would have taken quite a bit more time to implement right. It was decided to use JavaGL lib instead for out-of-the-box AffineTransform functionality.

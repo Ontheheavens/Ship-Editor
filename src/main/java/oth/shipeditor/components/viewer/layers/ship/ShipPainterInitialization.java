@@ -4,11 +4,12 @@ import lombok.extern.log4j.Log4j2;
 import oth.shipeditor.components.viewer.entities.BoundPoint;
 import oth.shipeditor.components.viewer.entities.bays.LaunchBay;
 import oth.shipeditor.components.viewer.entities.bays.LaunchPortPoint;
+import oth.shipeditor.components.viewer.entities.engine.EnginePoint;
 import oth.shipeditor.components.viewer.entities.weapon.WeaponSlotPoint;
 import oth.shipeditor.components.viewer.layers.ship.data.ShipHull;
 import oth.shipeditor.components.viewer.painters.points.*;
-import oth.shipeditor.representation.HullSpecFile;
-import oth.shipeditor.representation.ShipData;
+import oth.shipeditor.persistence.SettingsManager;
+import oth.shipeditor.representation.*;
 import oth.shipeditor.representation.weapon.WeaponMount;
 import oth.shipeditor.representation.weapon.WeaponSize;
 import oth.shipeditor.representation.weapon.WeaponSlot;
@@ -17,6 +18,7 @@ import oth.shipeditor.utility.text.StringConstants;
 
 import java.awt.geom.Point2D;
 import java.util.Arrays;
+import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Stream;
 
@@ -49,6 +51,8 @@ public final class ShipPainterInitialization {
         ShipPainterInitialization.initBounds(shipPainter, hullSpecFile, translatedCenter);
 
         ShipPainterInitialization.initSlots(shipPainter, shipData, translatedCenter);
+
+        ShipPainterInitialization.initEngines(shipPainter, layer, translatedCenter);
 
         shipPainter.finishInitialization();
     }
@@ -88,9 +92,7 @@ public final class ShipPainterInitialization {
 
                 Point2D[] locations = weaponSlot.getLocations();
 
-                LaunchBay bay = new LaunchBay(bayPainter);
-
-                bay.setId(weaponSlot.getId());
+                LaunchBay bay = new LaunchBay(weaponSlot.getId(), bayPainter);
 
                 bay.setAngle(weaponSlot.getAngle());
                 bay.setArc(weaponSlot.getArc());
@@ -140,6 +142,39 @@ public final class ShipPainterInitialization {
                 slotPainter.addPoint(slotPoint);
             }
 
+        });
+    }
+
+    private static void initEngines(ShipPainter shipPainter, ShipLayer layer, Point2D translatedCenter) {
+        ShipData shipData = layer.getShipData();
+        HullSpecFile hullSpecFile = shipData.getHullSpecFile();
+
+        EngineSlotPainter engineSlotPainter = shipPainter.getEnginePainter();
+        EngineSlot[] engineSlots = hullSpecFile.getEngineSlots();
+        if (engineSlots == null) return;
+        Stream<EngineSlot> engineSlotStream = Arrays.stream(engineSlots);
+        engineSlotStream.forEach(engineSlot -> {
+            Point2D rawEnginePosition = engineSlot.getLocation();
+            Point2D rotatedPosition = ShipPainterInitialization.rotatePointByCenter(rawEnginePosition, translatedCenter);
+
+            EnginePoint newEnginePoint = new EnginePoint(rotatedPosition, shipPainter);
+
+            newEnginePoint.setAngle(engineSlot.getAngle());
+            newEnginePoint.setLength(engineSlot.getLength());
+            newEnginePoint.setWidth(engineSlot.getWidth());
+
+            newEnginePoint.setContrailSize((int) engineSlot.getContrailSize());
+
+            GameDataRepository gameData = SettingsManager.getGameData();
+            Map<String, EngineStyle> allEngineStyles = gameData.getAllEngineStyles();
+            if (allEngineStyles != null) {
+                EngineStyle style = allEngineStyles.get(engineSlot.getStyle());
+                newEnginePoint.setStyle(style);
+            } else {
+                log.warn("Engine styles not loaded, engine initialized without style!");
+            }
+
+            engineSlotPainter.addPoint(newEnginePoint);
         });
     }
 

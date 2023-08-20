@@ -140,12 +140,13 @@ public final class UndoOverseer {
     private static void cleanupStack(LayerPainter painter, Collection<Edit> stack) {
         Collection<Edit> toRemove = new ArrayList<>();
         for (Edit edit : stack) {
-            if (!(edit instanceof PointEdit checked)) continue;
-            WorldPoint point = checked.getPoint();
-            if (point.getParentLayer() != painter) continue;
-            toRemove.add(edit);
-            if (checked instanceof ListeningEdit listeningEdit) {
-                listeningEdit.unregisterListeners();
+            if (edit instanceof PointEdit checked) {
+                WorldPoint point = checked.getPoint();
+                if (point.getParentLayer() != painter) continue;
+                toRemove.add(edit);
+                if (checked instanceof ListeningEdit listeningEdit) {
+                    listeningEdit.unregisterListeners();
+                }
             }
         }
         stack.removeAll(toRemove);

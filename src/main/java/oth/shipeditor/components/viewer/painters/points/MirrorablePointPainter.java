@@ -1,6 +1,12 @@
 package oth.shipeditor.components.viewer.painters.points;
 
 import lombok.Getter;
+import oth.shipeditor.communication.BusEventListener;
+import oth.shipeditor.communication.EventBus;
+import oth.shipeditor.communication.events.viewer.points.InstrumentModeChanged;
+import oth.shipeditor.communication.events.viewer.points.PointCreationQueued;
+import oth.shipeditor.components.instrument.ship.ShipInstrumentsPane;
+import oth.shipeditor.components.viewer.ShipInstrument;
 import oth.shipeditor.components.viewer.control.ControlPredicates;
 import oth.shipeditor.components.viewer.entities.BaseWorldPoint;
 import oth.shipeditor.components.viewer.entities.ShipCenterPoint;
@@ -25,7 +31,38 @@ public abstract class MirrorablePointPainter extends AbstractPointPainter {
 
     MirrorablePointPainter(ShipPainter parent) {
         this.parentLayer = parent;
+        initModeListener();
+        this.setInteractionEnabled(ShipInstrumentsPane.getCurrentMode() == getInstrumentType());
     }
+
+    protected void initInteractionListeners() {
+        List<BusEventListener> listeners = getListeners();
+        BusEventListener slotCreationListener = event -> {
+            if (event instanceof PointCreationQueued checked) {
+                if (!isInteractionEnabled()) return;
+                if (!hasPointAtCoords(checked.position())) {
+                    this.handleCreation(checked);
+                }
+            }
+        };
+        listeners.add(slotCreationListener);
+        EventBus.subscribe(slotCreationListener);
+    }
+
+    private void initModeListener() {
+        List<BusEventListener> listeners = getListeners();
+        BusEventListener modeListener = event -> {
+            if (event instanceof InstrumentModeChanged checked) {
+                setInteractionEnabled(checked.newMode() == getInstrumentType());
+            }
+        };
+        listeners.add(modeListener);
+        EventBus.subscribe(modeListener);
+    }
+
+    protected abstract ShipInstrument getInstrumentType();
+
+    protected abstract void handleCreation(PointCreationQueued event);
 
     @Override
     protected boolean isParentLayerActive() {

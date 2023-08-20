@@ -18,7 +18,7 @@ public class SkinPanel extends JPanel {
 
         JTabbedPane tabContainer = new JTabbedPane(SwingConstants.BOTTOM);
         tabContainer.addTab("Skin List", new SkinListPanel());
-        tabContainer.addTab("Slot Changes", new JPanel());
+        tabContainer.addTab("Slot Changes", new SkinSlotOverridesPanel());
         tabContainer.setTabLayoutPolicy(JTabbedPane.SCROLL_TAB_LAYOUT);
         tabContainer.putClientProperty(StringConstants.JTABBED_PANE_TAB_AREA_ALIGNMENT, "fill");
         this.add(tabContainer, BorderLayout.CENTER);

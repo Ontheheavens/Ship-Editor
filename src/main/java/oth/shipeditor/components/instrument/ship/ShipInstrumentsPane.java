@@ -6,10 +6,12 @@ import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.viewer.ViewerRepaintQueued;
 import oth.shipeditor.communication.events.viewer.points.InstrumentModeChanged;
 import oth.shipeditor.components.instrument.AbstractInstrumentsPane;
+import oth.shipeditor.components.instrument.ship.bays.LaunchBaysPanel;
 import oth.shipeditor.components.instrument.ship.centers.CollisionPanel;
 import oth.shipeditor.components.instrument.ship.centers.ShieldPanel;
+import oth.shipeditor.components.instrument.ship.engines.EnginesPanel;
 import oth.shipeditor.components.instrument.ship.skins.SkinPanel;
-import oth.shipeditor.components.instrument.ship.weaponslots.WeaponSlotsPanel;
+import oth.shipeditor.components.instrument.ship.slots.WeaponSlotsPanel;
 import oth.shipeditor.components.viewer.ShipInstrument;
 
 import javax.swing.*;
@@ -41,7 +43,7 @@ public final class ShipInstrumentsPane extends AbstractInstrumentsPane {
         this.createTab(new BoundPointsPanel(), ShipInstrument.BOUNDS);
         this.createTab(new WeaponSlotsPanel(), ShipInstrument.WEAPON_SLOTS);
         this.createTab(new LaunchBaysPanel(), ShipInstrument.LAUNCH_BAYS);
-        this.createTab(new JPanel(), ShipInstrument.ENGINES);
+        this.createTab(new EnginesPanel(), ShipInstrument.ENGINES);
         this.createTab(new SkinPanel(), ShipInstrument.SKIN);
         updateTooltipText();
     }

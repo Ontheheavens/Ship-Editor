@@ -90,12 +90,12 @@ public final class ControlPredicates {
             InputEventPredicates.noModifiers()
     );
 
-    static final Predicate<MouseEvent> changeSlotAnglePredicate = Predicates.and(
+    static final Predicate<MouseEvent> changeAnglePredicate = Predicates.and(
             InputEventPredicates.buttonDown(1),
             InputEventPredicates.noModifiers()
     );
 
-    static final Predicate<MouseEvent> changeSlotArcPredicate = Predicates.and(
+    static final Predicate<MouseEvent> changeArcOrSizePredicate = Predicates.and(
             InputEventPredicates.buttonDown(3),
             InputEventPredicates.noModifiers()
     );
