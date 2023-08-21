@@ -54,11 +54,11 @@ public class EngineList extends PointList<EnginePoint> {
             super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
             EnginePoint checked = (EnginePoint) value;
             EngineStyle engineStyle = checked.getStyle();
-            String engineOrStyle = "Engine";
+            String styleOrID = checked.getStyleID();
             if (engineStyle != null) {
-                engineOrStyle = engineStyle.getEngineStyleID();
+                styleOrID = engineStyle.getEngineStyleID();
             }
-            String displayText = engineOrStyle + " #" + index + ": " + checked.getPositionText();
+            String displayText = styleOrID + " #" + index + ": " + checked.getPositionText();
             setText(displayText);
             return this;
         }

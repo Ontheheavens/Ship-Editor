@@ -103,4 +103,9 @@ public class EngineStyle {
     @JsonProperty("glowAlternateColor")
     private Color glowAlternateColor;
 
+    @Override
+    public String toString() {
+        return this.engineStyleID;
+    }
+
 }

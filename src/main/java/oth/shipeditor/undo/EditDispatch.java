@@ -4,9 +4,7 @@ import oth.shipeditor.communication.BusEventListener;
 import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.BusEvent;
 import oth.shipeditor.communication.events.Events;
-import oth.shipeditor.communication.events.components.BaysPanelRepaintQueued;
-import oth.shipeditor.communication.events.components.EnginesPanelRepaintQueued;
-import oth.shipeditor.communication.events.components.SlotControlRepaintQueued;
+import oth.shipeditor.communication.events.components.*;
 import oth.shipeditor.communication.events.viewer.ViewerRepaintQueued;
 import oth.shipeditor.communication.events.viewer.control.ViewerMouseReleased;
 import oth.shipeditor.communication.events.viewer.points.AnchorOffsetQueued;
@@ -169,7 +167,7 @@ public final class EditDispatch {
         Edit dragEdit = new PointDragEdit(selected, wrappedOld, wrappedNew);
         EditDispatch.handleContinuousEdit(dragEdit);
         selected.setPosition(changedPosition);
-        Events.repaintView();
+        PointDragEdit.repaintByPointType(selected);
     }
 
     public static void postCollisionRadiusChanged(ShipCenterPoint point, float radius) {

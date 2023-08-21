@@ -1,5 +1,6 @@
 package oth.shipeditor.components.viewer.entities;
 
+import oth.shipeditor.components.viewer.ShipInstrument;
 import oth.shipeditor.components.viewer.layers.LayerPainter;
 
 import java.awt.geom.Point2D;
@@ -28,19 +29,17 @@ public interface WorldPoint {
      */
     boolean isPointSelected();
 
-
     /**
      * @return layer associated with this point; can be null.
      */
     LayerPainter getParentLayer();
 
-    /**
-     * @param selected whether this point should be selected.
-     */
     void setPointSelected(boolean selected);
 
     Point2D getCoordinatesForDisplay();
 
     void setPaintSizeMultiplier(double mult);
+
+    ShipInstrument getAssociatedMode();
 
 }

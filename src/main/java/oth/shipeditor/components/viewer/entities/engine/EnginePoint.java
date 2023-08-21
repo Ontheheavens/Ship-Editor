@@ -7,7 +7,9 @@ import oth.shipeditor.components.viewer.ShipInstrument;
 import oth.shipeditor.components.viewer.entities.AngledPoint;
 import oth.shipeditor.components.viewer.layers.ship.ShipPainter;
 import oth.shipeditor.parsing.loading.FileLoading;
+import oth.shipeditor.persistence.SettingsManager;
 import oth.shipeditor.representation.EngineStyle;
+import oth.shipeditor.representation.GameDataRepository;
 import oth.shipeditor.undo.EditDispatch;
 import oth.shipeditor.utility.Size2D;
 import oth.shipeditor.utility.Utility;
@@ -20,23 +22,30 @@ import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.awt.image.BufferedImageOp;
+import java.util.Map;
 
 /**
  * @author Ontheheavens
  * @since 18.08.2023
  */
-@Getter @Setter
 public class EnginePoint extends AngledPoint {
 
-    private static final Color SIZING_RECTANGLE = new Color(0, 0, 0, 20);
+    private static final Paint SIZING_RECTANGLE = new Color(0, 0, 0, 20);
 
+    @Setter
     private double angle;
 
+    @Getter @Setter
     private double length;
 
+    @Setter
     private double width;
 
+    @Setter
     private int contrailSize;
+
+    @Getter @Setter
+    private String styleID;
 
     private EngineStyle style;
 
@@ -51,6 +60,17 @@ public class EnginePoint extends AngledPoint {
         FLAME = FileLoading.loadImageResource(flameSprite);
         String flameCoreSprite = "engineflamecore32.png";
         FLAME_CORE = FileLoading.loadImageResource(flameCoreSprite);
+    }
+
+    public EngineStyle getStyle() {
+        if (style != null) return style;
+        GameDataRepository gameData = SettingsManager.getGameData();
+        Map<String, EngineStyle> allEngineStyles = gameData.getAllEngineStyles();
+        if (allEngineStyles != null) {
+            EngineStyle engineStyle = allEngineStyles.get(styleID);
+            this.setStyle(engineStyle);
+        }
+        return style;
     }
 
     public double getWidth() {
@@ -72,12 +92,20 @@ public class EnginePoint extends AngledPoint {
         EditDispatch.postEngineSizeChanged(this, size);
     }
 
+    public double getContrailSize() {
+        return contrailSize;
+    }
+
     public Size2D getSize() {
         return new Size2D(this.getWidth(), this.getLength());
     }
 
     public void setStyle(EngineStyle engineStyle) {
         this.style = engineStyle;
+
+        if (engineStyle != null) {
+            this.setStyleID(engineStyle.getEngineStyleID());
+        }
 
         Color flameColor = new Color(255, 125, 25);
         if (engineStyle != null) {

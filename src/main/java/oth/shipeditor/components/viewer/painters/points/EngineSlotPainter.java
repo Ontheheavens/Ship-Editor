@@ -126,6 +126,15 @@ public class EngineSlotPainter extends AngledPointPainter {
         }
     }
 
+    public void changeEngineContrailWithMirrorCheck(EnginePoint point, int contrailSize) {
+        point.setContrailSize(contrailSize);
+        boolean mirrorMode = ControlPredicates.isMirrorModeEnabled();
+        BaseWorldPoint mirroredCounterpart = getMirroredCounterpart(point);
+        if (mirrorMode && mirroredCounterpart instanceof EnginePoint checkedCounterpart) {
+            checkedCounterpart.setContrailSize(contrailSize);
+        }
+    }
+
     @Override
     protected ShipInstrument getInstrumentType() {
         return ShipInstrument.ENGINES;

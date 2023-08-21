@@ -1,9 +1,14 @@
 package oth.shipeditor.components.instrument.ship.engines;
 
 import lombok.Getter;
+import oth.shipeditor.communication.EventBus;
+import oth.shipeditor.communication.events.components.EnginesPanelRepaintQueued;
 import oth.shipeditor.components.viewer.entities.engine.EnginePoint;
 import oth.shipeditor.components.viewer.layers.ship.ShipPainter;
 import oth.shipeditor.components.viewer.painters.points.EngineSlotPainter;
+import oth.shipeditor.persistence.SettingsManager;
+import oth.shipeditor.representation.EngineStyle;
+import oth.shipeditor.representation.GameDataRepository;
 import oth.shipeditor.utility.Size2D;
 import oth.shipeditor.utility.components.ComponentUtilities;
 import oth.shipeditor.utility.text.StringValues;
@@ -13,6 +18,8 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import java.awt.*;
 import java.awt.event.MouseWheelEvent;
+import java.util.Collection;
+import java.util.Map;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
@@ -35,6 +42,8 @@ public class EngineDataPanel extends JPanel {
         this.addAngleController();
         this.addWidthController();
         this.addLengthController();
+        this.addContrailController();
+        this.addStyleSelector();
     }
 
     private void addAngleController() {
@@ -83,9 +92,70 @@ public class EngineDataPanel extends JPanel {
                 0.5d, Double.MAX_VALUE, action, 2);
     }
 
+    private void addContrailController() {
+        Consumer<Double> action = current -> {
+            ShipPainter slotParent = (ShipPainter) selected.getParentLayer();
+            EngineSlotPainter enginePainter = slotParent.getEnginePainter();
+            enginePainter.changeEngineContrailWithMirrorCheck(selected, (int) Math.round(current));
+        };
+        Supplier<Double> contrail = null;
+        if (selected != null) {
+            contrail = selected::getContrailSize;
+        }
+        this.addValueSelector("Contrail size:", contrail,
+                0, 128, 1, action, 3);
+    }
+
+    private void addStyleSelector() {
+        JLabel selectorLabel = new JLabel("Engine style:");
+        if (selected == null) {
+            ComponentUtilities.addLabelAndComponent(this, selectorLabel, ComponentUtilities.getNoSelected(), 4);
+            return;
+        }
+        JComponent valueBox;
+
+        GameDataRepository gameData = SettingsManager.getGameData();
+        Map<String, EngineStyle> allEngineStyles = gameData.getAllEngineStyles();
+        if (allEngineStyles != null) {
+            Collection<EngineStyle> styleCollection = allEngineStyles.values();
+            JComboBox<EngineStyle> styleSelector  = new JComboBox<>(styleCollection.toArray(new EngineStyle[0]));
+            styleSelector.setSelectedItem(selected.getStyle());
+
+            styleSelector.addActionListener(e -> {
+                EngineStyle selectedValue = (EngineStyle) styleSelector.getSelectedItem();
+                selected.setStyle(selectedValue);
+                EventBus.publish(new EnginesPanelRepaintQueued());
+            });
+
+            // TODO: both contrailSize and style still need undo/redo classes!
+            //  They also need mirroring support, and style possibly needs multiple selection support.
+
+            valueBox = styleSelector;
+        } else {
+            JTextField idField = new JTextField(selected.getStyleID());
+            idField.setToolTipText("Styles not loaded: defaulted to ID text");
+
+            idField.addActionListener(e -> {
+                String textValue = idField.getText();
+                selected.setStyleID(textValue);
+                EventBus.publish(new EnginesPanelRepaintQueued());
+            });
+
+            valueBox = idField;
+        }
+        ComponentUtilities.addLabelAndComponent(this, selectorLabel, valueBox, 4);
+    }
+
     @SuppressWarnings("MethodWithTooManyParameters")
     private void addValueSelector(String selectorLabelText, Supplier<Double> currentValue, double minValue,
                                   double maxValue, Consumer<Double> action, int position) {
+        this.addValueSelector(selectorLabelText, currentValue, minValue,
+                maxValue, 0.5d, action, position);
+    }
+
+    @SuppressWarnings("MethodWithTooManyParameters")
+    private void addValueSelector(String selectorLabelText, Supplier<Double> currentValue, double minValue,
+                                  double maxValue, double step, Consumer<Double> action, int position) {
         JLabel selectorLabel = new JLabel(selectorLabelText);
 
         String tooltip = StringValues.MOUSEWHEEL_TO_CHANGE;
@@ -97,7 +167,7 @@ public class EngineDataPanel extends JPanel {
         }
         double currentInput = currentValue.get();
         SpinnerNumberModel spinnerNumberModel = new SpinnerNumberModel(currentInput,
-                minValue, maxValue, 0.5d);
+                minValue, maxValue, step);
         JSpinner spinner = new JSpinner(spinnerNumberModel);
 
         spinner.addChangeListener(new ChangeListener() {
