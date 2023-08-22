@@ -1,49 +1,49 @@
-package oth.shipeditor.undo.edits.points;
+package oth.shipeditor.undo.edits.points.engines;
 
 import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.components.EnginesPanelRepaintQueued;
 import oth.shipeditor.communication.events.viewer.ViewerRepaintQueued;
 import oth.shipeditor.components.viewer.entities.engine.EnginePoint;
+import oth.shipeditor.components.viewer.painters.points.EngineSlotPainter;
 import oth.shipeditor.undo.AbstractEdit;
+
+import java.util.List;
 
 /**
  * @author Ontheheavens
  * @since 20.08.2023
  */
-public class EngineAngleSet extends AbstractEdit {
+public class EnginesSortEdit extends AbstractEdit {
 
-    private final EnginePoint enginePoint;
+    private final EngineSlotPainter pointPainter;
 
-    private final double oldAngle;
+    private final List<EnginePoint> oldList;
 
-    private final double updatedAngle;
+    private final List<EnginePoint> newList;
 
-    public EngineAngleSet(EnginePoint point, double old, double updated) {
-        this.enginePoint = point;
-        this.oldAngle = old;
-        this.updatedAngle = updated;
-        this.setFinished(false);
+    public EnginesSortEdit(EngineSlotPainter painter, List<EnginePoint> old, List<EnginePoint> changed) {
+        this.pointPainter = painter;
+        this.oldList = old;
+        this.newList = changed;
     }
 
     @Override
     public void undo() {
-        undoSubEdits();
-        enginePoint.setAngle(oldAngle);
+        pointPainter.setEnginePoints(oldList);
         EventBus.publish(new ViewerRepaintQueued());
         EventBus.publish(new EnginesPanelRepaintQueued());
     }
 
     @Override
     public void redo() {
-        enginePoint.setAngle(updatedAngle);
-        redoSubEdits();
+        pointPainter.setEnginePoints(newList);
         EventBus.publish(new ViewerRepaintQueued());
         EventBus.publish(new EnginesPanelRepaintQueued());
     }
 
     @Override
     public String getName() {
-        return "Change Engine Angle";
+        return "Sort Engines";
     }
 
 }

@@ -122,14 +122,11 @@ public class EngineDataPanel extends JPanel {
             styleSelector.setSelectedItem(selected.getStyle());
 
             styleSelector.addActionListener(e -> {
+                ShipPainter slotParent = (ShipPainter) selected.getParentLayer();
+                EngineSlotPainter enginePainter = slotParent.getEnginePainter();
                 EngineStyle selectedValue = (EngineStyle) styleSelector.getSelectedItem();
-                selected.setStyle(selectedValue);
-                EventBus.publish(new EnginesPanelRepaintQueued());
+                enginePainter.changeEngineStyleWithMirrorCheck(selected, selectedValue);
             });
-
-            // TODO: both contrailSize and style still need undo/redo classes!
-            //  They also need mirroring support, and style possibly needs multiple selection support.
-
             valueBox = styleSelector;
         } else {
             JTextField idField = new JTextField(selected.getStyleID());

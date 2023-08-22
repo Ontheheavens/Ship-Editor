@@ -5,6 +5,7 @@ import oth.shipeditor.components.datafiles.entities.HullmodCSVEntry;
 import oth.shipeditor.components.datafiles.entities.ShipSystemCSVEntry;
 import oth.shipeditor.components.datafiles.entities.WeaponCSVEntry;
 import oth.shipeditor.components.datafiles.entities.WingCSVEntry;
+import oth.shipeditor.components.viewer.entities.engine.EngineDataOverride;
 import oth.shipeditor.components.viewer.entities.weapon.WeaponSlotOverride;
 import oth.shipeditor.persistence.SettingsManager;
 import oth.shipeditor.representation.EngineSlot;
@@ -108,8 +109,7 @@ public final class ShipSkin {
 
     private Map<String, WeaponSlotOverride> weaponSlotChanges;
 
-    // TODO: Needs to be a runtime type.
-    private Map<String, EngineSlot> engineSlotChanges;
+    private Map<Integer, EngineDataOverride> engineSlotChanges;
 
     @Override
     public String toString() {
@@ -370,7 +370,23 @@ public final class ShipSkin {
 
         public Builder withEngineSlotChanges(Map<String, EngineSlot> engineSlotChanges) {
             if (engineSlotChanges == null) return this;
-            skin.engineSlotChanges = engineSlotChanges;
+
+            Map<Integer, EngineDataOverride> overrides = new HashMap<>(engineSlotChanges.size());
+
+            engineSlotChanges.forEach((slotIndex, engineSlot) -> {
+                EngineDataOverride.EngineDataOverrideBuilder overrideBlueprint = EngineDataOverride.builder();
+
+                Integer index = Integer.valueOf(slotIndex);
+                EngineDataOverride override = overrideBlueprint.index(index)
+                        .angle(engineSlot.getAngle())
+                        .length(engineSlot.getLength())
+                        .width(engineSlot.getWidth())
+                        .styleID(engineSlot.getStyle())
+                        .build();
+                overrides.put(index, override);
+            });
+
+            skin.engineSlotChanges = overrides;
             return this;
         }
 

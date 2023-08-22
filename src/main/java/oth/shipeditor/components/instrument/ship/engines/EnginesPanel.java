@@ -55,6 +55,7 @@ public class EnginesPanel extends JPanel {
 
         Pair<JPanel, JCheckBox> reorderWidget = ComponentUtilities.createReorderCheckboxPanel(enginesContainer);
         reorderCheckbox = reorderWidget.getSecond();
+        reorderCheckbox.setToolTipText("Warning: reordering might affect skin engine overrides mapping!");
         northContainer.add(reorderWidget.getFirst());
 
         this.add(northContainer, BorderLayout.PAGE_START);

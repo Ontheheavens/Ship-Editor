@@ -12,8 +12,11 @@ import oth.shipeditor.components.viewer.ShipInstrument;
 import oth.shipeditor.components.viewer.control.ControlPredicates;
 import oth.shipeditor.components.viewer.entities.BaseWorldPoint;
 import oth.shipeditor.components.viewer.entities.WorldPoint;
+import oth.shipeditor.components.viewer.entities.engine.EngineDataOverride;
 import oth.shipeditor.components.viewer.entities.engine.EnginePoint;
 import oth.shipeditor.components.viewer.layers.ship.ShipPainter;
+import oth.shipeditor.components.viewer.layers.ship.data.ShipSkin;
+import oth.shipeditor.representation.EngineStyle;
 import oth.shipeditor.undo.EditDispatch;
 import oth.shipeditor.utility.Size2D;
 
@@ -22,6 +25,7 @@ import java.awt.geom.AffineTransform;
 import java.awt.geom.Point2D;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author Ontheheavens
@@ -119,20 +123,36 @@ public class EngineSlotPainter extends AngledPointPainter {
 
     public void changeEngineSizeWithMirrorCheck(EnginePoint point, Size2D size) {
         point.changeSize(size);
-        boolean mirrorMode = ControlPredicates.isMirrorModeEnabled();
-        BaseWorldPoint mirroredCounterpart = getMirroredCounterpart(point);
-        if (mirrorMode && mirroredCounterpart instanceof EnginePoint checkedCounterpart) {
-            checkedCounterpart.changeSize(size);
-        }
+        actOnCounterpart(enginePoint -> enginePoint.changeSize(size), point);
     }
 
     public void changeEngineContrailWithMirrorCheck(EnginePoint point, int contrailSize) {
-        point.setContrailSize(contrailSize);
-        boolean mirrorMode = ControlPredicates.isMirrorModeEnabled();
-        BaseWorldPoint mirroredCounterpart = getMirroredCounterpart(point);
-        if (mirrorMode && mirroredCounterpart instanceof EnginePoint checkedCounterpart) {
-            checkedCounterpart.setContrailSize(contrailSize);
+        point.changeContrailSize(contrailSize);
+        actOnCounterpart(enginePoint -> enginePoint.changeContrailSize(contrailSize), point);
+    }
+
+    public void changeEngineStyleWithMirrorCheck(EnginePoint point, EngineStyle style) {
+        point.changeStyle(style);
+        actOnCounterpart(enginePoint -> enginePoint.changeStyle(style), point);
+    }
+
+    public void resetSkinSlotOverride() {
+        this.enginePoints.forEach(enginePoint -> enginePoint.setSkinOverride(null));
+    }
+
+    public void toggleSkinSlotOverride(ShipSkin skin) {
+        this.enginePoints.forEach(enginePoint -> this.setEngineOverrideFromSkin(enginePoint, skin));
+    }
+
+    private void setEngineOverrideFromSkin(EnginePoint enginePoint, ShipSkin skin) {
+        if (skin == null || skin.isBase()) {
+            enginePoint.setSkinOverride(null);
+            return;
         }
+        int slotIndex = this.enginePoints.indexOf(enginePoint);
+        Map<Integer, EngineDataOverride> engineSlotChanges = skin.getEngineSlotChanges();
+        EngineDataOverride matchingOverride = engineSlotChanges.get(slotIndex);
+        enginePoint.setSkinOverride(matchingOverride);
     }
 
     @Override

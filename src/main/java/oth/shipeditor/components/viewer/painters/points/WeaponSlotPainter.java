@@ -226,12 +226,7 @@ public class WeaponSlotPainter extends AngledPointPainter {
 
     public void changeArcWithMirrorCheck(WeaponSlotPoint slotPoint, double arcExtentDegrees) {
         slotPoint.changeSlotArc(arcExtentDegrees);
-
-        boolean mirrorMode = ControlPredicates.isMirrorModeEnabled();
-        BaseWorldPoint mirroredCounterpart = getMirroredCounterpart(slotPoint);
-        if (mirrorMode && mirroredCounterpart instanceof WeaponSlotPoint checkedSlot) {
-            checkedSlot.changeSlotArc(arcExtentDegrees);
-        }
+        actOnCounterpart(point -> point.changeSlotArc(arcExtentDegrees), slotPoint);
     }
 
     public void insertPoint(BaseWorldPoint toInsert, int precedingIndex) {

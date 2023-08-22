@@ -14,10 +14,12 @@ import oth.shipeditor.components.viewer.entities.weapon.SlotData;
 import oth.shipeditor.components.viewer.entities.weapon.WeaponSlotPoint;
 import oth.shipeditor.components.viewer.layers.LayerPainter;
 import oth.shipeditor.components.viewer.painters.points.*;
+import oth.shipeditor.representation.EngineStyle;
 import oth.shipeditor.representation.weapon.WeaponMount;
 import oth.shipeditor.representation.weapon.WeaponSize;
 import oth.shipeditor.representation.weapon.WeaponType;
 import oth.shipeditor.undo.edits.AnchorOffsetEdit;
+import oth.shipeditor.undo.edits.points.engines.*;
 import oth.shipeditor.undo.edits.LayerRotationEdit;
 import oth.shipeditor.undo.edits.points.*;
 import oth.shipeditor.undo.edits.points.slots.*;
@@ -140,6 +142,24 @@ public final class EditDispatch {
         Edit sizeEdit = new EngineSizeSet(enginePoint, oldSize, updated);
         EditDispatch.handleContinuousEdit(sizeEdit);
         enginePoint.setSize(updated);
+        EventBus.publish(new ViewerRepaintQueued());
+        EventBus.publish(new EnginesPanelRepaintQueued());
+    }
+
+    public static void postEngineContrailChanged(EnginePoint enginePoint, int updated) {
+        int oldContrail = (int) enginePoint.getContrailSize();
+        Edit contrailEdit = new EngineContrailSet(enginePoint, oldContrail, updated);
+        EditDispatch.handleContinuousEdit(contrailEdit);
+        enginePoint.setContrailSize(updated);
+        EventBus.publish(new ViewerRepaintQueued());
+        EventBus.publish(new EnginesPanelRepaintQueued());
+    }
+
+    public static void postEngineStyleChanged(EnginePoint enginePoint, EngineStyle updated) {
+        EngineStyle oldStyle = enginePoint.getStyle();
+        Edit styleEdit = new EngineStyleSet(enginePoint, oldStyle, updated);
+        UndoOverseer.post(styleEdit);
+        enginePoint.setStyle(updated);
         EventBus.publish(new ViewerRepaintQueued());
         EventBus.publish(new EnginesPanelRepaintQueued());
     }

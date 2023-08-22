@@ -2,13 +2,13 @@ package oth.shipeditor.parsing.loading;
 
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.json.JsonReadFeature;
-import com.fasterxml.jackson.databind.*;
-import com.fasterxml.jackson.databind.module.SimpleModule;
+import com.fasterxml.jackson.databind.JavaType;
+import com.fasterxml.jackson.databind.MappingIterator;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.type.TypeFactory;
 import com.fasterxml.jackson.dataformat.csv.CsvMapper;
 import com.fasterxml.jackson.dataformat.csv.CsvParser;
 import com.fasterxml.jackson.dataformat.csv.CsvSchema;
-import com.formdev.flatlaf.util.StringUtils;
 import lombok.extern.log4j.Log4j2;
 import oth.shipeditor.parsing.JsonProcessor;
 import oth.shipeditor.persistence.SettingsManager;
@@ -37,8 +37,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.function.Predicate;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
 /**
@@ -51,7 +49,15 @@ public final class FileLoading {
     static final String OPEN_COMMAND_CANCELLED_BY_USER = "Open command cancelled by user.";
     private static final String OPENING_SKIN_FILE = "Opening skin file: {}.";
     private static final String TRIED_TO_RESOLVE_SKIN_FILE_WITH_INVALID_EXTENSION = "Tried to resolve skin file with invalid extension!";
-    private static final Pattern LETTERS = Pattern.compile("[a-zA-Z]");
+
+    private static final ObjectMapper mapper;
+
+    static {
+        mapper = new ObjectMapper();
+        mapper.configure(JsonParser.Feature.ALLOW_YAML_COMMENTS, true);
+        mapper.configure(JsonReadFeature.ALLOW_TRAILING_COMMA.mappedFeature(), true);
+        mapper.configure(JsonReadFeature.ALLOW_LEADING_DECIMAL_POINT_FOR_NUMBERS.mappedFeature(), true);
+    }
 
     static File lastDirectory;
 
@@ -59,26 +65,7 @@ public final class FileLoading {
     }
 
     static ObjectMapper getConfigured() {
-        ObjectMapper objectMapper = new ObjectMapper();
-        objectMapper.configure(JsonParser.Feature.ALLOW_YAML_COMMENTS, true);
-        objectMapper.configure(JsonReadFeature.ALLOW_TRAILING_COMMA.mappedFeature(), true);
-        objectMapper.configure(JsonReadFeature.ALLOW_LEADING_DECIMAL_POINT_FOR_NUMBERS.mappedFeature(), true);
-
-        SimpleModule testModule = new SimpleModule("DoubleCustomDeserializer")
-                .addDeserializer(Double.class, new JsonDeserializer<>() {
-                    @Override
-                    public Double deserialize(JsonParser p, DeserializationContext ctxt) throws IOException {
-                        String valueAsString = p.getValueAsString();
-                        if (StringUtils.isEmpty(valueAsString)) {
-                            return null;
-                        }
-                        Matcher matcher = LETTERS.matcher(valueAsString);
-                        return Double.parseDouble(matcher.replaceAll("").replace(",", "."));
-                    }
-                });
-        objectMapper.registerModule(testModule);
-
-        return objectMapper;
+        return mapper;
     }
 
     private static Path searchFileInFolder(Path filePath, Path folderPath) {

@@ -19,6 +19,7 @@ import java.awt.*;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Point2D;
 import java.util.List;
+import java.util.function.Consumer;
 
 /**
  * @author Ontheheavens
@@ -114,10 +115,18 @@ public abstract class MirrorablePointPainter extends AbstractPointPainter {
         WorldPoint selection = this.getSelected();
         if (selection != null && isInteractionEnabled()) {
             MirrorablePointPainter.enlargePoint(selection);
-            WorldPoint counterpart = this.getMirroredCounterpart(selection);
-            if (counterpart != null && ControlPredicates.isMirrorModeEnabled()) {
-                MirrorablePointPainter.enlargePoint(counterpart);
-            }
+            this.actOnCounterpart(MirrorablePointPainter::enlargePoint, selection);
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    <T extends WorldPoint> void actOnCounterpart(Consumer<T> action, T point) {
+        boolean mirrorMode = ControlPredicates.isMirrorModeEnabled();
+        BaseWorldPoint mirroredCounterpart = getMirroredCounterpart(point);
+        Class<? extends WorldPoint> pointClass = point.getClass();
+        if (mirrorMode && pointClass.isInstance(mirroredCounterpart)) {
+            T checkedCounterpart = (T) pointClass.cast(mirroredCounterpart);
+            action.accept(checkedCounterpart);
         }
     }
 

@@ -163,7 +163,8 @@ public final class ShipPainterInitialization {
             newEnginePoint.setLength(engineSlot.getLength());
             newEnginePoint.setWidth(engineSlot.getWidth());
 
-            newEnginePoint.setContrailSize((int) engineSlot.getContrailSize());
+            double contrailSize = engineSlot.getContrailSize();
+            newEnginePoint.setContrailSize((int) contrailSize);
             String styleID = engineSlot.getStyle();
             newEnginePoint.setStyleID(styleID);
 

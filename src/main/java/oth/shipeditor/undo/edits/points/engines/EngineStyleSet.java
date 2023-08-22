@@ -1,50 +1,47 @@
-package oth.shipeditor.undo.edits.points;
+package oth.shipeditor.undo.edits.points.engines;
 
 import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.components.EnginesPanelRepaintQueued;
 import oth.shipeditor.communication.events.viewer.ViewerRepaintQueued;
 import oth.shipeditor.components.viewer.entities.engine.EnginePoint;
+import oth.shipeditor.representation.EngineStyle;
 import oth.shipeditor.undo.AbstractEdit;
-import oth.shipeditor.utility.Size2D;
 
 /**
  * @author Ontheheavens
- * @since 20.08.2023
+ * @since 22.08.2023
  */
-public class EngineSizeSet extends AbstractEdit {
+public class EngineStyleSet extends AbstractEdit {
 
     private final EnginePoint enginePoint;
 
-    private final Size2D oldSize;
+    private final EngineStyle oldStyle;
 
-    private final Size2D updatedSize;
+    private final EngineStyle updatedStyle;
 
-    public EngineSizeSet(EnginePoint point, Size2D old, Size2D updated) {
+    public EngineStyleSet(EnginePoint point, EngineStyle old, EngineStyle updated) {
         this.enginePoint = point;
-        this.oldSize = old;
-        this.updatedSize = updated;
-        this.setFinished(false);
+        this.oldStyle = old;
+        this.updatedStyle = updated;
     }
 
     @Override
     public void undo() {
-        undoSubEdits();
-        enginePoint.setSize(oldSize);
+        enginePoint.setStyle(oldStyle);
         EventBus.publish(new ViewerRepaintQueued());
         EventBus.publish(new EnginesPanelRepaintQueued());
     }
 
     @Override
     public void redo() {
-        enginePoint.setSize(updatedSize);
-        redoSubEdits();
+        enginePoint.setStyle(updatedStyle);
         EventBus.publish(new ViewerRepaintQueued());
         EventBus.publish(new EnginesPanelRepaintQueued());
     }
 
     @Override
     public String getName() {
-        return "Change Engine Size";
+        return "Change Engine Style";
     }
 
 }

@@ -28,6 +28,7 @@ import java.util.Map;
  * @author Ontheheavens
  * @since 18.08.2023
  */
+@SuppressWarnings("ClassWithTooManyFields")
 public class EnginePoint extends AngledPoint {
 
     private static final Paint SIZING_RECTANGLE = new Color(0, 0, 0, 20);
@@ -35,7 +36,7 @@ public class EnginePoint extends AngledPoint {
     @Setter
     private double angle;
 
-    @Getter @Setter
+    @Setter
     private double length;
 
     @Setter
@@ -48,6 +49,9 @@ public class EnginePoint extends AngledPoint {
     private String styleID;
 
     private EngineStyle style;
+
+    @Getter
+    private EngineDataOverride skinOverride;
 
     private static final BufferedImage FLAME;
 
@@ -62,7 +66,20 @@ public class EnginePoint extends AngledPoint {
         FLAME_CORE = FileLoading.loadImageResource(flameCoreSprite);
     }
 
+    public void setSkinOverride(EngineDataOverride override) {
+        this.skinOverride = override;
+        if (skinOverride != null) {
+            EngineStyle overrideStyle = skinOverride.getStyle();
+            this.setSkinStyleOverride(overrideStyle);
+        } else {
+            this.setStyle(style);
+        }
+    }
+
     public EngineStyle getStyle() {
+        if (this.skinOverride != null && skinOverride.getStyle() != null) {
+            return this.skinOverride.getStyle();
+        }
         if (style != null) return style;
         GameDataRepository gameData = SettingsManager.getGameData();
         Map<String, EngineStyle> allEngineStyles = gameData.getAllEngineStyles();
@@ -73,8 +90,26 @@ public class EnginePoint extends AngledPoint {
         return style;
     }
 
+    @Override
+    public double getAngle() {
+        if (this.skinOverride != null && skinOverride.getAngle() != null) {
+            return skinOverride.getAngle();
+        }
+        return angle;
+    }
+
     public double getWidth() {
+        if (this.skinOverride != null && skinOverride.getWidth() != null) {
+            return skinOverride.getWidth();
+        }
         return width;
+    }
+
+    public double getLength() {
+        if (this.skinOverride != null && skinOverride.getLength() != null) {
+            return skinOverride.getLength();
+        }
+        return length;
     }
 
     public EnginePoint(Point2D pointPosition, ShipPainter layer) {
@@ -92,6 +127,14 @@ public class EnginePoint extends AngledPoint {
         EditDispatch.postEngineSizeChanged(this, size);
     }
 
+    public void changeContrailSize(int contrail) {
+        EditDispatch.postEngineContrailChanged(this, contrail);
+    }
+
+    public void changeStyle(EngineStyle engineStyle) {
+        EditDispatch.postEngineStyleChanged(this, engineStyle);
+    }
+
     public double getContrailSize() {
         return contrailSize;
     }
@@ -100,13 +143,20 @@ public class EnginePoint extends AngledPoint {
         return new Size2D(this.getWidth(), this.getLength());
     }
 
+    private void setSkinStyleOverride(EngineStyle engineStyle) {
+        handleStyleFlameImage(engineStyle);
+    }
+
     public void setStyle(EngineStyle engineStyle) {
         this.style = engineStyle;
 
         if (engineStyle != null) {
             this.setStyleID(engineStyle.getEngineStyleID());
         }
+        handleStyleFlameImage(engineStyle);
+    }
 
+    private void handleStyleFlameImage(EngineStyle engineStyle) {
         Color flameColor = new Color(255, 125, 25);
         if (engineStyle != null) {
             flameColor = engineStyle.getEngineColor();
@@ -122,11 +172,6 @@ public class EnginePoint extends AngledPoint {
     }
 
     @Override
-    public double getAngle() {
-        return angle;
-    }
-
-    @Override
     public void changeSlotAngle(double degrees) {
         EditDispatch.postEngineAngleSet(this,this.angle,degrees);
     }
@@ -139,11 +184,11 @@ public class EnginePoint extends AngledPoint {
     }
 
     private void drawEngineRectangle(Graphics2D g, AffineTransform worldToScreen) {
-        double transformedAngle = Utility.transformAngle(this.angle);
+        double transformedAngle = Utility.transformAngle(this.getAngle());
         Point2D position = this.getPosition();
 
-        double engineWidth = this.width;
-        double engineLength = this.length;
+        double engineWidth = this.getWidth();
+        double engineLength = this.getLength();
         double halfWidth = engineWidth * 0.5f;
 
         Point2D topLeft = new Point2D.Double(position.getX(), position.getY() - halfWidth);
@@ -158,10 +203,10 @@ public class EnginePoint extends AngledPoint {
     }
 
     private void drawEngineFlame(Graphics2D g, AffineTransform worldToScreen) {
-        double transformedAngle = Utility.transformAngle(this.angle);
+        double transformedAngle = Utility.transformAngle(this.getAngle());
         Point2D position = this.getPosition();
-        double engineWidth = this.width;
-        double engineLength = this.length;
+        double engineWidth = this.getWidth();
+        double engineLength = this.getLength();
         double halfWidth = engineWidth * 0.5f;
 
         Point2D topLeft = new Point2D.Double(position.getX(), position.getY() - halfWidth);
