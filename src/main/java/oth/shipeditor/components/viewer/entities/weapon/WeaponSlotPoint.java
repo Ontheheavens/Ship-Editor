@@ -135,12 +135,12 @@ public class WeaponSlotPoint extends AngledPoint implements SlotPoint {
     }
 
     public void changeSlotMount(WeaponMount newMount) {
-        if (skinOverride != null && skinOverride.getWeaponType() != null) return;
+        if (skinOverride != null && skinOverride.getWeaponMount() != null) return;
         EditDispatch.postSlotMountChanged(this, newMount);
     }
 
     public void changeSlotSize(WeaponSize newSize) {
-        if (skinOverride != null && skinOverride.getWeaponType() != null) return;
+        if (skinOverride != null && skinOverride.getWeaponSize() != null) return;
         EditDispatch.postSlotSizeChanged(this, newSize);
     }
 

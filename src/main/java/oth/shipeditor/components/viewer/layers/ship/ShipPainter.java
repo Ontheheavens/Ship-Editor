@@ -109,7 +109,6 @@ public final class ShipPainter extends LayerPainter {
                 this.enginePainter.resetSkinSlotOverride();
             }
 
-
             parentLayer.setSpriteFileName(loadedSkinSprite.getFileName());
             String skinFileName = skin.getSkinFilePath().getFileName().toString();
             parentLayer.setSkinFileName(skinFileName);

@@ -278,7 +278,7 @@ public final class ComponentUtilities {
     /**
      * @param parent assumes that JPanel instance has GridBagLayout set as component layout.
      */
-    public static void addLabelAndComponent(JPanel parent, JLabel label, Component component, int y) {
+    public static JComponent addLabelAndComponent(JPanel parent, JLabel label, JComponent component, int y) {
         GridBagConstraints constraints = new GridBagConstraints();
 
         constraints.insets = new Insets(3, 6, 0, 3);
@@ -300,6 +300,7 @@ public final class ComponentUtilities {
         }
         constraints.anchor = GridBagConstraints.LINE_END;
         parent.add(component, constraints);
+        return component;
     }
 
     public static JLabel getNoSelected() {

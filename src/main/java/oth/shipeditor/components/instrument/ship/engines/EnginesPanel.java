@@ -4,6 +4,7 @@ import lombok.Getter;
 import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.components.EnginesPanelRepaintQueued;
 import oth.shipeditor.communication.events.viewer.layers.LayerWasSelected;
+import oth.shipeditor.communication.events.viewer.points.EngineInsertedConfirmed;
 import oth.shipeditor.communication.events.viewer.points.PointAddConfirmed;
 import oth.shipeditor.communication.events.viewer.points.PointRemovedConfirmed;
 import oth.shipeditor.components.viewer.entities.engine.EnginePoint;
@@ -100,6 +101,12 @@ public class EnginesPanel extends JPanel {
             if (event instanceof PointAddConfirmed checked && checked.point() instanceof EnginePoint point) {
                 model.addElement(point);
                 enginesContainer.setSelectedIndex(model.indexOf(point));
+            }
+        });
+        EventBus.subscribe(event -> {
+            if (event instanceof EngineInsertedConfirmed checked) {
+                model.insertElementAt(checked.toInsert(), checked.precedingIndex());
+                enginesContainer.setSelectedIndex(model.indexOf(checked.toInsert()));
             }
         });
         EventBus.subscribe(event -> {

@@ -33,7 +33,7 @@ import java.util.List;
  * @author Ontheheavens
  * @since 16.06.2023
  */
-@SuppressWarnings("OverlyCoupledClass")
+@SuppressWarnings({"OverlyCoupledClass", "ClassWithTooManyMethods"})
 public final class EditDispatch {
 
     private EditDispatch() {

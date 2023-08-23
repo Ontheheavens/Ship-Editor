@@ -18,8 +18,6 @@ public class EngineList extends PointList<EnginePoint> {
 
     private final JPanel infoPanel;
 
-    private EngineDataPanel dataPanel;
-
     EngineList(ListModel<EnginePoint> dataModel, JPanel infoDataPanel) {
         super(dataModel);
         this.infoPanel = infoDataPanel;
@@ -35,7 +33,7 @@ public class EngineList extends PointList<EnginePoint> {
         EnginePoint selected = this.getSelectedValue();
         infoPanel.removeAll();
 
-        dataPanel = new EngineDataPanel(selected);
+        EngineDataPanel dataPanel = new EngineDataPanel(selected);
         infoPanel.add(dataPanel, BorderLayout.CENTER);
 
         infoPanel.revalidate();

@@ -91,6 +91,14 @@ public class HotkeyHelpPainter implements Painter {
                 hints.add(addPort);
                 hints.add(addBay);
             }
+            case ENGINES -> {
+                String angleHint = "Alter angle: D+LMB";
+                String sizeHint = "Alter size: D+RMB";
+                String addHint = "Add engine: E+LMB";
+                hints.add(angleHint);
+                hints.add(sizeHint);
+                hints.add(addHint);
+            }
             default -> {
             }
         }

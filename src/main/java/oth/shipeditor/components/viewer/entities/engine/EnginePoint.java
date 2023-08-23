@@ -76,6 +76,10 @@ public class EnginePoint extends AngledPoint {
         }
     }
 
+    public static BufferedImage getBaseFlameTexture() {
+        return FLAME;
+    }
+
     public EngineStyle getStyle() {
         if (this.skinOverride != null && skinOverride.getStyle() != null) {
             return this.skinOverride.getStyle();
@@ -113,9 +117,21 @@ public class EnginePoint extends AngledPoint {
     }
 
     public EnginePoint(Point2D pointPosition, ShipPainter layer) {
+        this(pointPosition, layer, null);
+    }
+
+    public EnginePoint(Point2D pointPosition, ShipPainter layer, EnginePoint valuesSource) {
         super(pointPosition, layer);
         this.flameColored = FLAME;
         this.setStyle(null);
+        if (valuesSource != null) {
+            this.setAngle(valuesSource.getAngle());
+            this.setWidth(valuesSource.getWidth());
+            this.setLength(valuesSource.getLength());
+            this.setContrailSize((int) valuesSource.getContrailSize());
+            this.setStyleID(valuesSource.getStyleID());
+            this.setStyle(valuesSource.getStyle());
+        }
     }
 
     public void setSize(Size2D size) {
@@ -184,29 +200,27 @@ public class EnginePoint extends AngledPoint {
     }
 
     private void drawEngineRectangle(Graphics2D g, AffineTransform worldToScreen) {
-        double transformedAngle = Utility.transformAngle(this.getAngle());
+        double rawAngle = this.getAngle();
         Point2D position = this.getPosition();
-
         double engineWidth = this.getWidth();
         double engineLength = this.getLength();
-        double halfWidth = engineWidth * 0.5f;
 
-        Point2D topLeft = new Point2D.Double(position.getX(), position.getY() - halfWidth);
-        Shape sizingRectangle = new Rectangle2D.Double(topLeft.getX(),
-                topLeft.getY(), engineLength, engineWidth);
-
-        DrawUtilities.drawWithRotationTransform(g, worldToScreen,
-                position, Math.toRadians(transformedAngle), graphics2D -> {
-                    DrawUtilities.fillShape(g, sizingRectangle, SIZING_RECTANGLE);
-                    DrawUtilities.outlineShape(g,sizingRectangle, Color.BLACK, 0.05f);
-                });
+        EnginePoint.drawRectangleStatically(g, worldToScreen, position, rawAngle, engineWidth, engineLength);
     }
 
     private void drawEngineFlame(Graphics2D g, AffineTransform worldToScreen) {
-        double transformedAngle = Utility.transformAngle(this.getAngle());
+        double rawAngle = this.getAngle();
         Point2D position = this.getPosition();
         double engineWidth = this.getWidth();
         double engineLength = this.getLength();
+
+        EnginePoint.drawFlameStatically(g, worldToScreen, position, rawAngle, engineWidth, engineLength, flameColored);
+    }
+
+    public static void drawFlameStatically(Graphics2D g, AffineTransform worldToScreen, Point2D position,
+                                           double rawAngle, double engineWidth, double engineLength,
+                                           BufferedImage flameColored) {
+        double transformedAngle = Utility.transformAngle(rawAngle);
         double halfWidth = engineWidth * 0.5f;
 
         Point2D topLeft = new Point2D.Double(position.getX(), position.getY() - halfWidth);
@@ -227,6 +241,21 @@ public class EnginePoint extends AngledPoint {
         };
         DrawUtilities.drawWithRotationTransform(g, worldToScreen, position,
                 Math.toRadians(transformedAngle), graphicsAction);
+    }
+
+    public static void drawRectangleStatically(Graphics2D g, AffineTransform worldToScreen, Point2D position,
+                                               double rawAngle, double engineWidth, double engineLength) {
+        double transformedAngle = Utility.transformAngle(rawAngle);
+        double halfWidth = engineWidth * 0.5f;
+        Point2D topLeft = new Point2D.Double(position.getX(), position.getY() - halfWidth);
+        Shape sizingRectangle = new Rectangle2D.Double(topLeft.getX(),
+                topLeft.getY(), engineLength, engineWidth);
+
+        DrawUtilities.drawWithRotationTransform(g, worldToScreen,
+                position, Math.toRadians(transformedAngle), graphics2D -> {
+                    DrawUtilities.fillShape(g, sizingRectangle, SIZING_RECTANGLE);
+                    DrawUtilities.outlineShape(g,sizingRectangle, Color.BLACK, 0.05f);
+                });
     }
 
 
