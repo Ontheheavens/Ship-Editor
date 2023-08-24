@@ -3,7 +3,7 @@ package oth.shipeditor.components.viewer.entities.engine;
 import com.jhlabs.image.HSBAdjustFilter;
 import lombok.Getter;
 import lombok.Setter;
-import oth.shipeditor.components.viewer.ShipInstrument;
+import oth.shipeditor.components.instrument.ship.ShipInstrument;
 import oth.shipeditor.components.viewer.entities.AngledPoint;
 import oth.shipeditor.components.viewer.layers.ship.ShipPainter;
 import oth.shipeditor.parsing.loading.FileLoading;

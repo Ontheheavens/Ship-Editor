@@ -7,7 +7,7 @@ import oth.shipeditor.communication.BusEventListener;
 import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.viewer.points.*;
 import oth.shipeditor.components.instrument.ship.slots.SlotCreationPane;
-import oth.shipeditor.components.viewer.ShipInstrument;
+import oth.shipeditor.components.instrument.ship.ShipInstrument;
 import oth.shipeditor.components.viewer.control.ControlPredicates;
 import oth.shipeditor.components.viewer.entities.BaseWorldPoint;
 import oth.shipeditor.components.viewer.entities.WorldPoint;

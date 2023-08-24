@@ -9,7 +9,7 @@ import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.viewer.points.AnchorOffsetConfirmed;
 import oth.shipeditor.communication.events.viewer.points.AnchorOffsetQueued;
 import oth.shipeditor.components.instrument.ship.ShipInstrumentsPane;
-import oth.shipeditor.components.viewer.ShipInstrument;
+import oth.shipeditor.components.instrument.ship.ShipInstrument;
 import oth.shipeditor.components.viewer.layers.LayerPainter;
 import oth.shipeditor.components.viewer.layers.ship.ShipPainter;
 import oth.shipeditor.components.viewer.painters.TextPainter;

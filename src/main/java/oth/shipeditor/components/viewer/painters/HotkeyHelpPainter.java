@@ -3,7 +3,7 @@ package oth.shipeditor.components.viewer.painters;
 import de.javagl.viewer.Painter;
 import lombok.extern.log4j.Log4j2;
 import oth.shipeditor.components.instrument.ship.ShipInstrumentsPane;
-import oth.shipeditor.components.viewer.ShipInstrument;
+import oth.shipeditor.components.instrument.ship.ShipInstrument;
 import oth.shipeditor.components.viewer.layers.LayerPainter;
 import oth.shipeditor.components.viewer.layers.ViewerLayer;
 import oth.shipeditor.utility.StaticController;

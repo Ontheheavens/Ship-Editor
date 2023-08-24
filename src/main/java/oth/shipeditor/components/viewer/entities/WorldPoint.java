@@ -1,6 +1,6 @@
 package oth.shipeditor.components.viewer.entities;
 
-import oth.shipeditor.components.viewer.ShipInstrument;
+import oth.shipeditor.components.instrument.ship.ShipInstrument;
 import oth.shipeditor.components.viewer.layers.LayerPainter;
 
 import java.awt.geom.Point2D;

@@ -39,7 +39,7 @@ public final class ShipPainterInitialization {
         HullSpecFile hullSpecFile = shipData.getHullSpecFile();
 
         ShipHull shipHull = layer.getHull();
-        shipHull.initHullStyle(hullSpecFile);
+        shipHull.initialize(hullSpecFile);
 
         Point2D anchor = shipPainter.getCenterAnchor();
         Point2D hullCenter = hullSpecFile.getCenter();
