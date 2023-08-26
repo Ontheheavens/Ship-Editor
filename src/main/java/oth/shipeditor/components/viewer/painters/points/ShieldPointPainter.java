@@ -61,7 +61,7 @@ public class ShieldPointPainter extends SinglePointPainter {
         ShipData shipData = layer.getShipData();
         HullSpecFile hullSpecFile = shipData.getHullSpecFile();
         ShipHull hull = layer.getHull();
-        hull.reloadHullStyle();
+        hull.loadHullStyle();
         HullStyle style = hull.getHullStyle();
         if (style == null) {
             style = new HullStyle();

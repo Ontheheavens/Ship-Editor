@@ -84,7 +84,7 @@ public class EngineDataPanel extends JPanel {
             width = selected::getWidth;
         }
         JComponent selector = this.addValueSelector("Engine width:", width,
-                0.5d, Double.MAX_VALUE, action, 1);
+                0, Double.MAX_VALUE, action, 1);
 
         EngineDataOverride skinOverride = null;
         if (selected != null) {
@@ -110,7 +110,7 @@ public class EngineDataPanel extends JPanel {
             length = selected::getLength;
         }
         JComponent selector = this.addValueSelector("Engine length:", length,
-                0.5d, Double.MAX_VALUE, action, 2);
+                0, Double.MAX_VALUE, action, 2);
 
         EngineDataOverride skinOverride = null;
         if (selected != null) {

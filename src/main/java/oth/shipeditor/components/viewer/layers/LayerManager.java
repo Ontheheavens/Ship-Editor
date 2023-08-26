@@ -5,6 +5,7 @@ import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
 import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.files.HullFileOpened;
+import oth.shipeditor.communication.events.files.HullmodDataSet;
 import oth.shipeditor.communication.events.files.SkinFileOpened;
 import oth.shipeditor.communication.events.files.SpriteOpened;
 import oth.shipeditor.communication.events.viewer.ViewerRepaintQueued;
@@ -17,6 +18,7 @@ import oth.shipeditor.communication.events.viewer.layers.weapons.WeaponLayerCrea
 import oth.shipeditor.communication.events.viewer.layers.weapons.WeaponLayerCreationQueued;
 import oth.shipeditor.components.viewer.layers.ship.ShipLayer;
 import oth.shipeditor.components.viewer.layers.ship.ShipPainter;
+import oth.shipeditor.components.viewer.layers.ship.data.ShipHull;
 import oth.shipeditor.components.viewer.layers.weapon.WeaponLayer;
 import oth.shipeditor.representation.HullSpecFile;
 import oth.shipeditor.representation.ShipData;
@@ -62,7 +64,7 @@ public class LayerManager {
         EventBus.publish(new LayerWasSelected(old, newlySelected));
     }
 
-    @SuppressWarnings({"OverlyCoupledMethod", "ChainOfInstanceofChecks"})
+    @SuppressWarnings({"OverlyCoupledMethod", "ChainOfInstanceofChecks", "OverlyComplexMethod"})
     private void initLayerListening() {
         EventBus.subscribe(event -> {
             if (event instanceof ShipLayerCreationQueued) {
@@ -113,6 +115,19 @@ public class LayerManager {
         EventBus.subscribe(event -> {
             if (event instanceof ActiveLayerUpdated checked) {
                 setActiveLayer(checked.updated());
+            }
+        });
+        EventBus.subscribe(event -> {
+            if (event instanceof HullmodDataSet) {
+                layers.forEach(layer -> {
+                    if (layer instanceof ShipLayer checkedLayer) {
+                        ShipHull hull = checkedLayer.getHull();
+                        if (hull != null) {
+                            hull.loadBuiltInMods();
+                        }
+                    }
+                });
+                setActiveLayer(this.getActiveLayer());
             }
         });
     }

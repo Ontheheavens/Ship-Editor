@@ -4,11 +4,13 @@ import com.formdev.flatlaf.ui.FlatLineBorder;
 import com.formdev.flatlaf.ui.FlatRoundBorder;
 import oth.shipeditor.communication.BusEventListener;
 import oth.shipeditor.communication.EventBus;
+import oth.shipeditor.components.datafiles.entities.HullmodCSVEntry;
 import oth.shipeditor.components.instrument.ship.PointList;
 import oth.shipeditor.components.viewer.entities.BaseWorldPoint;
 import oth.shipeditor.components.viewer.painters.PainterVisibility;
 import oth.shipeditor.components.viewer.painters.points.AbstractPointPainter;
 import oth.shipeditor.menubar.FileUtilities;
+import oth.shipeditor.parsing.loading.FileLoading;
 import oth.shipeditor.utility.Pair;
 import oth.shipeditor.utility.Utility;
 import oth.shipeditor.utility.graphics.ColorUtilities;
@@ -26,6 +28,7 @@ import java.awt.image.BufferedImage;
 import java.nio.file.Path;
 import java.util.Dictionary;
 import java.util.Hashtable;
+import java.util.Map;
 
 /**
  * @author Ontheheavens
@@ -78,11 +81,24 @@ public final class ComponentUtilities {
         panel.add(separator);
     }
 
-    public static JLabel createIconLabelWithBorder(Icon icon) {
+    private static JLabel createIconLabelWithBorder(Icon icon) {
         JLabel imageLabel = new JLabel(icon);
         imageLabel.setOpaque(true);
         imageLabel.setBorder(new FlatLineBorder(new Insets(2, 2, 2, 2), Color.GRAY));
         imageLabel.setBackground(Color.LIGHT_GRAY);
+        return imageLabel;
+    }
+
+    public static JLabel createHullmodIcon(HullmodCSVEntry entry) {
+        Map<String, String> rowData = entry.getRowData();
+        String name = rowData.get("name");
+        Image iconImage = FileLoading.loadSpriteAsImage(entry.fetchHullmodSpriteFile());
+        int iconSize = 32;
+        if (iconImage.getWidth(null) > iconSize || iconImage.getHeight(null) > iconSize) {
+            iconImage = iconImage.getScaledInstance(iconSize, iconSize, Image.SCALE_DEFAULT);
+        }
+        JLabel imageLabel = ComponentUtilities.createIconLabelWithBorder(new ImageIcon(iconImage));
+        imageLabel.setToolTipText(name);
         return imageLabel;
     }
 
@@ -244,10 +260,32 @@ public final class ComponentUtilities {
         return new Pair<>(container, reorderCheckbox);
     }
 
-    public static JPanel createTitledSeparatorPanel(String text, Insets insets) {
+    public static JPanel createTitledSeparatorPanel(String text) {
+        var insets = new Insets(1, 0, 0, 0);
+        return ComponentUtilities.createTitledSeparatorPanel(text, insets);
+    }
+
+    public static TextScrollPanel createTextPanel(String text, int pad) {
+        TextScrollPanel container = new TextScrollPanel(new FlowLayout());
+        container.setBorder(new EmptyBorder(0, 0, pad, 0));
+        container.setLayout(new BoxLayout(container, BoxLayout.LINE_AXIS));
+        JTextArea textArea = new JTextArea(text);
+        textArea.setEditable(false);
+        textArea.setLineWrap(true);
+        textArea.setWrapStyleWord(true);
+        textArea.setMinimumSize(new Dimension(100,100));
+        container.setMinimumSize(new Dimension(100,100));
+
+        container.add(textArea);
+        container.setAlignmentY(0);
+        return container;
+    }
+
+    private static JPanel createTitledSeparatorPanel(String text, Insets insets) {
         JPanel container = new JPanel();
         container.setLayout(new FlowLayout(FlowLayout.CENTER, 0, 0));
         ComponentUtilities.outfitPanelWithTitle(container, insets, text);
+        container.setAlignmentY(0);
         return container;
     }
 

@@ -4,6 +4,7 @@ import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.components.GameDataPanelResized;
 import oth.shipeditor.components.datafiles.trees.DataTreePanel;
 import oth.shipeditor.components.datafiles.OpenDataTarget;
+import oth.shipeditor.utility.components.TextScrollPanel;
 
 import javax.swing.*;
 import javax.swing.tree.DefaultMutableTreeNode;
@@ -50,7 +51,7 @@ class ArticleTreePanel extends DataTreePanel {
         rightPanel.removeAll();
         rightPanel.setLayout(new BoxLayout(rightPanel, BoxLayout.PAGE_AXIS));
 
-        JPanel contentContainer = new HelpArticle.TextScrollPanel(new FlowLayout());
+        JPanel contentContainer = new TextScrollPanel(new FlowLayout());
         contentContainer.setLayout(new BoxLayout(contentContainer, BoxLayout.PAGE_AXIS));
 
         List<JPanel> articleParts = selected.getArticleParts();

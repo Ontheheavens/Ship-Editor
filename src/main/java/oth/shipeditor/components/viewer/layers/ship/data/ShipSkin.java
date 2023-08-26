@@ -297,7 +297,10 @@ public final class ShipSkin {
         }
 
         public Builder withRemoveBuiltInMods(Collection<String> removeBuiltInMods) {
-            if (removeBuiltInMods == null) return this;
+            if (removeBuiltInMods == null) {
+                skin.removeBuiltInMods = new ArrayList<>();
+                return this;
+            }
             GameDataRepository gameData = SettingsManager.getGameData();
             Map<String, HullmodCSVEntry> allHullmodEntries = gameData.getAllHullmodEntries();
             List<HullmodCSVEntry> removeList = new ArrayList<>(removeBuiltInMods.size());
@@ -316,7 +319,10 @@ public final class ShipSkin {
         }
 
         public Builder withBuiltInMods(Collection<String> builtInMods) {
-            if (builtInMods == null) return this;
+            if (builtInMods == null) {
+                skin.builtInMods = new ArrayList<>();
+                return this;
+            }
             GameDataRepository gameData = SettingsManager.getGameData();
             Map<String, HullmodCSVEntry> allHullmodEntries = gameData.getAllHullmodEntries();
             List<HullmodCSVEntry> builtInList = new ArrayList<>(builtInMods.size());

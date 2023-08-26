@@ -5,7 +5,6 @@ import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
 import oth.shipeditor.components.datafiles.entities.HullmodCSVEntry;
 import oth.shipeditor.persistence.SettingsManager;
-import oth.shipeditor.representation.GameDataRepository;
 import oth.shipeditor.representation.HullSpecFile;
 import oth.shipeditor.representation.HullStyle;
 
@@ -31,14 +30,18 @@ public class ShipHull {
 
     public void initialize(HullSpecFile specFile) {
         this.associatedSpecFile = specFile;
-        this.reloadHullStyle();
-        this.reloadBuiltInMods();
+        this.loadHullStyle();
+
+        var dataRepository = SettingsManager.getGameData();
+        if (dataRepository.isHullmodDataLoaded()) {
+            this.loadBuiltInMods();
+        }
     }
 
-    public void reloadHullStyle() {
-        HullSpecFile specFile = getAssociatedSpecFile();
-        String styleID = specFile.getStyle();
-        GameDataRepository dataRepository = SettingsManager.getGameData();
+    public void loadHullStyle() {
+        var specFile = getAssociatedSpecFile();
+        var styleID = specFile.getStyle();
+        var dataRepository = SettingsManager.getGameData();
         Map<String, HullStyle> allHullStyles = dataRepository.getAllHullStyles();
         HullStyle style = null;
         if (allHullStyles != null) {
@@ -47,12 +50,16 @@ public class ShipHull {
         this.hullStyle = style;
     }
 
-    public void reloadBuiltInMods() {
-        HullSpecFile specFile = getAssociatedSpecFile();
+    public void loadBuiltInMods() {
+        if (builtInMods != null) return;
+        var specFile = getAssociatedSpecFile();
         String[] specFileBuiltInMods = specFile.getBuiltInMods();
-        if (specFileBuiltInMods == null) return;
-        GameDataRepository gameData = SettingsManager.getGameData();
-        Map<String, HullmodCSVEntry> allHullmodEntries = gameData.getAllHullmodEntries();
+        if (specFileBuiltInMods == null) {
+            this.builtInMods = new ArrayList<>();
+            return;
+        }
+        var gameData = SettingsManager.getGameData();
+        var allHullmodEntries = gameData.getAllHullmodEntries();
         List<HullmodCSVEntry> builtInList = new ArrayList<>(specFileBuiltInMods.length);
         Stream<String> stream = Arrays.stream(specFileBuiltInMods);
         stream.forEach(hullmodID -> {
@@ -63,9 +70,7 @@ public class ShipHull {
                 log.error("Hullmod CSV entry not found for hullmod ID: {}", hullmodID);
             }
         });
-        if (!builtInList.isEmpty()) {
-            this.builtInMods = builtInList;
-        }
+        this.builtInMods = builtInList;
     }
 
 }
