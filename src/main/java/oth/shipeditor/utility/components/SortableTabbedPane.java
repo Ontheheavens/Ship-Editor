@@ -314,7 +314,7 @@ public abstract class SortableTabbedPane extends JTabbedPane {
             line.setBounds(x, y, width, height);
         }
 
-        public void setPoint(Point point) {
+        void setPoint(Point point) {
             this.location.setLocation(point);
         }
 

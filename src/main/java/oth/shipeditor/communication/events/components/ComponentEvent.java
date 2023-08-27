@@ -6,6 +6,6 @@ import oth.shipeditor.communication.events.BusEvent;
  * @author Ontheheavens
  * @since 30.05.2023
  */
-public interface ComponentEvent extends BusEvent {
+interface ComponentEvent extends BusEvent {
 
 }

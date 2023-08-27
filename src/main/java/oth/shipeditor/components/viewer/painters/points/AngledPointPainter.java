@@ -41,7 +41,6 @@ public abstract class AngledPointPainter extends MirrorablePointPainter {
 
     protected abstract void setCreationHotkeyPressed(boolean pressed);
 
-    @SuppressWarnings("DuplicatedCode")
     private void initHotkeys() {
         hotkeyDispatcher = ke -> {
             int keyCode = ke.getKeyCode();

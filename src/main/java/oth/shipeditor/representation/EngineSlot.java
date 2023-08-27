@@ -21,16 +21,16 @@ public class EngineSlot {
     private Point2D.Double location;
 
     @JsonProperty(StringConstants.LENGTH)
-    private double length;
+    private Double length;
 
     @JsonProperty(StringConstants.WIDTH)
-    private double width;
+    private Double width;
 
     @JsonProperty(StringConstants.ANGLE)
-    private double angle;
+    private Double angle;
 
     @JsonProperty("contrailSize")
-    private double contrailSize;
+    private Double contrailSize;
 
     @JsonProperty(StringConstants.STYLE)
     private String style;

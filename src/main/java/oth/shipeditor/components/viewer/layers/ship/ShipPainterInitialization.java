@@ -8,8 +8,9 @@ import oth.shipeditor.components.viewer.entities.engine.EnginePoint;
 import oth.shipeditor.components.viewer.entities.weapon.WeaponSlotPoint;
 import oth.shipeditor.components.viewer.layers.ship.data.ShipHull;
 import oth.shipeditor.components.viewer.painters.points.*;
-import oth.shipeditor.persistence.SettingsManager;
-import oth.shipeditor.representation.*;
+import oth.shipeditor.representation.EngineSlot;
+import oth.shipeditor.representation.HullSpecFile;
+import oth.shipeditor.representation.ShipData;
 import oth.shipeditor.representation.weapon.WeaponMount;
 import oth.shipeditor.representation.weapon.WeaponSize;
 import oth.shipeditor.representation.weapon.WeaponSlot;
@@ -18,7 +19,6 @@ import oth.shipeditor.utility.text.StringConstants;
 
 import java.awt.geom.Point2D;
 import java.util.Arrays;
-import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Stream;
 
@@ -39,7 +39,7 @@ public final class ShipPainterInitialization {
         HullSpecFile hullSpecFile = shipData.getHullSpecFile();
 
         ShipHull shipHull = layer.getHull();
-        shipHull.initHullStyle(hullSpecFile);
+        shipHull.initialize(hullSpecFile);
 
         Point2D anchor = shipPainter.getCenterAnchor();
         Point2D hullCenter = hullSpecFile.getCenter();
@@ -163,16 +163,10 @@ public final class ShipPainterInitialization {
             newEnginePoint.setLength(engineSlot.getLength());
             newEnginePoint.setWidth(engineSlot.getWidth());
 
-            newEnginePoint.setContrailSize((int) engineSlot.getContrailSize());
-
-            GameDataRepository gameData = SettingsManager.getGameData();
-            Map<String, EngineStyle> allEngineStyles = gameData.getAllEngineStyles();
-            if (allEngineStyles != null) {
-                EngineStyle style = allEngineStyles.get(engineSlot.getStyle());
-                newEnginePoint.setStyle(style);
-            } else {
-                log.warn("Engine styles not loaded, engine initialized without style!");
-            }
+            double contrailSize = engineSlot.getContrailSize();
+            newEnginePoint.setContrailSize((int) contrailSize);
+            String styleID = engineSlot.getStyle();
+            newEnginePoint.setStyleID(styleID);
 
             engineSlotPainter.addPoint(newEnginePoint);
         });

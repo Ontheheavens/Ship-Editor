@@ -3,17 +3,24 @@ package oth.shipeditor.components.datafiles.trees;
 import lombok.extern.log4j.Log4j2;
 import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.files.HullmodFoldersWalked;
+import oth.shipeditor.communication.events.viewer.layers.ActiveLayerUpdated;
 import oth.shipeditor.components.datafiles.entities.HullmodCSVEntry;
+import oth.shipeditor.components.instrument.ship.ShipInstrument;
+import oth.shipeditor.components.instrument.ship.ShipInstrumentsPane;
+import oth.shipeditor.components.viewer.layers.ViewerLayer;
+import oth.shipeditor.components.viewer.layers.ship.ShipLayer;
+import oth.shipeditor.components.viewer.layers.ship.ShipPainter;
+import oth.shipeditor.components.viewer.layers.ship.data.ShipHull;
 import oth.shipeditor.menubar.FileUtilities;
-import oth.shipeditor.parsing.loading.FileLoading;
 import oth.shipeditor.persistence.SettingsManager;
 import oth.shipeditor.representation.GameDataRepository;
+import oth.shipeditor.undo.EditDispatch;
+import oth.shipeditor.utility.StaticController;
 import oth.shipeditor.utility.components.ComponentUtilities;
 
 import javax.swing.*;
 import javax.swing.tree.DefaultMutableTreeNode;
 import java.awt.*;
-import java.io.File;
 import java.util.List;
 import java.util.Map;
 
@@ -87,10 +94,8 @@ class HullmodsTreePanel extends CSVDataTreePanel<HullmodCSVEntry>{
     }
 
     private static JPanel createHullmodIconPanel(HullmodCSVEntry selected) {
-        File spriteFile = selected.fetchHullmodSpriteFile();
+        JLabel imageLabel = ComponentUtilities.createHullmodIcon(selected);
         JPanel iconPanel = new JPanel();
-        Icon icon = new ImageIcon(FileLoading.loadSpriteAsImage(spriteFile));
-        JLabel imageLabel = ComponentUtilities.createIconLabelWithBorder(icon);
         iconPanel.add(imageLabel);
         return iconPanel;
     }
@@ -103,6 +108,103 @@ class HullmodsTreePanel extends CSVDataTreePanel<HullmodCSVEntry>{
                     "</html>";
         }
         return null;
+    }
+
+    @SuppressWarnings("OverlyComplexMethod")
+    @Override
+    JPopupMenu getContextMenu() {
+        JPopupMenu menu = super.getContextMenu();
+        DefaultMutableTreeNode cachedSelectForMenu = getCachedSelectForMenu();
+        if (cachedSelectForMenu.getUserObject() instanceof HullmodCSVEntry checked) {
+            menu.addSeparator();
+
+            JMenuItem addToHullBuiltIns = new JMenuItem("Add to hull built-ins");
+            ViewerLayer activeLayer = StaticController.getActiveLayer();
+            addToHullBuiltIns.addActionListener(e -> {
+                if (activeLayer instanceof ShipLayer checkedLayer) {
+                    ShipHull hull = checkedLayer.getHull();
+                    if (hull == null) return;
+                    var builtInMods = hull.getBuiltInMods();
+                    if (builtInMods == null) return;
+                    if (this.isPushEntryToListSuccessful(builtInMods, checkedLayer, checked)) {
+                        EventBus.publish(new ActiveLayerUpdated(activeLayer));
+                    }
+                }
+            });
+            if (!HullmodsTreePanel.isCurrentLayerDataEligible() || HullmodsTreePanel.isNotActiveInstrument()) {
+                addToHullBuiltIns.setEnabled(false);
+            }
+            menu.add(addToHullBuiltIns);
+
+            JMenuItem addToSkinAdded = new JMenuItem("Add to skin built-ins");
+            addToSkinAdded.addActionListener(e -> {
+                if (activeLayer instanceof ShipLayer checkedLayer) {
+
+                    ShipPainter shipPainter = checkedLayer.getPainter();
+                    if (shipPainter == null || shipPainter.isUninitialized()) return;
+                    var skin = shipPainter.getActiveSkin();
+                    if (skin == null || skin.isBase()) return;
+
+                    var skinAdded = skin.getBuiltInMods();
+                    if (this.isPushEntryToListSuccessful(skinAdded, checkedLayer, checked)) {
+                        EventBus.publish(new ActiveLayerUpdated(activeLayer));
+                    }
+                }
+            });
+            if (DataTreePanel.isCurrentSkinNotEligible() || HullmodsTreePanel.isNotActiveInstrument()) {
+                addToSkinAdded.setEnabled(false);
+            }
+            menu.add(addToSkinAdded);
+
+            JMenuItem addToSkinRemoved = new JMenuItem("Add to skin built-in removals");
+            addToSkinRemoved.addActionListener(e -> {
+                if (activeLayer instanceof ShipLayer checkedLayer) {
+
+                    ShipPainter shipPainter = checkedLayer.getPainter();
+                    if (shipPainter == null || shipPainter.isUninitialized()) return;
+                    var skin = shipPainter.getActiveSkin();
+                    if (skin == null || skin.isBase()) return;
+
+                    var skinRemoved = skin.getRemoveBuiltInMods();
+                    if (this.isPushEntryToListSuccessful(skinRemoved, checkedLayer, checked)) {
+                        EventBus.publish(new ActiveLayerUpdated(activeLayer));
+                    }
+                }
+            });
+            if (DataTreePanel.isCurrentSkinNotEligible() || HullmodsTreePanel.isNotActiveInstrument()) {
+                addToSkinRemoved.setEnabled(false);
+            }
+            menu.add(addToSkinRemoved);
+
+        }
+        return menu;
+    }
+
+    private static boolean isNotActiveInstrument() {
+        return ShipInstrumentsPane.getCurrentMode() != ShipInstrument.BUILT_IN_MODS;
+    }
+
+    private boolean isPushEntryToListSuccessful(List<HullmodCSVEntry> list, ShipLayer layer,
+                                                HullmodCSVEntry entry) {
+        if (list.contains(entry)) {
+            JOptionPane.showMessageDialog(this,
+                    "Cannot add hullmod entry: already present in list!");
+            return false;
+        } else {
+            EditDispatch.postHullmodAdded(list, layer, entry);
+        }
+        return true;
+    }
+
+    private static boolean isCurrentLayerDataEligible() {
+        ViewerLayer activeLayer = StaticController.getActiveLayer();
+        boolean isShipLayer = activeLayer instanceof ShipLayer;
+        ShipLayer shipLayer;
+        if (isShipLayer) {
+            shipLayer = (ShipLayer) activeLayer;
+        } else return false;
+        ShipHull hull = shipLayer.getHull();
+        return hull != null && hull.getBuiltInMods() != null;
     }
 
     @Override

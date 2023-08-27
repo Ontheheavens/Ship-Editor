@@ -3,11 +3,13 @@ package oth.shipeditor.components.viewer.entities.engine;
 import com.jhlabs.image.HSBAdjustFilter;
 import lombok.Getter;
 import lombok.Setter;
-import oth.shipeditor.components.viewer.ShipInstrument;
+import oth.shipeditor.components.instrument.ship.ShipInstrument;
 import oth.shipeditor.components.viewer.entities.AngledPoint;
 import oth.shipeditor.components.viewer.layers.ship.ShipPainter;
 import oth.shipeditor.parsing.loading.FileLoading;
+import oth.shipeditor.persistence.SettingsManager;
 import oth.shipeditor.representation.EngineStyle;
+import oth.shipeditor.representation.GameDataRepository;
 import oth.shipeditor.undo.EditDispatch;
 import oth.shipeditor.utility.Size2D;
 import oth.shipeditor.utility.Utility;
@@ -20,25 +22,36 @@ import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.awt.image.BufferedImageOp;
+import java.util.Map;
 
 /**
  * @author Ontheheavens
  * @since 18.08.2023
  */
-@Getter @Setter
+@SuppressWarnings("ClassWithTooManyFields")
 public class EnginePoint extends AngledPoint {
 
-    private static final Color SIZING_RECTANGLE = new Color(0, 0, 0, 20);
+    private static final Paint SIZING_RECTANGLE = new Color(0, 0, 0, 20);
 
+    @Setter
     private double angle;
 
+    @Setter
     private double length;
 
+    @Setter
     private double width;
 
+    @Setter
     private int contrailSize;
 
+    @Getter @Setter
+    private String styleID;
+
     private EngineStyle style;
+
+    @Getter
+    private EngineDataOverride skinOverride;
 
     private static final BufferedImage FLAME;
 
@@ -53,14 +66,72 @@ public class EnginePoint extends AngledPoint {
         FLAME_CORE = FileLoading.loadImageResource(flameCoreSprite);
     }
 
+    public void setSkinOverride(EngineDataOverride override) {
+        this.skinOverride = override;
+        if (skinOverride != null) {
+            EngineStyle overrideStyle = skinOverride.getStyle();
+            this.setSkinStyleOverride(overrideStyle);
+        } else {
+            this.setStyle(style);
+        }
+    }
+
+    public static BufferedImage getBaseFlameTexture() {
+        return FLAME;
+    }
+
+    public EngineStyle getStyle() {
+        if (this.skinOverride != null && skinOverride.getStyle() != null) {
+            return this.skinOverride.getStyle();
+        }
+        if (style != null) return style;
+        GameDataRepository gameData = SettingsManager.getGameData();
+        Map<String, EngineStyle> allEngineStyles = gameData.getAllEngineStyles();
+        if (allEngineStyles != null) {
+            EngineStyle engineStyle = allEngineStyles.get(styleID);
+            this.setStyle(engineStyle);
+        }
+        return style;
+    }
+
+    @Override
+    public double getAngle() {
+        if (this.skinOverride != null && skinOverride.getAngle() != null) {
+            return skinOverride.getAngle();
+        }
+        return angle;
+    }
+
     public double getWidth() {
+        if (this.skinOverride != null && skinOverride.getWidth() != null) {
+            return skinOverride.getWidth();
+        }
         return width;
     }
 
+    public double getLength() {
+        if (this.skinOverride != null && skinOverride.getLength() != null) {
+            return skinOverride.getLength();
+        }
+        return length;
+    }
+
     public EnginePoint(Point2D pointPosition, ShipPainter layer) {
+        this(pointPosition, layer, null);
+    }
+
+    public EnginePoint(Point2D pointPosition, ShipPainter layer, EnginePoint valuesSource) {
         super(pointPosition, layer);
         this.flameColored = FLAME;
         this.setStyle(null);
+        if (valuesSource != null) {
+            this.setAngle(valuesSource.getAngle());
+            this.setWidth(valuesSource.getWidth());
+            this.setLength(valuesSource.getLength());
+            this.setContrailSize((int) valuesSource.getContrailSize());
+            this.setStyleID(valuesSource.getStyleID());
+            this.setStyle(valuesSource.getStyle());
+        }
     }
 
     public void setSize(Size2D size) {
@@ -72,13 +143,36 @@ public class EnginePoint extends AngledPoint {
         EditDispatch.postEngineSizeChanged(this, size);
     }
 
+    public void changeContrailSize(int contrail) {
+        EditDispatch.postEngineContrailChanged(this, contrail);
+    }
+
+    public void changeStyle(EngineStyle engineStyle) {
+        EditDispatch.postEngineStyleChanged(this, engineStyle);
+    }
+
+    public double getContrailSize() {
+        return contrailSize;
+    }
+
     public Size2D getSize() {
         return new Size2D(this.getWidth(), this.getLength());
+    }
+
+    private void setSkinStyleOverride(EngineStyle engineStyle) {
+        handleStyleFlameImage(engineStyle);
     }
 
     public void setStyle(EngineStyle engineStyle) {
         this.style = engineStyle;
 
+        if (engineStyle != null) {
+            this.setStyleID(engineStyle.getEngineStyleID());
+        }
+        handleStyleFlameImage(engineStyle);
+    }
+
+    private void handleStyleFlameImage(EngineStyle engineStyle) {
         Color flameColor = new Color(255, 125, 25);
         if (engineStyle != null) {
             flameColor = engineStyle.getEngineColor();
@@ -94,11 +188,6 @@ public class EnginePoint extends AngledPoint {
     }
 
     @Override
-    public double getAngle() {
-        return angle;
-    }
-
-    @Override
     public void changeSlotAngle(double degrees) {
         EditDispatch.postEngineAngleSet(this,this.angle,degrees);
     }
@@ -111,29 +200,27 @@ public class EnginePoint extends AngledPoint {
     }
 
     private void drawEngineRectangle(Graphics2D g, AffineTransform worldToScreen) {
-        double transformedAngle = Utility.transformAngle(this.angle);
+        double rawAngle = this.getAngle();
         Point2D position = this.getPosition();
+        double engineWidth = this.getWidth();
+        double engineLength = this.getLength();
 
-        double engineWidth = this.width;
-        double engineLength = this.length;
-        double halfWidth = engineWidth * 0.5f;
-
-        Point2D topLeft = new Point2D.Double(position.getX(), position.getY() - halfWidth);
-        Shape sizingRectangle = new Rectangle2D.Double(topLeft.getX(),
-                topLeft.getY(), engineLength, engineWidth);
-
-        DrawUtilities.drawWithRotationTransform(g, worldToScreen,
-                position, Math.toRadians(transformedAngle), graphics2D -> {
-                    DrawUtilities.fillShape(g, sizingRectangle, SIZING_RECTANGLE);
-                    DrawUtilities.outlineShape(g,sizingRectangle, Color.BLACK, 0.05f);
-                });
+        EnginePoint.drawRectangleStatically(g, worldToScreen, position, rawAngle, engineWidth, engineLength);
     }
 
     private void drawEngineFlame(Graphics2D g, AffineTransform worldToScreen) {
-        double transformedAngle = Utility.transformAngle(this.angle);
+        double rawAngle = this.getAngle();
         Point2D position = this.getPosition();
-        double engineWidth = this.width;
-        double engineLength = this.length;
+        double engineWidth = this.getWidth();
+        double engineLength = this.getLength();
+
+        EnginePoint.drawFlameStatically(g, worldToScreen, position, rawAngle, engineWidth, engineLength, flameColored);
+    }
+
+    public static void drawFlameStatically(Graphics2D g, AffineTransform worldToScreen, Point2D position,
+                                           double rawAngle, double engineWidth, double engineLength,
+                                           BufferedImage flameColored) {
+        double transformedAngle = Utility.transformAngle(rawAngle);
         double halfWidth = engineWidth * 0.5f;
 
         Point2D topLeft = new Point2D.Double(position.getX(), position.getY() - halfWidth);
@@ -154,6 +241,21 @@ public class EnginePoint extends AngledPoint {
         };
         DrawUtilities.drawWithRotationTransform(g, worldToScreen, position,
                 Math.toRadians(transformedAngle), graphicsAction);
+    }
+
+    public static void drawRectangleStatically(Graphics2D g, AffineTransform worldToScreen, Point2D position,
+                                               double rawAngle, double engineWidth, double engineLength) {
+        double transformedAngle = Utility.transformAngle(rawAngle);
+        double halfWidth = engineWidth * 0.5f;
+        Point2D topLeft = new Point2D.Double(position.getX(), position.getY() - halfWidth);
+        Shape sizingRectangle = new Rectangle2D.Double(topLeft.getX(),
+                topLeft.getY(), engineLength, engineWidth);
+
+        DrawUtilities.drawWithRotationTransform(g, worldToScreen,
+                position, Math.toRadians(transformedAngle), graphics2D -> {
+                    DrawUtilities.fillShape(g, sizingRectangle, SIZING_RECTANGLE);
+                    DrawUtilities.outlineShape(g,sizingRectangle, Color.BLACK, 0.05f);
+                });
     }
 
 

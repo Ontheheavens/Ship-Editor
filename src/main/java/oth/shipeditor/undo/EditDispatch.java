@@ -4,22 +4,26 @@ import oth.shipeditor.communication.BusEventListener;
 import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.BusEvent;
 import oth.shipeditor.communication.events.Events;
-import oth.shipeditor.communication.events.components.BaysPanelRepaintQueued;
-import oth.shipeditor.communication.events.components.EnginesPanelRepaintQueued;
-import oth.shipeditor.communication.events.components.SlotControlRepaintQueued;
+import oth.shipeditor.communication.events.components.*;
 import oth.shipeditor.communication.events.viewer.ViewerRepaintQueued;
 import oth.shipeditor.communication.events.viewer.control.ViewerMouseReleased;
 import oth.shipeditor.communication.events.viewer.points.AnchorOffsetQueued;
+import oth.shipeditor.components.datafiles.entities.HullmodCSVEntry;
 import oth.shipeditor.components.viewer.entities.*;
 import oth.shipeditor.components.viewer.entities.engine.EnginePoint;
 import oth.shipeditor.components.viewer.entities.weapon.SlotData;
 import oth.shipeditor.components.viewer.entities.weapon.WeaponSlotPoint;
 import oth.shipeditor.components.viewer.layers.LayerPainter;
+import oth.shipeditor.components.viewer.layers.ship.ShipLayer;
 import oth.shipeditor.components.viewer.painters.points.*;
+import oth.shipeditor.representation.EngineStyle;
 import oth.shipeditor.representation.weapon.WeaponMount;
 import oth.shipeditor.representation.weapon.WeaponSize;
 import oth.shipeditor.representation.weapon.WeaponType;
 import oth.shipeditor.undo.edits.AnchorOffsetEdit;
+import oth.shipeditor.undo.edits.HullmodAddEdit;
+import oth.shipeditor.undo.edits.HullmodRemoveEdit;
+import oth.shipeditor.undo.edits.points.engines.*;
 import oth.shipeditor.undo.edits.LayerRotationEdit;
 import oth.shipeditor.undo.edits.points.*;
 import oth.shipeditor.undo.edits.points.slots.*;
@@ -33,7 +37,7 @@ import java.util.List;
  * @author Ontheheavens
  * @since 16.06.2023
  */
-@SuppressWarnings("OverlyCoupledClass")
+@SuppressWarnings({"OverlyCoupledClass", "ClassWithTooManyMethods"})
 public final class EditDispatch {
 
     private EditDispatch() {
@@ -146,6 +150,24 @@ public final class EditDispatch {
         EventBus.publish(new EnginesPanelRepaintQueued());
     }
 
+    public static void postEngineContrailChanged(EnginePoint enginePoint, int updated) {
+        int oldContrail = (int) enginePoint.getContrailSize();
+        Edit contrailEdit = new EngineContrailSet(enginePoint, oldContrail, updated);
+        EditDispatch.handleContinuousEdit(contrailEdit);
+        enginePoint.setContrailSize(updated);
+        EventBus.publish(new ViewerRepaintQueued());
+        EventBus.publish(new EnginesPanelRepaintQueued());
+    }
+
+    public static void postEngineStyleChanged(EnginePoint enginePoint, EngineStyle updated) {
+        EngineStyle oldStyle = enginePoint.getStyle();
+        Edit styleEdit = new EngineStyleSet(enginePoint, oldStyle, updated);
+        UndoOverseer.post(styleEdit);
+        enginePoint.setStyle(updated);
+        EventBus.publish(new ViewerRepaintQueued());
+        EventBus.publish(new EnginesPanelRepaintQueued());
+    }
+
     public static void postSlotArcSet(SlotData slotPoint, double old, double updated ) {
         Edit arcEdit = new SlotArcSet(slotPoint, old, updated);
         EditDispatch.handleContinuousEdit(arcEdit);
@@ -169,7 +191,7 @@ public final class EditDispatch {
         Edit dragEdit = new PointDragEdit(selected, wrappedOld, wrappedNew);
         EditDispatch.handleContinuousEdit(dragEdit);
         selected.setPosition(changedPosition);
-        Events.repaintView();
+        PointDragEdit.repaintByPointType(selected);
     }
 
     public static void postCollisionRadiusChanged(ShipCenterPoint point, float radius) {
@@ -217,6 +239,18 @@ public final class EditDispatch {
         UndoOverseer.post(sizeChangeEdit);
         point.setWeaponSize(newSize);
         EventBus.publish(new ViewerRepaintQueued());
+    }
+
+    public static void postHullmodAdded(List<HullmodCSVEntry> index, ShipLayer shipLayer, HullmodCSVEntry hullmod) {
+        Edit hullmodAddEdit = new HullmodAddEdit(index, shipLayer, hullmod);
+        UndoOverseer.post(hullmodAddEdit);
+        index.add(hullmod);
+    }
+
+    public static void postHullmodRemoved(List<HullmodCSVEntry> index, ShipLayer shipLayer, HullmodCSVEntry hullmod) {
+        Edit hullmodAddEdit = new HullmodRemoveEdit(index, shipLayer, hullmod);
+        UndoOverseer.post(hullmodAddEdit);
+        index.remove(hullmod);
     }
 
 }

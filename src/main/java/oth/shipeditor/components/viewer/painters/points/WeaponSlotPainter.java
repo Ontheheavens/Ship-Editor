@@ -7,7 +7,7 @@ import oth.shipeditor.communication.BusEventListener;
 import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.viewer.points.*;
 import oth.shipeditor.components.instrument.ship.slots.SlotCreationPane;
-import oth.shipeditor.components.viewer.ShipInstrument;
+import oth.shipeditor.components.instrument.ship.ShipInstrument;
 import oth.shipeditor.components.viewer.control.ControlPredicates;
 import oth.shipeditor.components.viewer.entities.BaseWorldPoint;
 import oth.shipeditor.components.viewer.entities.WorldPoint;
@@ -130,7 +130,16 @@ public class WeaponSlotPainter extends AngledPointPainter {
         switch (SlotCreationPane.getMode()) {
             case BY_CLOSEST -> {
                 WeaponSlotPoint closest = (WeaponSlotPoint) findClosestPoint(position);
-                created = new WeaponSlotPoint(position, parentLayer, closest);
+                if (closest != null) {
+                    created = new WeaponSlotPoint(position, parentLayer, closest);
+                } else {
+                    created = new WeaponSlotPoint(position, parentLayer);
+                    created.setWeaponType(SlotCreationPane.getDefaultType());
+                    created.setWeaponMount(SlotCreationPane.getDefaultMount());
+                    created.setWeaponSize(SlotCreationPane.getDefaultSize());
+                    created.setAngle(SlotCreationPane.getDefaultAngle());
+                    created.setArc(SlotCreationPane.getDefaultArc());
+                }
                 created.setId(uniqueID);
             }
             case BY_DEFAULT -> {
@@ -226,12 +235,7 @@ public class WeaponSlotPainter extends AngledPointPainter {
 
     public void changeArcWithMirrorCheck(WeaponSlotPoint slotPoint, double arcExtentDegrees) {
         slotPoint.changeSlotArc(arcExtentDegrees);
-
-        boolean mirrorMode = ControlPredicates.isMirrorModeEnabled();
-        BaseWorldPoint mirroredCounterpart = getMirroredCounterpart(slotPoint);
-        if (mirrorMode && mirroredCounterpart instanceof WeaponSlotPoint checkedSlot) {
-            checkedSlot.changeSlotArc(arcExtentDegrees);
-        }
+        actOnCounterpart(point -> point.changeSlotArc(arcExtentDegrees), slotPoint);
     }
 
     public void insertPoint(BaseWorldPoint toInsert, int precedingIndex) {
@@ -328,11 +332,19 @@ public class WeaponSlotPainter extends AngledPointPainter {
             switch (SlotCreationPane.getMode()) {
                 case BY_CLOSEST -> {
                     SlotData closest = (SlotData) findClosestPoint(finalWorldCursor);
-                    slotMockDrawer.setType(closest.getWeaponType());
-                    slotMockDrawer.setMount(closest.getWeaponMount());
-                    slotMockDrawer.setSize(closest.getWeaponSize());
-                    slotMockDrawer.setAngle(closest.getAngle());
-                    slotMockDrawer.setArc(closest.getArc());
+                    if (closest != null) {
+                        slotMockDrawer.setType(closest.getWeaponType());
+                        slotMockDrawer.setMount(closest.getWeaponMount());
+                        slotMockDrawer.setSize(closest.getWeaponSize());
+                        slotMockDrawer.setAngle(closest.getAngle());
+                        slotMockDrawer.setArc(closest.getArc());
+                    } else {
+                        slotMockDrawer.setType(SlotCreationPane.getDefaultType());
+                        slotMockDrawer.setMount(SlotCreationPane.getDefaultMount());
+                        slotMockDrawer.setSize(SlotCreationPane.getDefaultSize());
+                        slotMockDrawer.setAngle(SlotCreationPane.getDefaultAngle());
+                        slotMockDrawer.setArc(SlotCreationPane.getDefaultArc());
+                    }
                 }
                 case BY_DEFAULT -> {
                     slotMockDrawer.setType(SlotCreationPane.getDefaultType());

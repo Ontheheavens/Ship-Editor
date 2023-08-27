@@ -5,6 +5,7 @@ import oth.shipeditor.components.datafiles.entities.HullmodCSVEntry;
 import oth.shipeditor.components.datafiles.entities.ShipSystemCSVEntry;
 import oth.shipeditor.components.datafiles.entities.WeaponCSVEntry;
 import oth.shipeditor.components.datafiles.entities.WingCSVEntry;
+import oth.shipeditor.components.viewer.entities.engine.EngineDataOverride;
 import oth.shipeditor.components.viewer.entities.weapon.WeaponSlotOverride;
 import oth.shipeditor.persistence.SettingsManager;
 import oth.shipeditor.representation.EngineSlot;
@@ -108,8 +109,7 @@ public final class ShipSkin {
 
     private Map<String, WeaponSlotOverride> weaponSlotChanges;
 
-    // TODO: Needs to be a runtime type.
-    private Map<String, EngineSlot> engineSlotChanges;
+    private Map<Integer, EngineDataOverride> engineSlotChanges;
 
     @Override
     public String toString() {
@@ -126,7 +126,7 @@ public final class ShipSkin {
 
 
     @SuppressWarnings({"PublicInnerClass", "ClassWithTooManyMethods",
-            "unused", "BooleanParameter", "MethodParameterNamingConvention", "DuplicatedCode"})
+            "unused", "BooleanParameter", "MethodParameterNamingConvention"})
     public static class Builder {
         private ShipSkin skin;
 
@@ -245,7 +245,10 @@ public final class ShipSkin {
         }
 
         public Builder withBuiltInWings(Collection<String> builtInWings) {
-            if (builtInWings == null) return this;
+            if (builtInWings == null) {
+                skin.builtInWings = new ArrayList<>();
+                return this;
+            }
             List<WingCSVEntry> wingEntries = new ArrayList<>(builtInWings.size());
             GameDataRepository gameData = SettingsManager.getGameData();
             Map<String, WingCSVEntry> allWingEntries = gameData.getAllWingEntries();
@@ -297,7 +300,10 @@ public final class ShipSkin {
         }
 
         public Builder withRemoveBuiltInMods(Collection<String> removeBuiltInMods) {
-            if (removeBuiltInMods == null) return this;
+            if (removeBuiltInMods == null) {
+                skin.removeBuiltInMods = new ArrayList<>();
+                return this;
+            }
             GameDataRepository gameData = SettingsManager.getGameData();
             Map<String, HullmodCSVEntry> allHullmodEntries = gameData.getAllHullmodEntries();
             List<HullmodCSVEntry> removeList = new ArrayList<>(removeBuiltInMods.size());
@@ -316,7 +322,10 @@ public final class ShipSkin {
         }
 
         public Builder withBuiltInMods(Collection<String> builtInMods) {
-            if (builtInMods == null) return this;
+            if (builtInMods == null) {
+                skin.builtInMods = new ArrayList<>();
+                return this;
+            }
             GameDataRepository gameData = SettingsManager.getGameData();
             Map<String, HullmodCSVEntry> allHullmodEntries = gameData.getAllHullmodEntries();
             List<HullmodCSVEntry> builtInList = new ArrayList<>(builtInMods.size());
@@ -370,7 +379,23 @@ public final class ShipSkin {
 
         public Builder withEngineSlotChanges(Map<String, EngineSlot> engineSlotChanges) {
             if (engineSlotChanges == null) return this;
-            skin.engineSlotChanges = engineSlotChanges;
+
+            Map<Integer, EngineDataOverride> overrides = new HashMap<>(engineSlotChanges.size());
+
+            engineSlotChanges.forEach((slotIndex, engineSlot) -> {
+                EngineDataOverride.EngineDataOverrideBuilder overrideBlueprint = EngineDataOverride.builder();
+
+                Integer index = Integer.valueOf(slotIndex);
+                EngineDataOverride override = overrideBlueprint.index(index)
+                        .angle(engineSlot.getAngle())
+                        .length(engineSlot.getLength())
+                        .width(engineSlot.getWidth())
+                        .styleID(engineSlot.getStyle())
+                        .build();
+                overrides.put(index, override);
+            });
+
+            skin.engineSlotChanges = overrides;
             return this;
         }
 

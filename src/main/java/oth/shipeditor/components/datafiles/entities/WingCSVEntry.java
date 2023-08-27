@@ -3,14 +3,18 @@ package oth.shipeditor.components.datafiles.entities;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
+import oth.shipeditor.parsing.loading.FileLoading;
 import oth.shipeditor.persistence.SettingsManager;
-import oth.shipeditor.representation.GameDataRepository;
 import oth.shipeditor.representation.ShipSpecFile;
 import oth.shipeditor.representation.SkinSpecFile;
 import oth.shipeditor.representation.Variant;
+import oth.shipeditor.utility.graphics.Sprite;
 import oth.shipeditor.utility.text.StringConstants;
 import oth.shipeditor.utility.text.StringValues;
 
+import javax.swing.*;
+import java.awt.image.BufferedImage;
+import java.io.File;
 import java.nio.file.Path;
 import java.util.Map;
 
@@ -33,6 +37,11 @@ public class WingCSVEntry implements CSVEntry {
     @Setter
     private String displayedName;
 
+    @Getter
+    private ShipSpecFile wingMemberSpec;
+
+    private Sprite memberSprite;
+
     public WingCSVEntry(Map<String, String> row, Path folder, Path tablePath) {
         this.rowData = row;
         packageFolderPath = folder;
@@ -47,7 +56,6 @@ public class WingCSVEntry implements CSVEntry {
 
     @Override
     public String toString() {
-        // TODO: get displayed name from variant.
         String name = rowData.get(StringConstants.ID);
         if (name.isEmpty()) {
             name = StringValues.UNTITLED;
@@ -55,27 +63,28 @@ public class WingCSVEntry implements CSVEntry {
         return name;
     }
 
-    public String getEntryName() {
-        if (this.displayedName != null) {
-            return this.displayedName;
-        }
+    public Variant retrieveMemberVariant() {
         String variantID = rowData.get(StringConstants.VARIANT);
-        GameDataRepository gameData = SettingsManager.getGameData();
-        Map<String, Variant> allVariants = gameData.getAllVariants();
-        Variant variant = allVariants.get(variantID);
+        var gameData = SettingsManager.getGameData();
+        var allVariants = gameData.getAllVariants();
+        return allVariants.get(variantID);
+    }
+
+    private ShipSpecFile retrieveSpec() {
+        Variant variant = retrieveMemberVariant();
 
         String hullID = variant.getHullId();
-
         ShipSpecFile desiredSpec = null;
 
-        Map<String, ShipCSVEntry> allShipEntries = gameData.getAllShipEntries();
+        var gameData = SettingsManager.getGameData();
+        var allShipEntries = gameData.getAllShipEntries();
         outer: for (ShipCSVEntry shipEntry : allShipEntries.values()) {
             String shipEntryHullID = shipEntry.getHullID();
             if (shipEntryHullID.equals(hullID)) {
                 desiredSpec = shipEntry.getHullSpecFile();
                 break;
             } else {
-                Map<String, SkinSpecFile> skins = shipEntry.getSkins();
+                var skins = shipEntry.getSkins();
                 if (skins == null || skins.isEmpty()) continue;
                 for (SkinSpecFile skinSpec : skins.values()) {
                     String skinHullId = skinSpec.getSkinHullId();
@@ -86,9 +95,61 @@ public class WingCSVEntry implements CSVEntry {
                 }
             }
         }
+        this.wingMemberSpec = desiredSpec;
+        return desiredSpec;
+    }
 
-        if (desiredSpec != null) {
-            String result = desiredSpec.getHullName() + " Wing";
+    public BufferedImage getWingMemberSprite() {
+        if (this.memberSprite != null) {
+            return this.memberSprite.getSpriteImage();
+        }
+
+        ShipSpecFile specFile;
+        if (this.wingMemberSpec == null) {
+            specFile = this.retrieveSpec();
+        } else {
+            specFile = this.wingMemberSpec;
+        }
+
+        if (specFile != null) {
+            File spriteFile = FileLoading.fetchDataFile(Path.of(specFile.getSpriteName()), packageFolderPath);
+            Sprite result = FileLoading.loadSprite(spriteFile);
+            this.memberSprite = result;
+            return result.getSpriteImage();
+        } else {
+            JOptionPane.showMessageDialog(null,
+                    "Wing member sprite loading failed, exception thrown for: " + this.wingID,
+                    StringValues.FILE_LOADING_ERROR,
+                    JOptionPane.ERROR_MESSAGE);
+            throw new RuntimeException("Could not retrieve wing member sprite!");
+        }
+    }
+
+    public int getOrdnanceCost() {
+        String tableValue = this.rowData.get("op cost");
+        return Integer.parseInt(tableValue);
+    }
+
+    public String getEntryName() {
+        if (this.displayedName != null) {
+            return this.displayedName;
+        }
+
+        ShipSpecFile specFile;
+        if (this.wingMemberSpec == null) {
+            specFile = this.retrieveSpec();
+        } else {
+            specFile = this.wingMemberSpec;
+        }
+
+        if (specFile != null) {
+            var variant = this.retrieveMemberVariant();
+            String result = wingMemberSpec.getHullName();
+            String drone = "Drone";
+            String displayName = variant.getDisplayName();
+            if (!(result.endsWith(drone) && displayName.equals(drone))) {
+                result = result + " " + displayName;
+            }
             this.setDisplayedName(result);
             return result;
         }

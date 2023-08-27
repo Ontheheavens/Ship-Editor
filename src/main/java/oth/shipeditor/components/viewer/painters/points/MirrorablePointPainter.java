@@ -6,7 +6,7 @@ import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.viewer.points.InstrumentModeChanged;
 import oth.shipeditor.communication.events.viewer.points.PointCreationQueued;
 import oth.shipeditor.components.instrument.ship.ShipInstrumentsPane;
-import oth.shipeditor.components.viewer.ShipInstrument;
+import oth.shipeditor.components.instrument.ship.ShipInstrument;
 import oth.shipeditor.components.viewer.control.ControlPredicates;
 import oth.shipeditor.components.viewer.entities.BaseWorldPoint;
 import oth.shipeditor.components.viewer.entities.ShipCenterPoint;
@@ -19,6 +19,7 @@ import java.awt.*;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Point2D;
 import java.util.List;
+import java.util.function.Consumer;
 
 /**
  * @author Ontheheavens
@@ -35,7 +36,7 @@ public abstract class MirrorablePointPainter extends AbstractPointPainter {
         this.setInteractionEnabled(ShipInstrumentsPane.getCurrentMode() == getInstrumentType());
     }
 
-    protected void initInteractionListeners() {
+    void initInteractionListeners() {
         List<BusEventListener> listeners = getListeners();
         BusEventListener slotCreationListener = event -> {
             if (event instanceof PointCreationQueued checked) {
@@ -108,16 +109,24 @@ public abstract class MirrorablePointPainter extends AbstractPointPainter {
     }
 
     @SuppressWarnings("NoopMethodInAbstractClass")
-    public void paintPainterContent(Graphics2D g, AffineTransform worldToScreen, double w, double h) {}
+    void paintPainterContent(Graphics2D g, AffineTransform worldToScreen, double w, double h) {}
 
-    protected void handleSelectionHighlight() {
+    void handleSelectionHighlight() {
         WorldPoint selection = this.getSelected();
         if (selection != null && isInteractionEnabled()) {
             MirrorablePointPainter.enlargePoint(selection);
-            WorldPoint counterpart = this.getMirroredCounterpart(selection);
-            if (counterpart != null && ControlPredicates.isMirrorModeEnabled()) {
-                MirrorablePointPainter.enlargePoint(counterpart);
-            }
+            this.actOnCounterpart(MirrorablePointPainter::enlargePoint, selection);
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    <T extends WorldPoint> void actOnCounterpart(Consumer<T> action, T point) {
+        boolean mirrorMode = ControlPredicates.isMirrorModeEnabled();
+        BaseWorldPoint mirroredCounterpart = getMirroredCounterpart(point);
+        Class<? extends WorldPoint> pointClass = point.getClass();
+        if (mirrorMode && pointClass.isInstance(mirroredCounterpart)) {
+            T checkedCounterpart = (T) pointClass.cast(mirroredCounterpart);
+            action.accept(checkedCounterpart);
         }
     }
 

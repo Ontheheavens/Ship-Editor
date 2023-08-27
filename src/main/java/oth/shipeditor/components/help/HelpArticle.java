@@ -3,10 +3,10 @@ package oth.shipeditor.components.help;
 import lombok.Getter;
 import oth.shipeditor.utility.Utility;
 import oth.shipeditor.utility.components.ComponentUtilities;
+import oth.shipeditor.utility.components.TextScrollPanel;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
-import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -15,7 +15,7 @@ import java.util.List;
  * @since 06.08.2023
  */
 @SuppressWarnings("SameParameterValue")
-public class HelpArticle {
+class HelpArticle {
 
     @Getter
     private final List<JPanel> articleParts;
@@ -39,8 +39,7 @@ public class HelpArticle {
     }
 
     void addSectionSeparator(String titleText) {
-        JPanel container = ComponentUtilities.createTitledSeparatorPanel(titleText,
-                new Insets(1, 0, 0, 0));
+        JPanel container = ComponentUtilities.createTitledSeparatorPanel(titleText);
         container.setAlignmentY(0);
         articleParts.add(container);
     }
@@ -50,58 +49,13 @@ public class HelpArticle {
     }
 
     void addTextBlock(String text, int pad) {
-        TextScrollPanel container = new TextScrollPanel(new FlowLayout());
-        container.setBorder(new EmptyBorder(0, 0, pad, 0));
-        container.setLayout(new BoxLayout(container, BoxLayout.LINE_AXIS));
-        JTextArea textArea = new JTextArea(text);
-        textArea.setEditable(false);
-        textArea.setLineWrap(true);
-        textArea.setWrapStyleWord(true);
-        textArea.setMinimumSize(new Dimension(100,100));
-        container.setMinimumSize(new Dimension(100,100));
-
-        container.add(textArea);
-        container.setAlignmentY(0);
+        TextScrollPanel container = ComponentUtilities.createTextPanel(text, pad);
         articleParts.add(container);
     }
 
     @Override
     public String toString() {
         return name;
-    }
-
-    @SuppressWarnings("ProtectedInnerClass")
-    protected static class TextScrollPanel extends JPanel implements Scrollable {
-
-        TextScrollPanel(LayoutManager layout) {
-            super(layout);
-        }
-
-        @Override
-        public Dimension getPreferredScrollableViewportSize() {
-            return getPreferredSize();
-        }
-
-        @Override
-        public int getScrollableUnitIncrement(Rectangle visibleRect, int orientation, int direction) {
-            return 0;
-        }
-
-        @Override
-        public int getScrollableBlockIncrement(Rectangle visibleRect, int orientation, int direction) {
-            return 0;
-        }
-
-        @Override
-        public boolean getScrollableTracksViewportWidth() {
-            return true;
-        }
-
-        @Override
-        public boolean getScrollableTracksViewportHeight() {
-            return false;
-        }
-
     }
 
 }

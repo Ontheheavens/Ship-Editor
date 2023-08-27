@@ -8,7 +8,7 @@ import oth.shipeditor.communication.events.viewer.ViewerRepaintQueued;
 import oth.shipeditor.communication.events.viewer.points.InstrumentModeChanged;
 import oth.shipeditor.communication.events.viewer.points.RadiusDragQueued;
 import oth.shipeditor.components.instrument.ship.ShipInstrumentsPane;
-import oth.shipeditor.components.viewer.ShipInstrument;
+import oth.shipeditor.components.instrument.ship.ShipInstrument;
 import oth.shipeditor.components.viewer.control.ControlPredicates;
 import oth.shipeditor.components.viewer.entities.BaseWorldPoint;
 import oth.shipeditor.components.viewer.entities.ShieldCenterPoint;
@@ -61,6 +61,7 @@ public class ShieldPointPainter extends SinglePointPainter {
         ShipData shipData = layer.getShipData();
         HullSpecFile hullSpecFile = shipData.getHullSpecFile();
         ShipHull hull = layer.getHull();
+        hull.loadHullStyle();
         HullStyle style = hull.getHullStyle();
         if (style == null) {
             style = new HullStyle();

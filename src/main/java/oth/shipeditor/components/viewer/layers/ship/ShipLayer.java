@@ -63,7 +63,7 @@ public class ShipLayer extends ViewerLayer {
         return (ShipPainter) super.getPainter();
     }
 
-    public void addSkin(SkinSpecFile skinSpecFile) {
+    public ShipSkin addSkin(SkinSpecFile skinSpecFile) {
         Map<String, SkinSpecFile> shipDataSkins = this.shipData.getSkins();
         shipDataSkins.put(skinSpecFile.getSkinHullId(), skinSpecFile);
 
@@ -106,6 +106,7 @@ public class ShipLayer extends ViewerLayer {
                 .withEngineSlotChanges(skinSpecFile.getEngineSlotChanges())
                 .build();
         this.skins.add(skinInstance);
+        return skinInstance;
     }
 
 }

@@ -2,7 +2,8 @@ package oth.shipeditor.undo.edits.points;
 
 import oth.shipeditor.communication.BusEventListener;
 import oth.shipeditor.communication.EventBus;
-import oth.shipeditor.communication.events.Events;
+import oth.shipeditor.communication.events.components.*;
+import oth.shipeditor.communication.events.viewer.ViewerRepaintQueued;
 import oth.shipeditor.communication.events.viewer.points.AnchorOffsetConfirmed;
 import oth.shipeditor.components.viewer.entities.WorldPoint;
 import oth.shipeditor.undo.AbstractEdit;
@@ -64,19 +65,30 @@ public final class PointDragEdit extends AbstractEdit implements ListeningEdit, 
     public void undo() {
         undoSubEdits();
         point.setPosition(oldPosition);
-        Events.repaintView();
+        PointDragEdit.repaintByPointType(point);
     }
 
     @Override
     public void redo() {
         point.setPosition(newPosition);
         redoSubEdits();
-        Events.repaintView();
+        PointDragEdit.repaintByPointType(point);
     }
 
     @Override
     public WorldPoint getPoint() {
         return point;
+    }
+
+    public static void repaintByPointType(WorldPoint point) {
+        EventBus.publish(new ViewerRepaintQueued());
+        if (point == null) return;
+        switch (point.getAssociatedMode()) {
+            case BOUNDS -> EventBus.publish(new BoundsPanelRepaintQueued());
+            case COLLISION, SHIELD -> EventBus.publish(new CenterPanelsRepaintQueued());
+            case WEAPON_SLOTS -> EventBus.publish(new SlotControlRepaintQueued());
+            case ENGINES -> EventBus.publish(new EnginesPanelRepaintQueued());
+        }
     }
 
 }

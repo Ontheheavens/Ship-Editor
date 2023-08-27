@@ -18,8 +18,6 @@ public class EngineList extends PointList<EnginePoint> {
 
     private final JPanel infoPanel;
 
-    private EngineDataPanel dataPanel;
-
     EngineList(ListModel<EnginePoint> dataModel, JPanel infoDataPanel) {
         super(dataModel);
         this.infoPanel = infoDataPanel;
@@ -35,7 +33,7 @@ public class EngineList extends PointList<EnginePoint> {
         EnginePoint selected = this.getSelectedValue();
         infoPanel.removeAll();
 
-        dataPanel = new EngineDataPanel(selected);
+        EngineDataPanel dataPanel = new EngineDataPanel(selected);
         infoPanel.add(dataPanel, BorderLayout.CENTER);
 
         infoPanel.revalidate();
@@ -54,11 +52,11 @@ public class EngineList extends PointList<EnginePoint> {
             super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
             EnginePoint checked = (EnginePoint) value;
             EngineStyle engineStyle = checked.getStyle();
-            String engineOrStyle = "Engine";
+            String styleOrID = checked.getStyleID();
             if (engineStyle != null) {
-                engineOrStyle = engineStyle.getEngineStyleID();
+                styleOrID = engineStyle.getEngineStyleID();
             }
-            String displayText = engineOrStyle + " #" + index + ": " + checked.getPositionText();
+            String displayText = styleOrID + " #" + index + ": " + checked.getPositionText();
             setText(displayText);
             return this;
         }

@@ -8,9 +8,9 @@ import oth.shipeditor.representation.GameDataRepository;
 import oth.shipeditor.representation.HullSpecFile;
 import oth.shipeditor.representation.SkinSpecFile;
 import oth.shipeditor.representation.Variant;
+import oth.shipeditor.utility.Utility;
 import oth.shipeditor.utility.components.ComponentUtilities;
 import oth.shipeditor.utility.components.MouseoverLabelListener;
-import oth.shipeditor.utility.text.StringConstants;
 
 import javax.swing.*;
 import javax.swing.border.Border;
@@ -18,6 +18,7 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.border.MatteBorder;
 import javax.swing.border.TitledBorder;
 import java.awt.*;
+import java.awt.image.BufferedImage;
 import java.io.File;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -64,6 +65,8 @@ class ShipFilesSubpanel extends JPanel {
             rightPanel.removeAll();
         }
 
+        ShipFilesSubpanel.addSpritePreview(shipFilesPanel, selected);
+
         JPanel labelContainer = ShipFilesSubpanel.createLabelContainer(selected);
         shipFilesPanel.add(labelContainer);
 
@@ -77,29 +80,51 @@ class ShipFilesSubpanel extends JPanel {
         return shipFilesPanel;
     }
 
+    private static void addSpritePreview(JPanel shipFilesPanel, ShipCSVEntry selected) {
+        String spriteFileName = selected.getShipSpriteName();
+        File spriteFile = FileLoading.fetchDataFile(Path.of(spriteFileName), selected.getPackageFolderPath());
+        BufferedImage sprite = FileLoading.loadSpriteAsImage(spriteFile);
+        if (sprite != null) {
+            String tooltip = selected.getHullFileName();
+            if (spriteFile != null) {
+                String spriteName = "Name: " + spriteFile.getName();
+                String width = "Width: " + sprite.getWidth();
+                String height = "Height: " + sprite.getHeight();
+                tooltip = Utility.getWithLinebreaks(spriteName, width, height);
+            }
+            JLabel spriteIcon = ComponentUtilities.createIconFromImage(sprite, tooltip, 128);
+            spriteIcon.setAlignmentX(0.5f);
+
+            JPanel spriteWrapper = new JPanel();
+            spriteWrapper.setAlignmentX(LEFT_ALIGNMENT);
+
+            MatteBorder matteLine = new MatteBorder(new Insets(0, 0, 1, 0),
+                    Color.LIGHT_GRAY);
+            Border titledBorder = new TitledBorder(matteLine, "Files",
+                    TitledBorder.CENTER, TitledBorder.BOTTOM);
+            spriteWrapper.setBorder(titledBorder);
+
+            spriteWrapper.add(spriteIcon);
+
+            shipFilesPanel.add(spriteWrapper);
+        }
+    }
+
     private static JPanel createLabelContainer(ShipCSVEntry selected) {
-        Map<String, String> rowData = selected.getRowData();
-        String shipName = rowData.get(StringConstants.NAME);
-        String shipId = selected.getHullID();
+        String shipName = selected.getShipName();
+        String shipId = selected.getShipID();
         String hullFileName = selected.getHullFileName();
 
         HullSpecFile selectedHullFileSpecFile = selected.getHullSpecFile();
         SkinSpecFile activeSkinSpecFile = selected.getActiveSkinSpecFile();
         Path skinFilePath = null;
 
-        String spriteFileName = selectedHullFileSpecFile.getSpriteName();
+        String spriteFileName = selected.getShipSpriteName();
         String skinFileName = "";
 
         if (activeSkinSpecFile != null && !activeSkinSpecFile.isBase()) {
-            shipName = activeSkinSpecFile.getHullName();
-            shipId = activeSkinSpecFile.getSkinHullId();
-            spriteFileName = activeSkinSpecFile.getSpriteName();
             skinFilePath = activeSkinSpecFile.getFilePath();
             skinFileName = skinFilePath.getFileName().toString();
-        }
-
-        if (spriteFileName == null || spriteFileName.isEmpty()) {
-            spriteFileName = selectedHullFileSpecFile.getSpriteName();
         }
 
         Path shipFilePath = selectedHullFileSpecFile.getFilePath();
@@ -174,11 +199,9 @@ class ShipFilesSubpanel extends JPanel {
         GameDataRepository gameData = SettingsManager.getGameData();
         if (!gameData.isHullmodDataLoaded()) return;
 
-        MatteBorder matteLine = new MatteBorder(1, 0, 0, 0, Color.LIGHT_GRAY);
-        Border titledBorder = new TitledBorder(matteLine, "Built-in hullmods",
-                TitledBorder.CENTER, TitledBorder.DEFAULT_POSITION);
         JPanel hullmodsPanel = new JPanel();
-        hullmodsPanel.setBorder(titledBorder);
+        ComponentUtilities.outfitPanelWithTitle(hullmodsPanel,
+                new Insets(1, 0, 0, 0), "Built-in hullmods");
         hullmodsPanel.setAlignmentX(LEFT_ALIGNMENT);
 
         Collection<String> hullmodIDs = selected.getBuiltInHullmods();
@@ -188,15 +211,7 @@ class ShipFilesSubpanel extends JPanel {
         Map<String, HullmodCSVEntry> allHullmods = gameData.getAllHullmodEntries();
         for (String id : hullmodIDs) {
             HullmodCSVEntry entry = allHullmods.get(id);
-            Map<String, String> rowData = entry.getRowData();
-            String name = rowData.get("name");
-            Image iconImage = FileLoading.loadSpriteAsImage(entry.fetchHullmodSpriteFile());
-            int iconSize = 32;
-            if (iconImage.getWidth(null) > iconSize || iconImage.getHeight(null) > iconSize) {
-                iconImage = iconImage.getScaledInstance(iconSize, iconSize, Image.SCALE_DEFAULT);
-            }
-            JLabel imageLabel = ComponentUtilities.createIconLabelWithBorder(new ImageIcon(iconImage));
-            imageLabel.setToolTipText(name);
+            JLabel imageLabel = ComponentUtilities.createHullmodIcon(entry);
             hullmodsPanel.add(imageLabel);
         }
 
@@ -208,19 +223,6 @@ class ShipFilesSubpanel extends JPanel {
     private static JPanel createVariantPanel() {
         GameDataRepository gameData = SettingsManager.getGameData();
 
-        MatteBorder matteLine = new MatteBorder(1, 0, 0, 0, Color.LIGHT_GRAY);
-        Border titledBorder = new TitledBorder(matteLine, "Variants",
-                TitledBorder.CENTER, TitledBorder.DEFAULT_POSITION);
-        JPanel variantsPanel = new JPanel();
-        variantsPanel.setLayout(new FlowLayout(FlowLayout.LEADING, 0, 0));
-        variantsPanel.setBorder(titledBorder);
-        variantsPanel.setAlignmentX(LEFT_ALIGNMENT);
-
-        JPanel labelContainer = new JPanel();
-        labelContainer.setAlignmentX(LEFT_ALIGNMENT);
-        labelContainer.setBorder(new EmptyBorder(2, 0, 0, 0));
-        labelContainer.setLayout(new BoxLayout(labelContainer, BoxLayout.PAGE_AXIS));
-
         Collection<Variant> variantsForHull = new ArrayList<>();
         Map<String, Variant> allVariants = gameData.getAllVariants();
         for (Variant variant : allVariants.values()) {
@@ -231,19 +233,7 @@ class ShipFilesSubpanel extends JPanel {
         }
 
         if (variantsForHull.isEmpty()) return null;
-        variantsForHull.forEach(variant -> {
-            Path variantFilePath = variant.getVariantFilePath();
-            JLabel variantLabel = new JLabel("Variant file : " + variantFilePath.getFileName());
-            variantLabel.setToolTipText(String.valueOf(variantFilePath));
-            variantLabel.setBorder(ComponentUtilities.createLabelSimpleBorder(ComponentUtilities.createLabelInsets()));
-            JPopupMenu pathContextMenu = ComponentUtilities.createPathContextMenu(variantFilePath);
-            variantLabel.addMouseListener(new MouseoverLabelListener(pathContextMenu, variantLabel));
-            labelContainer.add(variantLabel);
-            labelContainer.add(Box.createRigidArea(ShipFilesSubpanel.createPadding()));
-        });
-
-        variantsPanel.add(labelContainer);
-        return variantsPanel;
+        return DataTreePanel.createVariantsPanel(variantsForHull, ShipFilesSubpanel.createPadding());
     }
 
 }

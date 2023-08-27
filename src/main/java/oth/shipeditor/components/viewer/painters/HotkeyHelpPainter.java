@@ -3,7 +3,7 @@ package oth.shipeditor.components.viewer.painters;
 import de.javagl.viewer.Painter;
 import lombok.extern.log4j.Log4j2;
 import oth.shipeditor.components.instrument.ship.ShipInstrumentsPane;
-import oth.shipeditor.components.viewer.ShipInstrument;
+import oth.shipeditor.components.instrument.ship.ShipInstrument;
 import oth.shipeditor.components.viewer.layers.LayerPainter;
 import oth.shipeditor.components.viewer.layers.ViewerLayer;
 import oth.shipeditor.utility.StaticController;
@@ -90,6 +90,14 @@ public class HotkeyHelpPainter implements Painter {
                 String addBay = "Add bay: B+LMB";
                 hints.add(addPort);
                 hints.add(addBay);
+            }
+            case ENGINES -> {
+                String angleHint = "Alter angle: D+LMB";
+                String sizeHint = "Alter size: D+RMB";
+                String addHint = "Add engine: E+LMB";
+                hints.add(angleHint);
+                hints.add(sizeHint);
+                hints.add(addHint);
             }
             default -> {
             }

@@ -43,11 +43,11 @@ class NumberChangeDialog extends JPanel {
         return topPanel;
     }
 
-    protected JLabel createOriginalLabel() {
+    JLabel createOriginalLabel() {
         return new JLabel(Utility.round(getOriginalNumber(), 5) + " ");
     }
 
-    protected SpinnerNumberModel createSpinnerModel() {
+    SpinnerNumberModel createSpinnerModel() {
         double min = Double.NEGATIVE_INFINITY;
         double max = Double.POSITIVE_INFINITY;
         double step = 0.005;

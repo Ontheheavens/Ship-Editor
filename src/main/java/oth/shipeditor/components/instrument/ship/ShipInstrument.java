@@ -1,4 +1,4 @@
-package oth.shipeditor.components.viewer;
+package oth.shipeditor.components.instrument.ship;
 
 import lombok.Getter;
 import oth.shipeditor.utility.text.StringValues;
@@ -15,7 +15,10 @@ public enum ShipInstrument {
     WEAPON_SLOTS("Weapon Slots"),
     LAUNCH_BAYS("Launch Bays"),
     ENGINES("Engines"),
-    SKIN("Skin");;
+    BUILT_IN_MODS("Built-in Mods"),
+    BUILT_IN_WINGS("Built-in Wings"),
+    BUILT_IN_WEAPONS("Built-in Weapons"),
+    SKIN("Skin");
 
 
     @Getter

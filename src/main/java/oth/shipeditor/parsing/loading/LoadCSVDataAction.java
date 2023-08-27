@@ -18,7 +18,7 @@ import java.util.Map;
  * @since 03.08.2023
  */
 @Log4j2
-public abstract class LoadCSVDataAction<T extends CSVEntry> extends AbstractAction {
+abstract class LoadCSVDataAction<T extends CSVEntry> extends AbstractAction {
 
     private final Path targetFile;
 
@@ -44,7 +44,7 @@ public abstract class LoadCSVDataAction<T extends CSVEntry> extends AbstractActi
 
     protected abstract T instantiateEntry(Map<String, String> row, Path folderPath, Path dataFilePath);
 
-    protected List<Map<String, String>> parseTable(Path dataFilePath) {
+    List<Map<String, String>> parseTable(Path dataFilePath) {
         return FileLoading.parseCSVTable(dataFilePath);
     }
 

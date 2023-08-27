@@ -5,7 +5,7 @@ import lombok.Setter;
 import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.components.SlotControlRepaintQueued;
 import oth.shipeditor.communication.events.viewer.ViewerRepaintQueued;
-import oth.shipeditor.components.viewer.ShipInstrument;
+import oth.shipeditor.components.instrument.ship.ShipInstrument;
 import oth.shipeditor.components.viewer.entities.AngledPoint;
 import oth.shipeditor.components.viewer.layers.ship.ShipPainter;
 import oth.shipeditor.components.viewer.painters.points.WeaponSlotPainter;
@@ -135,12 +135,12 @@ public class WeaponSlotPoint extends AngledPoint implements SlotPoint {
     }
 
     public void changeSlotMount(WeaponMount newMount) {
-        if (skinOverride != null && skinOverride.getWeaponType() != null) return;
+        if (skinOverride != null && skinOverride.getWeaponMount() != null) return;
         EditDispatch.postSlotMountChanged(this, newMount);
     }
 
     public void changeSlotSize(WeaponSize newSize) {
-        if (skinOverride != null && skinOverride.getWeaponType() != null) return;
+        if (skinOverride != null && skinOverride.getWeaponSize() != null) return;
         EditDispatch.postSlotSizeChanged(this, newSize);
     }
 

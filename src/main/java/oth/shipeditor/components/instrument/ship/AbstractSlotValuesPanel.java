@@ -76,7 +76,7 @@ public abstract class AbstractSlotValuesPanel extends JPanel {
             label.setToolTipText(CHANGE_APPLIES_TO_FIRST_SELECTED_SLOT);
         }
 
-        Component right = ComponentUtilities.getNoSelected();
+        JComponent right = ComponentUtilities.getNoSelected();
 
         if (selected != null) {
             JTextField editor = new JTextField(selected.getId());

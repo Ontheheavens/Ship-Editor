@@ -2,15 +2,27 @@ package oth.shipeditor.components.datafiles.trees;
 
 import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.files.WingDataLoaded;
+import oth.shipeditor.communication.events.viewer.layers.ActiveLayerUpdated;
 import oth.shipeditor.components.datafiles.entities.WingCSVEntry;
+import oth.shipeditor.components.instrument.ship.ShipInstrument;
+import oth.shipeditor.components.instrument.ship.ShipInstrumentsPane;
+import oth.shipeditor.components.viewer.layers.ViewerLayer;
+import oth.shipeditor.components.viewer.layers.ship.ShipLayer;
+import oth.shipeditor.components.viewer.layers.ship.ShipPainter;
+import oth.shipeditor.components.viewer.layers.ship.data.ShipHull;
 import oth.shipeditor.menubar.FileUtilities;
 import oth.shipeditor.persistence.SettingsManager;
 import oth.shipeditor.representation.GameDataRepository;
+import oth.shipeditor.representation.Variant;
+import oth.shipeditor.utility.StaticController;
+import oth.shipeditor.utility.components.ComponentUtilities;
 
 import javax.swing.*;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeCellRenderer;
 import java.awt.*;
+import java.awt.image.BufferedImage;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -70,6 +82,30 @@ public class WingsTreePanel extends CSVDataTreePanel<WingCSVEntry>{
     protected void updateEntryPanel(WingCSVEntry selected) {
         JPanel rightPanel = getRightPanel();
         rightPanel.removeAll();
+
+        GridBagConstraints constraints = DataTreePanel.getDefaultConstraints();
+        constraints.gridy = 0;
+        constraints.insets = new Insets(0, 5, 0, 5);
+        BufferedImage sprite = selected.getWingMemberSprite();
+        if (sprite != null) {
+            String tooltip = selected.getEntryName();
+            JLabel spriteIcon = ComponentUtilities.createIconFromImage(sprite, tooltip, 32);
+            JPanel iconPanel = new JPanel();
+            iconPanel.add(spriteIcon);
+            rightPanel.add(iconPanel, constraints);
+        }
+
+        JPanel variantWrapper = new JPanel();
+        variantWrapper.setLayout(new BoxLayout(variantWrapper, BoxLayout.PAGE_AXIS));
+
+        List<Variant> memberVariant = Collections.singletonList(selected.retrieveMemberVariant());
+        JPanel variantPanel = DataTreePanel.createVariantsPanel(memberVariant,
+                new Dimension(0, 2));
+        variantWrapper.add(variantPanel);
+
+        constraints.gridy = 1;
+        rightPanel.add(variantWrapper, constraints);
+
         Map<String, String> data = selected.getRowData();
         createRightPanelDataTable(data);
     }
@@ -79,6 +115,77 @@ public class WingsTreePanel extends CSVDataTreePanel<WingCSVEntry>{
         Object userObject = node.getUserObject();
         if (!(userObject instanceof WingCSVEntry checked)) return null;
         return checked;
+    }
+
+    @SuppressWarnings("OverlyComplexMethod")
+    @Override
+    JPopupMenu getContextMenu() {
+        JPopupMenu menu = super.getContextMenu();
+        DefaultMutableTreeNode cachedSelectForMenu = getCachedSelectForMenu();
+        if (cachedSelectForMenu.getUserObject() instanceof WingCSVEntry checked) {
+            menu.addSeparator();
+
+            JMenuItem addToHullBuiltIns = new JMenuItem("Add to hull built-in wings");
+            ViewerLayer activeLayer = StaticController.getActiveLayer();
+            addToHullBuiltIns.addActionListener(e -> {
+                if (activeLayer instanceof ShipLayer checkedLayer) {
+                    ShipHull hull = checkedLayer.getHull();
+                    if (hull == null) return;
+                    var builtInWings = hull.getBuiltInWings();
+                    if (builtInWings == null) return;
+                    if (WingsTreePanel.isPushEntryToListSuccessful(builtInWings, checkedLayer, checked)) {
+                        EventBus.publish(new ActiveLayerUpdated(activeLayer));
+                    }
+                }
+            });
+            if (!WingsTreePanel.isCurrentLayerDataEligible() || WingsTreePanel.isNotActiveInstrument()) {
+                addToHullBuiltIns.setEnabled(false);
+            }
+            menu.add(addToHullBuiltIns);
+
+            JMenuItem addToSkinAdded = new JMenuItem("Add to skin built-in wings");
+            addToSkinAdded.addActionListener(e -> {
+                if (activeLayer instanceof ShipLayer checkedLayer) {
+
+                    ShipPainter shipPainter = checkedLayer.getPainter();
+                    if (shipPainter == null || shipPainter.isUninitialized()) return;
+                    var skin = shipPainter.getActiveSkin();
+                    if (skin == null || skin.isBase()) return;
+
+                    var skinAdded = skin.getBuiltInWings();
+                    if (WingsTreePanel.isPushEntryToListSuccessful(skinAdded, checkedLayer, checked)) {
+                        EventBus.publish(new ActiveLayerUpdated(activeLayer));
+                    }
+                }
+            });
+            if (DataTreePanel.isCurrentSkinNotEligible() || WingsTreePanel.isNotActiveInstrument()) {
+                addToSkinAdded.setEnabled(false);
+            }
+            menu.add(addToSkinAdded);
+
+        }
+        return menu;
+    }
+
+    private static boolean isNotActiveInstrument() {
+        return ShipInstrumentsPane.getCurrentMode() != ShipInstrument.BUILT_IN_WINGS;
+    }
+
+    private static boolean isPushEntryToListSuccessful(List<WingCSVEntry> list, ShipLayer layer,
+                                                       WingCSVEntry entry) {
+        list.add(entry);
+        return true;
+    }
+
+    private static boolean isCurrentLayerDataEligible() {
+        ViewerLayer activeLayer = StaticController.getActiveLayer();
+        boolean isShipLayer = activeLayer instanceof ShipLayer;
+        ShipLayer shipLayer;
+        if (isShipLayer) {
+            shipLayer = (ShipLayer) activeLayer;
+        } else return false;
+        ShipHull hull = shipLayer.getHull();
+        return hull != null && hull.getBuiltInWings() != null;
     }
 
     @Override

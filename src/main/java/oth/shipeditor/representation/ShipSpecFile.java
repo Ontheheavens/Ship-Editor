@@ -12,4 +12,6 @@ public interface ShipSpecFile {
 
     Path getFilePath();
 
+    String getSpriteName();
+
 }

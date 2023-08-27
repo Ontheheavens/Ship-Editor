@@ -90,14 +90,26 @@ public final class ShipPainter extends LayerPainter {
             parentLayer.setSkinFileName(StringValues.NOT_LOADED);
 
             this.weaponSlotPainter.resetSkinSlotOverride();
+            this.enginePainter.resetSkinSlotOverride();
 
             this.activateEmptySkin();
         } else {
+            if (skin == null) {
+                throw new IllegalArgumentException("Attempted to activate invalid skin!");
+            }
             Sprite loadedSkinSprite = skin.getLoadedSkinSprite();
             this.setSprite(loadedSkinSprite.getSpriteImage());
 
             if (skin.getWeaponSlotChanges() != null) {
                 this.weaponSlotPainter.toggleSkinSlotOverride(skin);
+            } else {
+                this.weaponSlotPainter.resetSkinSlotOverride();
+            }
+
+            if (skin.getEngineSlotChanges() != null) {
+                this.enginePainter.toggleSkinSlotOverride(skin);
+            } else {
+                this.enginePainter.resetSkinSlotOverride();
             }
 
             parentLayer.setSpriteFileName(loadedSkinSprite.getFileName());

@@ -2,13 +2,17 @@ package oth.shipeditor.utility.components;
 
 import com.formdev.flatlaf.ui.FlatLineBorder;
 import com.formdev.flatlaf.ui.FlatRoundBorder;
+import org.kordamp.ikonli.fluentui.FluentUiRegularAL;
+import org.kordamp.ikonli.swing.FontIcon;
 import oth.shipeditor.communication.BusEventListener;
 import oth.shipeditor.communication.EventBus;
+import oth.shipeditor.components.datafiles.entities.HullmodCSVEntry;
 import oth.shipeditor.components.instrument.ship.PointList;
 import oth.shipeditor.components.viewer.entities.BaseWorldPoint;
 import oth.shipeditor.components.viewer.painters.PainterVisibility;
 import oth.shipeditor.components.viewer.painters.points.AbstractPointPainter;
 import oth.shipeditor.menubar.FileUtilities;
+import oth.shipeditor.parsing.loading.FileLoading;
 import oth.shipeditor.utility.Pair;
 import oth.shipeditor.utility.Utility;
 import oth.shipeditor.utility.graphics.ColorUtilities;
@@ -23,9 +27,11 @@ import javax.swing.event.ChangeListener;
 import java.awt.*;
 import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
+import java.io.File;
 import java.nio.file.Path;
 import java.util.Dictionary;
 import java.util.Hashtable;
+import java.util.Map;
 
 /**
  * @author Ontheheavens
@@ -71,6 +77,7 @@ public final class ComponentUtilities {
         ComponentUtilities.addSeparatorToBoxPanel(panel, 5);
     }
 
+    @SuppressWarnings("WeakerAccess")
     public static void addSeparatorToBoxPanel(JPanel panel, int height) {
         panel.add(Box.createVerticalStrut(height));
         JSeparator separator = new JSeparator(SwingConstants.HORIZONTAL);
@@ -78,12 +85,70 @@ public final class ComponentUtilities {
         panel.add(separator);
     }
 
-    public static JLabel createIconLabelWithBorder(Icon icon) {
+    private static JLabel createIconLabelWithBorder(Icon icon) {
         JLabel imageLabel = new JLabel(icon);
         imageLabel.setOpaque(true);
         imageLabel.setBorder(new FlatLineBorder(new Insets(2, 2, 2, 2), Color.GRAY));
         imageLabel.setBackground(Color.LIGHT_GRAY);
         return imageLabel;
+    }
+
+    public static JLabel createHullmodIcon(HullmodCSVEntry entry) {
+        Map<String, String> rowData = entry.getRowData();
+        String name = rowData.get("name");
+        return ComponentUtilities.createIconFromImage(entry.fetchHullmodSpriteFile(), name);
+    }
+
+    @SuppressWarnings("WeakerAccess")
+    public static JLabel createIconFromImage(File imageFile, String tooltip) {
+        return ComponentUtilities.createIconFromImage(imageFile, tooltip, 32);
+    }
+
+    @SuppressWarnings("WeakerAccess")
+    public static JLabel createIconFromImage(File imageFile, String tooltip, int maxSize) {
+        BufferedImage iconImage = FileLoading.loadSpriteAsImage(imageFile);
+        return ComponentUtilities.createIconFromImage(iconImage, tooltip, maxSize);
+    }
+
+    @SuppressWarnings("WeakerAccess")
+    public static JLabel createIconFromImage(BufferedImage image, String tooltip, int maxSize) {
+        Image clamped = ComponentUtilities.resizeImageToSquareLimit(image, maxSize);
+        JLabel imageLabel = ComponentUtilities.createIconLabelWithBorder(new ImageIcon(clamped));
+        if (tooltip != null && !tooltip.isEmpty()) {
+            imageLabel.setToolTipText(tooltip);
+        }
+        return imageLabel;
+    }
+
+    @SuppressWarnings("WeakerAccess")
+    public static Image resizeImageToSquareLimit(Image iconImage, int limit) {
+        int originalWidth = iconImage.getWidth(null);
+        int originalHeight = iconImage.getHeight(null);
+
+        BufferedImage resizedImage = new BufferedImage(limit, limit, BufferedImage.TYPE_INT_ARGB);
+        Graphics2D g2d = resizedImage.createGraphics();
+
+        if (originalWidth > limit || originalHeight > limit) {
+            double widthRatio = (double) limit / originalWidth;
+            double heightRatio = (double) limit / originalHeight;
+            double ratio = Math.min(widthRatio, heightRatio);
+
+            int newWidth = (int) (originalWidth * ratio);
+            int newHeight = (int) (originalHeight * ratio);
+
+            int xOffset = (limit - newWidth) / 2;
+            int yOffset = (limit - newHeight) / 2;
+
+            g2d.drawImage(iconImage, xOffset, yOffset, newWidth, newHeight, null);
+        } else {
+            int xOffset = (limit - originalWidth) / 2;
+            int yOffset = (limit - originalHeight) / 2;
+
+            g2d.drawImage(iconImage, xOffset, yOffset, originalWidth, originalHeight, null);
+        }
+
+        g2d.dispose();
+        return resizedImage;
     }
 
     public static Pair<JSlider, JLabel> createOpacityWidget(ChangeListener change,
@@ -200,7 +265,7 @@ public final class ComponentUtilities {
                                                 ActionListener selectionAction, String labelName) {
         String widgetLabel = labelName;
         JPanel widgetPanel = new JPanel();
-        widgetPanel.setLayout(new BoxLayout(widgetPanel, BoxLayout.LINE_AXIS));
+        widgetPanel.setLayout(new GridBagLayout());
 
         visibilityList.setRenderer(PainterVisibility.createCellRenderer());
         visibilityList.addActionListener(PainterVisibility.createActionListener(visibilityList, painterClass));
@@ -214,11 +279,9 @@ public final class ComponentUtilities {
 
         JLabel visibilityWidgetLabel = new JLabel(widgetLabel);
         visibilityWidgetLabel.setToolTipText(StringValues.TOGGLED_ON_PER_LAYER_BASIS);
-        widgetPanel.setBorder(new EmptyBorder(6, 0, 4, 0));
 
-        int sidePadding = 6;
-        ComponentUtilities.layoutAsOpposites(widgetPanel, visibilityWidgetLabel,
-                visibilityList, sidePadding);
+        ComponentUtilities.addLabelAndComponent(widgetPanel, visibilityWidgetLabel, visibilityList, 0);
+        widgetPanel.setMaximumSize(new Dimension(Integer.MAX_VALUE, 29));
 
         return widgetPanel;
     }
@@ -244,10 +307,32 @@ public final class ComponentUtilities {
         return new Pair<>(container, reorderCheckbox);
     }
 
-    public static JPanel createTitledSeparatorPanel(String text, Insets insets) {
+    public static JPanel createTitledSeparatorPanel(String text) {
+        var insets = new Insets(1, 0, 0, 0);
+        return ComponentUtilities.createTitledSeparatorPanel(text, insets);
+    }
+
+    public static TextScrollPanel createTextPanel(String text, int pad) {
+        TextScrollPanel container = new TextScrollPanel(new FlowLayout());
+        container.setBorder(new EmptyBorder(0, 0, pad, 0));
+        container.setLayout(new BoxLayout(container, BoxLayout.LINE_AXIS));
+        JTextArea textArea = new JTextArea(text);
+        textArea.setEditable(false);
+        textArea.setLineWrap(true);
+        textArea.setWrapStyleWord(true);
+        textArea.setMinimumSize(new Dimension(100,100));
+        container.setMinimumSize(new Dimension(100,100));
+
+        container.add(textArea);
+        container.setAlignmentY(0);
+        return container;
+    }
+
+    private static JPanel createTitledSeparatorPanel(String text, Insets insets) {
         JPanel container = new JPanel();
         container.setLayout(new FlowLayout(FlowLayout.CENTER, 0, 0));
         ComponentUtilities.outfitPanelWithTitle(container, insets, text);
+        container.setAlignmentY(0);
         return container;
     }
 
@@ -278,7 +363,7 @@ public final class ComponentUtilities {
     /**
      * @param parent assumes that JPanel instance has GridBagLayout set as component layout.
      */
-    public static void addLabelAndComponent(JPanel parent, JLabel label, Component component, int y) {
+    public static JComponent addLabelAndComponent(JPanel parent, JLabel label, JComponent component, int y) {
         GridBagConstraints constraints = new GridBagConstraints();
 
         constraints.insets = new Insets(3, 6, 0, 3);
@@ -300,12 +385,74 @@ public final class ComponentUtilities {
         }
         constraints.anchor = GridBagConstraints.LINE_END;
         parent.add(component, constraints);
+        return component;
     }
 
     public static JLabel getNoSelected() {
         JLabel label = new JLabel(StringValues.NO_SELECTED);
         label.setBorder(new EmptyBorder(5, 0, 5, 0));
         return label;
+    }
+
+    public static JPanel createCSVEntryPanel(JLabel iconLabel, JComponent middleUpper,
+                                             JComponent middleLower, ActionListener removeAction) {
+        JPanel container = new JPanel(new GridBagLayout());
+        Border flatRoundBorder = new FlatRoundBorder();
+        container.setBorder(flatRoundBorder);
+
+        GridBagConstraints constraints = new GridBagConstraints();
+        constraints.gridx = 0;
+        constraints.gridy = 0;
+        constraints.gridheight = 2;
+        constraints.weightx = 0;
+        constraints.fill = GridBagConstraints.HORIZONTAL;
+        constraints.insets = new Insets(4, 4, 4, 0);
+        constraints.anchor = GridBagConstraints.LINE_START;
+
+        container.add(iconLabel, constraints);
+
+        constraints.gridx = 1;
+        if (middleLower == null) {
+            constraints.gridheight = 2;
+            constraints.insets = new Insets(0, 4, 0, 0);
+        } else {
+            constraints.gridheight = 1;
+            constraints.insets = new Insets(2, 4, 0, 0);
+        }
+        constraints.weightx = 1;
+        if (middleUpper != null) {
+            container.add(middleUpper, constraints);
+        }
+
+        constraints.gridy = 1;
+        constraints.insets = new Insets(0, 4, 0, 0);
+        if (middleLower != null) {
+            container.add(middleLower, constraints);
+        }
+
+        constraints.gridx = 2;
+        constraints.gridy = 0;
+        constraints.weightx = 0;
+        constraints.gridheight = 2;
+        constraints.insets = new Insets(0, 0, 0, 4);
+        constraints.anchor = GridBagConstraints.LINE_END;
+
+        JButton removeButton = new JButton();
+
+        removeButton.setIcon(FontIcon.of(FluentUiRegularAL.DISMISS_16, 16, Color.GRAY));
+        removeButton.setRolloverIcon(FontIcon.of(FluentUiRegularAL.DISMISS_16, 16, Color.DARK_GRAY));
+        removeButton.setPressedIcon(FontIcon.of(FluentUiRegularAL.DISMISS_16, 16, Color.BLACK));
+
+        removeButton.addActionListener(removeAction);
+        removeButton.setToolTipText("Remove from list");
+        removeButton.putClientProperty("JButton.buttonType", "borderless");
+
+        container.add(removeButton, constraints);
+
+        container.setMaximumSize(new Dimension(Integer.MAX_VALUE, 50));
+
+        container.setAlignmentY(0);
+        return container;
     }
 
 }

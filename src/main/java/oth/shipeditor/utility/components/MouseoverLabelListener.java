@@ -17,13 +17,23 @@ public class MouseoverLabelListener extends MouseAdapter {
 
     private final Color highlight;
 
-    public MouseoverLabelListener(JPopupMenu menu, JLabel inputLabel) {
-        this(menu, inputLabel, Color.LIGHT_GRAY);
+    private final Runnable action;
 
+    public MouseoverLabelListener(Runnable clickAction, JLabel inputLabel) {
+        this(null, clickAction, inputLabel, Color.LIGHT_GRAY);
     }
 
-    public MouseoverLabelListener(JPopupMenu menu, JLabel inputLabel, Color color) {
+    public MouseoverLabelListener(JPopupMenu menu, JLabel inputLabel) {
+        this(menu, null, inputLabel, Color.LIGHT_GRAY);
+    }
+
+    MouseoverLabelListener(JPopupMenu menu, JLabel inputLabel, Color color) {
+        this(menu, null, inputLabel, color);
+    }
+
+    private MouseoverLabelListener(JPopupMenu menu, Runnable clickAction, JLabel inputLabel, Color color) {
         this.label = inputLabel;
+        this.action = clickAction;
         this.popupMenu = menu;
         this.highlight = color;
     }
@@ -31,7 +41,9 @@ public class MouseoverLabelListener extends MouseAdapter {
     @Override
     public void mouseEntered(MouseEvent e) {
         super.mouseEntered(e);
-        if (!popupMenu.isEnabled()) return;
+        if (popupMenu != null) {
+            if (!popupMenu.isEnabled()) return;
+        }
         label.setBackground(highlight);
         label.setOpaque(true);
     }
@@ -45,9 +57,11 @@ public class MouseoverLabelListener extends MouseAdapter {
 
     @Override
     public void mouseClicked(MouseEvent e) {
-        if (SwingUtilities.isRightMouseButton(e) && popupMenu != null) {
+        if (popupMenu != null && SwingUtilities.isRightMouseButton(e)) {
             if (!popupMenu.isEnabled()) return;
             popupMenu.show(label, e.getX(), e.getY());
+        } else if (SwingUtilities.isLeftMouseButton(e) && action != null) {
+            action.run();
         }
     }
 

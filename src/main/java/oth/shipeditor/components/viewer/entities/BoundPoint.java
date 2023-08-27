@@ -1,6 +1,6 @@
 package oth.shipeditor.components.viewer.entities;
 
-import oth.shipeditor.components.viewer.ShipInstrument;
+import oth.shipeditor.components.instrument.ship.ShipInstrument;
 import oth.shipeditor.components.viewer.layers.ship.ShipPainter;
 import oth.shipeditor.utility.StaticController;
 import oth.shipeditor.utility.graphics.DrawUtilities;
