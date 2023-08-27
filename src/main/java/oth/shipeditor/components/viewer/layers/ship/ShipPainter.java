@@ -94,6 +94,9 @@ public final class ShipPainter extends LayerPainter {
 
             this.activateEmptySkin();
         } else {
+            if (skin == null) {
+                throw new IllegalArgumentException("Attempted to activate invalid skin!");
+            }
             Sprite loadedSkinSprite = skin.getLoadedSkinSprite();
             this.setSprite(loadedSkinSprite.getSpriteImage());
 

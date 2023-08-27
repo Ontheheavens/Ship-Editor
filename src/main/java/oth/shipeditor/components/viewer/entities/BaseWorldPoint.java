@@ -115,7 +115,7 @@ public class BaseWorldPoint implements WorldPoint, Painter {
         EventBus.unsubscribe(anchorDragListener);
     }
 
-    protected Color createHoverColor() {
+    Color createHoverColor() {
         return ColorUtilities.getBlendedColor(createBaseColor(), createSelectColor(),0.5);
     }
 
@@ -129,7 +129,7 @@ public class BaseWorldPoint implements WorldPoint, Painter {
     }
 
 
-    protected boolean isInteractable() {
+    boolean isInteractable() {
         LayerPainter layer = getParentLayer();
         if (layer == null) {
             return true;

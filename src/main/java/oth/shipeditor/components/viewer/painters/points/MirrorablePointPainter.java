@@ -36,7 +36,7 @@ public abstract class MirrorablePointPainter extends AbstractPointPainter {
         this.setInteractionEnabled(ShipInstrumentsPane.getCurrentMode() == getInstrumentType());
     }
 
-    protected void initInteractionListeners() {
+    void initInteractionListeners() {
         List<BusEventListener> listeners = getListeners();
         BusEventListener slotCreationListener = event -> {
             if (event instanceof PointCreationQueued checked) {
@@ -109,9 +109,9 @@ public abstract class MirrorablePointPainter extends AbstractPointPainter {
     }
 
     @SuppressWarnings("NoopMethodInAbstractClass")
-    public void paintPainterContent(Graphics2D g, AffineTransform worldToScreen, double w, double h) {}
+    void paintPainterContent(Graphics2D g, AffineTransform worldToScreen, double w, double h) {}
 
-    protected void handleSelectionHighlight() {
+    void handleSelectionHighlight() {
         WorldPoint selection = this.getSelected();
         if (selection != null && isInteractionEnabled()) {
             MirrorablePointPainter.enlargePoint(selection);

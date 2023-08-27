@@ -4,6 +4,7 @@ import lombok.Getter;
 import lombok.Setter;
 import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.files.HullmodDataSet;
+import oth.shipeditor.communication.events.files.WingDataSet;
 import oth.shipeditor.components.datafiles.entities.*;
 
 import java.util.HashMap;
@@ -62,7 +63,6 @@ public class GameDataRepository {
     @Setter
     private boolean shipsystemDataLoaded;
 
-    @Setter
     private boolean wingDataLoaded;
 
     @Setter
@@ -79,6 +79,11 @@ public class GameDataRepository {
     public void setHullmodDataLoaded(boolean hullmodsLoaded) {
         this.hullmodDataLoaded = hullmodsLoaded;
         EventBus.publish(new HullmodDataSet());
+    }
+
+    public void setWingDataLoaded(boolean wingsLoaded) {
+        this.wingDataLoaded = wingsLoaded;
+        EventBus.publish(new WingDataSet());
     }
 
 }

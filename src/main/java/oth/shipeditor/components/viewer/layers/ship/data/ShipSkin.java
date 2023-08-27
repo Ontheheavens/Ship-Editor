@@ -126,7 +126,7 @@ public final class ShipSkin {
 
 
     @SuppressWarnings({"PublicInnerClass", "ClassWithTooManyMethods",
-            "unused", "BooleanParameter", "MethodParameterNamingConvention", "DuplicatedCode"})
+            "unused", "BooleanParameter", "MethodParameterNamingConvention"})
     public static class Builder {
         private ShipSkin skin;
 
@@ -245,7 +245,10 @@ public final class ShipSkin {
         }
 
         public Builder withBuiltInWings(Collection<String> builtInWings) {
-            if (builtInWings == null) return this;
+            if (builtInWings == null) {
+                skin.builtInWings = new ArrayList<>();
+                return this;
+            }
             List<WingCSVEntry> wingEntries = new ArrayList<>(builtInWings.size());
             GameDataRepository gameData = SettingsManager.getGameData();
             Map<String, WingCSVEntry> allWingEntries = gameData.getAllWingEntries();

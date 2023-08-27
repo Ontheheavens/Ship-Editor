@@ -91,7 +91,6 @@ public class SlotCreationPane extends JPanel {
         return container;
     }
 
-    @SuppressWarnings("DuplicatedCode")
     private static void addLabelWithSpinner(JPanel container, String labelText, Consumer<Double> spinnerEffect, int y) {
         GridBagConstraints constraints = new GridBagConstraints();
 

@@ -43,6 +43,7 @@ public class EnginesPanel extends JPanel {
         northContainer.add(this.createPainterVisibilityPanel());
 
         ComponentUtilities.addSeparatorToBoxPanel(northContainer);
+        northContainer.add(Box.createRigidArea(new Dimension(10, 3)));
 
         JPanel infoPanel = new JPanel();
         infoPanel.setLayout(new BorderLayout());

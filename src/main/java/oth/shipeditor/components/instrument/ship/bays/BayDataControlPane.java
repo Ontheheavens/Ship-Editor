@@ -19,6 +19,7 @@ import java.awt.event.ActionListener;
  */
 public class BayDataControlPane extends AbstractSlotValuesPanel {
 
+    @SuppressWarnings("TypeMayBeWeakened")
     BayDataControlPane(SlotPoint slotPoint) {
         super(slotPoint, false);
     }

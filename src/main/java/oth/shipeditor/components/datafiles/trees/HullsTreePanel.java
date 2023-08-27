@@ -13,6 +13,7 @@ import oth.shipeditor.components.datafiles.entities.ShipCSVEntry;
 import oth.shipeditor.menubar.FileUtilities;
 import oth.shipeditor.persistence.SettingsManager;
 import oth.shipeditor.representation.GameDataRepository;
+import oth.shipeditor.representation.HullSize;
 import oth.shipeditor.representation.HullSpecFile;
 import oth.shipeditor.representation.SkinSpecFile;
 import oth.shipeditor.utility.Pair;
@@ -254,12 +255,13 @@ class HullsTreePanel extends DataTreePanel {
             if (object instanceof ShipCSVEntry checked && leaf) {
                 HullSpecFile hullSpecFile = checked.getHullSpecFile();
                 String hullSize = hullSpecFile.getHullSize();
-                switch (hullSize) {
-                    case "FIGHTER" -> setIcon(FontIcon.of(BoxiconsRegular.DICE_1, 16, Color.DARK_GRAY));
-                    case "FRIGATE" -> setIcon(FontIcon.of(BoxiconsRegular.DICE_2, 16, Color.DARK_GRAY));
-                    case "DESTROYER" -> setIcon(FontIcon.of(BoxiconsRegular.DICE_3, 16, Color.DARK_GRAY));
-                    case "CRUISER" -> setIcon(FontIcon.of(BoxiconsRegular.DICE_4, 16, Color.DARK_GRAY));
-                    case "CAPITAL_SHIP" -> setIcon(FontIcon.of(BoxiconsRegular.DICE_5, 16, Color.DARK_GRAY));
+                HullSize enumValue = HullSize.valueOf(hullSize);
+                switch (enumValue) {
+                    case FIGHTER -> setIcon(FontIcon.of(BoxiconsRegular.DICE_1, 16, Color.DARK_GRAY));
+                    case FRIGATE -> setIcon(FontIcon.of(BoxiconsRegular.DICE_2, 16, Color.DARK_GRAY));
+                    case DESTROYER -> setIcon(FontIcon.of(BoxiconsRegular.DICE_3, 16, Color.DARK_GRAY));
+                    case CRUISER -> setIcon(FontIcon.of(BoxiconsRegular.DICE_4, 16, Color.DARK_GRAY));
+                    case CAPITAL_SHIP -> setIcon(FontIcon.of(BoxiconsRegular.DICE_5, 16, Color.DARK_GRAY));
                     default -> {}
                 }
             }

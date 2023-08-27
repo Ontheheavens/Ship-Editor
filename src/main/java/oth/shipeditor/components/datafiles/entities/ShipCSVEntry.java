@@ -58,6 +58,30 @@ public class ShipCSVEntry implements CSVEntry {
         }
     }
 
+    public String getShipID() {
+        if (activeSkinSpecFile != null && !activeSkinSpecFile.isBase()) {
+            return activeSkinSpecFile.getSkinHullId();
+        }
+        return getHullID();
+    }
+
+    public String getShipName() {
+        if (activeSkinSpecFile != null && !activeSkinSpecFile.isBase()) {
+            return activeSkinSpecFile.getHullName();
+        }
+        return rowData.get(StringConstants.NAME);
+    }
+
+    public String getShipSpriteName() {
+        if (activeSkinSpecFile != null && !activeSkinSpecFile.isBase()) {
+            String skinSpecFileSpriteName = activeSkinSpecFile.getSpriteName();
+            if (skinSpecFileSpriteName != null && !skinSpecFileSpriteName.isEmpty()) {
+                return skinSpecFileSpriteName;
+            }
+        }
+        return hullSpecFile.getSpriteName();
+    }
+
     @Override
     public String getID() {
         return hullID;

@@ -45,7 +45,7 @@ public class WeaponSlotListPanel extends JPanel {
         JPanel visibilityWidgetContainer = this.createPainterVisibilityPanel();
         northContainer.add(visibilityWidgetContainer);
 
-        ComponentUtilities.addSeparatorToBoxPanel(northContainer, 2);
+        ComponentUtilities.addSeparatorToBoxPanel(northContainer);
         northContainer.add(Box.createRigidArea(new Dimension(10, 3)));
 
         JPanel slotInfoPanel = new JPanel();

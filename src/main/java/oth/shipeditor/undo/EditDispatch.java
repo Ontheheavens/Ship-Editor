@@ -8,17 +8,21 @@ import oth.shipeditor.communication.events.components.*;
 import oth.shipeditor.communication.events.viewer.ViewerRepaintQueued;
 import oth.shipeditor.communication.events.viewer.control.ViewerMouseReleased;
 import oth.shipeditor.communication.events.viewer.points.AnchorOffsetQueued;
+import oth.shipeditor.components.datafiles.entities.HullmodCSVEntry;
 import oth.shipeditor.components.viewer.entities.*;
 import oth.shipeditor.components.viewer.entities.engine.EnginePoint;
 import oth.shipeditor.components.viewer.entities.weapon.SlotData;
 import oth.shipeditor.components.viewer.entities.weapon.WeaponSlotPoint;
 import oth.shipeditor.components.viewer.layers.LayerPainter;
+import oth.shipeditor.components.viewer.layers.ship.ShipLayer;
 import oth.shipeditor.components.viewer.painters.points.*;
 import oth.shipeditor.representation.EngineStyle;
 import oth.shipeditor.representation.weapon.WeaponMount;
 import oth.shipeditor.representation.weapon.WeaponSize;
 import oth.shipeditor.representation.weapon.WeaponType;
 import oth.shipeditor.undo.edits.AnchorOffsetEdit;
+import oth.shipeditor.undo.edits.HullmodAddEdit;
+import oth.shipeditor.undo.edits.HullmodRemoveEdit;
 import oth.shipeditor.undo.edits.points.engines.*;
 import oth.shipeditor.undo.edits.LayerRotationEdit;
 import oth.shipeditor.undo.edits.points.*;
@@ -235,6 +239,18 @@ public final class EditDispatch {
         UndoOverseer.post(sizeChangeEdit);
         point.setWeaponSize(newSize);
         EventBus.publish(new ViewerRepaintQueued());
+    }
+
+    public static void postHullmodAdded(List<HullmodCSVEntry> index, ShipLayer shipLayer, HullmodCSVEntry hullmod) {
+        Edit hullmodAddEdit = new HullmodAddEdit(index, shipLayer, hullmod);
+        UndoOverseer.post(hullmodAddEdit);
+        index.add(hullmod);
+    }
+
+    public static void postHullmodRemoved(List<HullmodCSVEntry> index, ShipLayer shipLayer, HullmodCSVEntry hullmod) {
+        Edit hullmodAddEdit = new HullmodRemoveEdit(index, shipLayer, hullmod);
+        UndoOverseer.post(hullmodAddEdit);
+        index.remove(hullmod);
     }
 
 }
