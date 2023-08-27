@@ -5,6 +5,7 @@ import lombok.extern.log4j.Log4j2;
 import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.files.HullFileOpened;
 import oth.shipeditor.communication.events.files.SpriteOpened;
+import oth.shipeditor.communication.events.viewer.control.ViewerTransformsReset;
 import oth.shipeditor.communication.events.viewer.layers.LastLayerSelectQueued;
 import oth.shipeditor.communication.events.viewer.layers.ships.ShipLayerCreationQueued;
 import oth.shipeditor.components.datafiles.entities.ShipCSVEntry;
@@ -15,10 +16,10 @@ import oth.shipeditor.components.viewer.layers.ViewerLayer;
 import oth.shipeditor.parsing.loading.FileLoading;
 import oth.shipeditor.persistence.Initializations;
 import oth.shipeditor.persistence.SettingsManager;
-import oth.shipeditor.representation.GameDataRepository;
 import oth.shipeditor.representation.HullSpecFile;
 import oth.shipeditor.representation.SkinSpecFile;
 import oth.shipeditor.undo.UndoOverseer;
+import oth.shipeditor.utility.StaticController;
 import oth.shipeditor.utility.graphics.Sprite;
 
 import javax.swing.*;
@@ -30,7 +31,6 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Map;
 import java.util.Objects;
 import java.util.function.Function;
 
@@ -51,7 +51,7 @@ public final class Main {
             Initializations.updateStateFromSettings(window);
             Initializations.loadGameData(window);
 
-            Main.testFilesNew(window);
+            Main.testFilesNew();
 
             window.showGUI();
         });
@@ -86,26 +86,24 @@ public final class Main {
         } );
     }
 
-    private static void testFilesNew(PrimaryWindow window) {
-        GameDataRepository gameData = SettingsManager.getGameData();
-        Map<String, ShipCSVEntry> allShips = gameData.getAllShipEntries();
+    private static void testFilesNew() {
+        var gameData = SettingsManager.getGameData();
+        var allShips = gameData.getAllShipEntries();
 
         ShipCSVEntry crigEntry = allShips.get("crig");
         crigEntry.loadLayerFromEntry();
 
         ShipCSVEntry legionEntry = allShips.get("legion");
-        Map<String, SkinSpecFile> legionSkins = legionEntry.getSkins();
+        var legionSkins = legionEntry.getSkins();
         SkinSpecFile legionXIV = legionSkins.get("legion_xiv.skin");
         legionEntry.setActiveSkinSpecFile(legionXIV);
         legionEntry.loadLayerFromEntry();
 
-        LayerViewer shipView = window.getShipView();
-        LayerManager layerManager = shipView.getLayerManager();
-        ViewerLayer activeLayer = layerManager.getActiveLayer();
+        ViewerLayer activeLayer = StaticController.getActiveLayer();
         LayerPainter painter = activeLayer.getPainter();
         painter.updateAnchorOffset(new Point2D.Double(-400, 0));
         UndoOverseer.finishAllEdits();
-        shipView.centerViewpoint();
+        EventBus.publish(new ViewerTransformsReset());
     }
 
     @SuppressWarnings("unused")

@@ -25,6 +25,7 @@ public final class EventBus {
         this.subscribers = new HashSet<>();
     }
 
+    @SuppressWarnings("UnusedReturnValue")
     public static BusEventListener subscribe(BusEventListener listener) {
         bus.subscribers.add(listener);
         log.info("Added listener {}, bus size: {}",

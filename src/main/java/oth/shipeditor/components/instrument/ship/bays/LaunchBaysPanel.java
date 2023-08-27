@@ -49,7 +49,7 @@ public class LaunchBaysPanel extends JPanel {
         JPanel visibilityWidgetContainer = this.createPainterVisibilityPanel();
         northContainer.add(visibilityWidgetContainer);
 
-        ComponentUtilities.addSeparatorToBoxPanel(northContainer, 2);
+        ComponentUtilities.addSeparatorToBoxPanel(northContainer);
 
         bayDataPaneContainer = new JPanel();
         bayDataPaneContainer.setLayout(new BorderLayout());

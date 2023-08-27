@@ -8,9 +8,9 @@ import oth.shipeditor.representation.GameDataRepository;
 import oth.shipeditor.representation.HullSpecFile;
 import oth.shipeditor.representation.SkinSpecFile;
 import oth.shipeditor.representation.Variant;
+import oth.shipeditor.utility.Utility;
 import oth.shipeditor.utility.components.ComponentUtilities;
 import oth.shipeditor.utility.components.MouseoverLabelListener;
-import oth.shipeditor.utility.text.StringConstants;
 
 import javax.swing.*;
 import javax.swing.border.Border;
@@ -65,24 +65,32 @@ class ShipFilesSubpanel extends JPanel {
             rightPanel.removeAll();
         }
 
-        HullSpecFile selectedHullFileSpecFile = selected.getHullSpecFile();
-        SkinSpecFile activeSkinSpecFile = selected.getActiveSkinSpecFile();
-        String spriteFileName = selectedHullFileSpecFile.getSpriteName();
+        ShipFilesSubpanel.addSpritePreview(shipFilesPanel, selected);
 
-        if (activeSkinSpecFile != null && !activeSkinSpecFile.isBase()) {
-            spriteFileName = activeSkinSpecFile.getSpriteName();
+        JPanel labelContainer = ShipFilesSubpanel.createLabelContainer(selected);
+        shipFilesPanel.add(labelContainer);
+
+        ShipFilesSubpanel.addHullmodPanel(shipFilesPanel, selected);
+
+        JPanel variantsPanel = ShipFilesSubpanel.createVariantPanel();
+        if (variantsPanel != null) {
+            shipFilesPanel.add(variantsPanel);
         }
 
-        if (spriteFileName == null || spriteFileName.isEmpty()) {
-            spriteFileName = selectedHullFileSpecFile.getSpriteName();
-        }
+        return shipFilesPanel;
+    }
 
+    private static void addSpritePreview(JPanel shipFilesPanel, ShipCSVEntry selected) {
+        String spriteFileName = selected.getShipSpriteName();
         File spriteFile = FileLoading.fetchDataFile(Path.of(spriteFileName), selected.getPackageFolderPath());
         BufferedImage sprite = FileLoading.loadSpriteAsImage(spriteFile);
         if (sprite != null) {
             String tooltip = selected.getHullFileName();
             if (spriteFile != null) {
-                tooltip = spriteFile.getPath();
+                String spriteName = "Name: " + spriteFile.getName();
+                String width = "Width: " + sprite.getWidth();
+                String height = "Height: " + sprite.getHeight();
+                tooltip = Utility.getWithLinebreaks(spriteName, width, height);
             }
             JLabel spriteIcon = ComponentUtilities.createIconFromImage(sprite, tooltip, 128);
             spriteIcon.setAlignmentX(0.5f);
@@ -100,43 +108,23 @@ class ShipFilesSubpanel extends JPanel {
 
             shipFilesPanel.add(spriteWrapper);
         }
-
-        JPanel labelContainer = ShipFilesSubpanel.createLabelContainer(selected);
-        shipFilesPanel.add(labelContainer);
-
-        ShipFilesSubpanel.addHullmodPanel(shipFilesPanel, selected);
-
-        JPanel variantsPanel = ShipFilesSubpanel.createVariantPanel();
-        if (variantsPanel != null) {
-            shipFilesPanel.add(variantsPanel);
-        }
-
-        return shipFilesPanel;
     }
 
     private static JPanel createLabelContainer(ShipCSVEntry selected) {
-        Map<String, String> rowData = selected.getRowData();
-        String shipName = rowData.get(StringConstants.NAME);
-        String shipId = selected.getHullID();
+        String shipName = selected.getShipName();
+        String shipId = selected.getShipID();
         String hullFileName = selected.getHullFileName();
 
         HullSpecFile selectedHullFileSpecFile = selected.getHullSpecFile();
         SkinSpecFile activeSkinSpecFile = selected.getActiveSkinSpecFile();
         Path skinFilePath = null;
 
-        String spriteFileName = selectedHullFileSpecFile.getSpriteName();
+        String spriteFileName = selected.getShipSpriteName();
         String skinFileName = "";
 
         if (activeSkinSpecFile != null && !activeSkinSpecFile.isBase()) {
-            shipName = activeSkinSpecFile.getHullName();
-            shipId = activeSkinSpecFile.getSkinHullId();
-            spriteFileName = activeSkinSpecFile.getSpriteName();
             skinFilePath = activeSkinSpecFile.getFilePath();
             skinFileName = skinFilePath.getFileName().toString();
-        }
-
-        if (spriteFileName == null || spriteFileName.isEmpty()) {
-            spriteFileName = selectedHullFileSpecFile.getSpriteName();
         }
 
         Path shipFilePath = selectedHullFileSpecFile.getFilePath();

@@ -2,6 +2,8 @@ package oth.shipeditor.utility.components;
 
 import com.formdev.flatlaf.ui.FlatLineBorder;
 import com.formdev.flatlaf.ui.FlatRoundBorder;
+import org.kordamp.ikonli.fluentui.FluentUiRegularAL;
+import org.kordamp.ikonli.swing.FontIcon;
 import oth.shipeditor.communication.BusEventListener;
 import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.components.datafiles.entities.HullmodCSVEntry;
@@ -75,6 +77,7 @@ public final class ComponentUtilities {
         ComponentUtilities.addSeparatorToBoxPanel(panel, 5);
     }
 
+    @SuppressWarnings("WeakerAccess")
     public static void addSeparatorToBoxPanel(JPanel panel, int height) {
         panel.add(Box.createVerticalStrut(height));
         JSeparator separator = new JSeparator(SwingConstants.HORIZONTAL);
@@ -262,7 +265,7 @@ public final class ComponentUtilities {
                                                 ActionListener selectionAction, String labelName) {
         String widgetLabel = labelName;
         JPanel widgetPanel = new JPanel();
-        widgetPanel.setLayout(new BoxLayout(widgetPanel, BoxLayout.LINE_AXIS));
+        widgetPanel.setLayout(new GridBagLayout());
 
         visibilityList.setRenderer(PainterVisibility.createCellRenderer());
         visibilityList.addActionListener(PainterVisibility.createActionListener(visibilityList, painterClass));
@@ -276,11 +279,9 @@ public final class ComponentUtilities {
 
         JLabel visibilityWidgetLabel = new JLabel(widgetLabel);
         visibilityWidgetLabel.setToolTipText(StringValues.TOGGLED_ON_PER_LAYER_BASIS);
-        widgetPanel.setBorder(new EmptyBorder(6, 0, 4, 0));
 
-        int sidePadding = 6;
-        ComponentUtilities.layoutAsOpposites(widgetPanel, visibilityWidgetLabel,
-                visibilityList, sidePadding);
+        ComponentUtilities.addLabelAndComponent(widgetPanel, visibilityWidgetLabel, visibilityList, 0);
+        widgetPanel.setMaximumSize(new Dimension(Integer.MAX_VALUE, 29));
 
         return widgetPanel;
     }
@@ -391,6 +392,67 @@ public final class ComponentUtilities {
         JLabel label = new JLabel(StringValues.NO_SELECTED);
         label.setBorder(new EmptyBorder(5, 0, 5, 0));
         return label;
+    }
+
+    public static JPanel createCSVEntryPanel(JLabel iconLabel, JComponent middleUpper,
+                                             JComponent middleLower, ActionListener removeAction) {
+        JPanel container = new JPanel(new GridBagLayout());
+        Border flatRoundBorder = new FlatRoundBorder();
+        container.setBorder(flatRoundBorder);
+
+        GridBagConstraints constraints = new GridBagConstraints();
+        constraints.gridx = 0;
+        constraints.gridy = 0;
+        constraints.gridheight = 2;
+        constraints.weightx = 0;
+        constraints.fill = GridBagConstraints.HORIZONTAL;
+        constraints.insets = new Insets(4, 4, 4, 0);
+        constraints.anchor = GridBagConstraints.LINE_START;
+
+        container.add(iconLabel, constraints);
+
+        constraints.gridx = 1;
+        if (middleLower == null) {
+            constraints.gridheight = 2;
+            constraints.insets = new Insets(0, 4, 0, 0);
+        } else {
+            constraints.gridheight = 1;
+            constraints.insets = new Insets(2, 4, 0, 0);
+        }
+        constraints.weightx = 1;
+        if (middleUpper != null) {
+            container.add(middleUpper, constraints);
+        }
+
+        constraints.gridy = 1;
+        constraints.insets = new Insets(0, 4, 0, 0);
+        if (middleLower != null) {
+            container.add(middleLower, constraints);
+        }
+
+        constraints.gridx = 2;
+        constraints.gridy = 0;
+        constraints.weightx = 0;
+        constraints.gridheight = 2;
+        constraints.insets = new Insets(0, 0, 0, 4);
+        constraints.anchor = GridBagConstraints.LINE_END;
+
+        JButton removeButton = new JButton();
+
+        removeButton.setIcon(FontIcon.of(FluentUiRegularAL.DISMISS_16, 16, Color.GRAY));
+        removeButton.setRolloverIcon(FontIcon.of(FluentUiRegularAL.DISMISS_16, 16, Color.DARK_GRAY));
+        removeButton.setPressedIcon(FontIcon.of(FluentUiRegularAL.DISMISS_16, 16, Color.BLACK));
+
+        removeButton.addActionListener(removeAction);
+        removeButton.setToolTipText("Remove from list");
+        removeButton.putClientProperty("JButton.buttonType", "borderless");
+
+        container.add(removeButton, constraints);
+
+        container.setMaximumSize(new Dimension(Integer.MAX_VALUE, 50));
+
+        container.setAlignmentY(0);
+        return container;
     }
 
 }

@@ -1,26 +1,28 @@
 package oth.shipeditor.components.instrument.ship;
 
-import oth.shipeditor.components.datafiles.entities.HullmodCSVEntry;
+import oth.shipeditor.components.datafiles.entities.WingCSVEntry;
 import oth.shipeditor.components.viewer.layers.ship.ShipLayer;
 import oth.shipeditor.components.viewer.layers.ship.ShipPainter;
 import oth.shipeditor.components.viewer.layers.ship.data.ShipHull;
 import oth.shipeditor.components.viewer.layers.ship.data.ShipSkin;
 import oth.shipeditor.persistence.SettingsManager;
-import oth.shipeditor.undo.EditDispatch;
 import oth.shipeditor.utility.components.ComponentUtilities;
 import oth.shipeditor.utility.text.StringValues;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionListener;
+import java.awt.image.BufferedImage;
 import java.util.List;
 import java.util.function.Consumer;
 
 /**
  * @author Ontheheavens
- * @since 24.08.2023
+ * @since 27.08.2023
  */
-public class BuiltInHullmodsPanel extends AbstractBuiltInsPanel<HullmodCSVEntry> {
+public class BuiltInWingsPanel extends AbstractBuiltInsPanel<WingCSVEntry> {
+
+    // TODO: add fighter bay checks and undo/redo classes for wing entries addition/removal.
 
     @Override
     protected void refreshPanel(ShipLayer layer) {
@@ -28,18 +30,18 @@ public class BuiltInHullmodsPanel extends AbstractBuiltInsPanel<HullmodCSVEntry>
         contentPane.removeAll();
         contentPane.setLayout(new BoxLayout(contentPane, BoxLayout.PAGE_AXIS));
         var gameData = SettingsManager.getGameData();
-        if (!gameData.isHullmodDataLoaded()) {
-            this.installPlaceholderLabel("Hullmod data not loaded");
+        if (!gameData.isWingDataLoaded()) {
+            this.installPlaceholderLabel("Wing data not loaded");
             return;
         }
 
-        this.populateHullBuiltIns(layer);
+        this.populateWingBuiltIns(layer);
 
         ShipPainter painter = layer.getPainter();
         ShipSkin activeSkin = painter.getActiveSkin();
 
         if (activeSkin != null && !activeSkin.isBase()) {
-            this.handleSkinModChanges(activeSkin);
+            this.handleSkinWingChanges(activeSkin);
         }
 
         contentPane.add(Box.createVerticalGlue());
@@ -48,33 +50,29 @@ public class BuiltInHullmodsPanel extends AbstractBuiltInsPanel<HullmodCSVEntry>
         contentPane.repaint();
     }
 
-    private void populateHullBuiltIns(ShipLayer selected) {
+    private void populateWingBuiltIns(ShipLayer selected) {
         ShipHull shipHull = selected.getHull();
-        var builtInMods = shipHull.getBuiltInMods();
+        var builtInWings = shipHull.getBuiltInWings();
         JPanel contentPane = getContentPane();
-        if (builtInMods == null || builtInMods.isEmpty()) {
-            JPanel placeholderLabel = AbstractBuiltInsPanel.createPlaceholderLabel("Hull has no built-ins");
+        if (builtInWings == null || builtInWings.isEmpty()) {
+            JPanel placeholderLabel = AbstractBuiltInsPanel.createPlaceholderLabel("Hull has no built-in wings");
             contentPane.add(placeholderLabel);
-        }
-        else {
-            this.populateWithEntries(contentPane, builtInMods, null);
+        } else {
+            this.populateWithEntries(contentPane, builtInWings, null);
         }
     }
 
-    private void handleSkinModChanges(ShipSkin skin) {
-        var removed = skin.getRemoveBuiltInMods();
-        super.handleSkinChanges(removed, new Color(255, 200, 200, 255));
-        var added = skin.getBuiltInMods();
+    private void handleSkinWingChanges(ShipSkin skin) {
+        var added = skin.getBuiltInWings();
         super.handleSkinChanges(added, new Color(200, 255, 200, 255));
     }
 
-    @Override
-    protected void populateWithEntries(JPanel container, List<HullmodCSVEntry> entryList,
+    protected void populateWithEntries(JPanel container, List<WingCSVEntry> entryList,
                                      Consumer<JPanel> panelMutator) {
         ShipLayer cachedLayer = this.getCachedLayer();
-        for (HullmodCSVEntry entry : entryList) {
-            JPanel modPanel = this.addModPanel(entry, e -> {
-                EditDispatch.postHullmodRemoved(entryList, cachedLayer, entry);
+        for (WingCSVEntry entry : entryList) {
+            JPanel modPanel = BuiltInWingsPanel.addWingPanel(entry, e -> {
+                entryList.remove(entry);
                 this.refreshPanel(cachedLayer);
             });
             if (panelMutator != null) {
@@ -84,19 +82,21 @@ public class BuiltInHullmodsPanel extends AbstractBuiltInsPanel<HullmodCSVEntry>
         }
     }
 
-    private JPanel addModPanel(HullmodCSVEntry mod, ActionListener removeAction) {
-        JLabel hullmodIcon = ComponentUtilities.createHullmodIcon(mod);
-        JLabel label = new JLabel(mod.toString(), SwingConstants.LEFT);
+    private static JPanel addWingPanel(WingCSVEntry wing, ActionListener removeAction) {
+        BufferedImage sprite = wing.getWingMemberSprite();
 
-        var cachedLayer = this.getCachedLayer();
-        var shipData = cachedLayer.getShipData();
-        int hullmodCost = mod.getOrdnanceCostForHull(shipData.getHullSpecFile());
+        String tooltip = wing.getEntryName();
+        JLabel spriteIcon = ComponentUtilities.createIconFromImage(sprite, tooltip, 32);
 
-        JLabel middleLower = new JLabel("Base cost: " + hullmodCost);
+        JLabel label = new JLabel(tooltip, SwingConstants.LEFT);
+
+        int wingOrdnanceCost = wing.getOrdnanceCost();
+
+        JLabel middleLower = new JLabel("Ordnance cost: " + wingOrdnanceCost);
         middleLower.setForeground(Color.GRAY);
         middleLower.setToolTipText(StringValues.BUILT_IN_DOES_NOT_COST_ORDNANCE);
 
-        return ComponentUtilities.createCSVEntryPanel(hullmodIcon, label,
+        return ComponentUtilities.createCSVEntryPanel(spriteIcon, label,
                 middleLower, removeAction);
     }
 

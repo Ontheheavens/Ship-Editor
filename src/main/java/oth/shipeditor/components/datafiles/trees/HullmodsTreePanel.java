@@ -5,6 +5,8 @@ import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.files.HullmodFoldersWalked;
 import oth.shipeditor.communication.events.viewer.layers.ActiveLayerUpdated;
 import oth.shipeditor.components.datafiles.entities.HullmodCSVEntry;
+import oth.shipeditor.components.instrument.ship.ShipInstrument;
+import oth.shipeditor.components.instrument.ship.ShipInstrumentsPane;
 import oth.shipeditor.components.viewer.layers.ViewerLayer;
 import oth.shipeditor.components.viewer.layers.ship.ShipLayer;
 import oth.shipeditor.components.viewer.layers.ship.ShipPainter;
@@ -12,13 +14,13 @@ import oth.shipeditor.components.viewer.layers.ship.data.ShipHull;
 import oth.shipeditor.menubar.FileUtilities;
 import oth.shipeditor.persistence.SettingsManager;
 import oth.shipeditor.representation.GameDataRepository;
+import oth.shipeditor.undo.EditDispatch;
 import oth.shipeditor.utility.StaticController;
 import oth.shipeditor.utility.components.ComponentUtilities;
 
 import javax.swing.*;
 import javax.swing.tree.DefaultMutableTreeNode;
 import java.awt.*;
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
@@ -124,12 +126,12 @@ class HullmodsTreePanel extends CSVDataTreePanel<HullmodCSVEntry>{
                     if (hull == null) return;
                     var builtInMods = hull.getBuiltInMods();
                     if (builtInMods == null) return;
-                    if (this.isPushEntryToListSuccessful(builtInMods, checked)) {
+                    if (this.isPushEntryToListSuccessful(builtInMods, checkedLayer, checked)) {
                         EventBus.publish(new ActiveLayerUpdated(activeLayer));
                     }
                 }
             });
-            if (!HullmodsTreePanel.isCurrentLayerDataEligible()) {
+            if (!HullmodsTreePanel.isCurrentLayerDataEligible() || HullmodsTreePanel.isNotActiveInstrument()) {
                 addToHullBuiltIns.setEnabled(false);
             }
             menu.add(addToHullBuiltIns);
@@ -144,12 +146,12 @@ class HullmodsTreePanel extends CSVDataTreePanel<HullmodCSVEntry>{
                     if (skin == null || skin.isBase()) return;
 
                     var skinAdded = skin.getBuiltInMods();
-                    if (this.isPushEntryToListSuccessful(skinAdded, checked)) {
+                    if (this.isPushEntryToListSuccessful(skinAdded, checkedLayer, checked)) {
                         EventBus.publish(new ActiveLayerUpdated(activeLayer));
                     }
                 }
             });
-            if (!HullmodsTreePanel.isCurrentSkinEligible()) {
+            if (DataTreePanel.isCurrentSkinNotEligible() || HullmodsTreePanel.isNotActiveInstrument()) {
                 addToSkinAdded.setEnabled(false);
             }
             menu.add(addToSkinAdded);
@@ -164,12 +166,12 @@ class HullmodsTreePanel extends CSVDataTreePanel<HullmodCSVEntry>{
                     if (skin == null || skin.isBase()) return;
 
                     var skinRemoved = skin.getRemoveBuiltInMods();
-                    if (this.isPushEntryToListSuccessful(skinRemoved, checked)) {
+                    if (this.isPushEntryToListSuccessful(skinRemoved, checkedLayer, checked)) {
                         EventBus.publish(new ActiveLayerUpdated(activeLayer));
                     }
                 }
             });
-            if (!HullmodsTreePanel.isCurrentSkinEligible()) {
+            if (DataTreePanel.isCurrentSkinNotEligible() || HullmodsTreePanel.isNotActiveInstrument()) {
                 addToSkinRemoved.setEnabled(false);
             }
             menu.add(addToSkinRemoved);
@@ -178,13 +180,18 @@ class HullmodsTreePanel extends CSVDataTreePanel<HullmodCSVEntry>{
         return menu;
     }
 
-    private boolean isPushEntryToListSuccessful(Collection<HullmodCSVEntry> list, HullmodCSVEntry entry) {
+    private static boolean isNotActiveInstrument() {
+        return ShipInstrumentsPane.getCurrentMode() != ShipInstrument.BUILT_IN_MODS;
+    }
+
+    private boolean isPushEntryToListSuccessful(List<HullmodCSVEntry> list, ShipLayer layer,
+                                                HullmodCSVEntry entry) {
         if (list.contains(entry)) {
             JOptionPane.showMessageDialog(this,
                     "Cannot add hullmod entry: already present in list!");
             return false;
         } else {
-            list.add(entry);
+            EditDispatch.postHullmodAdded(list, layer, entry);
         }
         return true;
     }
@@ -198,21 +205,6 @@ class HullmodsTreePanel extends CSVDataTreePanel<HullmodCSVEntry>{
         } else return false;
         ShipHull hull = shipLayer.getHull();
         return hull != null && hull.getBuiltInMods() != null;
-    }
-
-    @SuppressWarnings("BooleanMethodIsAlwaysInverted")
-    private static boolean isCurrentSkinEligible() {
-        var activeLayer = StaticController.getActiveLayer();
-        var isShipLayer = activeLayer instanceof ShipLayer;
-        ShipLayer shipLayer;
-        if (isShipLayer) {
-            shipLayer = (ShipLayer) activeLayer;
-        } else return false;
-
-        ShipPainter shipPainter = shipLayer.getPainter();
-        if (shipPainter == null || shipPainter.isUninitialized()) return false;
-        var skin = shipPainter.getActiveSkin();
-        return skin != null && !skin.isBase();
     }
 
     @Override

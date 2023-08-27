@@ -4,10 +4,7 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
 import oth.shipeditor.communication.EventBus;
-import oth.shipeditor.communication.events.files.HullFileOpened;
-import oth.shipeditor.communication.events.files.HullmodDataSet;
-import oth.shipeditor.communication.events.files.SkinFileOpened;
-import oth.shipeditor.communication.events.files.SpriteOpened;
+import oth.shipeditor.communication.events.files.*;
 import oth.shipeditor.communication.events.viewer.ViewerRepaintQueued;
 import oth.shipeditor.communication.events.viewer.layers.*;
 import oth.shipeditor.communication.events.viewer.layers.ships.LayerShipDataInitialized;
@@ -33,6 +30,7 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Consumer;
 
 /**
  * @author Ontheheavens
@@ -121,17 +119,23 @@ public class LayerManager {
         });
         EventBus.subscribe(event -> {
             if (event instanceof HullmodDataSet) {
-                layers.forEach(layer -> {
-                    if (layer instanceof ShipLayer checkedLayer) {
-                        ShipHull hull = checkedLayer.getHull();
-                        if (hull != null) {
-                            hull.loadBuiltInMods();
-                        }
-                    }
-                });
-                setActiveLayer(this.getActiveLayer());
+                actOnAllLayerHulls(ShipHull::loadBuiltInMods);
+            } else if (event instanceof WingDataSet) {
+                actOnAllLayerHulls(ShipHull::loadBuiltInWings);
             }
         });
+    }
+
+    private void actOnAllLayerHulls(Consumer<ShipHull> action) {
+        layers.forEach(layer -> {
+            if (layer instanceof ShipLayer checkedLayer) {
+                ShipHull hull = checkedLayer.getHull();
+                if (hull != null) {
+                    action.accept(hull);
+                }
+            }
+        });
+        setActiveLayer(this.getActiveLayer());
     }
 
     private void publishLayerRemoval(ViewerLayer layer) {

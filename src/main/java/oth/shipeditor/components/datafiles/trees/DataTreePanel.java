@@ -3,7 +3,10 @@ package oth.shipeditor.components.datafiles.trees;
 import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
 import oth.shipeditor.components.datafiles.OpenDataTarget;
+import oth.shipeditor.components.viewer.layers.ship.ShipLayer;
+import oth.shipeditor.components.viewer.layers.ship.ShipPainter;
 import oth.shipeditor.representation.Variant;
+import oth.shipeditor.utility.StaticController;
 import oth.shipeditor.utility.components.ComponentUtilities;
 import oth.shipeditor.utility.components.MouseoverLabelListener;
 import oth.shipeditor.utility.text.StringValues;
@@ -86,6 +89,20 @@ public abstract class DataTreePanel extends JPanel {
 
         variantsPanel.add(labelContainer);
         return variantsPanel;
+    }
+
+    static boolean isCurrentSkinNotEligible() {
+        var activeLayer = StaticController.getActiveLayer();
+        var isShipLayer = activeLayer instanceof ShipLayer;
+        ShipLayer shipLayer;
+        if (isShipLayer) {
+            shipLayer = (ShipLayer) activeLayer;
+        } else return true;
+
+        ShipPainter shipPainter = shipLayer.getPainter();
+        if (shipPainter == null || shipPainter.isUninitialized()) return true;
+        var skin = shipPainter.getActiveSkin();
+        return skin == null || skin.isBase();
     }
 
     protected abstract JPanel createTopPanel();
@@ -179,7 +196,7 @@ public abstract class DataTreePanel extends JPanel {
 
     protected abstract void initTreePanelListeners(JPanel passedTreePanel);
 
-    protected JTree createCustomTree() {
+    JTree createCustomTree() {
         return new JTree(getRootNode()) {
             @Override
             public String getToolTipText(MouseEvent event) {
@@ -311,7 +328,7 @@ public abstract class DataTreePanel extends JPanel {
     }
 
     @SuppressWarnings("ProtectedInnerClass")
-    protected class ContextMenuListener extends MouseAdapter {
+    class ContextMenuListener extends MouseAdapter {
         @Override
         public void mousePressed(MouseEvent e) {
             if(e.getButton() == MouseEvent.BUTTON3){

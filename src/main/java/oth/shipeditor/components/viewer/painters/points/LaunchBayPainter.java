@@ -94,7 +94,6 @@ public class LaunchBayPainter extends MirrorablePointPainter {
         return parentLayer.generateUniqueSlotID("LB");
     }
 
-    @SuppressWarnings("DuplicatedCode")
     private void initHotkeys() {
         hotkeyDispatcher = ke -> {
             int keyCode = ke.getKeyCode();

@@ -125,6 +125,11 @@ public class WingCSVEntry implements CSVEntry {
         }
     }
 
+    public int getOrdnanceCost() {
+        String tableValue = this.rowData.get("op cost");
+        return Integer.parseInt(tableValue);
+    }
+
     public String getEntryName() {
         if (this.displayedName != null) {
             return this.displayedName;
@@ -139,7 +144,12 @@ public class WingCSVEntry implements CSVEntry {
 
         if (specFile != null) {
             var variant = this.retrieveMemberVariant();
-            String result = wingMemberSpec.getHullName() + " " + variant.getDisplayName();
+            String result = wingMemberSpec.getHullName();
+            String drone = "Drone";
+            String displayName = variant.getDisplayName();
+            if (!(result.endsWith(drone) && displayName.equals(drone))) {
+                result = result + " " + displayName;
+            }
             this.setDisplayedName(result);
             return result;
         }

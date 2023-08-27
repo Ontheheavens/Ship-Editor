@@ -72,9 +72,9 @@ public abstract class AbstractPointPainter implements Painter {
         } else this.paintOpacity = Math.min(opacity, 1.0f);
     }
 
-    public abstract boolean isMirrorable();
+    protected abstract boolean isMirrorable();
 
-    public void cleanupListeners() {
+    void cleanupListeners() {
         listeners.forEach(EventBus::unsubscribe);
     }
 
@@ -185,7 +185,7 @@ public abstract class AbstractPointPainter implements Painter {
 
     protected abstract boolean isParentLayerActive();
 
-    protected Point2D createCounterpartPosition(Point2D toMirror) {
+    Point2D createCounterpartPosition(Point2D toMirror) {
         throw new UnsupportedOperationException("Point mirroring supported only for specific point painters!");
     }
 
@@ -206,7 +206,7 @@ public abstract class AbstractPointPainter implements Painter {
         }
     }
 
-    protected void selectPointConditionally() {
+    void selectPointConditionally() {
         PointSelectionMode current = ControlPredicates.getSelectionMode();
         if (current == PointSelectionMode.STRICT) {
             this.selectPointStrictly();
@@ -251,7 +251,7 @@ public abstract class AbstractPointPainter implements Painter {
         EventBus.publish(new ViewerRepaintQueued());
     }
 
-    public abstract List<? extends BaseWorldPoint> getPointsIndex();
+    protected abstract List<? extends BaseWorldPoint> getPointsIndex();
 
     protected abstract void addPointToIndex(BaseWorldPoint point);
 
@@ -259,7 +259,7 @@ public abstract class AbstractPointPainter implements Painter {
 
     public abstract int getIndexOfPoint(BaseWorldPoint point);
 
-    public abstract WorldPoint getMirroredCounterpart(WorldPoint inputPoint);
+    protected abstract WorldPoint getMirroredCounterpart(WorldPoint inputPoint);
 
     protected abstract Class<? extends BaseWorldPoint> getTypeReference();
 
@@ -338,7 +338,7 @@ public abstract class AbstractPointPainter implements Painter {
     }
 
     @SuppressWarnings("BooleanMethodIsAlwaysInverted")
-    protected boolean checkVisibility() {
+    boolean checkVisibility() {
         PainterVisibility visibility = getVisibilityMode();
         if (visibility == PainterVisibility.ALWAYS_HIDDEN) return false;
         if (visibility == PainterVisibility.SHOWN_WHEN_EDITED && this.isInteractionEnabled()) return true;
