@@ -98,6 +98,10 @@ public final class FileLoading {
         try {
             spriteFile = new File(spritePath.toURI());
         } catch (URISyntaxException e) {
+            JOptionPane.showMessageDialog(null,
+                    "Image resource loading failed, exception thrown at: " + spritePath,
+                    StringValues.FILE_LOADING_ERROR,
+                    JOptionPane.ERROR_MESSAGE);
             throw new RuntimeException(e);
         }
         return FileLoading.loadSpriteAsImage(spriteFile);

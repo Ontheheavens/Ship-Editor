@@ -25,6 +25,7 @@ import javax.swing.event.ChangeListener;
 import java.awt.*;
 import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
+import java.io.File;
 import java.nio.file.Path;
 import java.util.Dictionary;
 import java.util.Hashtable;
@@ -92,14 +93,59 @@ public final class ComponentUtilities {
     public static JLabel createHullmodIcon(HullmodCSVEntry entry) {
         Map<String, String> rowData = entry.getRowData();
         String name = rowData.get("name");
-        Image iconImage = FileLoading.loadSpriteAsImage(entry.fetchHullmodSpriteFile());
-        int iconSize = 32;
-        if (iconImage.getWidth(null) > iconSize || iconImage.getHeight(null) > iconSize) {
-            iconImage = iconImage.getScaledInstance(iconSize, iconSize, Image.SCALE_DEFAULT);
+        return ComponentUtilities.createIconFromImage(entry.fetchHullmodSpriteFile(), name);
+    }
+
+    @SuppressWarnings("WeakerAccess")
+    public static JLabel createIconFromImage(File imageFile, String tooltip) {
+        return ComponentUtilities.createIconFromImage(imageFile, tooltip, 32);
+    }
+
+    @SuppressWarnings("WeakerAccess")
+    public static JLabel createIconFromImage(File imageFile, String tooltip, int maxSize) {
+        BufferedImage iconImage = FileLoading.loadSpriteAsImage(imageFile);
+        return ComponentUtilities.createIconFromImage(iconImage, tooltip, maxSize);
+    }
+
+    @SuppressWarnings("WeakerAccess")
+    public static JLabel createIconFromImage(BufferedImage image, String tooltip, int maxSize) {
+        Image clamped = ComponentUtilities.resizeImageToSquareLimit(image, maxSize);
+        JLabel imageLabel = ComponentUtilities.createIconLabelWithBorder(new ImageIcon(clamped));
+        if (tooltip != null && !tooltip.isEmpty()) {
+            imageLabel.setToolTipText(tooltip);
         }
-        JLabel imageLabel = ComponentUtilities.createIconLabelWithBorder(new ImageIcon(iconImage));
-        imageLabel.setToolTipText(name);
         return imageLabel;
+    }
+
+    @SuppressWarnings("WeakerAccess")
+    public static Image resizeImageToSquareLimit(Image iconImage, int limit) {
+        int originalWidth = iconImage.getWidth(null);
+        int originalHeight = iconImage.getHeight(null);
+
+        BufferedImage resizedImage = new BufferedImage(limit, limit, BufferedImage.TYPE_INT_ARGB);
+        Graphics2D g2d = resizedImage.createGraphics();
+
+        if (originalWidth > limit || originalHeight > limit) {
+            double widthRatio = (double) limit / originalWidth;
+            double heightRatio = (double) limit / originalHeight;
+            double ratio = Math.min(widthRatio, heightRatio);
+
+            int newWidth = (int) (originalWidth * ratio);
+            int newHeight = (int) (originalHeight * ratio);
+
+            int xOffset = (limit - newWidth) / 2;
+            int yOffset = (limit - newHeight) / 2;
+
+            g2d.drawImage(iconImage, xOffset, yOffset, newWidth, newHeight, null);
+        } else {
+            int xOffset = (limit - originalWidth) / 2;
+            int yOffset = (limit - originalHeight) / 2;
+
+            g2d.drawImage(iconImage, xOffset, yOffset, originalWidth, originalHeight, null);
+        }
+
+        g2d.dispose();
+        return resizedImage;
     }
 
     public static Pair<JSlider, JLabel> createOpacityWidget(ChangeListener change,

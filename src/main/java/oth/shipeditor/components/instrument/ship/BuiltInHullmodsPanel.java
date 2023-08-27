@@ -134,8 +134,7 @@ public class BuiltInHullmodsPanel extends JPanel {
             this.add(title);
 
             this.populateWithEntries(this, removed, panel ->
-                    panel.setBackground(new Color(0xFFFFC8C8, true)));
-
+                    panel.setBackground(new Color(255, 200, 200, 255)));
         }
 
         var added = skin.getBuiltInMods();
@@ -147,8 +146,7 @@ public class BuiltInHullmodsPanel extends JPanel {
             this.add(title);
 
             this.populateWithEntries(this, added, panel ->
-                    panel.setBackground(new Color(0xFFC8FFC8, true)));
-
+                    panel.setBackground(new Color(200, 255, 200, 255)));
         }
     }
 

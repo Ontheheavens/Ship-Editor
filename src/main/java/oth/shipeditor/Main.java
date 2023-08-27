@@ -28,7 +28,10 @@ import java.io.File;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Map;
+import java.util.Objects;
 import java.util.function.Function;
 
 /**
@@ -42,12 +45,13 @@ public final class Main {
 
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> {
-            // First three method calls are initialization block; the order of these calls is important.
+            // These method calls are initialization block; the order of calls is important.
             Main.configureLaf();
             PrimaryWindow window = PrimaryWindow.create();
             Initializations.updateStateFromSettings(window);
+            Initializations.loadGameData(window);
 
-            Main.testFilesOld(window);
+            Main.testFilesNew(window);
 
             window.showGUI();
         });

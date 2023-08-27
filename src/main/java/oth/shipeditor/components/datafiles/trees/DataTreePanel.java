@@ -3,6 +3,9 @@ package oth.shipeditor.components.datafiles.trees;
 import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
 import oth.shipeditor.components.datafiles.OpenDataTarget;
+import oth.shipeditor.representation.Variant;
+import oth.shipeditor.utility.components.ComponentUtilities;
+import oth.shipeditor.utility.components.MouseoverLabelListener;
 import oth.shipeditor.utility.text.StringValues;
 
 import javax.swing.*;
@@ -13,6 +16,7 @@ import java.awt.*;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.nio.file.Path;
 import java.util.List;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -23,6 +27,7 @@ import java.util.stream.StreamSupport;
  * @author Ontheheavens
  * @since 08.07.2023
  */
+@SuppressWarnings("ClassWithTooManyMethods")
 @Log4j2
 public abstract class DataTreePanel extends JPanel {
 
@@ -50,6 +55,37 @@ public abstract class DataTreePanel extends JPanel {
         JPanel treePanel = createTreePanel(rootName);
         JSplitPane splitPane = createContentSplitter(treePanel);
         this.add(splitPane, BorderLayout.CENTER);
+    }
+
+    private static JLabel createVariantFileLabel(Variant variant) {
+        Path variantFilePath = variant.getVariantFilePath();
+        JLabel variantLabel = new JLabel("Variant file : " + variantFilePath.getFileName());
+        variantLabel.setToolTipText(String.valueOf(variantFilePath));
+        variantLabel.setBorder(ComponentUtilities.createLabelSimpleBorder(ComponentUtilities.createLabelInsets()));
+        JPopupMenu pathContextMenu = ComponentUtilities.createPathContextMenu(variantFilePath);
+        variantLabel.addMouseListener(new MouseoverLabelListener(pathContextMenu, variantLabel));
+        return variantLabel;
+    }
+
+    static JPanel createVariantsPanel(Collection<Variant> variants, Dimension pad) {
+        JPanel variantsPanel = new JPanel();
+        variantsPanel.setLayout(new FlowLayout(FlowLayout.LEADING, 0, 0));
+        ComponentUtilities.outfitPanelWithTitle(variantsPanel, new Insets(1, 0, 0, 0), "Variants");
+        variantsPanel.setAlignmentX(LEFT_ALIGNMENT);
+
+        JPanel labelContainer = new JPanel();
+        labelContainer.setAlignmentX(LEFT_ALIGNMENT);
+        labelContainer.setBorder(new EmptyBorder(2, 0, 0, 0));
+        labelContainer.setLayout(new BoxLayout(labelContainer, BoxLayout.PAGE_AXIS));
+
+        if (variants.isEmpty()) throw new IllegalArgumentException("Empty variants list!");
+        variants.forEach(variant -> {
+            labelContainer.add(DataTreePanel.createVariantFileLabel(variant));
+            labelContainer.add(Box.createRigidArea(pad));
+        });
+
+        variantsPanel.add(labelContainer);
+        return variantsPanel;
     }
 
     protected abstract JPanel createTopPanel();

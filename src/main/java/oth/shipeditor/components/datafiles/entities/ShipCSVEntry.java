@@ -114,7 +114,7 @@ public class ShipCSVEntry implements CSVEntry {
             Sprite skinSprite = FileLoading.loadSprite(skinSpriteFile);
 
             skinSpecFile.setLoadedSkinSprite(skinSprite);
-            EventBus.publish(new SkinFileOpened(skinSpecFile));
+            EventBus.publish(new SkinFileOpened(skinSpecFile, skinSpecFile == this.activeSkinSpecFile));
         }
     }
 

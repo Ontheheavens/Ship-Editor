@@ -18,7 +18,9 @@ import oth.shipeditor.communication.events.viewer.layers.weapons.WeaponLayerCrea
 import oth.shipeditor.communication.events.viewer.layers.weapons.WeaponLayerCreationQueued;
 import oth.shipeditor.components.viewer.layers.ship.ShipLayer;
 import oth.shipeditor.components.viewer.layers.ship.ShipPainter;
+import oth.shipeditor.components.viewer.layers.ship.data.ActiveShipSpec;
 import oth.shipeditor.components.viewer.layers.ship.data.ShipHull;
+import oth.shipeditor.components.viewer.layers.ship.data.ShipSkin;
 import oth.shipeditor.components.viewer.layers.weapon.WeaponLayer;
 import oth.shipeditor.representation.HullSpecFile;
 import oth.shipeditor.representation.ShipData;
@@ -162,6 +164,7 @@ public class LayerManager {
         });
     }
 
+    @SuppressWarnings("OverlyCoupledMethod")
     private void initOpenHullListener() {
         EventBus.subscribe(event -> {
             if (event instanceof HullFileOpened checked) {
@@ -198,7 +201,11 @@ public class LayerManager {
                                     JOptionPane.ERROR_MESSAGE);
                             throw new IllegalStateException("Illegal skin file opening operation!");
                         }
-                        checkedLayer.addSkin(skinSpecFile);
+                        ShipSkin created = checkedLayer.addSkin(skinSpecFile);
+                        if (checked.setAsActive()) {
+                            ShipPainter shipPainter = checkedLayer.getPainter();
+                            shipPainter.setActiveSpec(ActiveShipSpec.SKIN, created);
+                        }
                     } else {
                         throw new IllegalStateException("Skin file loaded onto a null ship data!");
                     }

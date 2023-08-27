@@ -6,13 +6,16 @@ import oth.shipeditor.components.datafiles.entities.WingCSVEntry;
 import oth.shipeditor.menubar.FileUtilities;
 import oth.shipeditor.persistence.SettingsManager;
 import oth.shipeditor.representation.GameDataRepository;
+import oth.shipeditor.representation.Variant;
+import oth.shipeditor.utility.components.ComponentUtilities;
 
 import javax.swing.*;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeCellRenderer;
 import java.awt.*;
+import java.awt.image.BufferedImage;
+import java.util.*;
 import java.util.List;
-import java.util.Map;
 
 /**
  * @author Ontheheavens
@@ -70,6 +73,30 @@ public class WingsTreePanel extends CSVDataTreePanel<WingCSVEntry>{
     protected void updateEntryPanel(WingCSVEntry selected) {
         JPanel rightPanel = getRightPanel();
         rightPanel.removeAll();
+
+        GridBagConstraints constraints = DataTreePanel.getDefaultConstraints();
+        constraints.gridy = 0;
+        constraints.insets = new Insets(0, 5, 0, 5);
+        BufferedImage sprite = selected.getWingMemberSprite();
+        if (sprite != null) {
+            String tooltip = selected.getEntryName();
+            JLabel spriteIcon = ComponentUtilities.createIconFromImage(sprite, tooltip, 32);
+            JPanel iconPanel = new JPanel();
+            iconPanel.add(spriteIcon);
+            rightPanel.add(iconPanel, constraints);
+        }
+
+        JPanel variantWrapper = new JPanel();
+        variantWrapper.setLayout(new BoxLayout(variantWrapper, BoxLayout.PAGE_AXIS));
+
+        List<Variant> memberVariant = Collections.singletonList(selected.retrieveMemberVariant());
+        JPanel variantPanel = DataTreePanel.createVariantsPanel(memberVariant,
+                new Dimension(0, 2));
+        variantWrapper.add(variantPanel);
+
+        constraints.gridy = 1;
+        rightPanel.add(variantWrapper, constraints);
+
         Map<String, String> data = selected.getRowData();
         createRightPanelDataTable(data);
     }

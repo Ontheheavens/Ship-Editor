@@ -18,6 +18,7 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.border.MatteBorder;
 import javax.swing.border.TitledBorder;
 import java.awt.*;
+import java.awt.image.BufferedImage;
 import java.io.File;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -62,6 +63,42 @@ class ShipFilesSubpanel extends JPanel {
             rightPanel.add(skinChooser, constraints);
         } else {
             rightPanel.removeAll();
+        }
+
+        HullSpecFile selectedHullFileSpecFile = selected.getHullSpecFile();
+        SkinSpecFile activeSkinSpecFile = selected.getActiveSkinSpecFile();
+        String spriteFileName = selectedHullFileSpecFile.getSpriteName();
+
+        if (activeSkinSpecFile != null && !activeSkinSpecFile.isBase()) {
+            spriteFileName = activeSkinSpecFile.getSpriteName();
+        }
+
+        if (spriteFileName == null || spriteFileName.isEmpty()) {
+            spriteFileName = selectedHullFileSpecFile.getSpriteName();
+        }
+
+        File spriteFile = FileLoading.fetchDataFile(Path.of(spriteFileName), selected.getPackageFolderPath());
+        BufferedImage sprite = FileLoading.loadSpriteAsImage(spriteFile);
+        if (sprite != null) {
+            String tooltip = selected.getHullFileName();
+            if (spriteFile != null) {
+                tooltip = spriteFile.getPath();
+            }
+            JLabel spriteIcon = ComponentUtilities.createIconFromImage(sprite, tooltip, 128);
+            spriteIcon.setAlignmentX(0.5f);
+
+            JPanel spriteWrapper = new JPanel();
+            spriteWrapper.setAlignmentX(LEFT_ALIGNMENT);
+
+            MatteBorder matteLine = new MatteBorder(new Insets(0, 0, 1, 0),
+                    Color.LIGHT_GRAY);
+            Border titledBorder = new TitledBorder(matteLine, "Files",
+                    TitledBorder.CENTER, TitledBorder.BOTTOM);
+            spriteWrapper.setBorder(titledBorder);
+
+            spriteWrapper.add(spriteIcon);
+
+            shipFilesPanel.add(spriteWrapper);
         }
 
         JPanel labelContainer = ShipFilesSubpanel.createLabelContainer(selected);
@@ -174,11 +211,9 @@ class ShipFilesSubpanel extends JPanel {
         GameDataRepository gameData = SettingsManager.getGameData();
         if (!gameData.isHullmodDataLoaded()) return;
 
-        MatteBorder matteLine = new MatteBorder(1, 0, 0, 0, Color.LIGHT_GRAY);
-        Border titledBorder = new TitledBorder(matteLine, "Built-in hullmods",
-                TitledBorder.CENTER, TitledBorder.DEFAULT_POSITION);
         JPanel hullmodsPanel = new JPanel();
-        hullmodsPanel.setBorder(titledBorder);
+        ComponentUtilities.outfitPanelWithTitle(hullmodsPanel,
+                new Insets(1, 0, 0, 0), "Built-in hullmods");
         hullmodsPanel.setAlignmentX(LEFT_ALIGNMENT);
 
         Collection<String> hullmodIDs = selected.getBuiltInHullmods();
@@ -200,19 +235,6 @@ class ShipFilesSubpanel extends JPanel {
     private static JPanel createVariantPanel() {
         GameDataRepository gameData = SettingsManager.getGameData();
 
-        MatteBorder matteLine = new MatteBorder(1, 0, 0, 0, Color.LIGHT_GRAY);
-        Border titledBorder = new TitledBorder(matteLine, "Variants",
-                TitledBorder.CENTER, TitledBorder.DEFAULT_POSITION);
-        JPanel variantsPanel = new JPanel();
-        variantsPanel.setLayout(new FlowLayout(FlowLayout.LEADING, 0, 0));
-        variantsPanel.setBorder(titledBorder);
-        variantsPanel.setAlignmentX(LEFT_ALIGNMENT);
-
-        JPanel labelContainer = new JPanel();
-        labelContainer.setAlignmentX(LEFT_ALIGNMENT);
-        labelContainer.setBorder(new EmptyBorder(2, 0, 0, 0));
-        labelContainer.setLayout(new BoxLayout(labelContainer, BoxLayout.PAGE_AXIS));
-
         Collection<Variant> variantsForHull = new ArrayList<>();
         Map<String, Variant> allVariants = gameData.getAllVariants();
         for (Variant variant : allVariants.values()) {
@@ -223,19 +245,7 @@ class ShipFilesSubpanel extends JPanel {
         }
 
         if (variantsForHull.isEmpty()) return null;
-        variantsForHull.forEach(variant -> {
-            Path variantFilePath = variant.getVariantFilePath();
-            JLabel variantLabel = new JLabel("Variant file : " + variantFilePath.getFileName());
-            variantLabel.setToolTipText(String.valueOf(variantFilePath));
-            variantLabel.setBorder(ComponentUtilities.createLabelSimpleBorder(ComponentUtilities.createLabelInsets()));
-            JPopupMenu pathContextMenu = ComponentUtilities.createPathContextMenu(variantFilePath);
-            variantLabel.addMouseListener(new MouseoverLabelListener(pathContextMenu, variantLabel));
-            labelContainer.add(variantLabel);
-            labelContainer.add(Box.createRigidArea(ShipFilesSubpanel.createPadding()));
-        });
-
-        variantsPanel.add(labelContainer);
-        return variantsPanel;
+        return DataTreePanel.createVariantsPanel(variantsForHull, ShipFilesSubpanel.createPadding());
     }
 
 }

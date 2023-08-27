@@ -202,8 +202,8 @@ class HullmodsTreePanel extends CSVDataTreePanel<HullmodCSVEntry>{
 
     @SuppressWarnings("BooleanMethodIsAlwaysInverted")
     private static boolean isCurrentSkinEligible() {
-        ViewerLayer activeLayer = StaticController.getActiveLayer();
-        boolean isShipLayer = activeLayer instanceof ShipLayer;
+        var activeLayer = StaticController.getActiveLayer();
+        var isShipLayer = activeLayer instanceof ShipLayer;
         ShipLayer shipLayer;
         if (isShipLayer) {
             shipLayer = (ShipLayer) activeLayer;

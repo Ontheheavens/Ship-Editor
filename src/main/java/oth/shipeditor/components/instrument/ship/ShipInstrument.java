@@ -16,6 +16,8 @@ public enum ShipInstrument {
     LAUNCH_BAYS("Launch Bays"),
     ENGINES("Engines"),
     BUILT_IN_MODS("Built-in Mods"),
+    BUILT_IN_WINGS("Built-in Wings"),
+    BUILT_IN_WEAPONS("Built-in Weapons"),
     SKIN("Skin");
 
 
