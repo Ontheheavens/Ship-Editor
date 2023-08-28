@@ -6,13 +6,13 @@ import lombok.extern.log4j.Log4j2;
 import oth.shipeditor.components.datafiles.entities.HullmodCSVEntry;
 import oth.shipeditor.components.datafiles.entities.WingCSVEntry;
 import oth.shipeditor.persistence.SettingsManager;
+import oth.shipeditor.representation.GameDataRepository;
 import oth.shipeditor.representation.HullSpecFile;
 import oth.shipeditor.representation.HullStyle;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Stream;
 
 /**
@@ -44,16 +44,10 @@ public class ShipHull {
         }
     }
 
-    public void loadHullStyle() {
+    private void loadHullStyle() {
         var specFile = getAssociatedSpecFile();
         var styleID = specFile.getStyle();
-        var dataRepository = SettingsManager.getGameData();
-        Map<String, HullStyle> allHullStyles = dataRepository.getAllHullStyles();
-        HullStyle style = null;
-        if (allHullStyles != null) {
-            style = allHullStyles.get(styleID);
-        }
-        this.hullStyle = style;
+        this.hullStyle = GameDataRepository.fetchStyleByID(styleID);
     }
 
     public void loadBuiltInMods() {

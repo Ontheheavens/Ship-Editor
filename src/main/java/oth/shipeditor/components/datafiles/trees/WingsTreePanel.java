@@ -14,6 +14,7 @@ import oth.shipeditor.menubar.FileUtilities;
 import oth.shipeditor.persistence.SettingsManager;
 import oth.shipeditor.representation.GameDataRepository;
 import oth.shipeditor.representation.Variant;
+import oth.shipeditor.undo.EditDispatch;
 import oth.shipeditor.utility.StaticController;
 import oth.shipeditor.utility.components.ComponentUtilities;
 
@@ -173,7 +174,7 @@ public class WingsTreePanel extends CSVDataTreePanel<WingCSVEntry>{
 
     private static boolean isPushEntryToListSuccessful(List<WingCSVEntry> list, ShipLayer layer,
                                                        WingCSVEntry entry) {
-        list.add(entry);
+        EditDispatch.postWingAdded(list, layer, entry);
         return true;
     }
 

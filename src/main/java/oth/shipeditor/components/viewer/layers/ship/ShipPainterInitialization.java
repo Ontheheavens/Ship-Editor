@@ -6,11 +6,9 @@ import oth.shipeditor.components.viewer.entities.bays.LaunchBay;
 import oth.shipeditor.components.viewer.entities.bays.LaunchPortPoint;
 import oth.shipeditor.components.viewer.entities.engine.EnginePoint;
 import oth.shipeditor.components.viewer.entities.weapon.WeaponSlotPoint;
-import oth.shipeditor.components.viewer.layers.ship.data.ShipHull;
 import oth.shipeditor.components.viewer.painters.points.*;
 import oth.shipeditor.representation.EngineSlot;
 import oth.shipeditor.representation.HullSpecFile;
-import oth.shipeditor.representation.ShipData;
 import oth.shipeditor.representation.weapon.WeaponMount;
 import oth.shipeditor.representation.weapon.WeaponSize;
 import oth.shipeditor.representation.weapon.WeaponSlot;
@@ -33,34 +31,24 @@ public final class ShipPainterInitialization {
     private ShipPainterInitialization() {
     }
 
-    static void loadShipData(ShipPainter shipPainter, ShipLayer layer) {
-        ShipData shipData = layer.getShipData();
-
-        HullSpecFile hullSpecFile = shipData.getHullSpecFile();
-
-        ShipHull shipHull = layer.getHull();
-        shipHull.initialize(hullSpecFile);
-
+    static void loadShipData(ShipPainter shipPainter, HullSpecFile hullSpecFile) {
         Point2D anchor = shipPainter.getCenterAnchor();
         Point2D hullCenter = hullSpecFile.getCenter();
 
         Point2D translatedCenter = ShipPainterInitialization.rotateHullCenter(hullCenter, anchor);
 
-        ShipPainterInitialization.initCentroids(shipPainter, layer, translatedCenter);
+        ShipPainterInitialization.initCentroids(shipPainter, hullSpecFile, translatedCenter);
 
         ShipPainterInitialization.initBounds(shipPainter, hullSpecFile, translatedCenter);
 
-        ShipPainterInitialization.initSlots(shipPainter, shipData, translatedCenter);
+        ShipPainterInitialization.initSlots(shipPainter, hullSpecFile, translatedCenter);
 
-        ShipPainterInitialization.initEngines(shipPainter, layer, translatedCenter);
+        ShipPainterInitialization.initEngines(shipPainter, hullSpecFile, translatedCenter);
 
         shipPainter.finishInitialization();
     }
 
-    private static void initCentroids(ShipPainter shipPainter, ShipLayer layer, Point2D translatedCenter) {
-        ShipData shipData = layer.getShipData();
-        HullSpecFile hullSpecFile = shipData.getHullSpecFile();
-
+    private static void initCentroids(ShipPainter shipPainter, HullSpecFile hullSpecFile, Point2D translatedCenter) {
         CenterPointPainter centerPointPainter = shipPainter.getCenterPointPainter();
         centerPointPainter.initCenterPoint(translatedCenter, hullSpecFile);
 
@@ -68,7 +56,7 @@ public final class ShipPainterInitialization {
 
         Point2D shieldCenterTranslated = ShipPainterInitialization.rotatePointByCenter(shieldCenter, translatedCenter);
         ShieldPointPainter shieldPointPainter = shipPainter.getShieldPointPainter();
-        shieldPointPainter.initShieldPoint(shieldCenterTranslated, layer);
+        shieldPointPainter.initShieldPoint(shieldCenterTranslated, hullSpecFile);
     }
 
     private static void initBounds(ShipPainter shipPainter, HullSpecFile hullSpecFile, Point2D translatedCenter) {
@@ -82,8 +70,7 @@ public final class ShipPainterInitialization {
     }
 
     @SuppressWarnings("OverlyCoupledMethod")
-    private static void initSlots(ShipPainter shipPainter, ShipData shipData, Point2D translatedCenter) {
-        HullSpecFile hullSpecFile = shipData.getHullSpecFile();
+    private static void initSlots(ShipPainter shipPainter, HullSpecFile hullSpecFile, Point2D translatedCenter) {
         Stream<WeaponSlot> slotStream = Arrays.stream(hullSpecFile.getWeaponSlots());
 
         slotStream.forEach(weaponSlot -> {
@@ -145,10 +132,7 @@ public final class ShipPainterInitialization {
         });
     }
 
-    private static void initEngines(ShipPainter shipPainter, ShipLayer layer, Point2D translatedCenter) {
-        ShipData shipData = layer.getShipData();
-        HullSpecFile hullSpecFile = shipData.getHullSpecFile();
-
+    private static void initEngines(ShipPainter shipPainter, HullSpecFile hullSpecFile, Point2D translatedCenter) {
         EngineSlotPainter engineSlotPainter = shipPainter.getEnginePainter();
         EngineSlot[] engineSlots = hullSpecFile.getEngineSlots();
         if (engineSlots == null) return;

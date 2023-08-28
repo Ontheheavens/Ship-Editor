@@ -1,11 +1,15 @@
 package oth.shipeditor.components.instrument.ship;
 
+import org.kordamp.ikonli.fluentui.FluentUiRegularAL;
+import org.kordamp.ikonli.fluentui.FluentUiRegularMZ;
+import org.kordamp.ikonli.swing.FontIcon;
 import oth.shipeditor.components.datafiles.entities.WingCSVEntry;
 import oth.shipeditor.components.viewer.layers.ship.ShipLayer;
 import oth.shipeditor.components.viewer.layers.ship.ShipPainter;
 import oth.shipeditor.components.viewer.layers.ship.data.ShipHull;
 import oth.shipeditor.components.viewer.layers.ship.data.ShipSkin;
 import oth.shipeditor.persistence.SettingsManager;
+import oth.shipeditor.undo.EditDispatch;
 import oth.shipeditor.utility.components.ComponentUtilities;
 import oth.shipeditor.utility.text.StringValues;
 
@@ -13,6 +17,8 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.function.Consumer;
 
@@ -22,7 +28,7 @@ import java.util.function.Consumer;
  */
 public class BuiltInWingsPanel extends AbstractBuiltInsPanel<WingCSVEntry> {
 
-    // TODO: add fighter bay checks and undo/redo classes for wing entries addition/removal.
+    private JPanel bayPanel;
 
     @Override
     protected void refreshPanel(ShipLayer layer) {
@@ -46,8 +52,55 @@ public class BuiltInWingsPanel extends AbstractBuiltInsPanel<WingCSVEntry> {
 
         contentPane.add(Box.createVerticalGlue());
 
-        contentPane.revalidate();
-        contentPane.repaint();
+        if (gameData.isShipDataLoaded()) {
+            this.announceBayCapacity(layer);
+        }
+
+        this.revalidate();
+        this.repaint();
+    }
+
+    private void announceBayCapacity(ShipLayer layer) {
+        if (bayPanel != null) {
+            this.remove(bayPanel);
+        }
+
+        ShipHull layerHull = layer.getHull();
+        ShipPainter painter = layer.getPainter();
+        ShipSkin activeSkin = painter.getActiveSkin();
+
+        Collection<WingCSVEntry> totalEntries = new ArrayList<>(layerHull.getBuiltInWings());
+
+        if (activeSkin != null && !activeSkin.isBase()) {
+            var skinEntries = activeSkin.getBuiltInWings();
+            totalEntries.addAll(skinEntries);
+        }
+        var shipData = layer.getShipData();
+        var hullSpecFile = shipData.getHullSpecFile();
+
+        var gameData = SettingsManager.getGameData();
+        var allShipEntries = gameData.getAllShipEntries();
+        var selectedCSVEntry = allShipEntries.get(hullSpecFile.getHullId());
+        var entryRowData = selectedCSVEntry.getRowData();
+        String fighterBays = entryRowData.get("fighter bays");
+        int bayCount = 0;
+        if (fighterBays != null && !fighterBays.isEmpty()) {
+            bayCount = Integer.parseInt(fighterBays);
+        }
+
+        int wingsSize = totalEntries.size();
+        String text;
+        FontIcon icon;
+        String capacity = wingsSize + " wings / " + bayCount + " bays.";
+        if (bayCount < wingsSize) {
+            text = "Capacity exceeded: " + capacity;
+            icon = FontIcon.of(FluentUiRegularMZ.WARNING_24, 28, Color.RED);
+        } else {
+            text = "Capacity: " + capacity;
+            icon = FontIcon.of(FluentUiRegularAL.INFO_28, 28);
+        }
+        this.bayPanel = AbstractBuiltInsPanel.createHintPanel(text, icon);
+        this.add(bayPanel, BorderLayout.PAGE_END);
     }
 
     private void populateWingBuiltIns(ShipLayer selected) {
@@ -72,7 +125,7 @@ public class BuiltInWingsPanel extends AbstractBuiltInsPanel<WingCSVEntry> {
         ShipLayer cachedLayer = this.getCachedLayer();
         for (WingCSVEntry entry : entryList) {
             JPanel modPanel = BuiltInWingsPanel.addWingPanel(entry, e -> {
-                entryList.remove(entry);
+                EditDispatch.postWingRemoved(entryList, cachedLayer, entry);
                 this.refreshPanel(cachedLayer);
             });
             if (panelMutator != null) {

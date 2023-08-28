@@ -124,7 +124,6 @@ public final class ShipSkin {
         return hullName + techResult;
     }
 
-
     @SuppressWarnings({"PublicInnerClass", "ClassWithTooManyMethods",
             "unused", "BooleanParameter", "MethodParameterNamingConvention"})
     public static class Builder {

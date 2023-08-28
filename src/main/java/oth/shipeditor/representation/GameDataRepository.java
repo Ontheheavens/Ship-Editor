@@ -6,6 +6,7 @@ import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.files.HullmodDataSet;
 import oth.shipeditor.communication.events.files.WingDataSet;
 import oth.shipeditor.components.datafiles.entities.*;
+import oth.shipeditor.persistence.SettingsManager;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -84,6 +85,16 @@ public class GameDataRepository {
     public void setWingDataLoaded(boolean wingsLoaded) {
         this.wingDataLoaded = wingsLoaded;
         EventBus.publish(new WingDataSet());
+    }
+
+    public static HullStyle fetchStyleByID(String styleID) {
+        var dataRepository = SettingsManager.getGameData();
+        Map<String, HullStyle> allHullStyles = dataRepository.getAllHullStyles();
+        HullStyle style = null;
+        if (allHullStyles != null) {
+            style = allHullStyles.get(styleID);
+        }
+        return style;
     }
 
 }

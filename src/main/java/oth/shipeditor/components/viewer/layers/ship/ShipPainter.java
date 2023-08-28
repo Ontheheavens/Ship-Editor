@@ -17,8 +17,11 @@ import oth.shipeditor.components.viewer.entities.bays.LaunchBay;
 import oth.shipeditor.components.viewer.entities.weapon.WeaponSlotPoint;
 import oth.shipeditor.components.viewer.layers.LayerPainter;
 import oth.shipeditor.components.viewer.layers.ship.data.ActiveShipSpec;
+import oth.shipeditor.components.viewer.layers.ship.data.ShipHull;
 import oth.shipeditor.components.viewer.layers.ship.data.ShipSkin;
 import oth.shipeditor.components.viewer.painters.points.*;
+import oth.shipeditor.representation.HullSpecFile;
+import oth.shipeditor.representation.ShipData;
 import oth.shipeditor.utility.graphics.Sprite;
 import oth.shipeditor.utility.text.StringValues;
 
@@ -162,9 +165,13 @@ public final class ShipPainter extends LayerPainter {
                 }
             } else if (event instanceof ShipDataCreated checked) {
                 if (checked.layer() != layer) return;
-                if (layer.getShipData() != null && this.isUninitialized()) {
+                ShipData shipData = layer.getShipData();
+                if (shipData != null && this.isUninitialized()) {
                     this.createPointPainters();
-                    ShipPainterInitialization.loadShipData(this, layer);
+                    HullSpecFile hullSpecFile = shipData.getHullSpecFile();
+                    ShipHull hull = layer.getHull();
+                    hull.initialize(hullSpecFile);
+                    ShipPainterInitialization.loadShipData(this, hullSpecFile);
                 }
             }
         };
@@ -172,8 +179,6 @@ public final class ShipPainter extends LayerPainter {
         listeners.add(layerUpdateListener);
         EventBus.subscribe(layerUpdateListener);
     }
-
-
 
     public ShipCenterPoint getShipCenter() {
         return this.centerPointPainter.getCenterPoint();

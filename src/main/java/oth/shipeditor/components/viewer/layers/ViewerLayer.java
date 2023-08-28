@@ -22,6 +22,8 @@ public abstract class ViewerLayer {
 
     private LayerPainter painter;
 
+    private boolean interactive = true;
+
     @Override
     public String toString() {
         if (!spriteFileName.isEmpty()) {

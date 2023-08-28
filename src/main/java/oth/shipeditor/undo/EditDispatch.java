@@ -9,6 +9,7 @@ import oth.shipeditor.communication.events.viewer.ViewerRepaintQueued;
 import oth.shipeditor.communication.events.viewer.control.ViewerMouseReleased;
 import oth.shipeditor.communication.events.viewer.points.AnchorOffsetQueued;
 import oth.shipeditor.components.datafiles.entities.HullmodCSVEntry;
+import oth.shipeditor.components.datafiles.entities.WingCSVEntry;
 import oth.shipeditor.components.viewer.entities.*;
 import oth.shipeditor.components.viewer.entities.engine.EnginePoint;
 import oth.shipeditor.components.viewer.entities.weapon.SlotData;
@@ -20,11 +21,8 @@ import oth.shipeditor.representation.EngineStyle;
 import oth.shipeditor.representation.weapon.WeaponMount;
 import oth.shipeditor.representation.weapon.WeaponSize;
 import oth.shipeditor.representation.weapon.WeaponType;
-import oth.shipeditor.undo.edits.AnchorOffsetEdit;
-import oth.shipeditor.undo.edits.HullmodAddEdit;
-import oth.shipeditor.undo.edits.HullmodRemoveEdit;
+import oth.shipeditor.undo.edits.*;
 import oth.shipeditor.undo.edits.points.engines.*;
-import oth.shipeditor.undo.edits.LayerRotationEdit;
 import oth.shipeditor.undo.edits.points.*;
 import oth.shipeditor.undo.edits.points.slots.*;
 import oth.shipeditor.utility.Size2D;
@@ -251,6 +249,18 @@ public final class EditDispatch {
         Edit hullmodAddEdit = new HullmodRemoveEdit(index, shipLayer, hullmod);
         UndoOverseer.post(hullmodAddEdit);
         index.remove(hullmod);
+    }
+
+    public static void postWingAdded(List<WingCSVEntry> index, ShipLayer shipLayer, WingCSVEntry wing) {
+        Edit wingAddEdit = new WingAddEdit(index, shipLayer, wing);
+        UndoOverseer.post(wingAddEdit);
+        index.add(wing);
+    }
+
+    public static void postWingRemoved(List<WingCSVEntry> index, ShipLayer shipLayer, WingCSVEntry wing) {
+        Edit wingRemoveEdit = new WingRemoveEdit(index, shipLayer, wing);
+        UndoOverseer.post(wingRemoveEdit);
+        index.remove(wing);
     }
 
 }

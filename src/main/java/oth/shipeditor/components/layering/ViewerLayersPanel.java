@@ -81,8 +81,8 @@ public final class ViewerLayersPanel extends SortableTabbedPane {
     private void initLayerListeners() {
         EventBus.subscribe(event -> {
             if (event instanceof ShipLayerCreated checked) {
-                Icon tabIcon = FontIcon.of(BoxiconsRegular.ROCKET, 20);
                 ShipLayer layer = checked.newLayer();
+                Icon tabIcon = FontIcon.of(BoxiconsRegular.ROCKET, 20);
                 LayerTab created = new LayerTab(layer);
                 tabIndex.put(layer, created);
                 String tooltip = created.getTabTooltip();
@@ -90,8 +90,8 @@ public final class ViewerLayersPanel extends SortableTabbedPane {
                 EventBus.publish(new WindowRepaintQueued());
             }
             else if (event instanceof WeaponLayerCreated checked) {
-                Icon tabIcon = FontIcon.of(BoxiconsRegular.TARGET_LOCK, 20);
                 WeaponLayer layer = checked.newLayer();
+                Icon tabIcon = FontIcon.of(BoxiconsRegular.TARGET_LOCK, 20);
                 LayerTab created = new LayerTab(layer);
                 tabIndex.put(layer, created);
                 String tooltip = created.getTabTooltip();

@@ -7,17 +7,15 @@ import oth.shipeditor.communication.events.components.CenterPanelsRepaintQueued;
 import oth.shipeditor.communication.events.viewer.ViewerRepaintQueued;
 import oth.shipeditor.communication.events.viewer.points.InstrumentModeChanged;
 import oth.shipeditor.communication.events.viewer.points.RadiusDragQueued;
-import oth.shipeditor.components.instrument.ship.ShipInstrumentsPane;
 import oth.shipeditor.components.instrument.ship.ShipInstrument;
+import oth.shipeditor.components.instrument.ship.ShipInstrumentsPane;
 import oth.shipeditor.components.viewer.control.ControlPredicates;
 import oth.shipeditor.components.viewer.entities.BaseWorldPoint;
 import oth.shipeditor.components.viewer.entities.ShieldCenterPoint;
-import oth.shipeditor.components.viewer.layers.ship.ShipLayer;
 import oth.shipeditor.components.viewer.layers.ship.ShipPainter;
-import oth.shipeditor.components.viewer.layers.ship.data.ShipHull;
+import oth.shipeditor.representation.GameDataRepository;
 import oth.shipeditor.representation.HullSpecFile;
 import oth.shipeditor.representation.HullStyle;
-import oth.shipeditor.representation.ShipData;
 import oth.shipeditor.undo.EditDispatch;
 import oth.shipeditor.utility.graphics.ColorUtilities;
 
@@ -57,12 +55,8 @@ public class ShieldPointPainter extends SinglePointPainter {
         KeyboardFocusManager.getCurrentKeyboardFocusManager().removeKeyEventDispatcher(hotkeyDispatcher);
     }
 
-    public void initShieldPoint(Point2D translated, ShipLayer layer) {
-        ShipData shipData = layer.getShipData();
-        HullSpecFile hullSpecFile = shipData.getHullSpecFile();
-        ShipHull hull = layer.getHull();
-        hull.loadHullStyle();
-        HullStyle style = hull.getHullStyle();
+    public void initShieldPoint(Point2D translated, HullSpecFile hullSpecFile) {
+        HullStyle style = GameDataRepository.fetchStyleByID(hullSpecFile.getStyle());
         if (style == null) {
             style = new HullStyle();
         }

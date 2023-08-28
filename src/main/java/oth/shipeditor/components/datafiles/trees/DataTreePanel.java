@@ -327,7 +327,7 @@ public abstract class DataTreePanel extends JPanel {
         };
     }
 
-    @SuppressWarnings("ProtectedInnerClass")
+    @SuppressWarnings("PackageVisibleInnerClass")
     class ContextMenuListener extends MouseAdapter {
         @Override
         public void mousePressed(MouseEvent e) {
