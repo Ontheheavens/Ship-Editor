@@ -14,7 +14,7 @@ import oth.shipeditor.parsing.JsonProcessor;
 import oth.shipeditor.persistence.SettingsManager;
 import oth.shipeditor.representation.HullSpecFile;
 import oth.shipeditor.representation.SkinSpecFile;
-import oth.shipeditor.representation.Variant;
+import oth.shipeditor.representation.VariantFile;
 import oth.shipeditor.representation.weapon.WeaponSpecFile;
 import oth.shipeditor.utility.ImageCache;
 import oth.shipeditor.utility.graphics.Sprite;
@@ -242,22 +242,22 @@ public final class FileLoading {
         return skinSpecFile;
     }
 
-    static Variant loadVariantFile(File file) {
+    static VariantFile loadVariantFile(File file) {
         String toString = file.getPath();
         if (!toString.endsWith(".variant")) {
             throw new IllegalArgumentException("Tried to resolve variant file with invalid extension!");
         }
 
-        Variant variantFile;
+        VariantFile variantFile;
         try {
             ObjectMapper objectMapper = FileLoading.getConfigured();
             log.info("Opening variant file: {}", file.getName());
-            variantFile = objectMapper.readValue(file, Variant.class);
+            variantFile = objectMapper.readValue(file, VariantFile.class);
             variantFile.setVariantFilePath(file.toPath());
         } catch (IOException e) {
             log.error("Variant file parsing failed, retrying with correction: {}", file.getName());
 
-            variantFile = FileLoading.parseCorrectableJSON(file, Variant.class);
+            variantFile = FileLoading.parseCorrectableJSON(file, VariantFile.class);
             if (variantFile == null) {
                 log.error("Variant file parsing failed conclusively: {}", file.getName());
                 JOptionPane.showMessageDialog(null,

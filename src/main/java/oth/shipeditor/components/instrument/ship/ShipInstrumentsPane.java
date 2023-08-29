@@ -12,6 +12,7 @@ import oth.shipeditor.components.instrument.ship.centers.ShieldPanel;
 import oth.shipeditor.components.instrument.ship.engines.EnginesPanel;
 import oth.shipeditor.components.instrument.ship.skins.SkinPanel;
 import oth.shipeditor.components.instrument.ship.slots.WeaponSlotsPanel;
+import oth.shipeditor.components.instrument.ship.variant.VariantPanel;
 
 import javax.swing.*;
 import java.util.HashMap;
@@ -47,6 +48,7 @@ public final class ShipInstrumentsPane extends AbstractInstrumentsPane {
         this.createTab(new BuiltInWingsPanel(), ShipInstrument.BUILT_IN_WINGS);
         this.createTab(new JPanel(), ShipInstrument.BUILT_IN_WEAPONS);
         this.createTab(new SkinPanel(), ShipInstrument.SKIN);
+        this.createTab(new VariantPanel(), ShipInstrument.VARIANT);
         updateTooltipText();
     }
 

@@ -117,9 +117,9 @@ public abstract class LayerPainter implements Painter {
     }
 
     private void rotateToTarget(Point2D worldTarget) {
-        Point2D spriteCenter = getSpriteCenter();
-        double deltaX = worldTarget.getX() - spriteCenter.getX();
-        double deltaY = worldTarget.getY() - spriteCenter.getY();
+        Point2D center = getRotationAnchor();
+        double deltaX = worldTarget.getX() - center.getX();
+        double deltaY = worldTarget.getY() - center.getY();
 
         double radians = -Math.atan2(deltaX, deltaY);
 
@@ -129,6 +129,10 @@ public abstract class LayerPainter implements Painter {
             result = Math.round(rotationDegrees);
         }
         this.rotateLayer(result);
+    }
+
+    protected Point2D getRotationAnchor() {
+        return this.getSpriteCenter();
     }
 
     @SuppressWarnings("WeakerAccess")
@@ -144,9 +148,9 @@ public abstract class LayerPainter implements Painter {
 
     public AffineTransform getRotationTransform() {
         double rotation = this.getRotationRadians();
-        Point2D spriteCenter = this.getSpriteCenter();
-        double centerX = spriteCenter.getX();
-        double centerY = spriteCenter.getY();
+        Point2D center = this.getRotationAnchor();
+        double centerX = center.getX();
+        double centerY = center.getY();
         return AffineTransform.getRotateInstance(rotation, centerX, centerY);
     }
 

@@ -17,6 +17,7 @@ import oth.shipeditor.representation.weapon.WeaponSize;
 import oth.shipeditor.representation.weapon.WeaponSlot;
 import oth.shipeditor.representation.weapon.WeaponType;
 import oth.shipeditor.utility.graphics.Sprite;
+import oth.shipeditor.utility.text.StringValues;
 
 import java.awt.*;
 import java.nio.file.Path;
@@ -42,6 +43,11 @@ public final class ShipSkin {
     }
 
     private Path skinFilePath;
+
+    public String getFileName() {
+        if (skinFilePath == null) return StringValues.EMPTY;
+        return skinFilePath.getFileName().toString();
+    }
 
     private Path containingPackage;
 

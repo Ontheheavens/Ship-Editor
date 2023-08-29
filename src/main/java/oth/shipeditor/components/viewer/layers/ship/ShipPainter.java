@@ -19,9 +19,11 @@ import oth.shipeditor.components.viewer.layers.LayerPainter;
 import oth.shipeditor.components.viewer.layers.ship.data.ActiveShipSpec;
 import oth.shipeditor.components.viewer.layers.ship.data.ShipHull;
 import oth.shipeditor.components.viewer.layers.ship.data.ShipSkin;
+import oth.shipeditor.components.viewer.layers.ship.data.ShipVariant;
 import oth.shipeditor.components.viewer.painters.points.*;
 import oth.shipeditor.representation.HullSpecFile;
 import oth.shipeditor.representation.ShipData;
+import oth.shipeditor.representation.VariantFile;
 import oth.shipeditor.utility.graphics.Sprite;
 import oth.shipeditor.utility.text.StringValues;
 
@@ -70,10 +72,25 @@ public final class ShipPainter extends LayerPainter {
     @Getter @Setter
     private ShipSkin activeSkin;
 
+    @Getter @Setter
+    private ShipVariant activeVariant;
+
+
     public ShipPainter(ShipLayer layer) {
         super(layer);
         this.initPainterListeners(layer);
         this.activateEmptySkin();
+    }
+
+    public void installVariant(VariantFile file) {
+        boolean empty = file.isEmpty();
+        activeVariant = new ShipVariant(empty);
+        if (!empty) {
+            activeVariant.setVariantId(file.getVariantId());
+            activeVariant.setShipHullId(file.getHullId());
+            activeVariant.setVariantFilePath(file.getVariantFilePath());
+            activeVariant.setContainingPackage(file.getContainingPackage());
+        }
     }
 
     private void activateEmptySkin() {
@@ -125,6 +142,12 @@ public final class ShipPainter extends LayerPainter {
         Events.repaintView();
     }
 
+//    @Override
+//    protected Point2D getRotationAnchor() {
+//        ShipCenterPoint shipCenter = this.getShipCenter();
+//        return shipCenter.getPosition();
+//    }
+
     @Override
     public ShipLayer getParentLayer() {
         if (super.getParentLayer() instanceof ShipLayer checked) {
@@ -148,6 +171,7 @@ public final class ShipPainter extends LayerPainter {
         allPainters.add(bayPainter);
         allPainters.add(enginePainter);
     }
+
     void finishInitialization() {
         this.setUninitialized(false);
         log.info("{} initialized!", this);

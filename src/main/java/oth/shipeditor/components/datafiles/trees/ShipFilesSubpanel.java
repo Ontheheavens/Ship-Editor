@@ -7,7 +7,7 @@ import oth.shipeditor.persistence.SettingsManager;
 import oth.shipeditor.representation.GameDataRepository;
 import oth.shipeditor.representation.HullSpecFile;
 import oth.shipeditor.representation.SkinSpecFile;
-import oth.shipeditor.representation.Variant;
+import oth.shipeditor.representation.VariantFile;
 import oth.shipeditor.utility.Utility;
 import oth.shipeditor.utility.components.ComponentUtilities;
 import oth.shipeditor.utility.components.MouseoverLabelListener;
@@ -223,12 +223,12 @@ class ShipFilesSubpanel extends JPanel {
     private static JPanel createVariantPanel() {
         GameDataRepository gameData = SettingsManager.getGameData();
 
-        Collection<Variant> variantsForHull = new ArrayList<>();
-        Map<String, Variant> allVariants = gameData.getAllVariants();
-        for (Variant variant : allVariants.values()) {
-            String hullID = variant.getHullId();
+        Collection<VariantFile> variantsForHull = new ArrayList<>();
+        Map<String, VariantFile> allVariants = gameData.getAllVariants();
+        for (VariantFile variantFile : allVariants.values()) {
+            String hullID = variantFile.getHullId();
             if (hullID.equals(currentShipHullID)) {
-                variantsForHull.add(variant);
+                variantsForHull.add(variantFile);
             }
         }
 

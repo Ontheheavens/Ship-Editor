@@ -5,7 +5,7 @@ import lombok.extern.log4j.Log4j2;
 import oth.shipeditor.components.datafiles.OpenDataTarget;
 import oth.shipeditor.components.viewer.layers.ship.ShipLayer;
 import oth.shipeditor.components.viewer.layers.ship.ShipPainter;
-import oth.shipeditor.representation.Variant;
+import oth.shipeditor.representation.VariantFile;
 import oth.shipeditor.utility.StaticController;
 import oth.shipeditor.utility.components.ComponentUtilities;
 import oth.shipeditor.utility.components.MouseoverLabelListener;
@@ -60,8 +60,8 @@ public abstract class DataTreePanel extends JPanel {
         this.add(splitPane, BorderLayout.CENTER);
     }
 
-    private static JLabel createVariantFileLabel(Variant variant) {
-        Path variantFilePath = variant.getVariantFilePath();
+    private static JLabel createVariantFileLabel(VariantFile variantFile) {
+        Path variantFilePath = variantFile.getVariantFilePath();
         JLabel variantLabel = new JLabel("Variant file : " + variantFilePath.getFileName());
         variantLabel.setToolTipText(String.valueOf(variantFilePath));
         variantLabel.setBorder(ComponentUtilities.createLabelSimpleBorder(ComponentUtilities.createLabelInsets()));
@@ -70,7 +70,7 @@ public abstract class DataTreePanel extends JPanel {
         return variantLabel;
     }
 
-    static JPanel createVariantsPanel(Collection<Variant> variants, Dimension pad) {
+    static JPanel createVariantsPanel(Collection<VariantFile> variantFiles, Dimension pad) {
         JPanel variantsPanel = new JPanel();
         variantsPanel.setLayout(new FlowLayout(FlowLayout.LEADING, 0, 0));
         ComponentUtilities.outfitPanelWithTitle(variantsPanel, new Insets(1, 0, 0, 0), "Variants");
@@ -81,8 +81,8 @@ public abstract class DataTreePanel extends JPanel {
         labelContainer.setBorder(new EmptyBorder(2, 0, 0, 0));
         labelContainer.setLayout(new BoxLayout(labelContainer, BoxLayout.PAGE_AXIS));
 
-        if (variants.isEmpty()) throw new IllegalArgumentException("Empty variants list!");
-        variants.forEach(variant -> {
+        if (variantFiles.isEmpty()) throw new IllegalArgumentException("Empty variants list!");
+        variantFiles.forEach(variant -> {
             labelContainer.add(DataTreePanel.createVariantFileLabel(variant));
             labelContainer.add(Box.createRigidArea(pad));
         });

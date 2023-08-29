@@ -7,7 +7,7 @@ import oth.shipeditor.parsing.loading.FileLoading;
 import oth.shipeditor.persistence.SettingsManager;
 import oth.shipeditor.representation.ShipSpecFile;
 import oth.shipeditor.representation.SkinSpecFile;
-import oth.shipeditor.representation.Variant;
+import oth.shipeditor.representation.VariantFile;
 import oth.shipeditor.utility.graphics.Sprite;
 import oth.shipeditor.utility.text.StringConstants;
 import oth.shipeditor.utility.text.StringValues;
@@ -63,7 +63,7 @@ public class WingCSVEntry implements CSVEntry {
         return name;
     }
 
-    public Variant retrieveMemberVariant() {
+    public VariantFile retrieveMemberVariant() {
         String variantID = rowData.get(StringConstants.VARIANT);
         var gameData = SettingsManager.getGameData();
         var allVariants = gameData.getAllVariants();
@@ -71,9 +71,9 @@ public class WingCSVEntry implements CSVEntry {
     }
 
     private ShipSpecFile retrieveSpec() {
-        Variant variant = retrieveMemberVariant();
+        VariantFile variantFile = retrieveMemberVariant();
 
-        String hullID = variant.getHullId();
+        String hullID = variantFile.getHullId();
         ShipSpecFile desiredSpec = null;
 
         var gameData = SettingsManager.getGameData();

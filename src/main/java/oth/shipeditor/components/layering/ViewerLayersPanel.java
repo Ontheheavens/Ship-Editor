@@ -22,6 +22,7 @@ import oth.shipeditor.components.viewer.layers.ship.data.ShipSkin;
 import oth.shipeditor.components.viewer.layers.weapon.WeaponLayer;
 import oth.shipeditor.representation.HullSpecFile;
 import oth.shipeditor.representation.ShipData;
+import oth.shipeditor.utility.Utility;
 import oth.shipeditor.utility.components.SortableTabbedPane;
 import oth.shipeditor.utility.text.StringValues;
 
@@ -120,13 +121,15 @@ public final class ViewerLayersPanel extends SortableTabbedPane {
 
                 ShipPainter layerPainter = checkedLayer.getPainter();
                 if (layerPainter == null) return;
+
+                updated.setSkinFileNames(ViewerLayersPanel.getSkinFilesOfLayer(checkedLayer));
                 ShipSkin activeSkin = layerPainter.getActiveSkin();
                 if (activeSkin == null || activeSkin.isBase()) {
-                    updated.setSkinFileName("");
+                    updated.setActiveSkinFileName("");
                     this.setTitleAt(indexOfComponent(updated), hullSpecFile.getHullName());
                 } else {
-                    String skinFileName = activeSkin.getSkinFilePath().getFileName().toString();
-                    updated.setSkinFileName(skinFileName);
+                    String skinFileName = activeSkin.getFileName();
+                    updated.setActiveSkinFileName(skinFileName);
                     if (activeSkin.getHullName() != null) {
                         this.setTitleAt(indexOfComponent(updated), activeSkin.getHullName());
                     }
@@ -165,6 +168,16 @@ public final class ViewerLayersPanel extends SortableTabbedPane {
         EventBus.publish(new WindowRepaintQueued());
     }
 
+    private static List<String> getSkinFilesOfLayer(ShipLayer shipLayer) {
+        List<ShipSkin> skins = shipLayer.getSkins();
+        List<String> result = new ArrayList<>();
+        skins.forEach(skin -> {
+            if (skin.isBase()) return;
+            result.add(skin.getFileName());
+        });
+        return result;
+    }
+
     /**
      * Empty marker component, only serves to track tabs and their layers.
      */
@@ -180,14 +193,17 @@ public final class ViewerLayersPanel extends SortableTabbedPane {
         private String hullFileName;
 
         @Getter @Setter
-        private String skinFileName;
+        private List<String> skinFileNames;
+
+        @Getter @Setter
+        private String activeSkinFileName;
 
         private LayerTab(ViewerLayer layer) {
             this.associatedLayer = layer;
             this.spriteFileName = layer.getSpriteFileName();
             if (layer instanceof ShipLayer checked) {
                 this.hullFileName = checked.getHullFileName();
-                this.skinFileName = checked.getSkinFileName();
+                this.skinFileNames = ViewerLayersPanel.getSkinFilesOfLayer(checked);
             }
             this.setLayout(new BorderLayout());
         }
@@ -210,12 +226,28 @@ public final class ViewerLayersPanel extends SortableTabbedPane {
                 hull = notLoaded;
             }
             String hullNameLine = "Hull file: " + hull;
-            String skin = skinFileName;
-            if (Objects.equals(skin, "")) {
-                skin = StringValues.NOT_LOADED;
+
+            Collection<String> skinNameLines = new ArrayList<>();
+            skinFileNames.forEach(s -> {
+                String skin = s;
+                if (Objects.equals(skin, "")) {
+                    skin = StringValues.NOT_LOADED;
+                } else if (skin.equals(activeSkinFileName)) {
+                    skin = "<font color=blue>" + skin + "</font>";
+                }
+                String skinNameLine = "Skin file: " + skin;
+                skinNameLines.add(skinNameLine);
+            });
+            if (skinNameLines.isEmpty()) {
+                skinNameLines.add("Skin file: Not loaded");
             }
-            String skinNameLine = "Skin file: " + skin;
-            return "<html>" + spriteNameLine + "<br>" + hullNameLine + "<br>" + skinNameLine + "</html>";
+
+            List<String> result = new ArrayList<>();
+            result.add(spriteNameLine);
+            result.add(hullNameLine);
+            result.addAll(skinNameLines);
+
+            return Utility.getWithLinebreaks(result.toArray(new String[0]));
         }
 
     }

@@ -45,6 +45,15 @@ public class ShipLayer extends ViewerLayer {
         skins.add(new ShipSkin());
     }
 
+    public String getShipID() {
+        ShipPainter shipPainter = getPainter();
+        ShipSkin activeSkin = shipPainter.getActiveSkin();
+        if (activeSkin != null && !activeSkin.isBase()) {
+            return activeSkin.getSkinHullId();
+        }
+        return hull.getHullID();
+    }
+
     @Override
     public void setPainter(LayerPainter painter) {
         if (!(painter instanceof ShipPainter)) {

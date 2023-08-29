@@ -10,7 +10,6 @@ import oth.shipeditor.components.viewer.layers.ship.ShipPainter;
 import oth.shipeditor.components.viewer.layers.ship.data.ActiveShipSpec;
 import oth.shipeditor.components.viewer.layers.ship.data.ShipSkin;
 import oth.shipeditor.representation.ShipData;
-import oth.shipeditor.representation.SkinSpecFile;
 import oth.shipeditor.utility.StaticController;
 
 import javax.swing.*;
@@ -70,11 +69,13 @@ public class SkinListPanel extends JPanel {
         skinChooser.setAlignmentX(Component.CENTER_ALIGNMENT);
 
         chooserContainer.add(skinChooser);
+        chooserContainer.add(Box.createVerticalGlue());
+
     }
 
-    private static JComboBox<SkinSpecFile> createDisabledChooser() {
-        SkinSpecFile[] skinSpecFileArray = {SkinSpecFile.empty()};
-        JComboBox<SkinSpecFile> skinChooser = new JComboBox<>(skinSpecFileArray);
+    private static JComboBox<ShipSkin> createDisabledChooser() {
+        ShipSkin[] skinSpecFileArray = {new ShipSkin()};
+        JComboBox<ShipSkin> skinChooser = new JComboBox<>(skinSpecFileArray);
         skinChooser.setSelectedItem(skinSpecFileArray[0]);
         skinChooser.setEnabled(false);
         return skinChooser;

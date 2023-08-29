@@ -23,6 +23,8 @@ import java.util.stream.Stream;
 @Getter @Setter
 public class ShipHull {
 
+    private String hullID;
+
     private HullStyle hullStyle;
 
     private List<HullmodCSVEntry> builtInMods;
@@ -33,6 +35,7 @@ public class ShipHull {
 
     public void initialize(HullSpecFile specFile) {
         this.associatedSpecFile = specFile;
+        this.hullID = specFile.getHullId();
         this.loadHullStyle();
 
         var dataRepository = SettingsManager.getGameData();

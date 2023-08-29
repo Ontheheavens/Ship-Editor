@@ -13,7 +13,7 @@ import oth.shipeditor.components.viewer.layers.ship.data.ShipHull;
 import oth.shipeditor.menubar.FileUtilities;
 import oth.shipeditor.persistence.SettingsManager;
 import oth.shipeditor.representation.GameDataRepository;
-import oth.shipeditor.representation.Variant;
+import oth.shipeditor.representation.VariantFile;
 import oth.shipeditor.undo.EditDispatch;
 import oth.shipeditor.utility.StaticController;
 import oth.shipeditor.utility.components.ComponentUtilities;
@@ -99,8 +99,8 @@ public class WingsTreePanel extends CSVDataTreePanel<WingCSVEntry>{
         JPanel variantWrapper = new JPanel();
         variantWrapper.setLayout(new BoxLayout(variantWrapper, BoxLayout.PAGE_AXIS));
 
-        List<Variant> memberVariant = Collections.singletonList(selected.retrieveMemberVariant());
-        JPanel variantPanel = DataTreePanel.createVariantsPanel(memberVariant,
+        List<VariantFile> memberVariantFile = Collections.singletonList(selected.retrieveMemberVariant());
+        JPanel variantPanel = DataTreePanel.createVariantsPanel(memberVariantFile,
                 new Dimension(0, 2));
         variantWrapper.add(variantPanel);
 

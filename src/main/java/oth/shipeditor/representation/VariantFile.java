@@ -1,6 +1,7 @@
 package oth.shipeditor.representation;
 
 import com.fasterxml.jackson.annotation.JsonAlias;
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
@@ -19,7 +20,28 @@ import java.util.Map;
  */
 @SuppressWarnings("ClassWithTooManyFields")
 @Getter
-public class Variant {
+public class VariantFile {
+
+    @JsonIgnore
+    private static final VariantFile EMPTY = new VariantFile(true);
+
+    public static final String DEFAULT = StringConstants.DEFAULT_ID;
+
+    @JsonCreator
+    public VariantFile() {
+        empty = false;
+    }
+
+    private VariantFile(boolean isEmpty) {
+        empty = isEmpty;
+    }
+
+    public static VariantFile empty() {
+        return EMPTY;
+    }
+
+    @JsonIgnore
+    private final boolean empty;
 
     @Setter
     @JsonIgnore
@@ -70,5 +92,13 @@ public class Variant {
     @JsonProperty("modules")
     @JsonDeserialize(using = ModulesDeserializer.class)
     private Map<String, String> modules;
+
+    @Override
+    public String toString() {
+        if (empty) {
+            return "Empty variant";
+        }
+        return displayName;
+    }
 
 }

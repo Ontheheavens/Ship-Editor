@@ -8,7 +8,9 @@ import oth.shipeditor.communication.events.files.WingDataSet;
 import oth.shipeditor.components.datafiles.entities.*;
 import oth.shipeditor.persistence.SettingsManager;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -54,7 +56,7 @@ public class GameDataRepository {
      * All variant files by variant IDs.
      */
     @Setter
-    private Map<String, Variant> allVariants;
+    private Map<String, VariantFile> allVariants;
 
     @Setter
     private boolean shipDataLoaded;
@@ -95,6 +97,24 @@ public class GameDataRepository {
             style = allHullStyles.get(styleID);
         }
         return style;
+    }
+
+    public static VariantFile getByID(String variantID) {
+        var dataRepository = SettingsManager.getGameData();
+        return dataRepository.allVariants.get(variantID);
+    }
+
+    public static List<VariantFile> getMatchingForHullID(String shipHullID) {
+        var dataRepository = SettingsManager.getGameData();
+        var allVariants = dataRepository.getAllVariants();
+        List<VariantFile> result = new ArrayList<>();
+        for (VariantFile variant : allVariants.values()) {
+            String variantHullId = variant.getHullId();
+            if (variantHullId.equals(shipHullID)) {
+                result.add(variant);
+            }
+        }
+        return result;
     }
 
 }
