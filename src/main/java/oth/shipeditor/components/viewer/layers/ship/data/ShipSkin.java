@@ -34,6 +34,8 @@ public final class ShipSkin {
 
     private final boolean base;
 
+    public static final ShipSkin EMPTY = new ShipSkin();
+
     public ShipSkin() {
         this(true);
     }

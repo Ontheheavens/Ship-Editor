@@ -7,15 +7,17 @@ import oth.shipeditor.components.viewer.layers.ViewerLayer;
 import oth.shipeditor.components.viewer.layers.ship.ShipLayer;
 import oth.shipeditor.components.viewer.layers.ship.ShipPainter;
 import oth.shipeditor.components.viewer.layers.ship.data.ShipVariant;
+import oth.shipeditor.components.viewer.layers.ship.data.Variant;
 import oth.shipeditor.representation.GameDataRepository;
 import oth.shipeditor.representation.ShipData;
 import oth.shipeditor.representation.VariantFile;
 import oth.shipeditor.utility.StaticController;
+import oth.shipeditor.utility.text.StringValues;
 
 import javax.swing.*;
 import java.awt.*;
-import java.util.ArrayList;
-import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Vector;
 
 /**
@@ -49,30 +51,36 @@ public class VariantPanel extends JPanel {
             chooserContainer.add(VariantPanel.createDisabledChooser());
             return;
         }
-        Collection<VariantFile> variantFiles = new ArrayList<>();
-        VariantFile empty = VariantFile.empty();
-        variantFiles.add(empty);
-        variantFiles.addAll(GameDataRepository.getMatchingForHullID(checkedLayer.getShipID()));
+
+        Map<String, Variant> variantFiles = new HashMap<>();
+        Variant empty = VariantFile.empty();
+        variantFiles.put(StringValues.EMPTY, empty);
+
+        String shipID = checkedLayer.getShipID();
+        variantFiles.putAll(GameDataRepository.getMatchingForHullID(shipID));
+        var loaded = checkedLayer.getLoadedVariants();
+        loaded.forEach((variantId, shipVariant) -> {
+            String variantShipHullId = shipVariant.getShipHullId();
+            if (variantShipHullId.equals(shipID)) {
+                variantFiles.put(variantId, shipVariant);
+            }
+        });
 
         ShipPainter painter = checkedLayer.getPainter();
 
-        Vector<VariantFile> model = new Vector<>(variantFiles);
+        Vector<Variant> model = new Vector<>(variantFiles.values());
 
-        JComboBox<VariantFile> variantChooser = new JComboBox<>(model);
+        JComboBox<Variant> variantChooser = new JComboBox<>(model);
         ShipVariant activeVariant = painter.getActiveVariant();
-        VariantFile activeVariantFile = null;
         if (activeVariant != null) {
-            activeVariantFile = GameDataRepository.getByID(activeVariant.getVariantId());
-        }
-        if (activeVariantFile != null) {
-            variantChooser.setSelectedItem(activeVariantFile);
+            variantChooser.setSelectedItem(activeVariant);
         } else {
             variantChooser.setSelectedItem(empty);
         }
         variantChooser.addActionListener(e -> {
-            VariantFile chosen = (VariantFile) variantChooser.getSelectedItem();
+            Variant chosen = (Variant) variantChooser.getSelectedItem();
             if (chosen != null) {
-                painter.installVariant(chosen);
+                painter.selectVariant(chosen);
             }
         });
         variantChooser.setAlignmentX(Component.CENTER_ALIGNMENT);

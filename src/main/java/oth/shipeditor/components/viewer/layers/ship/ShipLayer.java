@@ -6,12 +6,11 @@ import oth.shipeditor.components.viewer.layers.LayerPainter;
 import oth.shipeditor.components.viewer.layers.ViewerLayer;
 import oth.shipeditor.components.viewer.layers.ship.data.ShipHull;
 import oth.shipeditor.components.viewer.layers.ship.data.ShipSkin;
+import oth.shipeditor.components.viewer.layers.ship.data.ShipVariant;
 import oth.shipeditor.representation.ShipData;
 import oth.shipeditor.representation.SkinSpecFile;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Runtime representation of ship, including sprite and data.
@@ -37,12 +36,19 @@ public class ShipLayer extends ViewerLayer {
     private ShipHull hull;
 
     @Getter @Setter
-    private List<ShipSkin> skins;
+    private Set<ShipSkin> skins;
+
+    /**
+     * Keys are variant IDs.
+     */
+    @Getter
+    private final Map<String, ShipVariant> loadedVariants;
 
     public ShipLayer() {
-        skins = new ArrayList<>();
+        loadedVariants = new HashMap<>();
+        skins = new HashSet<>();
         // Adding default, signifies base hull.
-        skins.add(new ShipSkin());
+        skins.add(ShipSkin.EMPTY);
     }
 
     public String getShipID() {

@@ -95,7 +95,9 @@ public abstract class LayerPainter implements Painter {
     }
 
     public boolean isLayerActive() {
-        return StaticController.getActiveLayer() == this.getParentLayer();
+        ViewerLayer layer = this.getParentLayer();
+        if (layer == null) return false;
+        return StaticController.getActiveLayer() == layer;
     }
 
     private void cleanupForRemoval() {
@@ -113,7 +115,8 @@ public abstract class LayerPainter implements Painter {
 
     @Override
     public String toString() {
-        return "Layer Painter #" + this.hashCode();
+        Class<? extends LayerPainter> identity = this.getClass();
+        return identity.getSimpleName() + " #" + this.hashCode();
     }
 
     private void rotateToTarget(Point2D worldTarget) {
@@ -131,6 +134,7 @@ public abstract class LayerPainter implements Painter {
         this.rotateLayer(result);
     }
 
+    @SuppressWarnings("WeakerAccess")
     protected Point2D getRotationAnchor() {
         return this.getSpriteCenter();
     }

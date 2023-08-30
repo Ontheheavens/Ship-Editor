@@ -8,16 +8,14 @@ import oth.shipeditor.communication.events.files.WingDataSet;
 import oth.shipeditor.components.datafiles.entities.*;
 import oth.shipeditor.persistence.SettingsManager;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 /**
  * @author Ontheheavens
  * @since 08.07.2023
  */
-@SuppressWarnings("ClassWithTooManyFields")
+@SuppressWarnings({"ClassWithTooManyFields", "StaticMethodOnlyUsedInOneClass", "unused"})
 @Getter
 public class GameDataRepository {
 
@@ -25,6 +23,11 @@ public class GameDataRepository {
      * All ship entries by their hull IDs.
      */
     private final Map<String, ShipCSVEntry> allShipEntries;
+
+    /**
+     * Base hull and skin entries by their ship hull IDs. Used when layer needs to be loaded from variant ID.
+     */
+    private final Map<String, ShipSpecFile> allSpecEntries;
 
     /**
      * All hullmod entries by their IDs.
@@ -72,11 +75,18 @@ public class GameDataRepository {
     private boolean weaponsDataLoaded;
 
     public GameDataRepository() {
+        this.allSpecEntries = new HashMap<>();
         this.allShipEntries = new HashMap<>();
         this.allHullmodEntries = new HashMap<>();
         this.allShipsystemEntries = new HashMap<>();
         this.allWingEntries = new HashMap<>();
         this.allWeaponEntries = new HashMap<>();
+    }
+
+    public static void putSpec(ShipSpecFile specFile) {
+        GameDataRepository dataRepository = SettingsManager.getGameData();
+        var allSpecs = dataRepository.getAllSpecEntries();
+        allSpecs.put(specFile.getHullId(), specFile);
     }
 
     public void setHullmodDataLoaded(boolean hullmodsLoaded) {
@@ -104,14 +114,15 @@ public class GameDataRepository {
         return dataRepository.allVariants.get(variantID);
     }
 
-    public static List<VariantFile> getMatchingForHullID(String shipHullID) {
+    public static Map<String, VariantFile> getMatchingForHullID(String shipHullID) {
         var dataRepository = SettingsManager.getGameData();
         var allVariants = dataRepository.getAllVariants();
-        List<VariantFile> result = new ArrayList<>();
-        for (VariantFile variant : allVariants.values()) {
-            String variantHullId = variant.getHullId();
+        Map<String, VariantFile> result = new HashMap<>();
+        for (Map.Entry<String, VariantFile> variantFileEntry : allVariants.entrySet()) {
+            VariantFile variantFile = variantFileEntry.getValue();
+            String variantHullId = variantFile.getHullId();
             if (variantHullId.equals(shipHullID)) {
-                result.add(variant);
+                result.put(variantFileEntry.getKey(), variantFileEntry.getValue());
             }
         }
         return result;

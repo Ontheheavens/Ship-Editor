@@ -12,6 +12,7 @@ import com.fasterxml.jackson.dataformat.csv.CsvSchema;
 import lombok.extern.log4j.Log4j2;
 import oth.shipeditor.parsing.JsonProcessor;
 import oth.shipeditor.persistence.SettingsManager;
+import oth.shipeditor.representation.GameDataRepository;
 import oth.shipeditor.representation.HullSpecFile;
 import oth.shipeditor.representation.SkinSpecFile;
 import oth.shipeditor.representation.VariantFile;
@@ -175,6 +176,8 @@ public final class FileLoading {
                     JOptionPane.ERROR_MESSAGE);
             e.printStackTrace();
         }
+
+        GameDataRepository.putSpec(hullSpecFile);
         return hullSpecFile;
     }
 
@@ -239,6 +242,7 @@ public final class FileLoading {
             }
         }
 
+        GameDataRepository.putSpec(skinSpecFile);
         return skinSpecFile;
     }
 

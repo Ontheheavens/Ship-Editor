@@ -7,6 +7,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import lombok.Getter;
 import lombok.Setter;
+import oth.shipeditor.components.viewer.layers.ship.data.ShipVariant;
+import oth.shipeditor.components.viewer.layers.ship.data.Variant;
 import oth.shipeditor.parsing.deserialize.ModulesDeserializer;
 import oth.shipeditor.utility.text.StringConstants;
 
@@ -20,7 +22,7 @@ import java.util.Map;
  */
 @SuppressWarnings("ClassWithTooManyFields")
 @Getter
-public class VariantFile {
+public class VariantFile implements Variant {
 
     @JsonIgnore
     private static final VariantFile EMPTY = new VariantFile(true);
@@ -96,9 +98,14 @@ public class VariantFile {
     @Override
     public String toString() {
         if (empty) {
-            return "Empty variant";
+            return ShipVariant.EMPTY_VARIANT;
         }
         return displayName;
+    }
+
+    @Override
+    public String getShipHullId() {
+        return hullId;
     }
 
 }

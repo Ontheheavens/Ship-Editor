@@ -169,7 +169,7 @@ public final class ViewerLayersPanel extends SortableTabbedPane {
     }
 
     private static List<String> getSkinFilesOfLayer(ShipLayer shipLayer) {
-        List<ShipSkin> skins = shipLayer.getSkins();
+        Set<ShipSkin> skins = shipLayer.getSkins();
         List<String> result = new ArrayList<>();
         skins.forEach(skin -> {
             if (skin.isBase()) return;

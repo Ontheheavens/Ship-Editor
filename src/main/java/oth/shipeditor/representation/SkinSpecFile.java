@@ -168,5 +168,10 @@ public class SkinSpecFile implements ShipSpecFile {
         return hullName + techResult;
     }
 
+    @Override
+    public String getHullId() {
+        return skinHullId;
+    }
+
 }
 

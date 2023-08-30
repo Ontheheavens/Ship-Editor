@@ -11,14 +11,16 @@ import java.nio.file.Path;
  * @since 28.08.2023
  */
 @Getter @Setter
-public class ShipVariant {
+public class ShipVariant implements Variant {
 
+    public static final String EMPTY_VARIANT = "Empty variant";
     private boolean empty;
 
     public ShipVariant() {
         this(true);
     }
 
+    @SuppressWarnings("BooleanParameter")
     public ShipVariant(boolean isEmpty) {
         this.empty = isEmpty;
     }
@@ -38,5 +40,15 @@ public class ShipVariant {
     private String shipHullId;
 
     private String variantId;
+
+    private String displayName;
+
+    @Override
+    public String toString() {
+        if (empty) {
+            return EMPTY_VARIANT;
+        }
+        return displayName;
+    }
 
 }
