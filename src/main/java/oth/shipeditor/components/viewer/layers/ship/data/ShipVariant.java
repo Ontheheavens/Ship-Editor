@@ -2,6 +2,7 @@ package oth.shipeditor.components.viewer.layers.ship.data;
 
 import lombok.Getter;
 import lombok.Setter;
+import oth.shipeditor.representation.VariantFile;
 import oth.shipeditor.utility.text.StringValues;
 
 import java.nio.file.Path;
@@ -42,6 +43,14 @@ public class ShipVariant implements Variant {
     private String variantId;
 
     private String displayName;
+
+    public void initialize(VariantFile file) {
+        this.setVariantId(variantId);
+        this.setShipHullId(file.getHullId());
+        this.setVariantFilePath(file.getVariantFilePath());
+        this.setContainingPackage(file.getContainingPackage());
+        this.setDisplayName(file.getDisplayName());
+    }
 
     @Override
     public String toString() {

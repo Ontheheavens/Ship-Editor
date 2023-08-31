@@ -99,11 +99,8 @@ public class ShipPainter extends LayerPainter {
         activeVariant = new ShipVariant(empty);
         if (!empty) {
             String variantId = file.getVariantId();
-            activeVariant.setVariantId(variantId);
-            activeVariant.setShipHullId(file.getHullId());
-            activeVariant.setVariantFilePath(file.getVariantFilePath());
-            activeVariant.setContainingPackage(file.getContainingPackage());
-            activeVariant.setDisplayName(file.getDisplayName());
+
+            activeVariant.initialize(file);
 
             var parentLayer = getParentLayer();
             var loadedVariants = parentLayer.getLoadedVariants();

@@ -11,6 +11,7 @@ import oth.shipeditor.communication.events.viewer.status.CoordsModeChanged;
 import oth.shipeditor.components.CoordsDisplayMode;
 import oth.shipeditor.components.viewer.PrimaryViewer;
 import oth.shipeditor.components.viewer.control.ControlPredicates;
+import oth.shipeditor.components.viewer.layers.LayerManager;
 import oth.shipeditor.components.viewer.layers.LayerPainter;
 import oth.shipeditor.components.viewer.layers.ViewerLayer;
 import oth.shipeditor.menubar.FileUtilities;
@@ -26,7 +27,7 @@ import java.awt.geom.Point2D;
  */
 public final class StaticController {
 
-    @Setter
+    @Getter @Setter
     private static PrimaryViewer viewer;
 
     @Getter @Setter
@@ -54,6 +55,10 @@ public final class StaticController {
     private static CoordsDisplayMode coordsMode = CoordsDisplayMode.SHIP_CENTER;
 
     private StaticController() {
+    }
+
+    public static LayerManager getLayerManager() {
+        return viewer.getLayerManager();
     }
 
     public static AffineTransform getScreenToWorld() {

@@ -36,6 +36,7 @@ public final class StringValues {
     public static final String NO_SELECTED = "No selected slot";
     public static final String BUILT_IN_DOES_NOT_COST_ORDNANCE = "Built-in: does not cost ordnance";
     public static final String EMPTY = "Empty";
+    public static final String FILES = "Files";
 
     private StringValues() {
     }

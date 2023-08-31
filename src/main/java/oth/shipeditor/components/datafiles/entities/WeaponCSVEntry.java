@@ -14,7 +14,7 @@ import java.util.Map;
  * @since 05.08.2023
  */
 @Getter
-public class WeaponCSVEntry implements CSVEntry{
+public class WeaponCSVEntry implements CSVEntry {
 
     private final Map<String, String> rowData;
 
@@ -37,6 +37,11 @@ public class WeaponCSVEntry implements CSVEntry{
     @Override
     public String getID() {
         return weaponID;
+    }
+
+
+    public void loadLayerFromEntry() {
+
     }
 
     @Override

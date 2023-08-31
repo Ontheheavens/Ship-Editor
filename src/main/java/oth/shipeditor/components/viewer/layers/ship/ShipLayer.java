@@ -2,11 +2,14 @@ package oth.shipeditor.components.viewer.layers.ship;
 
 import lombok.Getter;
 import lombok.Setter;
+import oth.shipeditor.communication.EventBus;
+import oth.shipeditor.communication.events.viewer.layers.ships.ShipDataCreated;
 import oth.shipeditor.components.viewer.layers.LayerPainter;
 import oth.shipeditor.components.viewer.layers.ViewerLayer;
 import oth.shipeditor.components.viewer.layers.ship.data.ShipHull;
 import oth.shipeditor.components.viewer.layers.ship.data.ShipSkin;
 import oth.shipeditor.components.viewer.layers.ship.data.ShipVariant;
+import oth.shipeditor.representation.HullSpecFile;
 import oth.shipeditor.representation.ShipData;
 import oth.shipeditor.representation.SkinSpecFile;
 
@@ -68,9 +71,17 @@ public class ShipLayer extends ViewerLayer {
         super.setPainter(painter);
     }
 
-    public void setShipData(ShipData data) {
-        this.shipData = data;
-        this.hull = new ShipHull();
+    public void createShipData(HullSpecFile hullSpecFile) {
+        ShipData data = this.getShipData();
+        if (data != null ) {
+            data.setHullSpecFile(hullSpecFile);
+        } else {
+            this.shipData = new ShipData(hullSpecFile);
+            this.hull = new ShipHull();
+        }
+        String fileName = String.valueOf(hullSpecFile.getFilePath().getFileName());
+        this.setHullFileName(fileName);
+        EventBus.publish(new ShipDataCreated(this));
     }
 
     @Override

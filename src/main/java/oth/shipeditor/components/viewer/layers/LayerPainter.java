@@ -171,6 +171,14 @@ public abstract class LayerPainter implements Painter {
         return transform;
     }
 
+    private int getSpriteWidth() {
+        return sprite.getWidth();
+    }
+
+    private int getSpriteHeight() {
+        return sprite.getHeight();
+    }
+
     /**
      * Note: if called programmatically outside of usual user input flow,
      * {@link oth.shipeditor.undo.UndoOverseer} needs to finish all edits programmatically as well,
@@ -182,15 +190,16 @@ public abstract class LayerPainter implements Painter {
     }
 
     public Point2D getSpriteCenter() {
-        return new Point2D.Double((anchor.getX() + sprite.getWidth() / 2.0f), (anchor.getY() + sprite.getHeight() / 2.0f));
+        return new Point2D.Double((anchor.getX() + this.getSpriteWidth() / 2.0f),
+                (anchor.getY() + this.getSpriteHeight() / 2.0f));
     }
 
     @Override
     public void paint(Graphics2D g, AffineTransform worldToScreen, double w, double h) {
         AffineTransform oldAT = g.getTransform();
         g.transform(worldToScreen);
-        int width = sprite.getWidth();
-        int height = sprite.getHeight();
+        int width = this.getSpriteWidth();
+        int height = this.getSpriteHeight();
         int rule = AlphaComposite.SRC_OVER;
         float alpha = this.spriteOpacity;
         Composite old = g.getComposite();

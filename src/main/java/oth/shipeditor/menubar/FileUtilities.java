@@ -13,6 +13,7 @@ import oth.shipeditor.parsing.loading.*;
 import oth.shipeditor.persistence.Settings;
 import oth.shipeditor.persistence.SettingsManager;
 import oth.shipeditor.representation.HullSpecFile;
+import oth.shipeditor.utility.StaticController;
 import oth.shipeditor.utility.graphics.Sprite;
 
 import javax.swing.*;
@@ -115,10 +116,22 @@ public final class FileUtilities {
         }
     }
 
-    public static void createShipLayerWithSprite(File spriteFile) {
+    public static ShipLayer createShipLayerWithSprite(File spriteFile) {
+        Sprite sprite = FileLoading.loadSprite(spriteFile);
+
+        var manager = StaticController.getLayerManager();
+        var layer = manager.createShipLayer();
+        manager.setActiveLayer(layer);
+        var viewer = StaticController.getViewer();
+        viewer.loadLayer(layer, sprite);
+
+        return layer;
+    }
+
+    @SuppressWarnings("unused")
+    private static void loadSpriteThroughBus(Sprite sprite) {
         EventBus.publish(new ShipLayerCreationQueued());
         EventBus.publish(new LastLayerSelectQueued());
-        Sprite sprite = FileLoading.loadSprite(spriteFile);
         EventBus.publish(new SpriteOpened(sprite));
     }
 

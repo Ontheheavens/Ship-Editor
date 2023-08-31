@@ -11,6 +11,7 @@ import oth.shipeditor.representation.VariantFile;
 import oth.shipeditor.utility.Utility;
 import oth.shipeditor.utility.components.ComponentUtilities;
 import oth.shipeditor.utility.components.MouseoverLabelListener;
+import oth.shipeditor.utility.text.StringValues;
 
 import javax.swing.*;
 import javax.swing.border.Border;
@@ -100,7 +101,7 @@ class ShipFilesSubpanel extends JPanel {
 
             MatteBorder matteLine = new MatteBorder(new Insets(0, 0, 1, 0),
                     Color.LIGHT_GRAY);
-            Border titledBorder = new TitledBorder(matteLine, "Files",
+            Border titledBorder = new TitledBorder(matteLine, StringValues.FILES,
                     TitledBorder.CENTER, TitledBorder.BOTTOM);
             spriteWrapper.setBorder(titledBorder);
 

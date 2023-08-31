@@ -6,9 +6,15 @@ import oth.shipeditor.components.datafiles.entities.WeaponCSVEntry;
 import oth.shipeditor.menubar.FileUtilities;
 import oth.shipeditor.persistence.SettingsManager;
 import oth.shipeditor.representation.GameDataRepository;
+import oth.shipeditor.representation.weapon.WeaponSpecFile;
+import oth.shipeditor.utility.components.ComponentUtilities;
+import oth.shipeditor.utility.components.MouseoverLabelListener;
+import oth.shipeditor.utility.text.StringValues;
 
 import javax.swing.*;
+import javax.swing.border.EmptyBorder;
 import javax.swing.tree.DefaultMutableTreeNode;
+import java.awt.*;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -54,7 +60,6 @@ public class WeaponsTreePanel extends CSVDataTreePanel<WeaponCSVEntry>{
                 Map<Path, Map<String, WeaponCSVEntry>> weaponsByPackage = checked.weaponsByPackage();
 
                 Map<String, List<WeaponCSVEntry>> weaponPackageList = new HashMap<>();
-                // Iterate through the weaponsByPackage map and convert each entry
                 for (Map.Entry<Path, Map<String, WeaponCSVEntry>> packageEntry : weaponsByPackage.entrySet()) {
                     Path packageEntryKey = packageEntry.getKey();
                     String packageName = packageEntryKey.toString();
@@ -74,8 +79,39 @@ public class WeaponsTreePanel extends CSVDataTreePanel<WeaponCSVEntry>{
     protected void updateEntryPanel(WeaponCSVEntry selected) {
         JPanel rightPanel = getRightPanel();
         rightPanel.removeAll();
+
+        GridBagConstraints constraints = DataTreePanel.getDefaultConstraints();
+        constraints.gridy = 1;
+        constraints.insets = new Insets(0, 5, 0, 5);
+        JPanel specFilePanel = new JPanel();
+        specFilePanel.setLayout(new FlowLayout(FlowLayout.LEADING, 0, 0));
+
+        ComponentUtilities.outfitPanelWithTitle(specFilePanel, new Insets(1, 0, 0, 0),
+                StringValues.FILES);
+        specFilePanel.setAlignmentX(LEFT_ALIGNMENT);
+
+        JPanel labelContainer = new JPanel();
+        labelContainer.setAlignmentX(LEFT_ALIGNMENT);
+        labelContainer.setBorder(new EmptyBorder(2, 0, 0, 0));
+        labelContainer.setLayout(new BoxLayout(labelContainer, BoxLayout.PAGE_AXIS));
+
+        labelContainer.add(WeaponsTreePanel.createWeaponFileLabel(selected.getSpecFile()));
+
+        specFilePanel.add(labelContainer);
+        rightPanel.add(specFilePanel, constraints);
+
         Map<String, String> data = selected.getRowData();
         createRightPanelDataTable(data);
+    }
+
+    private static JLabel createWeaponFileLabel(WeaponSpecFile weaponSpecFile) {
+        Path weaponSpecFilePath = weaponSpecFile.getWeaponSpecFilePath();
+        JLabel label = new JLabel("Weapon file : " + weaponSpecFilePath.getFileName());
+        label.setToolTipText(String.valueOf(weaponSpecFilePath));
+        label.setBorder(ComponentUtilities.createLabelSimpleBorder(ComponentUtilities.createLabelInsets()));
+        JPopupMenu pathContextMenu = ComponentUtilities.createPathContextMenu(weaponSpecFilePath);
+        label.addMouseListener(new MouseoverLabelListener(pathContextMenu, label));
+        return label;
     }
 
     @Override

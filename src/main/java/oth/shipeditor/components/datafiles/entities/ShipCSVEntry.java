@@ -3,8 +3,8 @@ package oth.shipeditor.components.datafiles.entities;
 import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
 import oth.shipeditor.communication.EventBus;
-import oth.shipeditor.communication.events.files.HullFileOpened;
 import oth.shipeditor.communication.events.files.SkinFileOpened;
+import oth.shipeditor.components.viewer.layers.ship.ShipLayer;
 import oth.shipeditor.menubar.FileUtilities;
 import oth.shipeditor.parsing.loading.FileLoading;
 import oth.shipeditor.representation.HullSpecFile;
@@ -114,8 +114,8 @@ public class ShipCSVEntry implements CSVEntry {
         Path spriteFilePath = Path.of(spriteName);
         File spriteFile = FileLoading.fetchDataFile(spriteFilePath, this.packageFolderPath);
 
-        FileUtilities.createShipLayerWithSprite(spriteFile);
-        EventBus.publish(new HullFileOpened(this.hullSpecFile, this.getHullFileName()));
+        ShipLayer newLayer = FileUtilities.createShipLayerWithSprite(spriteFile);
+        newLayer.createShipData(this.hullSpecFile);
 
         if (skins == null || skins.isEmpty()) return;
 
