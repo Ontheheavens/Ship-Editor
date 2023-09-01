@@ -15,6 +15,7 @@ import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.tree.DefaultMutableTreeNode;
 import java.awt.*;
+import java.awt.event.ActionEvent;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -112,6 +113,34 @@ public class WeaponsTreePanel extends CSVDataTreePanel<WeaponCSVEntry>{
         JPopupMenu pathContextMenu = ComponentUtilities.createPathContextMenu(weaponSpecFilePath);
         label.addMouseListener(new MouseoverLabelListener(pathContextMenu, label));
         return label;
+    }
+
+    @Override
+    JPopupMenu getContextMenu() {
+        JPopupMenu menu = super.getContextMenu();
+        DefaultMutableTreeNode cachedSelectForMenu = getCachedSelectForMenu();
+        if (cachedSelectForMenu.getUserObject() instanceof WeaponCSVEntry) {
+            menu.addSeparator();
+            JMenuItem loadAsLayer = new JMenuItem("Load as weapon layer");
+            loadAsLayer.addActionListener(new LoadWeaponLayerFromTree());
+            menu.add(loadAsLayer);
+        }
+        return menu;
+    }
+
+    private class LoadWeaponLayerFromTree extends AbstractAction {
+        @Override
+        public boolean isEnabled() {
+            DefaultMutableTreeNode cachedSelectForMenu = getCachedSelectForMenu();
+            return super.isEnabled() && cachedSelectForMenu.getUserObject() instanceof WeaponCSVEntry;
+        }
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            DefaultMutableTreeNode cachedSelectForMenu = getCachedSelectForMenu();
+            if (cachedSelectForMenu.getUserObject() instanceof WeaponCSVEntry checked) {
+                checked.loadLayerFromEntry();
+            }
+        }
     }
 
     @Override

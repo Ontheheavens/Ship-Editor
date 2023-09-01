@@ -68,6 +68,7 @@
     exports oth.shipeditor.components.instrument.ship.skins;
     opens oth.shipeditor.components.instrument.ship.skins;
     exports oth.shipeditor.components.viewer.layers.ship.data;
+    exports oth.shipeditor.components.viewer.layers.weapon;
     exports oth.shipeditor.representation.weapon.animation;
     opens oth.shipeditor.representation.weapon.animation;
     exports oth.shipeditor.components.instrument.ship.bays;

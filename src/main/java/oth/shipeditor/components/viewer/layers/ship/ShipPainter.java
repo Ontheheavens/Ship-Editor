@@ -9,7 +9,6 @@ import oth.shipeditor.communication.events.Events;
 import oth.shipeditor.communication.events.components.SkinPanelRepaintQueued;
 import oth.shipeditor.communication.events.viewer.ViewerRepaintQueued;
 import oth.shipeditor.communication.events.viewer.layers.ActiveLayerUpdated;
-import oth.shipeditor.communication.events.viewer.layers.LayerSpriteLoadQueued;
 import oth.shipeditor.communication.events.viewer.layers.ships.LayerShipDataInitialized;
 import oth.shipeditor.communication.events.viewer.layers.ships.ShipDataCreated;
 import oth.shipeditor.components.viewer.entities.ShipCenterPoint;
@@ -159,17 +158,11 @@ public class ShipPainter extends LayerPainter {
         this.notifyLayerUpdate();
     }
 
-    protected void notifyLayerUpdate() {
+    private void notifyLayerUpdate() {
         EventBus.publish(new ActiveLayerUpdated(this.getParentLayer()));
         EventBus.publish(new SkinPanelRepaintQueued());
         Events.repaintView();
     }
-
-//    @Override
-//    protected Point2D getRotationAnchor() {
-//        ShipCenterPoint shipCenter = this.getShipCenter();
-//        return shipCenter.getPosition();
-//    }
 
     @Override
     public ShipLayer getParentLayer() {
@@ -202,16 +195,11 @@ public class ShipPainter extends LayerPainter {
         EventBus.publish(new ViewerRepaintQueued());
     }
 
-    @SuppressWarnings({"ChainOfInstanceofChecks", "WeakerAccess"})
+    @SuppressWarnings("WeakerAccess")
     protected void initPainterListeners(ShipLayer layer) {
         if (layer == null) return;
         BusEventListener layerUpdateListener = event -> {
-            if (event instanceof LayerSpriteLoadQueued checked) {
-                if (checked.updated() != layer) return;
-                if (layer.getSprite() != null) {
-                    this.setSprite(layer.getSprite());
-                }
-            } else if (event instanceof ShipDataCreated checked) {
+            if (event instanceof ShipDataCreated checked) {
                 if (checked.layer() != layer) return;
                 ShipData shipData = layer.getShipData();
                 if (shipData != null && this.isUninitialized()) {

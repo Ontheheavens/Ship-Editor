@@ -36,6 +36,7 @@ import java.awt.event.MouseEvent;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Point2D;
 import java.io.File;
+import java.util.List;
 import java.util.Locale;
 
 /**
@@ -172,30 +173,46 @@ public final class PrimaryViewer extends Viewer implements LayerViewer {
         return activeLayer.getPainter();
     }
 
+    // TODO: separate methods for loading ship and weapon layers, as weapons have multiple sprite parts.
+
     @SuppressWarnings("ChainOfInstanceofChecks")
     @Override
-    public void loadLayer(ViewerLayer layer, Sprite sprite) {
-        // Main sprite painter and said painter children point painters are distinct conceptually.
-        // Layer might be selected and deselected, in which case children painters are loaded/unloaded.
-        // At the same time main sprite painter remains loaded until layer is explicitly removed.
+    public ViewerLayer loadLayer(ViewerLayer layer, Sprite sprite) {
         LayerPainter newPainter = null;
         if (layer instanceof ShipLayer checkedLayer) {
             ShipPainter shipPainter = new ShipPainter(checkedLayer);
             shipPainter.setBaseHullSprite(sprite);
             newPainter = shipPainter;
         } else if (layer instanceof WeaponLayer checkedLayer) {
-            newPainter = new WeaponPainter(checkedLayer);
+            WeaponPainter weaponPainter = new WeaponPainter(checkedLayer);
+            weaponPainter.setTurretSprite(sprite);
+            newPainter = weaponPainter;
         }
+
         layer.setPainter(newPainter);
+
         layerManager.setActiveLayer(layer);
 
         if (newPainter != null) {
             newPainter.setSprite(sprite.getSpriteImage());
+
+            List<ViewerLayer> layers = layerManager.getLayers();
+
+            if (layers.size() > 1) {
+                var prevLayer = layers.get(layers.indexOf(layer) - 1);
+                var layerPainter = prevLayer.getPainter();
+                var layerAnchor = layerPainter.getAnchor();
+                var prevLayerWidth = layerPainter.getSpriteSize();
+                Point2D widthPoint = new Point2D.Double(layerAnchor.getX() + prevLayerWidth.width, layerAnchor.getY());
+
+                newPainter.updateAnchorOffset(widthPoint);
+            }
         }
         layer.setSpriteFileName(sprite.getFileName());
         EventBus.publish(new LayerSpriteLoadConfirmed(layer, sprite));
         EventBus.publish(new ActiveLayerUpdated(layer));
         this.centerViewpoint();
+        return layer;
     }
 
     private static void unloadLayer(ViewerLayer layer) {

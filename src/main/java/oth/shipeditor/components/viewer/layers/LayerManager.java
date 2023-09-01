@@ -70,15 +70,20 @@ public class LayerManager {
         return newLayer;
     }
 
+    public WeaponLayer createWeaponLayer() {
+        WeaponLayer newLayer = new WeaponLayer();
+        layers.add(newLayer);
+        EventBus.publish(new WeaponLayerCreated(newLayer));
+        return newLayer;
+    }
+
     @SuppressWarnings({"OverlyCoupledMethod", "ChainOfInstanceofChecks", "OverlyComplexMethod"})
     private void initLayerListening() {
         EventBus.subscribe(event -> {
             if (event instanceof ShipLayerCreationQueued) {
                 this.createShipLayer();
             } else if (event instanceof WeaponLayerCreationQueued) {
-                WeaponLayer newLayer = new WeaponLayer();
-                layers.add(newLayer);
-                EventBus.publish(new WeaponLayerCreated(newLayer));
+                this.createWeaponLayer();
             }
         });
         // It is implicitly assumed that the last layer in list is also the one that was just created.

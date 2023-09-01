@@ -55,10 +55,13 @@ public abstract class LayerPainter implements Painter {
 
     protected LayerPainter(ViewerLayer layer) {
         this.parentLayer = layer;
-        this.sprite = layer.getSprite();
         this.allPainters = new ArrayList<>();
         this.listeners = new ArrayList<>();
         this.initLayerListeners();
+    }
+
+    public Dimension getSpriteSize() {
+        return new Dimension(sprite.getWidth(), sprite.getHeight());
     }
 
     private void initLayerListeners() {
@@ -194,18 +197,22 @@ public abstract class LayerPainter implements Painter {
                 (anchor.getY() + this.getSpriteHeight() / 2.0f));
     }
 
+    protected void paintContent(Graphics2D g) {
+        int width = this.getSpriteWidth();
+        int height = this.getSpriteHeight();
+        g.drawImage(sprite, (int) anchor.getX(), (int) anchor.getY(), width, height, null);
+    }
+
     @Override
     public void paint(Graphics2D g, AffineTransform worldToScreen, double w, double h) {
         AffineTransform oldAT = g.getTransform();
         g.transform(worldToScreen);
-        int width = this.getSpriteWidth();
-        int height = this.getSpriteHeight();
         int rule = AlphaComposite.SRC_OVER;
         float alpha = this.spriteOpacity;
         Composite old = g.getComposite();
         Composite opacity = AlphaComposite.getInstance(rule, alpha) ;
         g.setComposite(opacity);
-        g.drawImage(sprite, (int) anchor.getX(), (int) anchor.getY(), width, height, null);
+        this.paintContent(g);
         g.setComposite(old);
         g.setTransform(oldAT);
     }
