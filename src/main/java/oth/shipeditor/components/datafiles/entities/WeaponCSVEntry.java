@@ -97,6 +97,9 @@ public class WeaponCSVEntry implements CSVEntry {
         setSpecSpriteFromPath(hardpointGlowSprite, spriteHolder::setHardpointGlowSprite);
         String hardpointUnderSprite = weaponSpecFile.getHardpointUnderSprite();
         setSpecSpriteFromPath(hardpointUnderSprite, spriteHolder::setHardpointUnderSprite);
+
+        Sprite loadedTurretSprite = spriteHolder.getTurretSprite();
+        weaponPainter.setSprite(loadedTurretSprite.image());
         return weaponPainter;
     }
 
