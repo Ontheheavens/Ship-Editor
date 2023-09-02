@@ -220,6 +220,12 @@ public class ShipPainter extends LayerPainter {
         return this.centerPointPainter.getCenterPoint();
     }
 
+    @Override
+    public Point2D getEntityCenter() {
+        ShipCenterPoint shipCenter = this.getShipCenter();
+        return shipCenter.getPosition();
+    }
+
     public Point2D getCenterAnchor() {
         Point2D anchor = getAnchor();
         BufferedImage sprite = getSprite();

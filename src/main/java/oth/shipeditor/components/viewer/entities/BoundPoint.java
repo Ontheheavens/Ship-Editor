@@ -1,6 +1,6 @@
 package oth.shipeditor.components.viewer.entities;
 
-import oth.shipeditor.components.instrument.ship.ShipInstrument;
+import oth.shipeditor.components.instrument.ship.EditorInstrument;
 import oth.shipeditor.components.viewer.layers.ship.ShipPainter;
 import oth.shipeditor.utility.StaticController;
 import oth.shipeditor.utility.graphics.DrawUtilities;
@@ -21,8 +21,8 @@ public class BoundPoint extends BaseWorldPoint{
     }
 
     @Override
-    public ShipInstrument getAssociatedMode() {
-        return ShipInstrument.BOUNDS;
+    public EditorInstrument getAssociatedMode() {
+        return EditorInstrument.BOUNDS;
     }
 
     public static Shape getShapeForPoint(AffineTransform worldToScreen, Point2D position, double sizeMult) {

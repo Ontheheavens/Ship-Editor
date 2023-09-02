@@ -7,7 +7,7 @@ import oth.shipeditor.communication.events.viewer.ViewerRepaintQueued;
 import oth.shipeditor.communication.events.viewer.points.LaunchBayAddConfirmed;
 import oth.shipeditor.communication.events.viewer.points.LaunchBayRemoveConfirmed;
 import oth.shipeditor.communication.events.viewer.points.PointCreationQueued;
-import oth.shipeditor.components.instrument.ship.ShipInstrument;
+import oth.shipeditor.components.instrument.ship.EditorInstrument;
 import oth.shipeditor.components.viewer.entities.BaseWorldPoint;
 import oth.shipeditor.components.viewer.entities.WorldPoint;
 import oth.shipeditor.components.viewer.entities.bays.LaunchBay;
@@ -55,8 +55,8 @@ public class LaunchBayPainter extends MirrorablePointPainter {
     }
 
     @Override
-    protected ShipInstrument getInstrumentType() {
-        return ShipInstrument.LAUNCH_BAYS;
+    protected EditorInstrument getInstrumentType() {
+        return EditorInstrument.LAUNCH_BAYS;
     }
 
     @Override
@@ -67,7 +67,7 @@ public class LaunchBayPainter extends MirrorablePointPainter {
 
     @Override
     protected void handleCreation(PointCreationQueued event) {
-        ShipPainter parentLayer = this.getParentLayer();
+        ShipPainter parentLayer = (ShipPainter) this.getParentLayer();
         Point2D position = event.position();
         String generatedID = this.generateUniqueBayID();
         if (addPortHotkeyPressed) {
@@ -90,7 +90,7 @@ public class LaunchBayPainter extends MirrorablePointPainter {
     }
 
     private String generateUniqueBayID() {
-        ShipPainter parentLayer = getParentLayer();
+        ShipPainter parentLayer = (ShipPainter) getParentLayer();
         return parentLayer.generateUniqueSlotID("LB");
     }
 

@@ -178,23 +178,30 @@ public final class PrimaryViewer extends Viewer implements LayerViewer {
     @Override
     public ViewerLayer loadLayer(ViewerLayer layer, Sprite sprite) {
         LayerPainter newPainter = null;
-        if (layer instanceof ShipLayer checkedLayer) {
-            ShipPainter shipPainter = new ShipPainter(checkedLayer);
-            shipPainter.setBaseHullSprite(sprite);
-            newPainter = shipPainter;
-        } else if (layer instanceof WeaponLayer checkedLayer) {
-            WeaponPainter weaponPainter = new WeaponPainter(checkedLayer);
-            WeaponSprites weaponSprites = weaponPainter.getWeaponSprites();
-            weaponSprites.setTurretSprite(sprite);
-            newPainter = weaponPainter;
+        boolean painterCreated = false;
+        if (layer.getPainter() == null) {
+            if (layer instanceof ShipLayer checkedLayer) {
+                ShipPainter shipPainter = new ShipPainter(checkedLayer);
+                shipPainter.setBaseHullSprite(sprite);
+                newPainter = shipPainter;
+            } else if (layer instanceof WeaponLayer checkedLayer) {
+                WeaponPainter weaponPainter = new WeaponPainter(checkedLayer);
+                WeaponSprites weaponSprites = weaponPainter.getWeaponSprites();
+                weaponSprites.setTurretSprite(sprite);
+                newPainter = weaponPainter;
+            }
+            layer.setPainter(newPainter);
+            painterCreated = true;
+        } else {
+            newPainter = layer.getPainter();
         }
-
-        layer.setPainter(newPainter);
 
         layerManager.setActiveLayer(layer);
 
         if (newPainter != null) {
-            newPainter.setSprite(sprite.image());
+            if (painterCreated) {
+                newPainter.setSprite(sprite.image());
+            }
 
             List<ViewerLayer> layers = layerManager.getLayers();
 

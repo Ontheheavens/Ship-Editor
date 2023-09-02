@@ -3,7 +3,7 @@ package oth.shipeditor.components.viewer.entities;
 import lombok.Getter;
 import lombok.Setter;
 import oth.shipeditor.components.instrument.ship.ShipInstrumentsPane;
-import oth.shipeditor.components.instrument.ship.ShipInstrument;
+import oth.shipeditor.components.instrument.ship.EditorInstrument;
 import oth.shipeditor.components.viewer.layers.LayerPainter;
 import oth.shipeditor.components.viewer.layers.ship.ShipPainter;
 import oth.shipeditor.components.viewer.painters.points.CenterPointPainter;
@@ -50,8 +50,8 @@ public class ShipCenterPoint extends BaseWorldPoint {
     }
 
     @Override
-    public ShipInstrument getAssociatedMode() {
-        return ShipInstrument.COLLISION;
+    public EditorInstrument getAssociatedMode() {
+        return EditorInstrument.COLLISION;
     }
 
     @Override

@@ -26,7 +26,7 @@ import java.util.List;
  * @author Ontheheavens
  * @since 28.07.2023
  */
-@SuppressWarnings("AbstractClassWithoutAbstractMethods")
+@SuppressWarnings("ClassWithTooManyMethods")
 public abstract class LayerPainter implements Painter {
 
     @Getter
@@ -96,6 +96,8 @@ public abstract class LayerPainter implements Painter {
         listeners.add(rotationListener);
         EventBus.subscribe(rotationListener);
     }
+
+    public abstract Point2D getEntityCenter();
 
     public boolean isLayerActive() {
         ViewerLayer layer = this.getParentLayer();

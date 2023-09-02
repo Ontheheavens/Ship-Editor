@@ -35,7 +35,7 @@ public final class ShipPainterInitialization {
         Point2D anchor = shipPainter.getCenterAnchor();
         Point2D hullCenter = hullSpecFile.getCenter();
 
-        Point2D translatedCenter = ShipPainterInitialization.rotateHullCenter(hullCenter, anchor);
+        Point2D translatedCenter = ShipPainterInitialization.rotateCenter(hullCenter, anchor);
 
         ShipPainterInitialization.initCentroids(shipPainter, hullSpecFile, translatedCenter);
 
@@ -162,13 +162,13 @@ public final class ShipPainterInitialization {
      * @param translatedCenter center point around which the rotation is performed.
      * @return new {@code Point2D} representing the rotated point.
      */
-    private static Point2D rotatePointByCenter(Point2D input, Point2D translatedCenter) {
+    public static Point2D rotatePointByCenter(Point2D input, Point2D translatedCenter) {
         double translatedX = -input.getY() + translatedCenter.getX();
         double translatedY = -input.getX() + translatedCenter.getY();
         return new Point2D.Double(translatedX, translatedY);
     }
 
-    private static Point2D rotateHullCenter(Point2D hullCenter, Point2D anchor) {
+    public static Point2D rotateCenter(Point2D hullCenter, Point2D anchor) {
         double anchorX = anchor.getX();
         double anchorY = anchor.getY();
         return new Point2D.Double(hullCenter.getX() + anchorX, -hullCenter.getY() + anchorY);

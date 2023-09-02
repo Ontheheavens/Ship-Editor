@@ -3,7 +3,7 @@ package oth.shipeditor.components.viewer.entities;
 import lombok.Getter;
 import lombok.Setter;
 import oth.shipeditor.components.instrument.ship.ShipInstrumentsPane;
-import oth.shipeditor.components.instrument.ship.ShipInstrument;
+import oth.shipeditor.components.instrument.ship.EditorInstrument;
 import oth.shipeditor.components.viewer.layers.ship.ShipPainter;
 import oth.shipeditor.components.viewer.painters.points.ShieldPointPainter;
 import oth.shipeditor.representation.HullStyle;
@@ -45,8 +45,8 @@ public class ShieldCenterPoint extends BaseWorldPoint {
     }
 
     @Override
-    public ShipInstrument getAssociatedMode() {
-        return ShipInstrument.SHIELD;
+    public EditorInstrument getAssociatedMode() {
+        return EditorInstrument.SHIELD;
     }
 
     @Override

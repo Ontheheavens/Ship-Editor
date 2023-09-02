@@ -6,9 +6,7 @@ import oth.shipeditor.utility.Utility;
 
 import java.awt.*;
 import java.awt.font.GlyphVector;
-import java.awt.geom.AffineTransform;
-import java.awt.geom.Point2D;
-import java.awt.geom.Rectangle2D;
+import java.awt.geom.*;
 
 /**
  * @author Ontheheavens
@@ -84,13 +82,13 @@ public final class DrawUtilities {
                 new BasicStroke(5), new BasicStroke(3));
     }
 
-    @SuppressWarnings("BooleanParameter")
+    @SuppressWarnings({"BooleanParameter", "WeakerAccess"})
     public static void drawOutlined(Graphics2D g, Shape shape, Paint color, boolean quality) {
         DrawUtilities.drawOutlined(g, shape, color, quality,
                 new BasicStroke(5), new BasicStroke(3));
     }
 
-    @SuppressWarnings({"BooleanParameter", "MethodWithTooManyParameters"})
+    @SuppressWarnings({"BooleanParameter", "MethodWithTooManyParameters", "WeakerAccess"})
     public static void drawOutlined(Graphics2D g, Shape shape, Paint color, boolean quality,
                                     Stroke outlineStroke, Stroke coreStroke) {
         RenderingHints originalHints = g.getRenderingHints();
@@ -122,6 +120,32 @@ public final class DrawUtilities {
     public static Shape paintScreenTextOutlined(Graphics2D g, String text, Font hintFont, Point2D screenPosition) {
         return DrawUtilities.paintScreenTextOutlined(g, text, hintFont,
                 null, screenPosition, RectangleCorner.BOTTOM_RIGHT);
+    }
+
+    @SuppressWarnings("MethodWithTooManyParameters")
+    public static void drawAngledCirclePointer(Graphics2D g, AffineTransform worldToScreen, Shape circle,
+                                               double circleRadius, double rawAngle, Point2D position, Paint color) {
+        double transformedAngle = Utility.transformAngle(rawAngle);
+
+        Point2D lineEndpoint = ShapeUtilities.getPointInDirection(position,
+                transformedAngle, 0.5f);
+        Point2D closestIntersection = ShapeUtilities.getPointInDirection(position,
+                transformedAngle, circleRadius);
+
+        Shape angleLine = new Line2D.Double(lineEndpoint, closestIntersection);
+
+        GeneralPath combinedPath = new GeneralPath();
+        combinedPath.append(circle, false);
+        combinedPath.append(angleLine, false);
+
+        double radiusDistance = ShapeUtilities.getScreenCircleRadius(worldToScreen, position, closestIntersection);
+
+        DrawUtilities.drawCompositeFigure(g, worldToScreen, position, combinedPath,
+                radiusDistance * 2.0d, Color.WHITE);
+
+        Shape baseCircleTransformed = ShapeUtilities.ensureDynamicScaleShape(worldToScreen,
+                position, circle, 12);
+        DrawUtilities.drawOutlined(g, baseCircleTransformed, color, false);
     }
 
     /**
@@ -225,6 +249,15 @@ public final class DrawUtilities {
 
         worldToScreen.setTransform(oldWtS);
         g.setTransform(oldAT);
+    }
+
+    @SuppressWarnings("MethodWithTooManyParameters")
+    public static void drawCompositeFigure(Graphics2D g, AffineTransform worldToScreen, Point2D position, Shape figure,
+                                           double measurement, Paint color) {
+        Shape transformed = ShapeUtilities.ensureSpecialScaleShape(worldToScreen,
+                position, figure, 12, measurement);
+        DrawUtilities.drawOutlined(g, transformed, color, false,
+                new BasicStroke(3.0f), new BasicStroke(2.25f));
     }
 
 }

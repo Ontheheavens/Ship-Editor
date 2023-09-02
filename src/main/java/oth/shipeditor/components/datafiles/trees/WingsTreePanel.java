@@ -4,7 +4,7 @@ import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.files.WingDataLoaded;
 import oth.shipeditor.communication.events.viewer.layers.ActiveLayerUpdated;
 import oth.shipeditor.components.datafiles.entities.WingCSVEntry;
-import oth.shipeditor.components.instrument.ship.ShipInstrument;
+import oth.shipeditor.components.instrument.ship.EditorInstrument;
 import oth.shipeditor.components.instrument.ship.ShipInstrumentsPane;
 import oth.shipeditor.components.viewer.layers.ViewerLayer;
 import oth.shipeditor.components.viewer.layers.ship.ShipLayer;
@@ -169,7 +169,7 @@ public class WingsTreePanel extends CSVDataTreePanel<WingCSVEntry>{
     }
 
     private static boolean isNotActiveInstrument() {
-        return ShipInstrumentsPane.getCurrentMode() != ShipInstrument.BUILT_IN_WINGS;
+        return ShipInstrumentsPane.getCurrentMode() != EditorInstrument.BUILT_IN_WINGS;
     }
 
     private static boolean isPushEntryToListSuccessful(List<WingCSVEntry> list, ShipLayer layer,

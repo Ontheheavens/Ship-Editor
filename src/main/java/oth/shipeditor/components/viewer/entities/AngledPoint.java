@@ -1,6 +1,6 @@
 package oth.shipeditor.components.viewer.entities;
 
-import oth.shipeditor.components.viewer.layers.ship.ShipPainter;
+import oth.shipeditor.components.viewer.layers.LayerPainter;
 
 import java.awt.geom.Point2D;
 
@@ -10,7 +10,7 @@ import java.awt.geom.Point2D;
  */
 public abstract class AngledPoint extends BaseWorldPoint {
 
-    protected AngledPoint(Point2D pointPosition, ShipPainter layer) {
+    protected AngledPoint(Point2D pointPosition, LayerPainter layer) {
         super(pointPosition, layer);
     }
 

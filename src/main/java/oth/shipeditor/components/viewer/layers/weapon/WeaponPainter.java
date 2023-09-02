@@ -4,6 +4,7 @@ import lombok.Getter;
 import lombok.Setter;
 import oth.shipeditor.components.viewer.layers.LayerPainter;
 import oth.shipeditor.components.viewer.layers.ViewerLayer;
+import oth.shipeditor.components.viewer.painters.points.WeaponOffsetPainter;
 import oth.shipeditor.representation.weapon.WeaponMount;
 import oth.shipeditor.utility.graphics.Sprite;
 
@@ -17,16 +18,41 @@ import java.awt.image.BufferedImage;
  * @author Ontheheavens
  * @since 28.07.2023
  */
-@Getter @Setter
 public class WeaponPainter extends LayerPainter {
 
+    @Getter @Setter
     private WeaponMount mount = WeaponMount.TURRET;
 
+    @Getter @Setter
     private WeaponSprites weaponSprites;
 
+    private final WeaponOffsetPainter turretOffsetPainter;
+
+    private final WeaponOffsetPainter hardpointOffsetPainter;
+
+    @SuppressWarnings("ThisEscapedInObjectConstruction")
     public WeaponPainter(ViewerLayer layer) {
         super(layer);
         this.weaponSprites = new WeaponSprites();
+
+        this.turretOffsetPainter = new WeaponOffsetPainter(this);
+        this.hardpointOffsetPainter = new WeaponOffsetPainter(this);
+        var allPainters = getAllPainters();
+        allPainters.add(turretOffsetPainter);
+        allPainters.add(hardpointOffsetPainter);
+    }
+
+    public WeaponOffsetPainter getOffsetPainter() {
+        if (mount == WeaponMount.HARDPOINT) {
+            return hardpointOffsetPainter;
+        } else {
+            return turretOffsetPainter;
+        }
+    }
+
+    @Override
+    public Point2D getEntityCenter() {
+        return this.getRotationAnchor();
     }
 
     protected void paintContent(Graphics2D g) {

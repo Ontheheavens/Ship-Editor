@@ -9,7 +9,7 @@ import oth.shipeditor.communication.events.viewer.ViewerRepaintQueued;
 import oth.shipeditor.communication.events.viewer.points.BoundInsertedConfirmed;
 import oth.shipeditor.communication.events.viewer.points.BoundPointsSorted;
 import oth.shipeditor.communication.events.viewer.points.PointCreationQueued;
-import oth.shipeditor.components.instrument.ship.ShipInstrument;
+import oth.shipeditor.components.instrument.ship.EditorInstrument;
 import oth.shipeditor.components.viewer.control.ControlPredicates;
 import oth.shipeditor.components.viewer.entities.BaseWorldPoint;
 import oth.shipeditor.components.viewer.entities.BoundPoint;
@@ -58,8 +58,8 @@ public final class BoundPointsPainter extends MirrorablePointPainter {
     }
 
     @Override
-    protected ShipInstrument getInstrumentType() {
-        return ShipInstrument.BOUNDS;
+    protected EditorInstrument getInstrumentType() {
+        return EditorInstrument.BOUNDS;
     }
 
     @Override
@@ -145,7 +145,7 @@ public final class BoundPointsPainter extends MirrorablePointPainter {
     }
 
     protected void handleCreation(PointCreationQueued event) {
-        ShipPainter parentLayer = this.getParentLayer();
+        ShipPainter parentLayer = (ShipPainter) this.getParentLayer();
         Point2D position = event.position();
         boolean mirrorMode = ControlPredicates.isMirrorModeEnabled();
         if (insertBoundHotkeyPressed) {

@@ -3,7 +3,7 @@ package oth.shipeditor.components.viewer.entities.engine;
 import com.jhlabs.image.HSBAdjustFilter;
 import lombok.Getter;
 import lombok.Setter;
-import oth.shipeditor.components.instrument.ship.ShipInstrument;
+import oth.shipeditor.components.instrument.ship.EditorInstrument;
 import oth.shipeditor.components.viewer.entities.AngledPoint;
 import oth.shipeditor.components.viewer.layers.ship.ShipPainter;
 import oth.shipeditor.parsing.loading.FileLoading;
@@ -183,8 +183,8 @@ public class EnginePoint extends AngledPoint {
         flameColored = filter.filter(FLAME, null);
     }
 
-    public ShipInstrument getAssociatedMode() {
-        return ShipInstrument.ENGINES;
+    public EditorInstrument getAssociatedMode() {
+        return EditorInstrument.ENGINES;
     }
 
     @Override
