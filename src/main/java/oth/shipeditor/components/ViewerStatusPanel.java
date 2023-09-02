@@ -230,7 +230,7 @@ final class ViewerStatusPanel extends JPanel {
         EventBus.subscribe(event -> {
             if (event instanceof LayerSpriteLoadConfirmed checked) {
                 Sprite sprite = checked.sprite();
-                this.setDimensionsLabel(sprite.getSpriteImage());
+                this.setDimensionsLabel(sprite.image());
             }
         });
         EventBus.subscribe(event -> {

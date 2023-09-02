@@ -19,6 +19,7 @@ import oth.shipeditor.components.viewer.layers.ship.ShipLayer;
 import oth.shipeditor.components.viewer.layers.ship.ShipPainter;
 import oth.shipeditor.components.viewer.layers.weapon.WeaponLayer;
 import oth.shipeditor.components.viewer.layers.weapon.WeaponPainter;
+import oth.shipeditor.components.viewer.layers.weapon.WeaponSprites;
 import oth.shipeditor.menubar.FileUtilities;
 import oth.shipeditor.undo.UndoOverseer;
 import oth.shipeditor.utility.StaticController;
@@ -173,8 +174,6 @@ public final class PrimaryViewer extends Viewer implements LayerViewer {
         return activeLayer.getPainter();
     }
 
-    // TODO: separate methods for loading ship and weapon layers, as weapons have multiple sprite parts.
-
     @SuppressWarnings("ChainOfInstanceofChecks")
     @Override
     public ViewerLayer loadLayer(ViewerLayer layer, Sprite sprite) {
@@ -185,7 +184,8 @@ public final class PrimaryViewer extends Viewer implements LayerViewer {
             newPainter = shipPainter;
         } else if (layer instanceof WeaponLayer checkedLayer) {
             WeaponPainter weaponPainter = new WeaponPainter(checkedLayer);
-            weaponPainter.setTurretSprite(sprite);
+            WeaponSprites weaponSprites = weaponPainter.getWeaponSprites();
+            weaponSprites.setTurretSprite(sprite);
             newPainter = weaponPainter;
         }
 
@@ -194,7 +194,7 @@ public final class PrimaryViewer extends Viewer implements LayerViewer {
         layerManager.setActiveLayer(layer);
 
         if (newPainter != null) {
-            newPainter.setSprite(sprite.getSpriteImage());
+            newPainter.setSprite(sprite.image());
 
             List<ViewerLayer> layers = layerManager.getLayers();
 
@@ -208,7 +208,7 @@ public final class PrimaryViewer extends Viewer implements LayerViewer {
                 newPainter.updateAnchorOffset(widthPoint);
             }
         }
-        layer.setSpriteFileName(sprite.getFileName());
+        layer.setSpriteFileName(sprite.name());
         EventBus.publish(new LayerSpriteLoadConfirmed(layer, sprite));
         EventBus.publish(new ActiveLayerUpdated(layer));
         this.centerViewpoint();

@@ -2,10 +2,13 @@ package oth.shipeditor.components.datafiles.entities;
 
 import lombok.Getter;
 import lombok.Setter;
+import oth.shipeditor.communication.EventBus;
+import oth.shipeditor.communication.events.viewer.layers.ActiveLayerUpdated;
 import oth.shipeditor.components.viewer.layers.weapon.WeaponLayer;
 import oth.shipeditor.menubar.FileUtilities;
 import oth.shipeditor.parsing.loading.FileLoading;
 import oth.shipeditor.representation.weapon.WeaponSpecFile;
+import oth.shipeditor.utility.StaticController;
 import oth.shipeditor.utility.graphics.Sprite;
 import oth.shipeditor.utility.text.StringConstants;
 import oth.shipeditor.utility.text.StringValues;
@@ -45,33 +48,38 @@ public class WeaponCSVEntry implements CSVEntry {
         return weaponID;
     }
 
-
     public void loadLayerFromEntry() {
-        String spriteName = this.specFile.getTurretSprite();
+        String turretSprite = this.specFile.getTurretSprite();
 
-        Path spriteFilePath = Path.of(spriteName);
+        Path spriteFilePath = Path.of(turretSprite);
         File spriteFile = FileLoading.fetchDataFile(spriteFilePath, this.packageFolderPath);
 
         WeaponLayer newLayer = FileUtilities.createWeaponLayerWithSprite(spriteFile);
 
+        newLayer.setSpecFile(specFile);
         var painter = newLayer.getPainter();
+        var spriteHolder = painter.getWeaponSprites();
 
+        setSpecSpriteFromPath(turretSprite, spriteHolder::setTurretSprite);
         String turretGunSprite = specFile.getTurretGunSprite();
-        setSpecSpriteFromPath(turretGunSprite, painter::setTurretGunSprite);
+        setSpecSpriteFromPath(turretGunSprite, spriteHolder::setTurretGunSprite);
         String turretGlowSprite = specFile.getTurretGlowSprite();
-        setSpecSpriteFromPath(turretGlowSprite, painter::setTurretGlowSprite);
+        setSpecSpriteFromPath(turretGlowSprite, spriteHolder::setTurretGlowSprite);
         String turretUnderSprite = specFile.getTurretUnderSprite();
-        setSpecSpriteFromPath(turretUnderSprite, painter::setTurretUnderSprite);
+        setSpecSpriteFromPath(turretUnderSprite, spriteHolder::setTurretUnderSprite);
 
         String hardpointSprite = specFile.getHardpointSprite();
-        setSpecSpriteFromPath(hardpointSprite, painter::setHardpointSprite);
+        setSpecSpriteFromPath(hardpointSprite, spriteHolder::setHardpointSprite);
         String hardpointGunSprite = specFile.getHardpointGunSprite();
-        setSpecSpriteFromPath(hardpointGunSprite, painter::setHardpointGunSprite);
+        setSpecSpriteFromPath(hardpointGunSprite, spriteHolder::setHardpointGunSprite);
         String hardpointGlowSprite = specFile.getHardpointGlowSprite();
-        setSpecSpriteFromPath(hardpointGlowSprite, painter::setHardpointGlowSprite);
+        setSpecSpriteFromPath(hardpointGlowSprite, spriteHolder::setHardpointGlowSprite);
         String hardpointUnderSprite = specFile.getHardpointUnderSprite();
-        setSpecSpriteFromPath(hardpointUnderSprite, painter::setHardpointUnderSprite);
+        setSpecSpriteFromPath(hardpointUnderSprite, spriteHolder::setHardpointUnderSprite);
 
+        var manager = StaticController.getLayerManager();
+        manager.setActiveLayer(newLayer);
+        EventBus.publish(new ActiveLayerUpdated(newLayer));
     }
 
     private void setSpecSpriteFromPath(String pathInPackage, Consumer<Sprite> setter) {

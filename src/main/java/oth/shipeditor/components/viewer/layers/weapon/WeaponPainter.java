@@ -22,44 +22,24 @@ public class WeaponPainter extends LayerPainter {
 
     private WeaponMount mount = WeaponMount.TURRET;
 
-    private Sprite turretSprite;
-
-    private Sprite turretUnderSprite;
-
-    private Sprite turretGunSprite;
-
-    private Sprite turretGlowSprite;
-
-    private Sprite hardpointSprite;
-
-    private Sprite hardpointUnderSprite;
-
-    private Sprite hardpointGunSprite;
-
-    private Sprite hardpointGlowSprite;
+    private WeaponSprites weaponSprites;
 
     public WeaponPainter(ViewerLayer layer) {
         super(layer);
+        this.weaponSprites = new WeaponSprites();
     }
 
     protected void paintContent(Graphics2D g) {
-        if (mount == WeaponMount.TURRET) {
-            this.drawSpritePart(g, turretUnderSprite);
-            super.paintContent(g);
-            this.drawSpritePart(g, turretGunSprite);
-            this.drawSpritePart(g, turretGlowSprite);
-        } else {
-            this.drawSpritePart(g, hardpointUnderSprite);
-            this.drawSpritePart(g, hardpointSprite);
-            this.drawSpritePart(g, hardpointGunSprite);
-            this.drawSpritePart(g, hardpointGlowSprite);
-        }
+        this.drawSpritePart(g, weaponSprites.getUnderSprite(mount));
+        this.drawSpritePart(g, weaponSprites.getGunSprite(mount));
+        this.drawSpritePart(g, weaponSprites.getMainSprite(mount));
+        this.drawSpritePart(g, weaponSprites.getGlowSprite(mount));
     }
 
     private void drawSpritePart(Graphics2D g, Sprite part) {
         if (part == null) return;
         Point2D anchor = this.getAnchor();
-        BufferedImage spriteImage = part.getSpriteImage();
+        BufferedImage spriteImage = part.image();
         int width = spriteImage.getWidth();
         int height = spriteImage.getHeight();
         g.drawImage(spriteImage, (int) anchor.getX(), (int) anchor.getY(), width, height, null);
@@ -67,21 +47,9 @@ public class WeaponPainter extends LayerPainter {
 
     @Override
     protected Point2D getRotationAnchor() {
-        Point2D result = new Point2D.Double();
         Point2D anchor = this.getAnchor();
-        switch (mount) {
-            case HARDPOINT -> {
-                BufferedImage spriteImage = hardpointSprite.getSpriteImage();
-                result = new Point2D.Double(anchor.getX() + spriteImage.getWidth() * 0.5f,
-                        anchor.getY() + spriteImage.getHeight() * 0.25f);
-            }
-            case TURRET, HIDDEN -> {
-                BufferedImage spriteImage = turretSprite.getSpriteImage();
-                result = new Point2D.Double(anchor.getX() + spriteImage.getWidth() * 0.5f,
-                        anchor.getY() + spriteImage.getHeight() * 0.5f);
-            }
-        }
-        return result;
+        Point2D weaponCenter = weaponSprites.getWeaponCenter(mount);
+        return new Point2D.Double(anchor.getX() + weaponCenter.getX(), anchor.getY() + weaponCenter.getY());
     }
 
 }

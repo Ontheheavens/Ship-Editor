@@ -101,7 +101,7 @@ public class WingCSVEntry implements CSVEntry {
 
     public BufferedImage getWingMemberSprite() {
         if (this.memberSprite != null) {
-            return this.memberSprite.getSpriteImage();
+            return this.memberSprite.image();
         }
 
         ShipSpecFile specFile;
@@ -115,7 +115,7 @@ public class WingCSVEntry implements CSVEntry {
             File spriteFile = FileLoading.fetchDataFile(Path.of(specFile.getSpriteName()), packageFolderPath);
             Sprite result = FileLoading.loadSprite(spriteFile);
             this.memberSprite = result;
-            return result.getSpriteImage();
+            return result.image();
         } else {
             JOptionPane.showMessageDialog(null,
                     "Wing member sprite loading failed, exception thrown for: " + this.wingID,

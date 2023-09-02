@@ -117,11 +117,11 @@ public class ShipPainter extends LayerPainter {
     public void setActiveSpec(ActiveShipSpec type, ShipSkin skin) {
         ShipLayer parentLayer = this.getParentLayer();
         if (type == ActiveShipSpec.HULL) {
-            this.setSprite(baseHullSprite.getSpriteImage());
+            this.setSprite(baseHullSprite.image());
 
             if (parentLayer != null) {
-                parentLayer.setSpriteFileName(baseHullSprite.getFileName());
-                parentLayer.setSkinFileName(StringValues.NOT_LOADED);
+                parentLayer.setSpriteFileName(baseHullSprite.name());
+                parentLayer.setActiveSkinFileName(StringValues.NOT_LOADED);
             }
 
             this.weaponSlotPainter.resetSkinSlotOverride();
@@ -133,7 +133,7 @@ public class ShipPainter extends LayerPainter {
                 throw new IllegalArgumentException("Attempted to activate invalid skin!");
             }
             Sprite loadedSkinSprite = skin.getLoadedSkinSprite();
-            this.setSprite(loadedSkinSprite.getSpriteImage());
+            this.setSprite(loadedSkinSprite.image());
 
             if (skin.getWeaponSlotChanges() != null) {
                 this.weaponSlotPainter.toggleSkinSlotOverride(skin);
@@ -148,9 +148,9 @@ public class ShipPainter extends LayerPainter {
             }
 
             if (parentLayer != null) {
-                parentLayer.setSpriteFileName(loadedSkinSprite.getFileName());
+                parentLayer.setSpriteFileName(loadedSkinSprite.name());
                 String skinFileName = skin.getSkinFilePath().getFileName().toString();
-                parentLayer.setSkinFileName(skinFileName);
+                parentLayer.setActiveSkinFileName(skinFileName);
             }
 
             this.activeSkin = skin;

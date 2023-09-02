@@ -30,10 +30,7 @@ public class ShipLayer extends ViewerLayer {
     private ShipData shipData;
 
     @Getter @Setter
-    private String hullFileName = "";
-
-    @Getter @Setter
-    private String skinFileName = "";
+    private String activeSkinFileName = "";
 
     @Getter @Setter
     private ShipHull hull;
@@ -63,6 +60,13 @@ public class ShipLayer extends ViewerLayer {
         return hull.getHullID();
     }
 
+    public String getHullFileName() {
+        if (shipData != null) {
+            return shipData.getHullFileName();
+        }
+        return "";
+    }
+
     @Override
     public void setPainter(LayerPainter painter) {
         if (!(painter instanceof ShipPainter)) {
@@ -79,8 +83,6 @@ public class ShipLayer extends ViewerLayer {
             this.shipData = new ShipData(hullSpecFile);
             this.hull = new ShipHull();
         }
-        String fileName = String.valueOf(hullSpecFile.getFilePath().getFileName());
-        this.setHullFileName(fileName);
         EventBus.publish(new ShipDataCreated(this));
     }
 
@@ -133,6 +135,16 @@ public class ShipLayer extends ViewerLayer {
                 .build();
         this.skins.add(skinInstance);
         return skinInstance;
+    }
+
+    public List<String> getSkinFileNames() {
+        Set<ShipSkin> shipSkins = this.getSkins();
+        List<String> result = new ArrayList<>();
+        shipSkins.forEach(skin -> {
+            if (skin.isBase()) return;
+            result.add(skin.getFileName());
+        });
+        return result;
     }
 
 }

@@ -1,7 +1,5 @@
 package oth.shipeditor.components.layering;
 
-import lombok.Getter;
-import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
 import org.kordamp.ikonli.boxicons.BoxiconsRegular;
 import org.kordamp.ikonli.swing.FontIcon;
@@ -20,11 +18,14 @@ import oth.shipeditor.components.viewer.layers.ship.ShipLayer;
 import oth.shipeditor.components.viewer.layers.ship.ShipPainter;
 import oth.shipeditor.components.viewer.layers.ship.data.ShipSkin;
 import oth.shipeditor.components.viewer.layers.weapon.WeaponLayer;
+import oth.shipeditor.components.viewer.layers.weapon.WeaponPainter;
+import oth.shipeditor.components.viewer.layers.weapon.WeaponSprites;
 import oth.shipeditor.representation.HullSpecFile;
 import oth.shipeditor.representation.ShipData;
-import oth.shipeditor.utility.Utility;
+import oth.shipeditor.representation.weapon.WeaponMount;
+import oth.shipeditor.representation.weapon.WeaponSpecFile;
 import oth.shipeditor.utility.components.SortableTabbedPane;
-import oth.shipeditor.utility.text.StringValues;
+import oth.shipeditor.utility.graphics.Sprite;
 
 import javax.swing.*;
 import java.awt.*;
@@ -78,13 +79,13 @@ public final class ViewerLayersPanel extends SortableTabbedPane {
         this.setBorder(BorderFactory.createMatteBorder(1, 0, 0, 0, Color.LIGHT_GRAY));
     }
 
-    @SuppressWarnings({"OverlyCoupledMethod", "ChainOfInstanceofChecks", "OverlyComplexMethod"})
+    @SuppressWarnings({"OverlyCoupledMethod", "ChainOfInstanceofChecks"})
     private void initLayerListeners() {
         EventBus.subscribe(event -> {
             if (event instanceof ShipLayerCreated checked) {
                 ShipLayer layer = checked.newLayer();
                 Icon tabIcon = FontIcon.of(BoxiconsRegular.ROCKET, 20);
-                LayerTab created = new LayerTab(layer);
+                ShipLayerTab created = new ShipLayerTab(layer);
                 tabIndex.put(layer, created);
                 String tooltip = created.getTabTooltip();
                 this.addTab(LAYER + getTabCount(), tabIcon, tabIndex.get(layer), tooltip);
@@ -93,7 +94,7 @@ public final class ViewerLayersPanel extends SortableTabbedPane {
             else if (event instanceof WeaponLayerCreated checked) {
                 WeaponLayer layer = checked.newLayer();
                 Icon tabIcon = FontIcon.of(BoxiconsRegular.TARGET_LOCK, 20);
-                LayerTab created = new LayerTab(layer);
+                WeaponLayerTab created = new WeaponLayerTab(layer);
                 tabIndex.put(layer, created);
                 String tooltip = created.getTabTooltip();
                 this.addTab(LAYER + getTabCount(), tabIcon, tabIndex.get(layer), tooltip);
@@ -102,39 +103,7 @@ public final class ViewerLayersPanel extends SortableTabbedPane {
         });
         EventBus.subscribe(event -> {
             if (event instanceof ActiveLayerUpdated checked) {
-                ViewerLayer eventLayer = checked.updated();
-                LayerTab updated = tabIndex.get(eventLayer);
-                LayerPainter painter = eventLayer.getPainter();
-                BufferedImage sprite = painter.getSprite();
-                if (sprite != null) {
-                    updated.setSpriteFileName(eventLayer.getSpriteFileName());
-                    this.setToolTipTextAt(indexOfComponent(updated), updated.getTabTooltip());
-                }
-                if (!(eventLayer instanceof ShipLayer checkedLayer)) return;
-                ShipData shipData = checkedLayer.getShipData();
-                if (shipData == null) return;
-                HullSpecFile hullSpecFile = shipData.getHullSpecFile();
-                if (hullSpecFile == null) return;
-
-                updated.setHullFileName(checkedLayer.getHullFileName());
-                this.setTitleAt(indexOfComponent(updated), hullSpecFile.getHullName());
-
-                ShipPainter layerPainter = checkedLayer.getPainter();
-                if (layerPainter == null) return;
-
-                updated.setSkinFileNames(ViewerLayersPanel.getSkinFilesOfLayer(checkedLayer));
-                ShipSkin activeSkin = layerPainter.getActiveSkin();
-                if (activeSkin == null || activeSkin.isBase()) {
-                    updated.setActiveSkinFileName("");
-                    this.setTitleAt(indexOfComponent(updated), hullSpecFile.getHullName());
-                } else {
-                    String skinFileName = activeSkin.getFileName();
-                    updated.setActiveSkinFileName(skinFileName);
-                    if (activeSkin.getHullName() != null) {
-                        this.setTitleAt(indexOfComponent(updated), activeSkin.getHullName());
-                    }
-                }
-                this.setToolTipTextAt(indexOfComponent(updated), updated.getTabTooltip());
+                this.handleTabUpdates(checked);
             }
         });
         EventBus.subscribe(event -> {
@@ -153,6 +122,89 @@ public final class ViewerLayersPanel extends SortableTabbedPane {
         });
     }
 
+    private void handleTabUpdates(ActiveLayerUpdated event) {
+        ViewerLayer eventLayer = event.updated();
+        LayerTab updated = tabIndex.get(eventLayer);
+        if (updated instanceof ShipLayerTab checkedShipTab && eventLayer instanceof ShipLayer checkedLayer) {
+            this.updateShipTab(checkedShipTab, checkedLayer);
+        } else {
+            if (updated instanceof WeaponLayerTab checkedWeaponTab && eventLayer instanceof WeaponLayer checkedLayer) {
+                this.updateWeaponTab(checkedWeaponTab, checkedLayer);
+            }
+        }
+    }
+
+    @SuppressWarnings("MethodWithMultipleReturnPoints")
+    private void updateShipTab(ShipLayerTab tab, ShipLayer layer) {
+        LayerPainter painter = layer.getPainter();
+        BufferedImage sprite = painter.getSprite();
+        if (sprite != null) {
+            tab.setSpriteFileName(layer.getSpriteFileName());
+            this.setToolTipTextAt(indexOfComponent(tab), tab.getTabTooltip());
+        }
+        ShipData shipData = layer.getShipData();
+        if (shipData == null) return;
+        HullSpecFile hullSpecFile = shipData.getHullSpecFile();
+        if (hullSpecFile == null) return;
+
+        tab.setHullFileName(layer.getHullFileName());
+        this.setTitleAt(indexOfComponent(tab), hullSpecFile.getHullName());
+
+        ShipPainter layerPainter = layer.getPainter();
+        if (layerPainter == null) return;
+
+        tab.setSkinFileNames(layer.getSkinFileNames());
+        ShipSkin activeSkin = layerPainter.getActiveSkin();
+        if (activeSkin == null || activeSkin.isBase()) {
+            tab.setActiveSkinFileName("");
+            this.setTitleAt(indexOfComponent(tab), hullSpecFile.getHullName());
+        } else {
+            String skinFileName = activeSkin.getFileName();
+            tab.setActiveSkinFileName(skinFileName);
+            if (activeSkin.getHullName() != null) {
+                this.setTitleAt(indexOfComponent(tab), activeSkin.getHullName());
+            }
+        }
+        this.setToolTipTextAt(indexOfComponent(tab), tab.getTabTooltip());
+    }
+
+    private void updateWeaponTab(WeaponLayerTab tab, WeaponLayer layer) {
+        WeaponPainter painter = layer.getPainter();
+        WeaponMount mount = painter.getMount();
+        WeaponSprites weaponSprites = painter.getWeaponSprites();
+
+        Sprite mainSprite = weaponSprites.getMainSprite(mount);
+        if (mainSprite != null) {
+            tab.setSpriteName(mainSprite.name());
+        }
+
+        Sprite underSprite = weaponSprites.getUnderSprite(mount);
+        if (underSprite != null) {
+            tab.setUnderSpriteName(underSprite.name());
+        }
+
+        Sprite gunSprite = weaponSprites.getGunSprite(mount);
+        if (gunSprite != null) {
+            tab.setGunSpriteName(gunSprite.name());
+        }
+
+        Sprite glowSprite = weaponSprites.getGlowSprite(mount);
+        if (glowSprite != null) {
+            tab.setGlowSpriteName(glowSprite.name());
+        }
+
+        WeaponSpecFile specFile = layer.getSpecFile();
+        if (specFile != null) {
+            tab.setSpecFileName(layer.getSpecFileName());
+        }
+
+        String weaponName = layer.getWeaponName();
+        if (weaponName != null && !weaponName.isEmpty()) {
+            this.setTitleAt(indexOfComponent(tab), weaponName);
+        }
+        this.setToolTipTextAt(indexOfComponent(tab), tab.getTabTooltip());
+    }
+
     @Override
     protected void sortTabObjects() {
         List<ViewerLayer> layers = new ArrayList<>(tabIndex.keySet());
@@ -166,90 +218,6 @@ public final class ViewerLayersPanel extends SortableTabbedPane {
         this.removeTabAt(indexOfComponent(tabIndex.get(layer)));
         tabIndex.remove(layer);
         EventBus.publish(new WindowRepaintQueued());
-    }
-
-    private static List<String> getSkinFilesOfLayer(ShipLayer shipLayer) {
-        Set<ShipSkin> skins = shipLayer.getSkins();
-        List<String> result = new ArrayList<>();
-        skins.forEach(skin -> {
-            if (skin.isBase()) return;
-            result.add(skin.getFileName());
-        });
-        return result;
-    }
-
-    /**
-     * Empty marker component, only serves to track tabs and their layers.
-     */
-    private static final class LayerTab extends JPanel {
-
-        @Getter
-        private final ViewerLayer associatedLayer;
-
-        @Getter @Setter
-        private String spriteFileName;
-
-        @Getter @Setter
-        private String hullFileName;
-
-        @Getter @Setter
-        private List<String> skinFileNames;
-
-        @Getter @Setter
-        private String activeSkinFileName;
-
-        private LayerTab(ViewerLayer layer) {
-            this.associatedLayer = layer;
-            this.spriteFileName = layer.getSpriteFileName();
-            if (layer instanceof ShipLayer checked) {
-                this.hullFileName = checked.getHullFileName();
-                this.skinFileNames = ViewerLayersPanel.getSkinFilesOfLayer(checked);
-            }
-            this.setLayout(new BorderLayout());
-        }
-
-        /**
-         * @return HTML-formatted string that enables multi-line tooltip setup.
-         */
-        private String getTabTooltip() {
-            String notLoaded = StringValues.NOT_LOADED;
-            String sprite = spriteFileName;
-            if (Objects.equals(sprite, "")) {
-                sprite = notLoaded;
-            }
-            String spriteNameLine = StringValues.SPRITE_FILE + sprite;
-            if (!(associatedLayer instanceof ShipLayer)) {
-                return "<html>" + spriteNameLine + "</html>";
-            }
-            String hull = hullFileName;
-            if (Objects.equals(hull, "")) {
-                hull = notLoaded;
-            }
-            String hullNameLine = "Hull file: " + hull;
-
-            Collection<String> skinNameLines = new ArrayList<>();
-            skinFileNames.forEach(s -> {
-                String skin = s;
-                if (Objects.equals(skin, "")) {
-                    skin = StringValues.NOT_LOADED;
-                } else if (skin.equals(activeSkinFileName)) {
-                    skin = "<font color=blue>" + skin + "</font>";
-                }
-                String skinNameLine = "Skin file: " + skin;
-                skinNameLines.add(skinNameLine);
-            });
-            if (skinNameLines.isEmpty()) {
-                skinNameLines.add("Skin file: Not loaded");
-            }
-
-            List<String> result = new ArrayList<>();
-            result.add(spriteNameLine);
-            result.add(hullNameLine);
-            result.addAll(skinNameLines);
-
-            return Utility.getWithLinebreaks(result.toArray(new String[0]));
-        }
-
     }
 
     private ViewerLayer getLayerByTab(LayerTab value) {

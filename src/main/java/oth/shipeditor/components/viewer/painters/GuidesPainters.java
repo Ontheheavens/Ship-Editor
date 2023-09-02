@@ -245,10 +245,7 @@ public final class GuidesPainters {
             if (!drawCenter) return;
             LayerPainter layer = parent.getSelectedLayer();
             if (layer == null || layer.getSprite() == null) return;
-            RenderedImage shipSprite = layer.getSprite();
-            Point2D anchor = layer.getAnchor();
-            Point spriteCenter = new Point((int) (anchor.getX() + (shipSprite.getWidth() / 2)),
-                    (int) (anchor.getY() + (shipSprite.getHeight() / 2)));
+            Point2D spriteCenter = layer.getSpriteCenter();
             WorldPoint pointInput = new BaseWorldPoint(spriteCenter);
             Point2D toDisplay = pointInput.getCoordinatesForDisplay();
 
