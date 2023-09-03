@@ -5,7 +5,7 @@ import lombok.Setter;
 import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.components.SlotControlRepaintQueued;
 import oth.shipeditor.communication.events.viewer.ViewerRepaintQueued;
-import oth.shipeditor.components.instrument.ship.ShipInstrument;
+import oth.shipeditor.components.instrument.ship.EditorInstrument;
 import oth.shipeditor.components.viewer.entities.AngledPoint;
 import oth.shipeditor.components.viewer.layers.ship.ShipPainter;
 import oth.shipeditor.components.viewer.painters.points.WeaponSlotPainter;
@@ -153,8 +153,8 @@ public class WeaponSlotPoint extends AngledPoint implements SlotPoint {
     }
 
     @Override
-    public ShipInstrument getAssociatedMode() {
-        return ShipInstrument.WEAPON_SLOTS;
+    public EditorInstrument getAssociatedMode() {
+        return EditorInstrument.WEAPON_SLOTS;
     }
 
     @Override

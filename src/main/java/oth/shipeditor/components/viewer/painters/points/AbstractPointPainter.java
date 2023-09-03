@@ -57,7 +57,7 @@ public abstract class AbstractPointPainter implements Painter {
     AbstractPointPainter() {
         this.delegateWorldToScreen = new AffineTransform();
         this.listeners = new ArrayList<>();
-        this.initChangeListeners();
+        this.initPointListeners();
         this.visibilityMode = PainterVisibility.SHOWN_WHEN_EDITED;
         this.setPaintOpacity(1.0f);
     }
@@ -88,7 +88,7 @@ public abstract class AbstractPointPainter implements Painter {
     }
 
     @SuppressWarnings("OverlyComplexMethod")
-    private void initChangeListeners() {
+    private void initPointListeners() {
         BusEventListener pointRemovalListener = event -> {
             if (event instanceof PointRemoveQueued checked && this.isInteractionEnabled()) {
                 this.handlePointRemovalEvent(checked.point(), checked.fromList());
@@ -251,7 +251,7 @@ public abstract class AbstractPointPainter implements Painter {
         EventBus.publish(new ViewerRepaintQueued());
     }
 
-    protected abstract List<? extends BaseWorldPoint> getPointsIndex();
+    public abstract List<? extends BaseWorldPoint> getPointsIndex();
 
     protected abstract void addPointToIndex(BaseWorldPoint point);
 

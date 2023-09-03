@@ -1,11 +1,11 @@
 package oth.shipeditor.communication.events.viewer.points;
 
-import oth.shipeditor.components.instrument.ship.ShipInstrument;
+import oth.shipeditor.components.instrument.ship.EditorInstrument;
 
 /**
  * @author Ontheheavens
  * @since 29.05.2023
  */
-public record InstrumentModeChanged(ShipInstrument newMode) implements PointEvent {
+public record InstrumentModeChanged(EditorInstrument newMode) implements PointEvent {
 
 }

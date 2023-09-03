@@ -9,6 +9,7 @@ import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.viewer.control.LayerAnchorDragged;
 import oth.shipeditor.communication.events.viewer.layers.LayerRotationQueued;
 import oth.shipeditor.communication.events.viewer.layers.ViewerLayerRemovalConfirmed;
+import oth.shipeditor.communication.events.viewer.points.AnchorOffsetQueued;
 import oth.shipeditor.components.viewer.control.ControlPredicates;
 import oth.shipeditor.components.viewer.painters.points.AbstractPointPainter;
 import oth.shipeditor.undo.EditDispatch;
@@ -26,13 +27,13 @@ import java.util.List;
  * @author Ontheheavens
  * @since 28.07.2023
  */
-@SuppressWarnings("AbstractClassWithoutAbstractMethods")
+@SuppressWarnings("ClassWithTooManyMethods")
 public abstract class LayerPainter implements Painter {
 
     @Getter
     private final List<AbstractPointPainter> allPainters;
 
-    @Getter @Setter
+    @Getter
     private Point2D anchor = new Point2D.Double(0, 0);
 
     @Getter
@@ -50,15 +51,22 @@ public abstract class LayerPainter implements Painter {
     @Getter @Setter(AccessLevel.PROTECTED)
     private boolean uninitialized = true;
 
+    @Getter @Setter
+    private boolean shouldDrawPainter;
+
     @Getter
     private final List<BusEventListener> listeners;
 
     protected LayerPainter(ViewerLayer layer) {
         this.parentLayer = layer;
-        this.sprite = layer.getSprite();
         this.allPainters = new ArrayList<>();
         this.listeners = new ArrayList<>();
         this.initLayerListeners();
+    }
+
+    public Dimension getSpriteSize() {
+        var spriteImage = getSprite();
+        return new Dimension(spriteImage.getWidth(), spriteImage.getHeight());
     }
 
     private void initLayerListeners() {
@@ -94,11 +102,25 @@ public abstract class LayerPainter implements Painter {
         EventBus.subscribe(rotationListener);
     }
 
-    public boolean isLayerActive() {
-        return StaticController.getActiveLayer() == this.getParentLayer();
+    public abstract Point2D getEntityCenter();
+
+    public void setAnchor(Point2D inputAnchor) {
+        Point2D oldAnchor = this.getAnchor();
+
+        Point2D difference = new Point2D.Double(oldAnchor.getX() - inputAnchor.getX(),
+                oldAnchor.getY() - inputAnchor.getY());
+        EventBus.publish(new AnchorOffsetQueued(this, difference));
+
+        this.anchor = inputAnchor;
     }
 
-    private void cleanupForRemoval() {
+    public boolean isLayerActive() {
+        ViewerLayer layer = this.getParentLayer();
+        if (layer == null) return false;
+        return StaticController.getActiveLayer() == layer;
+    }
+
+    public void cleanupForRemoval() {
         for (AbstractPointPainter pointPainter : this.getAllPainters()) {
             pointPainter.cleanupPointPainter();
         }
@@ -113,13 +135,14 @@ public abstract class LayerPainter implements Painter {
 
     @Override
     public String toString() {
-        return "Layer Painter #" + this.hashCode();
+        Class<? extends LayerPainter> identity = this.getClass();
+        return identity.getSimpleName() + " #" + this.hashCode();
     }
 
     private void rotateToTarget(Point2D worldTarget) {
-        Point2D spriteCenter = getSpriteCenter();
-        double deltaX = worldTarget.getX() - spriteCenter.getX();
-        double deltaY = worldTarget.getY() - spriteCenter.getY();
+        Point2D center = getRotationAnchor();
+        double deltaX = worldTarget.getX() - center.getX();
+        double deltaY = worldTarget.getY() - center.getY();
 
         double radians = -Math.atan2(deltaX, deltaY);
 
@@ -129,6 +152,11 @@ public abstract class LayerPainter implements Painter {
             result = Math.round(rotationDegrees);
         }
         this.rotateLayer(result);
+    }
+
+    @SuppressWarnings("WeakerAccess")
+    protected Point2D getRotationAnchor() {
+        return this.getSpriteCenter();
     }
 
     @SuppressWarnings("WeakerAccess")
@@ -144,9 +172,9 @@ public abstract class LayerPainter implements Painter {
 
     public AffineTransform getRotationTransform() {
         double rotation = this.getRotationRadians();
-        Point2D spriteCenter = this.getSpriteCenter();
-        double centerX = spriteCenter.getX();
-        double centerY = spriteCenter.getY();
+        Point2D center = this.getRotationAnchor();
+        double centerX = center.getX();
+        double centerY = center.getY();
         return AffineTransform.getRotateInstance(rotation, centerX, centerY);
     }
 
@@ -163,6 +191,16 @@ public abstract class LayerPainter implements Painter {
         return transform;
     }
 
+    private int getSpriteWidth() {
+        var spriteImage = getSprite();
+        return spriteImage.getWidth();
+    }
+
+    private int getSpriteHeight() {
+        var spriteImage = getSprite();
+        return spriteImage.getHeight();
+    }
+
     /**
      * Note: if called programmatically outside of usual user input flow,
      * {@link oth.shipeditor.undo.UndoOverseer} needs to finish all edits programmatically as well,
@@ -174,21 +212,28 @@ public abstract class LayerPainter implements Painter {
     }
 
     public Point2D getSpriteCenter() {
-        return new Point2D.Double((anchor.getX() + sprite.getWidth() / 2.0f), (anchor.getY() + sprite.getHeight() / 2.0f));
+        return new Point2D.Double((anchor.getX() + this.getSpriteWidth() / 2.0f),
+                (anchor.getY() + this.getSpriteHeight() / 2.0f));
     }
 
+    protected void paintContent(Graphics2D g, AffineTransform worldToScreen, double w, double h) {
+        int width = this.getSpriteWidth();
+        int height = this.getSpriteHeight();
+        g.drawImage(getSprite(), (int) anchor.getX(), (int) anchor.getY(), width, height, null);
+
+    }
+
+    @SuppressWarnings("DuplicatedCode")
     @Override
     public void paint(Graphics2D g, AffineTransform worldToScreen, double w, double h) {
         AffineTransform oldAT = g.getTransform();
         g.transform(worldToScreen);
-        int width = sprite.getWidth();
-        int height = sprite.getHeight();
         int rule = AlphaComposite.SRC_OVER;
         float alpha = this.spriteOpacity;
         Composite old = g.getComposite();
         Composite opacity = AlphaComposite.getInstance(rule, alpha) ;
         g.setComposite(opacity);
-        g.drawImage(sprite, (int) anchor.getX(), (int) anchor.getY(), width, height, null);
+        this.paintContent(g, worldToScreen, w, h);
         g.setComposite(old);
         g.setTransform(oldAT);
     }

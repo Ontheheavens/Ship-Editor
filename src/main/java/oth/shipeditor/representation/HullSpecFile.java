@@ -1,7 +1,6 @@
 package oth.shipeditor.representation;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import lombok.Getter;
@@ -23,7 +22,6 @@ import java.util.Map;
  * @since 05.05.2023
  */
 @SuppressWarnings("ClassWithTooManyFields")
-@JsonIgnoreProperties(ignoreUnknown = true)
 @Getter
 public class HullSpecFile implements ShipSpecFile {
 
@@ -56,7 +54,7 @@ public class HullSpecFile implements ShipSpecFile {
     @JsonProperty(StringConstants.WIDTH)
     private double width;
 
-    @JsonProperty("center")
+    @JsonProperty(StringConstants.CENTER)
     @JsonDeserialize(using = Point2DDeserializer.class)
     private Point2D.Double center;
 
@@ -64,7 +62,7 @@ public class HullSpecFile implements ShipSpecFile {
     @JsonDeserialize(using = Point2DDeserializer.class)
     private Point2D.Double moduleAnchor;
 
-    @JsonProperty("collisionRadius")
+    @JsonProperty(StringConstants.COLLISION_RADIUS)
     private double collisionRadius;
 
     @JsonProperty(StringConstants.COVERS_COLOR)

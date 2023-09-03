@@ -1,6 +1,6 @@
 package oth.shipeditor.components.viewer.entities;
 
-import oth.shipeditor.components.instrument.ship.ShipInstrument;
+import oth.shipeditor.components.instrument.ship.EditorInstrument;
 import oth.shipeditor.components.viewer.layers.LayerPainter;
 
 import java.awt.geom.Point2D;
@@ -40,6 +40,6 @@ public interface WorldPoint {
 
     void setPaintSizeMultiplier(double mult);
 
-    ShipInstrument getAssociatedMode();
+    EditorInstrument getAssociatedMode();
 
 }

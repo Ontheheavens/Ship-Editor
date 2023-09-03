@@ -5,16 +5,22 @@ import oth.shipeditor.components.viewer.entities.BaseWorldPoint;
 import oth.shipeditor.components.viewer.layers.LayerPainter;
 import oth.shipeditor.components.viewer.layers.ViewerLayer;
 import oth.shipeditor.components.viewer.layers.ship.ShipPainter;
+import oth.shipeditor.parsing.loading.FileLoading;
+import oth.shipeditor.utility.graphics.Sprite;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionListener;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Point2D;
+import java.awt.image.BufferedImage;
+import java.io.File;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.Locale;
+import java.util.function.Consumer;
 import java.util.stream.Stream;
 
 /**
@@ -95,6 +101,14 @@ public final class Utility {
         return builder.toString();
     }
 
+    public static String getTooltipForSprite(Sprite sprite) {
+        String spriteName = "Filename: " + sprite.name();
+        BufferedImage image = sprite.image();
+        String width = "Width: " + image.getWidth();
+        String height = "Height: " + image.getHeight();
+        return Utility.getWithLinebreaks(spriteName, width, height);
+    }
+
     public static String getPointPositionText(Point2D location) {
             return location.getX() + ", " + location.getY();
     }
@@ -168,6 +182,15 @@ public final class Utility {
 
         transformed = (360 - transformed) % 360;
         return transformed - 90;
+    }
+
+    public static void setSpriteFromPath(String pathInPackage, Consumer<Sprite> setter, Path packageFolderPath) {
+        if (pathInPackage != null && !pathInPackage.isEmpty()) {
+            File spriteFile = FileLoading.fetchDataFile(Path.of(pathInPackage), packageFolderPath);
+
+            Sprite newSprite = FileLoading.loadSprite(spriteFile);
+            setter.accept(newSprite);
+        }
     }
 
 }

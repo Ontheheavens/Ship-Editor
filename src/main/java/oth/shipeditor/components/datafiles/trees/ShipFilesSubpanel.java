@@ -7,10 +7,12 @@ import oth.shipeditor.persistence.SettingsManager;
 import oth.shipeditor.representation.GameDataRepository;
 import oth.shipeditor.representation.HullSpecFile;
 import oth.shipeditor.representation.SkinSpecFile;
-import oth.shipeditor.representation.Variant;
+import oth.shipeditor.representation.VariantFile;
 import oth.shipeditor.utility.Utility;
 import oth.shipeditor.utility.components.ComponentUtilities;
 import oth.shipeditor.utility.components.MouseoverLabelListener;
+import oth.shipeditor.utility.graphics.Sprite;
+import oth.shipeditor.utility.text.StringValues;
 
 import javax.swing.*;
 import javax.swing.border.Border;
@@ -18,7 +20,6 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.border.MatteBorder;
 import javax.swing.border.TitledBorder;
 import java.awt.*;
-import java.awt.image.BufferedImage;
 import java.io.File;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -83,16 +84,10 @@ class ShipFilesSubpanel extends JPanel {
     private static void addSpritePreview(JPanel shipFilesPanel, ShipCSVEntry selected) {
         String spriteFileName = selected.getShipSpriteName();
         File spriteFile = FileLoading.fetchDataFile(Path.of(spriteFileName), selected.getPackageFolderPath());
-        BufferedImage sprite = FileLoading.loadSpriteAsImage(spriteFile);
-        if (sprite != null) {
-            String tooltip = selected.getHullFileName();
-            if (spriteFile != null) {
-                String spriteName = "Name: " + spriteFile.getName();
-                String width = "Width: " + sprite.getWidth();
-                String height = "Height: " + sprite.getHeight();
-                tooltip = Utility.getWithLinebreaks(spriteName, width, height);
-            }
-            JLabel spriteIcon = ComponentUtilities.createIconFromImage(sprite, tooltip, 128);
+        if (spriteFile != null) {
+            Sprite sprite = FileLoading.loadSprite(spriteFile);
+            String tooltip = Utility.getTooltipForSprite(sprite);
+            JLabel spriteIcon = ComponentUtilities.createIconFromImage(sprite.image(), tooltip, 128);
             spriteIcon.setAlignmentX(0.5f);
 
             JPanel spriteWrapper = new JPanel();
@@ -100,7 +95,7 @@ class ShipFilesSubpanel extends JPanel {
 
             MatteBorder matteLine = new MatteBorder(new Insets(0, 0, 1, 0),
                     Color.LIGHT_GRAY);
-            Border titledBorder = new TitledBorder(matteLine, "Files",
+            Border titledBorder = new TitledBorder(matteLine, StringValues.FILES,
                     TitledBorder.CENTER, TitledBorder.BOTTOM);
             spriteWrapper.setBorder(titledBorder);
 
@@ -223,12 +218,12 @@ class ShipFilesSubpanel extends JPanel {
     private static JPanel createVariantPanel() {
         GameDataRepository gameData = SettingsManager.getGameData();
 
-        Collection<Variant> variantsForHull = new ArrayList<>();
-        Map<String, Variant> allVariants = gameData.getAllVariants();
-        for (Variant variant : allVariants.values()) {
-            String hullID = variant.getHullId();
+        Collection<VariantFile> variantsForHull = new ArrayList<>();
+        Map<String, VariantFile> allVariants = gameData.getAllVariants();
+        for (VariantFile variantFile : allVariants.values()) {
+            String hullID = variantFile.getHullId();
             if (hullID.equals(currentShipHullID)) {
-                variantsForHull.add(variant);
+                variantsForHull.add(variantFile);
             }
         }
 

@@ -5,6 +5,7 @@ package oth.shipeditor.utility.text;
  * @author Ontheheavens
  * @since 26.07.2023
  */
+@SuppressWarnings("unused")
 public final class StringValues {
 
     public static final String DEFAULT = "Default";
@@ -35,6 +36,8 @@ public final class StringValues {
     public static final String MOUSEWHEEL_TO_CHANGE = "(Mousewheel to change)";
     public static final String NO_SELECTED = "No selected slot";
     public static final String BUILT_IN_DOES_NOT_COST_ORDNANCE = "Built-in: does not cost ordnance";
+    public static final String EMPTY = "Empty";
+    public static final String FILES = "Files";
 
     private StringValues() {
     }

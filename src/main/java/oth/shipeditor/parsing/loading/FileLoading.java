@@ -12,9 +12,11 @@ import com.fasterxml.jackson.dataformat.csv.CsvSchema;
 import lombok.extern.log4j.Log4j2;
 import oth.shipeditor.parsing.JsonProcessor;
 import oth.shipeditor.persistence.SettingsManager;
+import oth.shipeditor.representation.GameDataRepository;
 import oth.shipeditor.representation.HullSpecFile;
 import oth.shipeditor.representation.SkinSpecFile;
-import oth.shipeditor.representation.Variant;
+import oth.shipeditor.representation.VariantFile;
+import oth.shipeditor.representation.weapon.ProjectileSpecFile;
 import oth.shipeditor.representation.weapon.WeaponSpecFile;
 import oth.shipeditor.utility.ImageCache;
 import oth.shipeditor.utility.graphics.Sprite;
@@ -47,8 +49,6 @@ import java.util.stream.Stream;
 public final class FileLoading {
 
     static final String OPEN_COMMAND_CANCELLED_BY_USER = "Open command cancelled by user.";
-    private static final String OPENING_SKIN_FILE = "Opening skin file: {}.";
-    private static final String TRIED_TO_RESOLVE_SKIN_FILE_WITH_INVALID_EXTENSION = "Tried to resolve skin file with invalid extension!";
 
     private static final ObjectMapper mapper;
 
@@ -113,11 +113,9 @@ public final class FileLoading {
 
     public static Sprite loadSprite(File file) {
         BufferedImage spriteImage = FileLoading.loadSpriteAsImage(file);
-
-        Sprite sprite = new Sprite(spriteImage);
-        sprite.setFileName(file.getName());
-        sprite.setFilePath(file.toPath());
-        return sprite;
+        String name = file.getName();
+        Path path = file.toPath();
+        return new Sprite(spriteImage, path, name);
     }
 
     /**
@@ -126,7 +124,12 @@ public final class FileLoading {
      * @param packageFolderPath supposed parent package, where search will start. Can be null.
      * @return fetched file if it exists, else NULL.
      */
+    @SuppressWarnings("MethodWithMultipleReturnPoints")
     public static File fetchDataFile(Path filePath, Path packageFolderPath) {
+        if (filePath == null) {
+            log.error("Failed to fetch data file, input path is null.");
+            return null;
+        }
         Path coreDataFolder = SettingsManager.getCoreFolderPath();
         List<Path> otherModFolders = SettingsManager.getAllModFolders();
         Path result = null;
@@ -149,129 +152,73 @@ public final class FileLoading {
                 break;
             }
         }
-        if (result == null) {
+
+        if (result != null) {
+            return result.toFile();
+        } else {
             log.error("Failed to fetch data file for {}!", filePath.getFileName());
         }
-        if (result != null) return result.toFile();
         return null;
     }
 
     public static HullSpecFile loadHullFile(File file) {
-        String toString = file.getPath();
-        if (!toString.endsWith(".ship")) {
-            throw new IllegalArgumentException("Tried to resolve hull file with invalid extension!");
-        }
-        HullSpecFile hullSpecFile = null;
-        try {
-            ObjectMapper objectMapper = FileLoading.getConfigured();
-            log.info("Opening hull file: {}", file.getName());
-            hullSpecFile = objectMapper.readValue(file, HullSpecFile.class);
-            hullSpecFile.setFilePath(file.toPath());
-        } catch (IOException e) {
-            log.error("Hull file loading failed: {}", file.getName());
-            JOptionPane.showMessageDialog(null,
-                    "Ship hull file loading failed, exception thrown at: " + file,
-                    StringValues.FILE_LOADING_ERROR,
-                    JOptionPane.ERROR_MESSAGE);
-            e.printStackTrace();
-        }
+        HullSpecFile hullSpecFile = FileLoading.loadDataFile(file, ".ship", HullSpecFile.class);
+        hullSpecFile.setFilePath(file.toPath());
+        GameDataRepository.putSpec(hullSpecFile);
         return hullSpecFile;
     }
 
     static WeaponSpecFile loadWeaponFile(File file) {
-        String toString = file.getPath();
-        if (!toString.endsWith(".wpn")) {
-            throw new IllegalArgumentException("Tried to resolve weapon file with invalid extension!");
-        }
-
-        WeaponSpecFile weaponSpecFile;
-        try {
-            ObjectMapper objectMapper = FileLoading.getConfigured();
-            log.info("Opening weapon file: {}", file.getName());
-            weaponSpecFile = objectMapper.readValue(file, WeaponSpecFile.class);
-            weaponSpecFile.setWeaponSpecFilePath(file.toPath());
-        } catch (IOException e) {
-            log.error("Weapon file loading failed, retrying with correction: {}", file.getName());
-
-            weaponSpecFile = FileLoading.parseCorrectableJSON(file, WeaponSpecFile.class);
-            if (weaponSpecFile == null) {
-                log.error("Weapon file loading failed conclusively: {}", file.getName());
-                JOptionPane.showMessageDialog(null,
-                        "Weapon file loading failed, exception thrown at: " + file,
-                        StringValues.FILE_LOADING_ERROR,
-                        JOptionPane.ERROR_MESSAGE);
-                e.printStackTrace();
-                throw new RuntimeException("Weapon file loading failed conclusively!", e);
-            } else {
-                weaponSpecFile.setWeaponSpecFilePath(file.toPath());
-            }
-        }
-
+        WeaponSpecFile weaponSpecFile = FileLoading.loadDataFile(file, ".wpn", WeaponSpecFile.class);
+        weaponSpecFile.setWeaponSpecFilePath(file.toPath());
         return weaponSpecFile;
     }
 
     static SkinSpecFile loadSkinFile(File file) {
-        String toString = file.getPath();
-        if (!toString.endsWith(".skin")) {
-            throw new IllegalArgumentException(FileLoading.TRIED_TO_RESOLVE_SKIN_FILE_WITH_INVALID_EXTENSION);
-        }
-
-        SkinSpecFile skinSpecFile;
-        try {
-            ObjectMapper objectMapper = FileLoading.getConfigured();
-            log.info(FileLoading.OPENING_SKIN_FILE, file.getName());
-            skinSpecFile = objectMapper.readValue(file, SkinSpecFile.class);
-            skinSpecFile.setFilePath(file.toPath());
-        } catch (IOException e) {
-            log.error("Skin file parsing failed, retrying with correction: {}", file.getName());
-
-            skinSpecFile = FileLoading.parseCorrectableJSON(file, SkinSpecFile.class);
-            if (skinSpecFile == null) {
-                log.error("Skin file parsing failed conclusively: {}", file.getName());
-                JOptionPane.showMessageDialog(null,
-                        "Skin file parsing failed, exception thrown at: " + file,
-                        StringValues.FILE_LOADING_ERROR,
-                        JOptionPane.ERROR_MESSAGE);
-                e.printStackTrace();
-                throw new RuntimeException("Skin file parsing failed conclusively!", e);
-            } else {
-                skinSpecFile.setFilePath(file.toPath());
-            }
-        }
-
+        SkinSpecFile skinSpecFile = FileLoading.loadDataFile(file, ".skin", SkinSpecFile.class);
+        skinSpecFile.setFilePath(file.toPath());
+        GameDataRepository.putSpec(skinSpecFile);
         return skinSpecFile;
     }
 
-    static Variant loadVariantFile(File file) {
+    static VariantFile loadVariantFile(File file) {
+        VariantFile variantFile = FileLoading.loadDataFile(file, ".variant", VariantFile.class);
+        variantFile.setVariantFilePath(file.toPath());
+        return variantFile;
+    }
+
+    static ProjectileSpecFile loadProjectileFile(File file) {
+        ProjectileSpecFile projectileFile = FileLoading.loadDataFile(file, ".proj", ProjectileSpecFile.class);
+        projectileFile.setProjectileSpecFilePath(file.toPath());
+        return projectileFile;
+    }
+
+    private static <T> T loadDataFile(File file, String extension, Class<T> dataClass) {
         String toString = file.getPath();
-        if (!toString.endsWith(".variant")) {
-            throw new IllegalArgumentException("Tried to resolve variant file with invalid extension!");
+        if (!toString.endsWith(extension)) {
+            throw new IllegalArgumentException("Tried to resolve data file with invalid extension!");
         }
 
-        Variant variantFile;
+        T dataFile;
         try {
             ObjectMapper objectMapper = FileLoading.getConfigured();
-            log.info("Opening variant file: {}", file.getName());
-            variantFile = objectMapper.readValue(file, Variant.class);
-            variantFile.setVariantFilePath(file.toPath());
+            log.info("Opening data file: {}", file.getName());
+            dataFile = objectMapper.readValue(file, dataClass);
         } catch (IOException e) {
-            log.error("Variant file parsing failed, retrying with correction: {}", file.getName());
+            log.error("Data file parsing failed, retrying with correction: {}", file.getName());
 
-            variantFile = FileLoading.parseCorrectableJSON(file, Variant.class);
-            if (variantFile == null) {
-                log.error("Variant file parsing failed conclusively: {}", file.getName());
+            dataFile = FileLoading.parseCorrectableJSON(file, dataClass);
+            if (dataFile == null) {
+                log.error("Data file parsing failed conclusively: {}", file.getName());
                 JOptionPane.showMessageDialog(null,
-                        "Variant file parsing failed, exception thrown at: " + file,
+                        "Data file parsing failed, exception thrown at: " + file,
                         StringValues.FILE_LOADING_ERROR,
                         JOptionPane.ERROR_MESSAGE);
                 e.printStackTrace();
-                throw new RuntimeException("Variant file parsing failed conclusively!", e);
-            } else {
-                variantFile.setVariantFilePath(file.toPath());
+                throw new RuntimeException("Data file parsing failed conclusively!", e);
             }
         }
-
-        return variantFile;
+        return dataFile;
     }
 
     @SuppressWarnings("TypeMayBeWeakened")

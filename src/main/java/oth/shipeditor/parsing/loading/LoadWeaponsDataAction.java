@@ -7,6 +7,7 @@ import oth.shipeditor.components.datafiles.entities.WeaponCSVEntry;
 import oth.shipeditor.menubar.FileUtilities;
 import oth.shipeditor.persistence.SettingsManager;
 import oth.shipeditor.representation.GameDataRepository;
+import oth.shipeditor.representation.weapon.ProjectileSpecFile;
 import oth.shipeditor.representation.weapon.WeaponSpecFile;
 import oth.shipeditor.utility.text.StringConstants;
 
@@ -45,6 +46,9 @@ public class LoadWeaponsDataAction extends AbstractAction {
 
         EventBus.publish(new WeaponDataLoaded(weaponsByPackage));
         gameData.setWeaponsDataLoaded(true);
+
+        Map<String, ProjectileSpecFile> projectiles = LoadWeaponsDataAction.collectProjectiles();
+        gameData.setAllProjectiles(projectiles);
     }
 
     private static Map<String, WeaponCSVEntry> walkWeaponsFolder(Path folder) {
@@ -60,6 +64,7 @@ public class LoadWeaponsDataAction extends AbstractAction {
         for (File weaponFile : weaponFiles) {
             WeaponSpecFile mapped = FileLoading.loadWeaponFile(weaponFile);
             mapped.setTableFilePath(weaponTablePath);
+            mapped.setContainingPackage(folder);
             mappedWeaponSpecs.put(mapped.getId(), mapped);
         }
         log.info("Fetched and mapped {} weapon files.", mappedWeaponSpecs.size());
@@ -70,12 +75,39 @@ public class LoadWeaponsDataAction extends AbstractAction {
             if (rowId != null && !rowId.isEmpty()) {
                 WeaponCSVEntry newEntry = new WeaponCSVEntry(row, folder, weaponTablePath);
                 WeaponSpecFile matching = mappedWeaponSpecs.get(rowId);
-                newEntry.setSpecFile(matching);
-                weaponEntries.put(rowId, newEntry);
+                if (matching != null) {
+                    newEntry.setSpecFile(matching);
+                    weaponEntries.put(rowId, newEntry);
+                } else {
+                    log.error("Weapon CSV entry does not have matching spec file, omitting from data repository. " +
+                            "ID: {}", rowId);
+                }
             }
         }
 
         return weaponEntries;
+    }
+
+    private static Map<String, ProjectileSpecFile> collectProjectiles() {
+        String proj = "proj";
+        Path projectileFolderTarget = Paths.get("data", StringConstants.WEAPONS, proj);
+        Map<Path, File> packagesWithProjectiles = FileUtilities.getFileFromPackages(projectileFolderTarget);
+        Collection<Path> projectileFolders = packagesWithProjectiles.keySet();
+
+        Map<String, ProjectileSpecFile> allProjectiles = new HashMap<>();
+        for (Path directory : projectileFolders) {
+            log.info("Projectile folder found in mod directory: {}", directory);
+
+            List<File> projectileFiles = FileLoading.fetchFilesWithExtension(directory, proj);
+
+            for (File projectileFile : projectileFiles) {
+                ProjectileSpecFile mapped = FileLoading.loadProjectileFile(projectileFile);
+                mapped.setContainingPackage(directory);
+                allProjectiles.put(mapped.getId(), mapped);
+            }
+        }
+
+        return allProjectiles;
     }
 
 }

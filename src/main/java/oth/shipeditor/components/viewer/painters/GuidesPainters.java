@@ -10,7 +10,7 @@ import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.viewer.ViewerRepaintQueued;
 import oth.shipeditor.communication.events.viewer.control.ViewerGuidesToggled;
 import oth.shipeditor.components.instrument.ship.ShipInstrumentsPane;
-import oth.shipeditor.components.instrument.ship.ShipInstrument;
+import oth.shipeditor.components.instrument.ship.EditorInstrument;
 import oth.shipeditor.components.viewer.PrimaryViewer;
 import oth.shipeditor.components.viewer.control.ControlPredicates;
 import oth.shipeditor.components.viewer.entities.BaseWorldPoint;
@@ -217,7 +217,7 @@ public final class GuidesPainters {
 
     @SuppressWarnings("MethodWithMultipleReturnPoints")
     private static void drawPointPositionHint(Graphics2D g, Point2D position, LayerPainter painter) {
-        if (ShipInstrumentsPane.getCurrentMode() == ShipInstrument.BOUNDS) {
+        if (ShipInstrumentsPane.getCurrentMode() == EditorInstrument.BOUNDS) {
             Font hintFont = Utility.getOrbitron(12);
             if (!(painter instanceof ShipPainter checkedPainter)) return;
             BoundPointsPainter boundsPainter = checkedPainter.getBoundsPainter();
@@ -245,10 +245,7 @@ public final class GuidesPainters {
             if (!drawCenter) return;
             LayerPainter layer = parent.getSelectedLayer();
             if (layer == null || layer.getSprite() == null) return;
-            RenderedImage shipSprite = layer.getSprite();
-            Point2D anchor = layer.getAnchor();
-            Point spriteCenter = new Point((int) (anchor.getX() + (shipSprite.getWidth() / 2)),
-                    (int) (anchor.getY() + (shipSprite.getHeight() / 2)));
+            Point2D spriteCenter = layer.getSpriteCenter();
             WorldPoint pointInput = new BaseWorldPoint(spriteCenter);
             Point2D toDisplay = pointInput.getCoordinatesForDisplay();
 

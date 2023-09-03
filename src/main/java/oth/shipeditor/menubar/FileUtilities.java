@@ -7,12 +7,15 @@ import oth.shipeditor.communication.events.files.HullFileOpened;
 import oth.shipeditor.communication.events.files.SpriteOpened;
 import oth.shipeditor.communication.events.viewer.layers.LastLayerSelectQueued;
 import oth.shipeditor.communication.events.viewer.layers.ships.ShipLayerCreationQueued;
+import oth.shipeditor.components.viewer.layers.LayerPainter;
 import oth.shipeditor.components.viewer.layers.ViewerLayer;
 import oth.shipeditor.components.viewer.layers.ship.ShipLayer;
+import oth.shipeditor.components.viewer.layers.ship.ShipPainter;
 import oth.shipeditor.parsing.loading.*;
 import oth.shipeditor.persistence.Settings;
 import oth.shipeditor.persistence.SettingsManager;
 import oth.shipeditor.representation.HullSpecFile;
+import oth.shipeditor.utility.StaticController;
 import oth.shipeditor.utility.graphics.Sprite;
 
 import javax.swing.*;
@@ -88,14 +91,29 @@ public final class FileUtilities {
 
     public static void updateActionStates(ViewerLayer currentlySelected) {
         if (!(currentlySelected instanceof ShipLayer layer)) {
-            openSpriteAction.setEnabled(currentlySelected != null && currentlySelected.getSprite() == null);
+            if (currentlySelected != null) {
+                LayerPainter painter = currentlySelected.getPainter();
+                if (painter == null) {
+                    openSpriteAction.setEnabled(true);
+                } else {
+                    openSpriteAction.setEnabled(painter.getSprite() == null);
+                }
+            } else {
+                openSpriteAction.setEnabled(false);
+            }
             openShipDataAction.setEnabled(false);
             return;
         }
-        boolean spriteState = layer.getSprite() == null && layer.getShipData() == null;
-        boolean hullState = layer.getSprite() != null && layer.getShipData() == null;
-        openSpriteAction.setEnabled(spriteState);
-        openShipDataAction.setEnabled(hullState);
+        ShipPainter painter = layer.getPainter();
+        if (painter == null) {
+            openSpriteAction.setEnabled(true);
+            openShipDataAction.setEnabled(false);
+        } else {
+            boolean spriteState = painter.getSprite() == null && layer.getShipData() == null;
+            boolean hullState = painter.getSprite() != null && layer.getShipData() == null;
+            openSpriteAction.setEnabled(spriteState);
+            openShipDataAction.setEnabled(hullState);
+        }
     }
 
     public static void openPathInDesktop(Path toOpen) {
@@ -115,10 +133,22 @@ public final class FileUtilities {
         }
     }
 
-    public static void createShipLayerWithSprite(File spriteFile) {
+    public static ShipLayer createShipLayerWithSprite(File spriteFile) {
+        Sprite sprite = FileLoading.loadSprite(spriteFile);
+
+        var manager = StaticController.getLayerManager();
+        var layer = manager.createShipLayer();
+        manager.setActiveLayer(layer);
+        var viewer = StaticController.getViewer();
+        viewer.loadLayer(layer, sprite);
+
+        return layer;
+    }
+
+    @SuppressWarnings("unused")
+    private static void loadSpriteThroughBus(Sprite sprite) {
         EventBus.publish(new ShipLayerCreationQueued());
         EventBus.publish(new LastLayerSelectQueued());
-        Sprite sprite = FileLoading.loadSprite(spriteFile);
         EventBus.publish(new SpriteOpened(sprite));
     }
 

@@ -5,13 +5,12 @@ import oth.shipeditor.communication.BusEventListener;
 import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.viewer.points.InstrumentModeChanged;
 import oth.shipeditor.communication.events.viewer.points.PointCreationQueued;
+import oth.shipeditor.components.instrument.ship.EditorInstrument;
 import oth.shipeditor.components.instrument.ship.ShipInstrumentsPane;
-import oth.shipeditor.components.instrument.ship.ShipInstrument;
 import oth.shipeditor.components.viewer.control.ControlPredicates;
 import oth.shipeditor.components.viewer.entities.BaseWorldPoint;
-import oth.shipeditor.components.viewer.entities.ShipCenterPoint;
 import oth.shipeditor.components.viewer.entities.WorldPoint;
-import oth.shipeditor.components.viewer.layers.ship.ShipPainter;
+import oth.shipeditor.components.viewer.layers.LayerPainter;
 import oth.shipeditor.components.viewer.painters.PainterVisibility;
 import oth.shipeditor.utility.Utility;
 
@@ -28,9 +27,9 @@ import java.util.function.Consumer;
 public abstract class MirrorablePointPainter extends AbstractPointPainter {
 
     @Getter
-    private final ShipPainter parentLayer;
+    private final LayerPainter parentLayer;
 
-    MirrorablePointPainter(ShipPainter parent) {
+    MirrorablePointPainter(LayerPainter parent) {
         this.parentLayer = parent;
         initModeListener();
         this.setInteractionEnabled(ShipInstrumentsPane.getCurrentMode() == getInstrumentType());
@@ -61,7 +60,7 @@ public abstract class MirrorablePointPainter extends AbstractPointPainter {
         EventBus.subscribe(modeListener);
     }
 
-    protected abstract ShipInstrument getInstrumentType();
+    protected abstract EditorInstrument getInstrumentType();
 
     protected abstract void handleCreation(PointCreationQueued event);
 
@@ -72,9 +71,8 @@ public abstract class MirrorablePointPainter extends AbstractPointPainter {
 
     @Override
     protected Point2D createCounterpartPosition(Point2D toMirror) {
-        ShipCenterPoint shipCenter = parentLayer.getShipCenter();
-        Point2D centerPosition = shipCenter.getPosition();
-        double counterpartX = 2 * centerPosition.getX() - toMirror.getX();
+        Point2D entityCenter = parentLayer.getEntityCenter();
+        double counterpartX = 2 * entityCenter.getX() - toMirror.getX();
         double counterpartY = toMirror.getY(); // Y-coordinate remains the same.
         return new Point2D.Double(counterpartX, counterpartY);
     }

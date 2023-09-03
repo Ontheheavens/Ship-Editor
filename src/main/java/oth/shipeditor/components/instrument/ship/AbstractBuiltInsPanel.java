@@ -33,7 +33,11 @@ public abstract class AbstractBuiltInsPanel<T extends CSVEntry> extends JPanel {
 
     AbstractBuiltInsPanel() {
         this.setLayout(new BorderLayout());
-        JPanel hintPanel = AbstractBuiltInsPanel.createHintPanel();
+
+        String hintText = "Use right-click context menu of " +
+                "game data widget to add entries.";
+        FontIcon hintIcon = FontIcon.of(FluentUiRegularAL.INFO_28, 28);
+        JPanel hintPanel = AbstractBuiltInsPanel.createHintPanel(hintText, hintIcon);
         this.add(hintPanel, BorderLayout.PAGE_START);
 
         contentPane = new ScrollableHeightContainer();
@@ -81,17 +85,16 @@ public abstract class AbstractBuiltInsPanel<T extends CSVEntry> extends JPanel {
 
     protected abstract void refreshPanel(ShipLayer layer);
 
-    private static JPanel createHintPanel() {
+    static JPanel createHintPanel(String text, FontIcon icon) {
         JPanel hintPanel = new JPanel();
         hintPanel.setLayout(new BoxLayout(hintPanel, BoxLayout.LINE_AXIS));
 
-        JLabel hintIcon = new JLabel(FontIcon.of(FluentUiRegularAL.INFO_28, 28));
+        JLabel hintIcon = new JLabel(icon);
         hintIcon.setBorder(new EmptyBorder(4, 4, 0, 0));
         hintIcon.setAlignmentY(0.5f);
         hintPanel.add(hintIcon);
 
-        JPanel hintInfo = ComponentUtilities.createTextPanel("Use right-click context menu of " +
-                "game data widget to add entries.", 2);
+        JPanel hintInfo = ComponentUtilities.createTextPanel(text, 2);
         hintInfo.setBorder(new EmptyBorder(4, 0, 4, 4));
         hintInfo.setAlignmentY(0.5f);
         hintPanel.add(hintInfo);

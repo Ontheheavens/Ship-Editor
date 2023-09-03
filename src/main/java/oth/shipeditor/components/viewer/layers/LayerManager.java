@@ -8,7 +8,6 @@ import oth.shipeditor.communication.events.files.*;
 import oth.shipeditor.communication.events.viewer.ViewerRepaintQueued;
 import oth.shipeditor.communication.events.viewer.layers.*;
 import oth.shipeditor.communication.events.viewer.layers.ships.LayerShipDataInitialized;
-import oth.shipeditor.communication.events.viewer.layers.ships.ShipDataCreated;
 import oth.shipeditor.communication.events.viewer.layers.ships.ShipLayerCreated;
 import oth.shipeditor.communication.events.viewer.layers.ships.ShipLayerCreationQueued;
 import oth.shipeditor.communication.events.viewer.layers.weapons.WeaponLayerCreated;
@@ -64,17 +63,27 @@ public class LayerManager {
         EventBus.publish(new LayerWasSelected(old, newlySelected));
     }
 
+    public ShipLayer createShipLayer() {
+        ShipLayer newLayer = new ShipLayer();
+        layers.add(newLayer);
+        EventBus.publish(new ShipLayerCreated(newLayer));
+        return newLayer;
+    }
+
+    public WeaponLayer createWeaponLayer() {
+        WeaponLayer newLayer = new WeaponLayer();
+        layers.add(newLayer);
+        EventBus.publish(new WeaponLayerCreated(newLayer));
+        return newLayer;
+    }
+
     @SuppressWarnings({"OverlyCoupledMethod", "ChainOfInstanceofChecks", "OverlyComplexMethod"})
     private void initLayerListening() {
         EventBus.subscribe(event -> {
             if (event instanceof ShipLayerCreationQueued) {
-                ShipLayer newLayer = new ShipLayer();
-                layers.add(newLayer);
-                EventBus.publish(new ShipLayerCreated(newLayer));
+                this.createShipLayer();
             } else if (event instanceof WeaponLayerCreationQueued) {
-                WeaponLayer newLayer = new WeaponLayer();
-                layers.add(newLayer);
-                EventBus.publish(new WeaponLayerCreated(newLayer));
+                this.createWeaponLayer();
             }
         });
         // It is implicitly assumed that the last layer in list is also the one that was just created.
@@ -108,8 +117,11 @@ public class LayerManager {
         EventBus.subscribe(event -> {
             if (event instanceof LayerShipDataInitialized checked) {
                 ShipPainter source = checked.source();
-                this.setActiveLayer(source.getParentLayer());
-                EventBus.publish(new ActiveLayerUpdated(this.getActiveLayer()));
+                ShipLayer parentLayer = source.getParentLayer();
+                if (parentLayer != null) {
+                    this.setActiveLayer(parentLayer);
+                    EventBus.publish(new ActiveLayerUpdated(this.getActiveLayer()));
+                }
             }
         });
         EventBus.subscribe(event -> {
@@ -168,21 +180,12 @@ public class LayerManager {
         });
     }
 
-    @SuppressWarnings("OverlyCoupledMethod")
     private void initOpenHullListener() {
         EventBus.subscribe(event -> {
             if (event instanceof HullFileOpened checked) {
                 HullSpecFile hullSpecFile = checked.hullSpecFile();
                 if (activeLayer != null && activeLayer instanceof ShipLayer checkedLayer) {
-                    ShipData data = checkedLayer.getShipData();
-                    if (data != null ) {
-                        data.setHullSpecFile(hullSpecFile);
-                    } else {
-                        ShipData newData = new ShipData(hullSpecFile);
-                        checkedLayer.setShipData(newData);
-                    }
-                    checkedLayer.setHullFileName(checked.hullFileName());
-                    EventBus.publish(new ShipDataCreated(checkedLayer));
+                    checkedLayer.createShipData(hullSpecFile);
                 } else {
                     throw new IllegalStateException("Hull file loaded onto invalid layer!");
                 }

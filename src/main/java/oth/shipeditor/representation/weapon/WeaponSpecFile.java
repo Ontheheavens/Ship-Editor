@@ -40,7 +40,11 @@ public class WeaponSpecFile {
     @JsonIgnore
     private Path weaponSpecFilePath;
 
-    @JsonProperty("specClass")
+    @Setter
+    @JsonIgnore
+    private Path containingPackage;
+
+    @JsonProperty(StringConstants.SPEC_CLASS)
     private String specClass;
 
     @JsonProperty("id")
@@ -120,16 +124,14 @@ public class WeaponSpecFile {
     private Point2D.Double[] turretOffsets;
 
     @JsonProperty("turretAngleOffsets")
-    @JsonDeserialize(using = Point2DArrayDeserializer.class)
-    private Point2D.Double[] turretAngleOffsets;
+    private double[] turretAngleOffsets;
 
     @JsonProperty("hardpointOffsets")
     @JsonDeserialize(using = Point2DArrayDeserializer.class)
     private Point2D.Double[] hardpointOffsets;
 
     @JsonProperty("hardpointAngleOffsets")
-    @JsonDeserialize(using = Point2DArrayDeserializer.class)
-    private Point2D.Double[] hardpointAngleOffsets;
+    private double[] hardpointAngleOffsets;
 
     @JsonProperty("renderHints")
     private List<String> renderHints;

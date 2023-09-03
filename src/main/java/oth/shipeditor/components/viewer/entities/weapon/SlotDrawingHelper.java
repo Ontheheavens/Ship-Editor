@@ -149,62 +149,25 @@ public class SlotDrawingHelper {
         combinedPath.append(arcEndLine, false);
         combinedPath.append(arcFigure, false);
 
-        double radiusDistance = getScreenCircleRadius(worldToScreen, arcStartCirclePoint);
+        double radiusDistance = ShapeUtilities.getScreenCircleRadius(worldToScreen, position, arcStartCirclePoint);
 
         Color color = this.type.getColor();
         if (parentPoint != null) {
             color = parentPoint.getCurrentColor();
         }
 
-        this.drawCompositeFigure(g, worldToScreen, combinedPath,
+        DrawUtilities.drawCompositeFigure(g, worldToScreen, position, combinedPath,
                 radiusDistance * 2.0d, color);
     }
 
-    private double getScreenCircleRadius(AffineTransform worldToScreen, Point2D closestIntersection) {
-        Point2D position = this.pointPosition;
-        Point2D transformedIntersection = worldToScreen.transform(closestIntersection, null);
-        return transformedIntersection.distance(worldToScreen.transform(position, null));
-    }
-
     private void drawAnglePointer(Graphics2D g, AffineTransform worldToScreen, Shape circle, double circleRadius) {
-        double transformedAngle = Utility.transformAngle(this.angle);
         Point2D position = this.pointPosition;
-
-        Point2D lineEndpoint = ShapeUtilities.getPointInDirection(position,
-                transformedAngle, 0.5f);
-        Point2D closestIntersection = ShapeUtilities.getPointInDirection(position,
-                transformedAngle, circleRadius);
-
-        Shape angleLine = new Line2D.Double(lineEndpoint, closestIntersection);
-
-        GeneralPath combinedPath = new GeneralPath();
-        combinedPath.append(circle, false);
-        combinedPath.append(angleLine, false);
-
-        double radiusDistance = getScreenCircleRadius(worldToScreen, closestIntersection);
-
-        this.drawCompositeFigure(g, worldToScreen, combinedPath, radiusDistance * 2.0d, Color.WHITE);
-
-        Shape baseCircleTransformed = ShapeUtilities.ensureDynamicScaleShape(worldToScreen,
-                position, circle, 12);
-
         Color color = this.type.getColor();
         if (parentPoint != null) {
             color = parentPoint.getCurrentColor();
         }
-
-        DrawUtilities.drawOutlined(g, baseCircleTransformed, color, false);
-    }
-
-    private void drawCompositeFigure(Graphics2D g, AffineTransform worldToScreen, Shape figure,
-                                     double measurement, Paint color) {
-        Point2D position = this.pointPosition;
-
-        Shape transformed = ShapeUtilities.ensureSpecialScaleShape(worldToScreen,
-                position, figure, 12, measurement);
-
-        DrawUtilities.drawOutlined(g, transformed, color, false,
-                new BasicStroke(3.0f), new BasicStroke(2.25f));
+        DrawUtilities.drawAngledCirclePointer(g, worldToScreen, circle, circleRadius,
+                this.angle, position, color);
     }
 
 }

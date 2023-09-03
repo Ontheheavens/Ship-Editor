@@ -27,4 +27,8 @@ public class ShipData {
         this.skins.put(SkinSpecFile.DEFAULT, SkinSpecFile.empty());
     }
 
+    public String getHullFileName() {
+        return String.valueOf(hullSpecFile.getFilePath().getFileName());
+    }
+
 }

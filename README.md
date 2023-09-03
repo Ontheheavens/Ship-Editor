@@ -27,7 +27,7 @@ Visualizer and editor of object data in JSON and CSV format. Developed as utilit
 - Robust layer ordering through sortable tabbed pane and PaintOrderController.
 - Functional layer rotation with AffineTransform preserving all interactions.
 - Finished deserialization of all important data types and their runtime wrappers.
-- Skin and variant groundwork.
+- Skin and variantFile groundwork.
 - Weapon slots functionality done, with reusable components also fit for skin slot overrides.
 - Launch bays functionality done.
 

@@ -2,15 +2,14 @@ package oth.shipeditor.components.viewer.entities;
 
 import lombok.Getter;
 import lombok.Setter;
+import oth.shipeditor.components.instrument.ship.EditorInstrument;
 import oth.shipeditor.components.instrument.ship.ShipInstrumentsPane;
-import oth.shipeditor.components.instrument.ship.ShipInstrument;
 import oth.shipeditor.components.viewer.layers.LayerPainter;
 import oth.shipeditor.components.viewer.layers.ship.ShipPainter;
 import oth.shipeditor.components.viewer.painters.points.CenterPointPainter;
 import oth.shipeditor.utility.Utility;
 import oth.shipeditor.utility.graphics.ColorUtilities;
 import oth.shipeditor.utility.graphics.DrawUtilities;
-import oth.shipeditor.utility.graphics.ShapeUtilities;
 
 import java.awt.*;
 import java.awt.geom.AffineTransform;
@@ -50,8 +49,8 @@ public class ShipCenterPoint extends BaseWorldPoint {
     }
 
     @Override
-    public ShipInstrument getAssociatedMode() {
-        return ShipInstrument.COLLISION;
+    public EditorInstrument getAssociatedMode() {
+        return EditorInstrument.COLLISION;
     }
 
     @Override
@@ -104,11 +103,7 @@ public class ShipCenterPoint extends BaseWorldPoint {
         }
 
         Point2D position = this.getPosition();
-        Shape cross = ShapeUtilities.createPerpendicularCross(position, 0.4f);
-        Shape transformedCross = ShapeUtilities.ensureDynamicScaleShape(worldToScreen,
-                position, cross, 12);
-
-        DrawUtilities.drawOutlined(g, transformedCross, crossColor);
+        DrawUtilities.drawEntityCenterCross(g, worldToScreen, position, crossColor);
     }
 
     private void paintCollisionCircle(Graphics2D g, AffineTransform worldToScreen) {

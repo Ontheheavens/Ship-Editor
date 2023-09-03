@@ -7,7 +7,8 @@ import oth.shipeditor.utility.text.StringValues;
  * @author Ontheheavens
  * @since 11.06.2023
  */
-public enum ShipInstrument {
+public enum EditorInstrument {
+
     LAYER(StringValues.LAYER),
     COLLISION(StringValues.COLLISION),
     SHIELD(StringValues.SHIELD),
@@ -18,13 +19,13 @@ public enum ShipInstrument {
     BUILT_IN_MODS("Built-in Mods"),
     BUILT_IN_WINGS("Built-in Wings"),
     BUILT_IN_WEAPONS("Built-in Weapons"),
-    SKIN("Skin");
-
+    SKIN("Skin"),
+    VARIANT("Variant");
 
     @Getter
     private final String title;
 
-    ShipInstrument(String name) {
+    EditorInstrument(String name) {
         this.title = name;
     }
 

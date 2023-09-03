@@ -12,10 +12,7 @@ import oth.shipeditor.components.datafiles.OpenDataTarget;
 import oth.shipeditor.components.datafiles.entities.ShipCSVEntry;
 import oth.shipeditor.menubar.FileUtilities;
 import oth.shipeditor.persistence.SettingsManager;
-import oth.shipeditor.representation.GameDataRepository;
-import oth.shipeditor.representation.HullSize;
-import oth.shipeditor.representation.HullSpecFile;
-import oth.shipeditor.representation.SkinSpecFile;
+import oth.shipeditor.representation.*;
 import oth.shipeditor.utility.Pair;
 import oth.shipeditor.utility.components.ComponentUtilities;
 
@@ -149,7 +146,7 @@ class HullsTreePanel extends DataTreePanel {
         rootNode.add(packageRoot);
     }
 
-    private static Map<String, SkinSpecFile> fetchSkinsByHull(HullSpecFile hullSpecFile, Map<String, SkinSpecFile> skins) {
+    private static Map<String, SkinSpecFile> fetchSkinsByHull(ShipSpecFile hullSpecFile, Map<String, SkinSpecFile> skins) {
         if (skins == null) return null;
         String hullId = hullSpecFile.getHullId();
         Map<String, SkinSpecFile> associated = new HashMap<>();
@@ -213,7 +210,7 @@ class HullsTreePanel extends DataTreePanel {
             }
         }
         menu.addSeparator();
-        JMenuItem loadAsLayer = new JMenuItem("Load as layer");
+        JMenuItem loadAsLayer = new JMenuItem("Load as ship layer");
         loadAsLayer.addActionListener(new HullsTreePanel.LoadLayerFromTree());
         menu.add(loadAsLayer);
         return menu;

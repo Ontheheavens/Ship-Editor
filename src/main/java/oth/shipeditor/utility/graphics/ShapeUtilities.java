@@ -70,6 +70,7 @@ public final class ShapeUtilities {
         return translation.createTransformedShape(shape);
     }
 
+    @SuppressWarnings("unused")
     public static Shape rotateShape(Shape shape, Point2D anchor, double degrees) {
         AffineTransform rotation = AffineTransform.getRotateInstance(degrees, anchor.getX(), anchor.getY());
         return rotation.createTransformedShape(shape);
@@ -254,6 +255,12 @@ public final class ShapeUtilities {
         triangle.closePath();
 
         return triangle;
+    }
+
+    public static double getScreenCircleRadius(AffineTransform worldToScreen, Point2D position,
+                                               Point2D closestIntersection) {
+        Point2D transformedIntersection = worldToScreen.transform(closestIntersection, null);
+        return transformedIntersection.distance(worldToScreen.transform(position, null));
     }
 
 }

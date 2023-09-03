@@ -10,7 +10,7 @@ import oth.shipeditor.persistence.SettingsManager;
 import oth.shipeditor.representation.GameDataRepository;
 import oth.shipeditor.representation.HullSpecFile;
 import oth.shipeditor.representation.SkinSpecFile;
-import oth.shipeditor.representation.Variant;
+import oth.shipeditor.representation.VariantFile;
 import oth.shipeditor.utility.text.StringConstants;
 
 import javax.swing.*;
@@ -57,7 +57,7 @@ class LoadShipDataAction extends AbstractAction {
         GameDataRepository gameData = SettingsManager.getGameData();
         gameData.setShipDataLoaded(true);
 
-        Map<String, Variant> variants = LoadShipDataAction.collectVariants();
+        Map<String, VariantFile> variants = LoadShipDataAction.collectVariants();
         gameData.setAllVariants(variants);
     }
 
@@ -96,19 +96,19 @@ class LoadShipDataAction extends AbstractAction {
         return mappedSkins;
     }
 
-    private static Map<String, Variant> collectVariants() {
+    private static Map<String, VariantFile> collectVariants() {
         Path variantFolderTarget = Paths.get("data", "variants");
         Map<Path, File> packagesWithVariants = FileUtilities.getFileFromPackages(variantFolderTarget);
         Collection<Path> variantFolders = packagesWithVariants.keySet();
 
-        Map<String, Variant> allVariants = new HashMap<>();
+        Map<String, VariantFile> allVariants = new HashMap<>();
         for (Path directory : variantFolders) {
             log.info("Variant folder found in mod directory: {}", directory);
 
             List<File> variantFiles = FileLoading.fetchFilesWithExtension(directory, StringConstants.VARIANT);
 
             for (File variantFile : variantFiles) {
-                Variant mapped = FileLoading.loadVariantFile(variantFile);
+                VariantFile mapped = FileLoading.loadVariantFile(variantFile);
                 mapped.setContainingPackage(directory);
                 allVariants.put(mapped.getVariantId(), mapped);
             }

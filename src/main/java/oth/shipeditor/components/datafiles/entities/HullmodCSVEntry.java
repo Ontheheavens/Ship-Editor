@@ -37,7 +37,7 @@ public class HullmodCSVEntry implements CSVEntry {
         packageFolderPath = folder;
         this.tableFilePath = tablePath;
         hullmodID = this.rowData.get("id");
-        spriteFileName = this.rowData.get("sprite");
+        spriteFileName = this.rowData.get(StringConstants.SPRITE);
     }
 
     @Override

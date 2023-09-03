@@ -12,7 +12,6 @@ import oth.shipeditor.communication.events.viewer.layers.LayerWasSelected;
 import oth.shipeditor.communication.events.viewer.status.CoordsModeChanged;
 import oth.shipeditor.components.viewer.LayerViewer;
 import oth.shipeditor.components.viewer.control.ControlPredicates;
-import oth.shipeditor.components.viewer.entities.ShipCenterPoint;
 import oth.shipeditor.components.viewer.layers.LayerPainter;
 import oth.shipeditor.components.viewer.layers.ViewerLayer;
 import oth.shipeditor.components.viewer.layers.ship.ShipPainter;
@@ -230,7 +229,7 @@ final class ViewerStatusPanel extends JPanel {
         EventBus.subscribe(event -> {
             if (event instanceof LayerSpriteLoadConfirmed checked) {
                 Sprite sprite = checked.sprite();
-                this.setDimensionsLabel(sprite.getSpriteImage());
+                this.setDimensionsLabel(sprite.image());
             }
         });
         EventBus.subscribe(event -> {
@@ -277,12 +276,12 @@ final class ViewerStatusPanel extends JPanel {
         popupMenu.add(sprite);
 
         JRadioButtonMenuItem shipCenterAnchor = createCoordsOption(
-                axes + "bottom left corner of selected sprite (Ship Center Anchor 0,0)",
+                axes + "bottom left corner of selected sprite (Entity Center Anchor 0,0)",
                 group, CoordsDisplayMode.SHIPCENTER_ANCHOR);
         popupMenu.add(shipCenterAnchor);
 
         JRadioButtonMenuItem shipCenter = createCoordsOption(
-                axes + "designated ship center of selected layer (Ship Center 0,0)",
+                axes + "designated entity center of selected layer (Entity Center 0,0)",
                 group, CoordsDisplayMode.SHIP_CENTER);
         shipCenter.setSelected(true);
         popupMenu.add(shipCenter);
@@ -322,10 +321,9 @@ final class ViewerStatusPanel extends JPanel {
             // This case uses different coordinate system alignment to be consistent with game files.
             // Otherwise, user might be confused as shown point coordinates won't match with those in file.
             case SHIP_CENTER -> {
-                if (!(selectedLayer instanceof ShipPainter checkedPainter) || checkedPainter.isUninitialized()) break;
-                ShipCenterPoint shipCenter = checkedPainter.getShipCenter();
-                Point2D center = shipCenter.getPosition();
-                Point2D adjusted = ViewerStatusPanel.adjustCursorCoordinates(cursorPoint, center);
+                if (selectedLayer == null || selectedLayer.isUninitialized()) break;
+                Point2D entityCenter = selectedLayer.getEntityCenter();
+                Point2D adjusted = ViewerStatusPanel.adjustCursorCoordinates(cursorPoint, entityCenter);
                 cursor = new Point2D.Double(-adjusted.getY(), -adjusted.getX());
                 if (cursor.getX() == -0.0) {
                     cursor.setLocation(0, cursor.getY());

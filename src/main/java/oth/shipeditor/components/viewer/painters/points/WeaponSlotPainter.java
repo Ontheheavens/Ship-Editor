@@ -6,8 +6,8 @@ import lombok.extern.log4j.Log4j2;
 import oth.shipeditor.communication.BusEventListener;
 import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.viewer.points.*;
+import oth.shipeditor.components.instrument.ship.EditorInstrument;
 import oth.shipeditor.components.instrument.ship.slots.SlotCreationPane;
-import oth.shipeditor.components.instrument.ship.ShipInstrument;
 import oth.shipeditor.components.viewer.control.ControlPredicates;
 import oth.shipeditor.components.viewer.entities.BaseWorldPoint;
 import oth.shipeditor.components.viewer.entities.WorldPoint;
@@ -79,8 +79,19 @@ public class WeaponSlotPainter extends AngledPointPainter {
     }
 
     @Override
-    protected ShipInstrument getInstrumentType() {
-        return ShipInstrument.WEAPON_SLOTS;
+    protected EditorInstrument getInstrumentType() {
+        return EditorInstrument.WEAPON_SLOTS;
+    }
+
+    public WeaponSlotPoint getSlotByID(String slotID) {
+        WeaponSlotPoint result = null;
+        for (WeaponSlotPoint slotPoint : this.slotPoints) {
+            String slotPointId = slotPoint.getId();
+            if (slotPointId.equals(slotID)) {
+                result = slotPoint;
+            }
+        }
+        return result;
     }
 
     @Override
@@ -118,7 +129,7 @@ public class WeaponSlotPainter extends AngledPointPainter {
     protected void handleCreation(PointCreationQueued event) {
         if (!isCreationHotkeyPressed()) return;
 
-        ShipPainter parentLayer = this.getParentLayer();
+        ShipPainter parentLayer = (ShipPainter) this.getParentLayer();
         Point2D position = event.position();
         boolean mirrorMode = ControlPredicates.isMirrorModeEnabled();
 
@@ -171,7 +182,7 @@ public class WeaponSlotPainter extends AngledPointPainter {
     }
 
     private String generateUniqueSlotID() {
-        ShipPainter parentLayer = getParentLayer();
+        ShipPainter parentLayer = (ShipPainter) getParentLayer();
         return parentLayer.generateUniqueSlotID("WS");
     }
 

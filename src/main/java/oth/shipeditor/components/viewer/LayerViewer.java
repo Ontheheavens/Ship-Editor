@@ -13,7 +13,7 @@ import java.awt.geom.AffineTransform;
  */
 public interface LayerViewer {
 
-    void loadLayer(ViewerLayer layer, Sprite sprite);
+    ViewerLayer loadLayer(ViewerLayer layer, Sprite sprite);
 
     void centerViewpoint();
 

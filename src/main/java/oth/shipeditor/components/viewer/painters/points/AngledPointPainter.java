@@ -5,9 +5,8 @@ import oth.shipeditor.communication.events.viewer.ViewerRepaintQueued;
 import oth.shipeditor.components.viewer.control.ControlPredicates;
 import oth.shipeditor.components.viewer.entities.AngledPoint;
 import oth.shipeditor.components.viewer.entities.BaseWorldPoint;
-import oth.shipeditor.components.viewer.entities.ShipCenterPoint;
 import oth.shipeditor.components.viewer.entities.WorldPoint;
-import oth.shipeditor.components.viewer.layers.ship.ShipPainter;
+import oth.shipeditor.components.viewer.layers.LayerPainter;
 import oth.shipeditor.utility.Utility;
 
 import java.awt.*;
@@ -22,7 +21,7 @@ public abstract class AngledPointPainter extends MirrorablePointPainter {
 
     private KeyEventDispatcher hotkeyDispatcher;
 
-    AngledPointPainter(ShipPainter parent) {
+    AngledPointPainter(LayerPainter parent) {
         super(parent);
         this.initHotkeys();
     }
@@ -41,7 +40,7 @@ public abstract class AngledPointPainter extends MirrorablePointPainter {
 
     protected abstract void setCreationHotkeyPressed(boolean pressed);
 
-    private void initHotkeys() {
+    protected void initHotkeys() {
         hotkeyDispatcher = ke -> {
             int keyCode = ke.getKeyCode();
             boolean isControlHotkey = (keyCode == getControlHotkey());
@@ -106,10 +105,9 @@ public abstract class AngledPointPainter extends MirrorablePointPainter {
             double angle = Utility.flipAngle(angleDegrees);
             Point2D slotPosition = checkedSlot.getPosition();
             double slotX = slotPosition.getX();
-            ShipPainter parentLayer = getParentLayer();
-            ShipCenterPoint shipCenter = parentLayer.getShipCenter();
-            Point2D centerPosition = shipCenter.getPosition();
-            double centerX = centerPosition.getX();
+            LayerPainter parentLayer = getParentLayer();
+            Point2D entityCenter = parentLayer.getEntityCenter();
+            double centerX = entityCenter.getX();
             if ((Math.abs(slotX - centerX) < 0.05d)) {
                 angle = angleDegrees;
             }

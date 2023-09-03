@@ -12,6 +12,7 @@ import oth.shipeditor.components.instrument.ship.centers.ShieldPanel;
 import oth.shipeditor.components.instrument.ship.engines.EnginesPanel;
 import oth.shipeditor.components.instrument.ship.skins.SkinPanel;
 import oth.shipeditor.components.instrument.ship.slots.WeaponSlotsPanel;
+import oth.shipeditor.components.instrument.ship.variant.VariantPanel;
 
 import javax.swing.*;
 import java.util.HashMap;
@@ -25,9 +26,9 @@ import java.util.Map;
 public final class ShipInstrumentsPane extends AbstractInstrumentsPane {
 
     @Getter
-    private static ShipInstrument currentMode;
+    private static EditorInstrument currentMode;
 
-    private final Map<JPanel, ShipInstrument> panelMode;
+    private final Map<JPanel, EditorInstrument> panelMode;
 
     public ShipInstrumentsPane() {
         panelMode = new HashMap<>();
@@ -35,29 +36,31 @@ public final class ShipInstrumentsPane extends AbstractInstrumentsPane {
         this.dispatchModeChange((JPanel) getSelectedComponent());
     }
 
+    @SuppressWarnings("OverlyCoupledMethod")
     private void createTabs() {
-        this.createTab(new ShipLayerPropertiesPanel(), ShipInstrument.LAYER);
-        this.createTab(new CollisionPanel(), ShipInstrument.COLLISION);
-        this.createTab(new ShieldPanel(), ShipInstrument.SHIELD);
-        this.createTab(new BoundPointsPanel(), ShipInstrument.BOUNDS);
-        this.createTab(new WeaponSlotsPanel(), ShipInstrument.WEAPON_SLOTS);
-        this.createTab(new LaunchBaysPanel(), ShipInstrument.LAUNCH_BAYS);
-        this.createTab(new EnginesPanel(), ShipInstrument.ENGINES);
-        this.createTab(new BuiltInHullmodsPanel(), ShipInstrument.BUILT_IN_MODS);
-        this.createTab(new BuiltInWingsPanel(), ShipInstrument.BUILT_IN_WINGS);
-        this.createTab(new JPanel(), ShipInstrument.BUILT_IN_WEAPONS);
-        this.createTab(new SkinPanel(), ShipInstrument.SKIN);
+        this.createTab(new ShipLayerPropertiesPanel(), EditorInstrument.LAYER);
+        this.createTab(new CollisionPanel(), EditorInstrument.COLLISION);
+        this.createTab(new ShieldPanel(), EditorInstrument.SHIELD);
+        this.createTab(new BoundPointsPanel(), EditorInstrument.BOUNDS);
+        this.createTab(new WeaponSlotsPanel(), EditorInstrument.WEAPON_SLOTS);
+        this.createTab(new LaunchBaysPanel(), EditorInstrument.LAUNCH_BAYS);
+        this.createTab(new EnginesPanel(), EditorInstrument.ENGINES);
+        this.createTab(new BuiltInHullmodsPanel(), EditorInstrument.BUILT_IN_MODS);
+        this.createTab(new BuiltInWingsPanel(), EditorInstrument.BUILT_IN_WINGS);
+        this.createTab(new JPanel(), EditorInstrument.BUILT_IN_WEAPONS);
+        this.createTab(new SkinPanel(), EditorInstrument.SKIN);
+        this.createTab(new VariantPanel(), EditorInstrument.VARIANT);
         updateTooltipText();
     }
 
-    private void createTab(JPanel panel, ShipInstrument mode) {
+    private void createTab(JPanel panel, EditorInstrument mode) {
         panelMode.put(panel, mode);
         this.addTab(mode.getTitle(), panel);
     }
 
     @Override
     protected void dispatchModeChange(JPanel active) {
-        ShipInstrument selected = panelMode.get(active);
+        EditorInstrument selected = panelMode.get(active);
         currentMode = selected;
         EventBus.publish(new InstrumentModeChanged(selected));
         EventBus.publish(new ViewerRepaintQueued());

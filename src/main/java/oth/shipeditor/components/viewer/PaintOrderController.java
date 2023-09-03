@@ -93,14 +93,14 @@ public class PaintOrderController implements Painter {
 
     private static void paintLayer(Graphics2D g, AffineTransform worldToScreen,
                                    double w, double h, ViewerLayer layer) {
-        LayerPainter shipPainter = layer.getPainter();
-        if (shipPainter == null) return;
+        LayerPainter layerPainter = layer.getPainter();
+        if (layerPainter == null) return;
 
-        AffineTransform transform = shipPainter.getWithRotation(worldToScreen);
+        AffineTransform transform = layerPainter.getWithRotation(worldToScreen);
 
-        shipPainter.paint(g, transform, w, h);
-        if (shipPainter.isUninitialized()) return;
-        List<AbstractPointPainter> allPainters = shipPainter.getAllPainters();
+        layerPainter.paint(g, transform, w, h);
+
+        List<AbstractPointPainter> allPainters = layerPainter.getAllPainters();
         allPainters.forEach(pointPainter -> pointPainter.paint(g, transform, w, h));
     }
 
@@ -117,7 +117,5 @@ public class PaintOrderController implements Painter {
             this.paintIfPresent(g, transform, w, h, guidesPainters.getGuidesPaint());
         }
     }
-
-
 
 }

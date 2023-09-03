@@ -8,10 +8,9 @@ import oth.shipeditor.communication.BusEventListener;
 import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.viewer.points.AnchorOffsetConfirmed;
 import oth.shipeditor.communication.events.viewer.points.AnchorOffsetQueued;
+import oth.shipeditor.components.instrument.ship.EditorInstrument;
 import oth.shipeditor.components.instrument.ship.ShipInstrumentsPane;
-import oth.shipeditor.components.instrument.ship.ShipInstrument;
 import oth.shipeditor.components.viewer.layers.LayerPainter;
-import oth.shipeditor.components.viewer.layers.ship.ShipPainter;
 import oth.shipeditor.components.viewer.painters.TextPainter;
 import oth.shipeditor.utility.StaticController;
 import oth.shipeditor.utility.Utility;
@@ -53,8 +52,8 @@ public class BaseWorldPoint implements WorldPoint, Painter {
     @Getter @Setter
     private double paintSizeMultiplier = 1;
 
-    public ShipInstrument getAssociatedMode() {
-        return ShipInstrument.LAYER;
+    public EditorInstrument getAssociatedMode() {
+        return EditorInstrument.LAYER;
     }
 
     public BaseWorldPoint() {
@@ -66,7 +65,7 @@ public class BaseWorldPoint implements WorldPoint, Painter {
 
     }
 
-    public BaseWorldPoint(Point2D pointPosition, ShipPainter layer) {
+    public BaseWorldPoint(Point2D pointPosition, LayerPainter layer) {
         this.position = new Point2D.Double(pointPosition.getX(), pointPosition.getY());
         this.parentLayer = layer;
         this.delegateWorldToScreen = new AffineTransform();
@@ -150,11 +149,12 @@ public class BaseWorldPoint implements WorldPoint, Painter {
         return result;
     }
 
-    private Shape getShapeForPoint(AffineTransform worldToScreen) {
-        Shape circle = ShapeUtilities.createCircle(position, (float) (0.10f * paintSizeMultiplier));
+    @SuppressWarnings("SameParameterValue")
+    private Shape getShapeForPoint(AffineTransform worldToScreen, float worldSize, float screenSize) {
+        Shape circle = ShapeUtilities.createCircle(position, (float) (worldSize * paintSizeMultiplier));
 
         return ShapeUtilities.ensureDynamicScaleShape(worldToScreen,
-                position, circle, 12 * paintSizeMultiplier);
+                position, circle, screenSize * paintSizeMultiplier);
     }
 
     public void setPosition(double x, double y) {
@@ -162,7 +162,7 @@ public class BaseWorldPoint implements WorldPoint, Painter {
     }
 
     public void setPosition(Point2D input) {
-        this.position.setLocation(input.getX(), input.getY());
+        this.setPosition(input.getX(), input.getY());
     }
 
     public Point2D getCoordinatesForDisplay() {
@@ -172,7 +172,7 @@ public class BaseWorldPoint implements WorldPoint, Painter {
 
     @Override
     public void paint(Graphics2D g, AffineTransform worldToScreen, double w, double h) {
-        Shape shape = this.getShapeForPoint(worldToScreen);
+        Shape shape = this.getShapeForPoint(worldToScreen, 0.10f, 12);
 
         this.cursorInBounds = StaticController.checkIsHovered(shape);
 
