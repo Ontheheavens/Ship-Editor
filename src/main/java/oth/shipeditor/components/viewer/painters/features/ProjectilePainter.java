@@ -50,7 +50,6 @@ public class ProjectilePainter implements Painter {
         double centerX = paintAnchor.getX();
         double centerY = paintAnchor.getY();
         g.rotate(rotation, centerX, centerY);
-
         this.paintContent(g);
 
         g.setTransform(current);

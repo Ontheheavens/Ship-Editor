@@ -90,6 +90,18 @@ public class GameDataRepository {
         this.allWeaponEntries = new HashMap<>();
     }
 
+    public static ShipCSVEntry retrieveShipCSVEntryByID(String baseHullID) {
+        GameDataRepository dataRepository = SettingsManager.getGameData();
+        var shipEntries = dataRepository.getAllShipEntries();
+        return shipEntries.get(baseHullID);
+    }
+
+    public static ShipSpecFile retrieveSpecByID(String hullID) {
+        GameDataRepository dataRepository = SettingsManager.getGameData();
+        var allSpecs = dataRepository.getAllSpecEntries();
+        return allSpecs.get(hullID);
+    }
+
     public static void putSpec(ShipSpecFile specFile) {
         GameDataRepository dataRepository = SettingsManager.getGameData();
         var allSpecs = dataRepository.getAllSpecEntries();
@@ -124,6 +136,11 @@ public class GameDataRepository {
     public static ProjectileSpecFile getProjectileByID(String projectileID) {
         var dataRepository = SettingsManager.getGameData();
         return dataRepository.allProjectiles.get(projectileID);
+    }
+
+    public static WeaponCSVEntry getWeaponByID(String weaponID) {
+        var dataRepository = SettingsManager.getGameData();
+        return dataRepository.allWeaponEntries.get(weaponID);
     }
 
     public static Map<String, VariantFile> getMatchingForHullID(String shipHullID) {

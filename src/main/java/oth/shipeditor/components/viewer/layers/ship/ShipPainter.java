@@ -15,7 +15,9 @@ import oth.shipeditor.components.viewer.entities.ShipCenterPoint;
 import oth.shipeditor.components.viewer.entities.bays.LaunchBay;
 import oth.shipeditor.components.viewer.entities.weapon.WeaponSlotPoint;
 import oth.shipeditor.components.viewer.layers.LayerPainter;
+import oth.shipeditor.components.viewer.layers.ViewerLayer;
 import oth.shipeditor.components.viewer.layers.ship.data.*;
+import oth.shipeditor.components.viewer.painters.features.InstalledSlotFeaturePainter;
 import oth.shipeditor.components.viewer.painters.points.*;
 import oth.shipeditor.representation.HullSpecFile;
 import oth.shipeditor.representation.ShipData;
@@ -24,6 +26,8 @@ import oth.shipeditor.utility.graphics.Sprite;
 import oth.shipeditor.utility.text.StringValues;
 
 import javax.swing.*;
+import java.awt.*;
+import java.awt.geom.AffineTransform;
 import java.awt.geom.Point2D;
 import java.awt.image.BufferedImage;
 import java.util.List;
@@ -36,11 +40,14 @@ import java.util.stream.Collectors;
  * @author Ontheheavens
  * @since 29.05.2023
  */
-@SuppressWarnings("OverlyCoupledClass")
+@SuppressWarnings({"OverlyCoupledClass", "ClassWithTooManyFields"})
 @Log4j2
 public class ShipPainter extends LayerPainter {
 
     private static final char SPACE = ' ';
+
+    @Getter @Setter
+    private Point2D moduleAnchorOffset;
 
     @Getter
     private BoundPointsPainter boundsPainter;
@@ -85,14 +92,6 @@ public class ShipPainter extends LayerPainter {
         }
     }
 
-    @Override
-    public void setAnchor(Point2D anchor) {
-        super.setAnchor(anchor);
-        if (this.activeVariant != null && !activeVariant.isEmpty()) {
-
-        }
-    }
-
     private void installVariant(VariantFile file) {
         boolean empty = file.isEmpty();
         activeVariant = new ShipVariant(empty);
@@ -102,8 +101,19 @@ public class ShipPainter extends LayerPainter {
             activeVariant.initialize(file);
 
             var parentLayer = getParentLayer();
-            var loadedVariants = parentLayer.getLoadedVariants();
-            loadedVariants.put(variantId, activeVariant);
+            if (parentLayer != null) {
+                var loadedVariants = parentLayer.getLoadedVariants();
+                loadedVariants.put(variantId, activeVariant);
+            }
+        }
+    }
+
+    @Override
+    public void cleanupForRemoval() {
+        super.cleanupForRemoval();
+        ShipVariant variant = getActiveVariant();
+        if (variant != null && !variant.isEmpty()) {
+            variant.cleanupForRemoval();
         }
     }
 
@@ -166,9 +176,13 @@ public class ShipPainter extends LayerPainter {
 
     @Override
     public ShipLayer getParentLayer() {
-        if (super.getParentLayer() instanceof ShipLayer checked) {
+        ViewerLayer parentLayer = super.getParentLayer();
+        if (parentLayer instanceof ShipLayer checked) {
             return checked;
-        } else throw new IllegalStateException("Found illegal parent layer of ShipPainter!");
+        } else if (parentLayer != null) {
+            throw new IllegalStateException("Found illegal parent layer of ShipPainter!");
+        }
+        return null;
     }
 
     private void createPointPainters() {
@@ -195,6 +209,11 @@ public class ShipPainter extends LayerPainter {
         EventBus.publish(new ViewerRepaintQueued());
     }
 
+    public void initFromHullSpec(HullSpecFile hullSpecFile) {
+        this.createPointPainters();
+        ShipPainterInitialization.loadShipData(this, hullSpecFile);
+    }
+
     @SuppressWarnings("WeakerAccess")
     protected void initPainterListeners(ShipLayer layer) {
         if (layer == null) return;
@@ -203,11 +222,10 @@ public class ShipPainter extends LayerPainter {
                 if (checked.layer() != layer) return;
                 ShipData shipData = layer.getShipData();
                 if (shipData != null && this.isUninitialized()) {
-                    this.createPointPainters();
-                    HullSpecFile hullSpecFile = shipData.getHullSpecFile();
                     ShipHull hull = layer.getHull();
+                    HullSpecFile hullSpecFile = shipData.getHullSpecFile();
                     hull.initialize(hullSpecFile);
-                    ShipPainterInitialization.loadShipData(this, hullSpecFile);
+                    this.initFromHullSpec(hullSpecFile);
                 }
             }
         };
@@ -224,6 +242,26 @@ public class ShipPainter extends LayerPainter {
     public Point2D getEntityCenter() {
         ShipCenterPoint shipCenter = this.getShipCenter();
         return shipCenter.getPosition();
+    }
+
+    @Override
+    protected Point2D getRotationAnchor() {
+        if (moduleAnchorOffset == null) {
+            return getEntityCenter();
+        } else {
+            Point2D entityCenter = getEntityCenter();
+            double x = entityCenter.getX() - moduleAnchorOffset.getY();
+            double y = entityCenter.getY() - moduleAnchorOffset.getX();
+            return new Point2D.Double(x, y);
+        }
+    }
+
+    public Point2D getCenterAnchorDifference() {
+        Point2D anchor = getAnchor();
+        Point2D rotationAnchor = this.getRotationAnchor();
+        double x = rotationAnchor.getX() - anchor.getX();
+        double y = rotationAnchor.getY() - anchor.getY();
+        return new Point2D.Double(x, y);
     }
 
     public Point2D getCenterAnchor() {
@@ -294,6 +332,19 @@ public class ShipPainter extends LayerPainter {
             if (!existingIDs.contains(newID)) {
                 return newID;
             }
+        }
+    }
+
+    @Override
+    public void paint(Graphics2D g, AffineTransform worldToScreen, double w, double h) {
+        super.paint(g, worldToScreen, w, h);
+
+        if (this.isUninitialized()) return;
+        ShipVariant shipVariant = this.getActiveVariant();
+        if (shipVariant != null && !shipVariant.isEmpty()) {
+            InstalledSlotFeaturePainter slotFeaturePainter = shipVariant.getSlotFeaturePainter();
+            slotFeaturePainter.refreshSlotData(this.getWeaponSlotPainter());
+            slotFeaturePainter.paint(g, worldToScreen, w, h);
         }
     }
 

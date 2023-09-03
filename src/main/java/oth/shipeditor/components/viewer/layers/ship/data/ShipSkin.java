@@ -8,10 +8,7 @@ import oth.shipeditor.components.datafiles.entities.WingCSVEntry;
 import oth.shipeditor.components.viewer.entities.engine.EngineDataOverride;
 import oth.shipeditor.components.viewer.entities.weapon.WeaponSlotOverride;
 import oth.shipeditor.persistence.SettingsManager;
-import oth.shipeditor.representation.EngineSlot;
-import oth.shipeditor.representation.GameDataRepository;
-import oth.shipeditor.representation.HullStyle;
-import oth.shipeditor.representation.ShipTypeHints;
+import oth.shipeditor.representation.*;
 import oth.shipeditor.representation.weapon.WeaponMount;
 import oth.shipeditor.representation.weapon.WeaponSize;
 import oth.shipeditor.representation.weapon.WeaponSlot;
@@ -133,7 +130,7 @@ public final class ShipSkin {
     }
 
     @SuppressWarnings({"PublicInnerClass", "ClassWithTooManyMethods",
-            "unused", "BooleanParameter", "MethodParameterNamingConvention"})
+            "unused", "BooleanParameter", "MethodParameterNamingConvention", "WeakerAccess"})
     public static class Builder {
         private ShipSkin skin;
 
@@ -411,6 +408,47 @@ public final class ShipSkin {
             this.skin = new ShipSkin();
             return ready;
         }
+    }
+
+    public static ShipSkin createFromSpec(SkinSpecFile skinSpecFile) {
+        // This whole class file is obviously an anti-pattern, but I'm just so burned out at this point that I don't really care.
+        return new Builder()
+                .withSkinFilePath(skinSpecFile.getFilePath())
+                .withContainingPackage(skinSpecFile.getContainingPackage())
+                .withLoadedSkinSprite(skinSpecFile.getLoadedSkinSprite())
+                .withBaseHullId(skinSpecFile.getBaseHullId())
+                .withSkinHullId(skinSpecFile.getSkinHullId())
+                .withShipSystem(skinSpecFile.getSystemId())
+                .withHullName(skinSpecFile.getHullName())
+                .withHullDesignation(skinSpecFile.getHullDesignation())
+                .withHullStyle(skinSpecFile.getHullStyle())
+                .withRestoreToBaseHull(skinSpecFile.isRestoreToBaseHull())
+                .withIncompatibleWithBaseHull(skinSpecFile.isIncompatibleWithBaseHull())
+                .withFleetPoints(skinSpecFile.getFleetPoints())
+                .withOrdnancePoints(skinSpecFile.getOrdnancePoints())
+                .withBaseValue(skinSpecFile.getBaseValue())
+                .withSuppliesPerMonth(skinSpecFile.getSuppliesPerMonth())
+                .withSuppliesToRecover(skinSpecFile.getSuppliesToRecover())
+                .withDescriptionId(skinSpecFile.getDescriptionId())
+                .withDescriptionPrefix(skinSpecFile.getDescriptionPrefix())
+                .withCoversColor(skinSpecFile.getCoversColor())
+                .withTags(skinSpecFile.getTags())
+                .withTech(skinSpecFile.getTech())
+                .withBuiltInWings(skinSpecFile.getBuiltInWings())
+                .withFighterBays(skinSpecFile.getFighterBays())
+                .withSpriteName(skinSpecFile.getSpriteName())
+                .withBaseValueMult(skinSpecFile.getBaseValueMult())
+                .withRemoveHints(skinSpecFile.getRemoveHints())
+                .withAddHints(skinSpecFile.getAddHints())
+                .withRemoveWeaponSlots(skinSpecFile.getRemoveWeaponSlots())
+                .withRemoveEngineSlots(skinSpecFile.getRemoveEngineSlots())
+                .withRemoveBuiltInMods(skinSpecFile.getRemoveBuiltInMods())
+                .withRemoveBuiltInWeapons(skinSpecFile.getRemoveBuiltInWeapons())
+                .withBuiltInMods(skinSpecFile.getBuiltInMods())
+                .withBuiltInWeapons(skinSpecFile.getBuiltInWeapons())
+                .withWeaponSlotChanges(skinSpecFile.getWeaponSlotChanges())
+                .withEngineSlotChanges(skinSpecFile.getEngineSlotChanges())
+                .build();
     }
 
 }

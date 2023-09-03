@@ -117,8 +117,11 @@ public class LayerManager {
         EventBus.subscribe(event -> {
             if (event instanceof LayerShipDataInitialized checked) {
                 ShipPainter source = checked.source();
-                this.setActiveLayer(source.getParentLayer());
-                EventBus.publish(new ActiveLayerUpdated(this.getActiveLayer()));
+                ShipLayer parentLayer = source.getParentLayer();
+                if (parentLayer != null) {
+                    this.setActiveLayer(parentLayer);
+                    EventBus.publish(new ActiveLayerUpdated(this.getActiveLayer()));
+                }
             }
         });
         EventBus.subscribe(event -> {

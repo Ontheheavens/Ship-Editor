@@ -149,7 +149,8 @@ public class BaseWorldPoint implements WorldPoint, Painter {
         return result;
     }
 
-    protected Shape getShapeForPoint(AffineTransform worldToScreen, float worldSize, float screenSize) {
+    @SuppressWarnings("SameParameterValue")
+    private Shape getShapeForPoint(AffineTransform worldToScreen, float worldSize, float screenSize) {
         Shape circle = ShapeUtilities.createCircle(position, (float) (worldSize * paintSizeMultiplier));
 
         return ShapeUtilities.ensureDynamicScaleShape(worldToScreen,
@@ -161,7 +162,7 @@ public class BaseWorldPoint implements WorldPoint, Painter {
     }
 
     public void setPosition(Point2D input) {
-        this.position.setLocation(input.getX(), input.getY());
+        this.setPosition(input.getX(), input.getY());
     }
 
     public Point2D getCoordinatesForDisplay() {

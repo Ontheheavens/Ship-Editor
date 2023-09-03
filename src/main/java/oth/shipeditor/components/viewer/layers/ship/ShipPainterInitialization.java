@@ -37,6 +37,13 @@ public final class ShipPainterInitialization {
 
         Point2D translatedCenter = ShipPainterInitialization.rotateCenter(hullCenter, anchor);
 
+        Point2D.Double specFileModuleAnchor = hullSpecFile.getModuleAnchor();
+        if (specFileModuleAnchor != null) {
+            shipPainter.setModuleAnchorOffset(specFileModuleAnchor);
+//        Point2D translatedModuleAnchor = ShipPainterInitialization.rotatePointByCenter(specFileModuleAnchor, translatedCenter);
+//        shipPainter.setModuleAnchorOffset(translatedModuleAnchor);
+        }
+
         ShipPainterInitialization.initCentroids(shipPainter, hullSpecFile, translatedCenter);
 
         ShipPainterInitialization.initBounds(shipPainter, hullSpecFile, translatedCenter);
@@ -71,7 +78,9 @@ public final class ShipPainterInitialization {
 
     @SuppressWarnings("OverlyCoupledMethod")
     private static void initSlots(ShipPainter shipPainter, HullSpecFile hullSpecFile, Point2D translatedCenter) {
-        Stream<WeaponSlot> slotStream = Arrays.stream(hullSpecFile.getWeaponSlots());
+        WeaponSlot[] weaponSlots = hullSpecFile.getWeaponSlots();
+        if (weaponSlots == null || weaponSlots.length == 0) return;
+        Stream<WeaponSlot> slotStream = Arrays.stream(weaponSlots);
 
         slotStream.forEach(weaponSlot -> {
             if (Objects.equals(weaponSlot.getType(), StringConstants.LAUNCH_BAY)) {

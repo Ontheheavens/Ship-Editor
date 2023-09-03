@@ -5,6 +5,7 @@ import lombok.extern.log4j.Log4j2;
 import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.files.SkinFileOpened;
 import oth.shipeditor.components.viewer.layers.ship.ShipLayer;
+import oth.shipeditor.components.viewer.layers.ship.ShipPainter;
 import oth.shipeditor.menubar.FileUtilities;
 import oth.shipeditor.parsing.loading.FileLoading;
 import oth.shipeditor.representation.HullSpecFile;
@@ -110,7 +111,6 @@ public class ShipCSVEntry implements CSVEntry {
 
     public void loadLayerFromEntry() {
         String spriteName = this.hullSpecFile.getSpriteName();
-
         Path spriteFilePath = Path.of(spriteName);
         File spriteFile = FileLoading.fetchDataFile(spriteFilePath, this.packageFolderPath);
 
@@ -140,6 +140,24 @@ public class ShipCSVEntry implements CSVEntry {
             skinSpecFile.setLoadedSkinSprite(skinSprite);
             EventBus.publish(new SkinFileOpened(skinSpecFile, skinSpecFile == this.activeSkinSpecFile));
         }
+    }
+
+    /**
+     * @param layer can be null.
+     */
+    public ShipPainter createPainterFromEntry(ShipLayer layer) {
+        ShipPainter shipPainter = new ShipPainter(layer);
+
+        String spriteName = this.hullSpecFile.getSpriteName();
+        Path spriteFilePath = Path.of(spriteName);
+        File spriteFile = FileLoading.fetchDataFile(spriteFilePath, this.packageFolderPath);
+        Sprite sprite = FileLoading.loadSprite(spriteFile);
+        shipPainter.setSprite(sprite.image());
+        shipPainter.setBaseHullSprite(sprite);
+
+        shipPainter.initFromHullSpec(this.getHullSpecFile());
+
+        return shipPainter;
     }
 
     public List<String> getBuiltInHullmods() {

@@ -9,6 +9,7 @@ import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.viewer.control.LayerAnchorDragged;
 import oth.shipeditor.communication.events.viewer.layers.LayerRotationQueued;
 import oth.shipeditor.communication.events.viewer.layers.ViewerLayerRemovalConfirmed;
+import oth.shipeditor.communication.events.viewer.points.AnchorOffsetQueued;
 import oth.shipeditor.components.viewer.control.ControlPredicates;
 import oth.shipeditor.components.viewer.painters.points.AbstractPointPainter;
 import oth.shipeditor.undo.EditDispatch;
@@ -32,7 +33,7 @@ public abstract class LayerPainter implements Painter {
     @Getter
     private final List<AbstractPointPainter> allPainters;
 
-    @Getter @Setter
+    @Getter
     private Point2D anchor = new Point2D.Double(0, 0);
 
     @Getter
@@ -49,6 +50,9 @@ public abstract class LayerPainter implements Painter {
 
     @Getter @Setter(AccessLevel.PROTECTED)
     private boolean uninitialized = true;
+
+    @Getter @Setter
+    private boolean shouldDrawPainter;
 
     @Getter
     private final List<BusEventListener> listeners;
@@ -100,13 +104,23 @@ public abstract class LayerPainter implements Painter {
 
     public abstract Point2D getEntityCenter();
 
+    public void setAnchor(Point2D inputAnchor) {
+        Point2D oldAnchor = this.getAnchor();
+
+        Point2D difference = new Point2D.Double(oldAnchor.getX() - inputAnchor.getX(),
+                oldAnchor.getY() - inputAnchor.getY());
+        EventBus.publish(new AnchorOffsetQueued(this, difference));
+
+        this.anchor = inputAnchor;
+    }
+
     public boolean isLayerActive() {
         ViewerLayer layer = this.getParentLayer();
         if (layer == null) return false;
         return StaticController.getActiveLayer() == layer;
     }
 
-    private void cleanupForRemoval() {
+    public void cleanupForRemoval() {
         for (AbstractPointPainter pointPainter : this.getAllPainters()) {
             pointPainter.cleanupPointPainter();
         }
@@ -206,6 +220,7 @@ public abstract class LayerPainter implements Painter {
         int width = this.getSpriteWidth();
         int height = this.getSpriteHeight();
         g.drawImage(getSprite(), (int) anchor.getX(), (int) anchor.getY(), width, height, null);
+
     }
 
     @SuppressWarnings("DuplicatedCode")

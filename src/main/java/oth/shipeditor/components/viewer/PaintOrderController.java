@@ -99,7 +99,7 @@ public class PaintOrderController implements Painter {
         AffineTransform transform = layerPainter.getWithRotation(worldToScreen);
 
         layerPainter.paint(g, transform, w, h);
-        if (layerPainter.isUninitialized()) return;
+
         List<AbstractPointPainter> allPainters = layerPainter.getAllPainters();
         allPainters.forEach(pointPainter -> pointPainter.paint(g, transform, w, h));
     }

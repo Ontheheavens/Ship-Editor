@@ -185,6 +185,7 @@ public class WeaponCSVEntry implements CSVEntry {
         WeaponPainter weaponPainter = new WeaponPainter(layer);
         var spriteHolder = this.getSprites();
         weaponPainter.setWeaponSprites(spriteHolder);
+        weaponPainter.setWeaponID(weaponSpecFile.getId());
 
         var hardpointOffsets = weaponSpecFile.getHardpointOffsets();
         var hardpointAngles = weaponSpecFile.getHardpointAngleOffsets();

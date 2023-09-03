@@ -28,6 +28,9 @@ public class WeaponPainter extends LayerPainter {
     @Getter @Setter
     private WeaponSprites weaponSprites;
 
+    @Getter @Setter
+    private String weaponID;
+
     private final WeaponOffsetPainter turretOffsetPainter;
 
     private final WeaponOffsetPainter hardpointOffsetPainter;
@@ -38,6 +41,7 @@ public class WeaponPainter extends LayerPainter {
     @Getter @Setter
     private boolean renderLoadedMissiles;
 
+    @SuppressWarnings("unused")
     private boolean drawGlow;
 
     @Getter @Setter
@@ -63,6 +67,22 @@ public class WeaponPainter extends LayerPainter {
         } else {
             return turretOffsetPainter;
         }
+    }
+
+    @Override
+    public void setAnchor(Point2D inputAnchor) {
+        Point2D oldAnchor = this.getAnchor();
+        super.setAnchor(inputAnchor);
+
+//        var offsetPainter = getOffsetPainter();
+//        var offsetPoints = offsetPainter.getOffsetPoints();
+//        offsetPoints.forEach(offsetPoint -> {
+//            Point2D difference = new Point2D.Double(oldAnchor.getX() - inputAnchor.getX(),
+//                    oldAnchor.getY() - inputAnchor.getY());
+//            Point2D oldPosition = offsetPoint.getPosition();
+//            offsetPoint.setPosition(oldPosition.getX() - difference.getX(),
+//                    oldPosition.getY() - difference.getY());
+//        });
     }
 
     @Override
@@ -113,6 +133,10 @@ public class WeaponPainter extends LayerPainter {
         int width = spriteImage.getWidth();
         int height = spriteImage.getHeight();
         g.drawImage(spriteImage, (int) anchor.getX(), (int) anchor.getY(), width, height, null);
+    }
+
+    public Point2D getWeaponCenter() {
+        return weaponSprites.getWeaponCenter(mount);
     }
 
     @Override

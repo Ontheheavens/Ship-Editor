@@ -1,8 +1,6 @@
 package oth.shipeditor.undo.edits;
 
-import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.Events;
-import oth.shipeditor.communication.events.viewer.points.AnchorOffsetQueued;
 import oth.shipeditor.components.viewer.layers.LayerPainter;
 import oth.shipeditor.undo.AbstractEdit;
 
@@ -30,18 +28,18 @@ public class AnchorOffsetEdit extends AbstractEdit {
     @Override
     public void undo() {
         undoSubEdits();
-        Point2D difference = new Point2D.Double(updatedOffset.getX() - oldOffset.getX(),
-                updatedOffset.getY() - oldOffset.getY());
-        EventBus.publish(new AnchorOffsetQueued(shipPainter, difference));
+//        Point2D difference = new Point2D.Double(updatedOffset.getX() - oldOffset.getX(),
+//                updatedOffset.getY() - oldOffset.getY());
+//        EventBus.publish(new AnchorOffsetQueued(shipPainter, difference));
         shipPainter.setAnchor(oldOffset);
         Events.repaintView();
     }
 
     @Override
     public void redo() {
-        Point2D difference = new Point2D.Double(oldOffset.getX() - updatedOffset.getX(),
-                oldOffset.getY() - updatedOffset.getY());
-        EventBus.publish(new AnchorOffsetQueued(shipPainter, difference));
+//        Point2D difference = new Point2D.Double(oldOffset.getX() - updatedOffset.getX(),
+//                oldOffset.getY() - updatedOffset.getY());
+//        EventBus.publish(new AnchorOffsetQueued(shipPainter, difference));
         shipPainter.setAnchor(updatedOffset);
         redoSubEdits();
         Events.repaintView();

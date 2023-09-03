@@ -5,6 +5,7 @@ package oth.shipeditor.utility.text;
  * @author Ontheheavens
  * @since 26.07.2023
  */
+@SuppressWarnings("unused")
 public final class StringValues {
 
     public static final String DEFAULT = "Default";

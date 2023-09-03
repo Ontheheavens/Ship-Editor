@@ -251,7 +251,7 @@ public abstract class AbstractPointPainter implements Painter {
         EventBus.publish(new ViewerRepaintQueued());
     }
 
-    protected abstract List<? extends BaseWorldPoint> getPointsIndex();
+    public abstract List<? extends BaseWorldPoint> getPointsIndex();
 
     protected abstract void addPointToIndex(BaseWorldPoint point);
 

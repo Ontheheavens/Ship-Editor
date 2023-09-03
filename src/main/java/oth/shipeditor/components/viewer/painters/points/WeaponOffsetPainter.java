@@ -35,7 +35,7 @@ public class WeaponOffsetPainter extends AngledPointPainter {
     }
 
     @Override
-    protected List<OffsetPoint> getPointsIndex() {
+    public List<OffsetPoint> getPointsIndex() {
         return offsetPoints;
     }
 
