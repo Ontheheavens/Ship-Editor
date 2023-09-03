@@ -1,13 +1,18 @@
 package oth.shipeditor.components.datafiles.entities;
 
 import lombok.Getter;
-import lombok.Setter;
 import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.viewer.layers.ActiveLayerUpdated;
+import oth.shipeditor.components.viewer.entities.weapon.OffsetPoint;
+import oth.shipeditor.components.viewer.layers.ship.ShipPainterInitialization;
 import oth.shipeditor.components.viewer.layers.weapon.WeaponLayer;
 import oth.shipeditor.components.viewer.layers.weapon.WeaponPainter;
 import oth.shipeditor.components.viewer.layers.weapon.WeaponSprites;
+import oth.shipeditor.components.viewer.painters.features.ProjectilePainter;
 import oth.shipeditor.parsing.loading.FileLoading;
+import oth.shipeditor.representation.GameDataRepository;
+import oth.shipeditor.representation.weapon.ProjectileSpecFile;
+import oth.shipeditor.representation.weapon.WeaponMount;
 import oth.shipeditor.representation.weapon.WeaponSpecFile;
 import oth.shipeditor.utility.StaticController;
 import oth.shipeditor.utility.Utility;
@@ -15,6 +20,10 @@ import oth.shipeditor.utility.graphics.Sprite;
 import oth.shipeditor.utility.text.StringConstants;
 import oth.shipeditor.utility.text.StringValues;
 
+import javax.swing.*;
+import java.awt.*;
+import java.awt.geom.Point2D;
+import java.awt.image.BufferedImage;
 import java.io.File;
 import java.nio.file.Path;
 import java.util.Map;
@@ -35,8 +44,11 @@ public class WeaponCSVEntry implements CSVEntry {
 
     private final String weaponID;
 
-    @Setter
     private WeaponSpecFile specFile;
+
+    private WeaponSprites sprites;
+
+    private Sprite weaponImage;
 
     public WeaponCSVEntry(Map<String, String> row, Path folder, Path tablePath) {
         this.rowData = row;
@@ -50,11 +62,104 @@ public class WeaponCSVEntry implements CSVEntry {
         return weaponID;
     }
 
+    public void setSpecFile(WeaponSpecFile weaponSpecFile) {
+        this.specFile = weaponSpecFile;
+    }
+
+    public WeaponSprites getSprites() {
+        if (sprites == null) {
+            WeaponSprites spriteHolder = new WeaponSprites();
+            WeaponSpecFile weaponSpecFile = this.getSpecFile();
+
+            String turretSprite = weaponSpecFile.getTurretSprite();
+            setSpecSpriteFromPath(turretSprite, spriteHolder::setTurretSprite);
+            String turretGunSprite = weaponSpecFile.getTurretGunSprite();
+            setSpecSpriteFromPath(turretGunSprite, spriteHolder::setTurretGunSprite);
+            String turretGlowSprite = weaponSpecFile.getTurretGlowSprite();
+            setSpecSpriteFromPath(turretGlowSprite, spriteHolder::setTurretGlowSprite);
+            String turretUnderSprite = weaponSpecFile.getTurretUnderSprite();
+            setSpecSpriteFromPath(turretUnderSprite, spriteHolder::setTurretUnderSprite);
+
+            String hardpointSprite = weaponSpecFile.getHardpointSprite();
+            setSpecSpriteFromPath(hardpointSprite, spriteHolder::setHardpointSprite);
+            String hardpointGunSprite = weaponSpecFile.getHardpointGunSprite();
+            setSpecSpriteFromPath(hardpointGunSprite, spriteHolder::setHardpointGunSprite);
+            String hardpointGlowSprite = weaponSpecFile.getHardpointGlowSprite();
+            setSpecSpriteFromPath(hardpointGlowSprite, spriteHolder::setHardpointGlowSprite);
+            String hardpointUnderSprite = weaponSpecFile.getHardpointUnderSprite();
+            setSpecSpriteFromPath(hardpointUnderSprite, spriteHolder::setHardpointUnderSprite);
+
+            sprites = spriteHolder;
+        }
+        return sprites;
+    }
+
+    public Sprite getWeaponImage() {
+        if (weaponImage == null) {
+            WeaponSprites spriteHolder = this.getSprites();
+
+            var turretSprite = spriteHolder.getTurretSprite();
+            if (turretSprite == null) return null;
+            BufferedImage turretMain = turretSprite.image();
+
+            var turretGunSprite = spriteHolder.getTurretGunSprite();
+            BufferedImage turretGun = null;
+            if (turretGunSprite != null) {
+                turretGun = turretGunSprite.image();
+            }
+
+            BufferedImage combinedImage = new BufferedImage(turretMain.getWidth(), turretMain.getHeight(),
+                    BufferedImage.TYPE_INT_ARGB);
+
+            Graphics2D g2d = combinedImage.createGraphics();
+
+            boolean barrelsBelow = false;
+            var renderHints = specFile.getRenderHints();
+            if (renderHints != null && !renderHints.isEmpty()) {
+                if (renderHints.contains(StringConstants.RENDER_BARREL_BELOW)) {
+                    barrelsBelow = true;
+                }
+            }
+
+            if (barrelsBelow) {
+                if (turretGun != null) {
+                    g2d.drawImage(turretGun, 0, 0, null);
+                }
+                g2d.drawImage(turretMain, 0, 0, null);
+            } else {
+                g2d.drawImage(turretMain, 0, 0, null);
+                if (turretGun != null) {
+                    g2d.drawImage(turretGun, 0, 0, null);
+                }
+            }
+
+            g2d.dispose();
+            weaponImage = new Sprite(combinedImage, turretSprite.path(), turretSprite.name());
+        }
+        return weaponImage;
+    }
+
     public void loadLayerFromEntry() {
         String turretSprite = this.specFile.getTurretSprite();
 
+        if (turretSprite == null || turretSprite.isEmpty()) {
+            JOptionPane.showMessageDialog(null,
+                    "Layer initialization failed, sprite file not defined for: " + this.getWeaponID(),
+                    StringValues.FILE_LOADING_ERROR,
+                    JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+
         Path spriteFilePath = Path.of(turretSprite);
         File spriteFile = FileLoading.fetchDataFile(spriteFilePath, this.packageFolderPath);
+
+        if (spriteFile == null) {
+            JOptionPane.showMessageDialog(null,
+                    "Layer initialization failed, sprite file not found for: " + this.getWeaponID(),
+                    StringValues.FILE_LOADING_ERROR,
+                    JOptionPane.ERROR_MESSAGE);
+            return;
+        }
 
         Sprite sprite = FileLoading.loadSprite(spriteFile);
 
@@ -78,31 +183,62 @@ public class WeaponCSVEntry implements CSVEntry {
     @SuppressWarnings("WeakerAccess")
     public WeaponPainter createPainterFromEntry(WeaponLayer layer, WeaponSpecFile weaponSpecFile) {
         WeaponPainter weaponPainter = new WeaponPainter(layer);
-        WeaponSprites spriteHolder = weaponPainter.getWeaponSprites();
+        var spriteHolder = this.getSprites();
+        weaponPainter.setWeaponSprites(spriteHolder);
 
-        String turretSprite = weaponSpecFile.getTurretSprite();
-        setSpecSpriteFromPath(turretSprite, spriteHolder::setTurretSprite);
-        String turretGunSprite = weaponSpecFile.getTurretGunSprite();
-        setSpecSpriteFromPath(turretGunSprite, spriteHolder::setTurretGunSprite);
-        String turretGlowSprite = weaponSpecFile.getTurretGlowSprite();
-        setSpecSpriteFromPath(turretGlowSprite, spriteHolder::setTurretGlowSprite);
-        String turretUnderSprite = weaponSpecFile.getTurretUnderSprite();
-        setSpecSpriteFromPath(turretUnderSprite, spriteHolder::setTurretUnderSprite);
+        var hardpointOffsets = weaponSpecFile.getHardpointOffsets();
+        var hardpointAngles = weaponSpecFile.getHardpointAngleOffsets();
+        WeaponCSVEntry.initializeOffsets(weaponPainter, WeaponMount.HARDPOINT,
+                hardpointOffsets, hardpointAngles);
 
-        String hardpointSprite = weaponSpecFile.getHardpointSprite();
-        setSpecSpriteFromPath(hardpointSprite, spriteHolder::setHardpointSprite);
-        String hardpointGunSprite = weaponSpecFile.getHardpointGunSprite();
-        setSpecSpriteFromPath(hardpointGunSprite, spriteHolder::setHardpointGunSprite);
-        String hardpointGlowSprite = weaponSpecFile.getHardpointGlowSprite();
-        setSpecSpriteFromPath(hardpointGlowSprite, spriteHolder::setHardpointGlowSprite);
-        String hardpointUnderSprite = weaponSpecFile.getHardpointUnderSprite();
-        setSpecSpriteFromPath(hardpointUnderSprite, spriteHolder::setHardpointUnderSprite);
+        var turretOffsets = weaponSpecFile.getTurretOffsets();
+        var turretAngles = weaponSpecFile.getTurretAngleOffsets();
+        WeaponCSVEntry.initializeOffsets(weaponPainter, WeaponMount.TURRET,
+                turretOffsets, turretAngles);
+
+        var renderHints = specFile.getRenderHints();
+        if (renderHints != null && !renderHints.isEmpty()) {
+            if (renderHints.contains("RENDER_LOADED_MISSILES")) {
+                weaponPainter.setRenderLoadedMissiles(true);
+            }
+            if (renderHints.contains(StringConstants.RENDER_BARREL_BELOW)) {
+                weaponPainter.setRenderBarrelsBelow(true);
+            }
+        }
+
+        ProjectileSpecFile projectileSpec = GameDataRepository.getProjectileByID(specFile.getProjectileSpecId());
+        if (projectileSpec != null) {
+            String sprite = projectileSpec.getSprite();
+            if (sprite != null && !sprite.isEmpty()) {
+                Path projectileSpecSpritePath = Path.of(sprite);
+                Path containingPackage = projectileSpec.getContainingPackage();
+                File file = FileLoading.fetchDataFile(projectileSpecSpritePath, containingPackage);
+                Sprite projectileSprite = FileLoading.loadSprite(file);
+
+                ProjectilePainter projectilePainter = new ProjectilePainter(projectileSprite, projectileSpec.getCenter());
+                weaponPainter.setProjectilePainter(projectilePainter);
+            }
+        }
 
         Sprite loadedTurretSprite = spriteHolder.getTurretSprite();
         weaponPainter.setSprite(loadedTurretSprite.image());
         return weaponPainter;
     }
 
+    private static void initializeOffsets(WeaponPainter painter, WeaponMount mount,
+                                          Point2D[] offsetPoints, double[] offsetAngles) {
+        int length = offsetPoints.length;
+        painter.setMount(mount);
+        var offsetPainter = painter.getOffsetPainter();
+        for (int i = 0; i < length; i++) {
+            Point2D offset = offsetPoints[i];
+            Point2D rotated = ShipPainterInitialization.rotatePointByCenter(offset,
+                    painter.getEntityCenter());
+            OffsetPoint initialized = new OffsetPoint(rotated, painter);
+            initialized.setAngle(offsetAngles[i]);
+            offsetPainter.addPoint(initialized);
+        }
+    }
 
     private void setSpecSpriteFromPath(String pathInPackage, Consumer<Sprite> setter) {
         Utility.setSpriteFromPath(pathInPackage, setter, this.packageFolderPath);

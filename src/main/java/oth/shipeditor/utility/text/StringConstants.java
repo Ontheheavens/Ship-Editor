@@ -98,4 +98,14 @@ public interface StringConstants {
 
     String CONFIG = "config";
 
+    String SPEC_CLASS = "specClass";
+
+    String SPRITE = "sprite";
+
+    String CENTER = "center";
+
+    String COLLISION_RADIUS = "collisionRadius";
+
+    String RENDER_BARREL_BELOW = "RENDER_BARREL_BELOW";
+
 }

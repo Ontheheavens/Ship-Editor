@@ -40,7 +40,11 @@ public class WeaponSpecFile {
     @JsonIgnore
     private Path weaponSpecFilePath;
 
-    @JsonProperty("specClass")
+    @Setter
+    @JsonIgnore
+    private Path containingPackage;
+
+    @JsonProperty(StringConstants.SPEC_CLASS)
     private String specClass;
 
     @JsonProperty("id")

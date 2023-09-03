@@ -136,7 +136,8 @@ public class BuiltInWingsPanel extends AbstractBuiltInsPanel<WingCSVEntry> {
     }
 
     private static JPanel addWingPanel(WingCSVEntry wing, ActionListener removeAction) {
-        BufferedImage sprite = wing.getWingMemberSprite();
+        var wingMemberSprite = wing.getWingMemberSprite();
+        BufferedImage sprite = wingMemberSprite.image();
 
         String tooltip = wing.getEntryName();
         JLabel spriteIcon = ComponentUtilities.createIconFromImage(sprite, tooltip, 32);

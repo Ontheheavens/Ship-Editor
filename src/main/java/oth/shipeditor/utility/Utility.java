@@ -13,6 +13,7 @@ import java.awt.*;
 import java.awt.event.ActionListener;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Point2D;
+import java.awt.image.BufferedImage;
 import java.io.File;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -98,6 +99,14 @@ public final class Utility {
         });
         builder.append("</html>");
         return builder.toString();
+    }
+
+    public static String getTooltipForSprite(Sprite sprite) {
+        String spriteName = "Filename: " + sprite.name();
+        BufferedImage image = sprite.image();
+        String width = "Width: " + image.getWidth();
+        String height = "Height: " + image.getHeight();
+        return Utility.getWithLinebreaks(spriteName, width, height);
     }
 
     public static String getPointPositionText(Point2D location) {

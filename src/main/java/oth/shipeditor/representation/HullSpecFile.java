@@ -56,7 +56,7 @@ public class HullSpecFile implements ShipSpecFile {
     @JsonProperty(StringConstants.WIDTH)
     private double width;
 
-    @JsonProperty("center")
+    @JsonProperty(StringConstants.CENTER)
     @JsonDeserialize(using = Point2DDeserializer.class)
     private Point2D.Double center;
 
@@ -64,7 +64,7 @@ public class HullSpecFile implements ShipSpecFile {
     @JsonDeserialize(using = Point2DDeserializer.class)
     private Point2D.Double moduleAnchor;
 
-    @JsonProperty("collisionRadius")
+    @JsonProperty(StringConstants.COLLISION_RADIUS)
     private double collisionRadius;
 
     @JsonProperty(StringConstants.COVERS_COLOR)

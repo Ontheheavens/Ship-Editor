@@ -3,6 +3,7 @@ package oth.shipeditor.components.viewer.entities.weapon;
 import oth.shipeditor.components.viewer.entities.AngledPoint;
 import oth.shipeditor.components.viewer.layers.weapon.WeaponPainter;
 import oth.shipeditor.utility.graphics.DrawUtilities;
+import oth.shipeditor.utility.graphics.ShapeUtilities;
 
 import java.awt.*;
 import java.awt.geom.AffineTransform;
@@ -16,7 +17,7 @@ public class OffsetPoint extends AngledPoint {
 
     private double angle;
 
-    protected OffsetPoint(Point2D pointPosition, WeaponPainter layer) {
+    public OffsetPoint(Point2D pointPosition, WeaponPainter layer) {
         super(pointPosition, layer);
     }
 
@@ -37,8 +38,8 @@ public class OffsetPoint extends AngledPoint {
 
     @Override
     public void paint(Graphics2D g, AffineTransform worldToScreen, double w, double h) {
-        float worldSizeRadius = 0.75f;
-        Shape shape = this.getShapeForPoint(worldToScreen, worldSizeRadius, 8);
+        float worldSizeRadius = 0.15f;
+        Shape shape = ShapeUtilities.createCircle(this.getPosition(), worldSizeRadius);
 
         Point2D position = this.getPosition();
         DrawUtilities.drawAngledCirclePointer(g, worldToScreen, shape, worldSizeRadius,

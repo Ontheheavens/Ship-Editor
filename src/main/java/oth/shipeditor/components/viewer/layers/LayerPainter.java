@@ -61,7 +61,8 @@ public abstract class LayerPainter implements Painter {
     }
 
     public Dimension getSpriteSize() {
-        return new Dimension(sprite.getWidth(), sprite.getHeight());
+        var spriteImage = getSprite();
+        return new Dimension(spriteImage.getWidth(), spriteImage.getHeight());
     }
 
     private void initLayerListeners() {
@@ -177,11 +178,13 @@ public abstract class LayerPainter implements Painter {
     }
 
     private int getSpriteWidth() {
-        return sprite.getWidth();
+        var spriteImage = getSprite();
+        return spriteImage.getWidth();
     }
 
     private int getSpriteHeight() {
-        return sprite.getHeight();
+        var spriteImage = getSprite();
+        return spriteImage.getHeight();
     }
 
     /**
@@ -199,12 +202,13 @@ public abstract class LayerPainter implements Painter {
                 (anchor.getY() + this.getSpriteHeight() / 2.0f));
     }
 
-    protected void paintContent(Graphics2D g) {
+    protected void paintContent(Graphics2D g, AffineTransform worldToScreen, double w, double h) {
         int width = this.getSpriteWidth();
         int height = this.getSpriteHeight();
-        g.drawImage(sprite, (int) anchor.getX(), (int) anchor.getY(), width, height, null);
+        g.drawImage(getSprite(), (int) anchor.getX(), (int) anchor.getY(), width, height, null);
     }
 
+    @SuppressWarnings("DuplicatedCode")
     @Override
     public void paint(Graphics2D g, AffineTransform worldToScreen, double w, double h) {
         AffineTransform oldAT = g.getTransform();
@@ -214,7 +218,7 @@ public abstract class LayerPainter implements Painter {
         Composite old = g.getComposite();
         Composite opacity = AlphaComposite.getInstance(rule, alpha) ;
         g.setComposite(opacity);
-        this.paintContent(g);
+        this.paintContent(g, worldToScreen, w, h);
         g.setComposite(old);
         g.setTransform(oldAT);
     }

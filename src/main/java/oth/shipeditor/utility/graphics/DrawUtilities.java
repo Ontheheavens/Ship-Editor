@@ -260,4 +260,13 @@ public final class DrawUtilities {
                 new BasicStroke(3.0f), new BasicStroke(2.25f));
     }
 
+    public static void drawEntityCenterCross(Graphics2D g, AffineTransform worldToScreen,
+                                             Point2D position, Paint crossColor) {
+        Shape cross = ShapeUtilities.createPerpendicularCross(position, 0.4f);
+        Shape transformedCross = ShapeUtilities.ensureDynamicScaleShape(worldToScreen,
+                position, cross, 12);
+
+        DrawUtilities.drawOutlined(g, transformedCross, crossColor);
+    }
+
 }

@@ -7,7 +7,12 @@ import oth.shipeditor.components.instrument.ship.EditorInstrument;
 import oth.shipeditor.components.viewer.entities.BaseWorldPoint;
 import oth.shipeditor.components.viewer.entities.weapon.OffsetPoint;
 import oth.shipeditor.components.viewer.layers.weapon.WeaponPainter;
+import oth.shipeditor.representation.weapon.WeaponMount;
+import oth.shipeditor.utility.Utility;
 
+import java.awt.*;
+import java.awt.geom.AffineTransform;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -19,9 +24,14 @@ public class WeaponOffsetPainter extends AngledPointPainter {
     @Getter @Setter
     private List<OffsetPoint> offsetPoints;
 
-    public WeaponOffsetPainter(WeaponPainter parent) {
+    @Getter
+    private final WeaponMount designatedType;
+
+    public WeaponOffsetPainter(WeaponPainter parent, WeaponMount mount) {
         super(parent);
         this.setInteractionEnabled(false);
+        this.offsetPoints = new ArrayList<>();
+        this.designatedType = mount;
     }
 
     @Override
@@ -58,8 +68,30 @@ public class WeaponOffsetPainter extends AngledPointPainter {
     }
 
     @Override
+    public WeaponPainter getParentLayer() {
+        return (WeaponPainter) super.getParentLayer();
+    }
+
+    @Override
     protected Class<OffsetPoint> getTypeReference() {
         return OffsetPoint.class;
+    }
+
+    @Override
+    public void paint(Graphics2D g, AffineTransform worldToScreen, double w, double h) {
+        if (!checkVisibility()) return;
+
+        var parentLayer = getParentLayer();
+        if (parentLayer.getMount() != designatedType) return;
+
+        float alpha = this.getPaintOpacity();
+        Composite old = Utility.setAlphaComposite(g, alpha);
+
+        this.paintPainterContent(g, worldToScreen, w, h);
+
+        this.handleSelectionHighlight();
+        this.paintDelegates(g, worldToScreen, w, h);
+        g.setComposite(old);
     }
 
     @Override

@@ -68,8 +68,13 @@ public class WeaponSprites {
         final float centerRatio = 0.5f;
         switch (mount) {
             case HARDPOINT -> {
-                BufferedImage spriteImage = hardpointSprite.image();
-                float centerY = 0.25f;
+                BufferedImage spriteImage;
+                if (hardpointSprite != null) {
+                    spriteImage = hardpointSprite.image();
+                } else {
+                    spriteImage = turretSprite.image();
+                }
+                float centerY = 0.75f;
                 result = new Point2D.Double(spriteImage.getWidth() * centerRatio, spriteImage.getHeight() * centerY);
             }
             case TURRET, HIDDEN -> {

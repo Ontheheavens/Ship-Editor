@@ -16,13 +16,14 @@ import oth.shipeditor.representation.GameDataRepository;
 import oth.shipeditor.representation.VariantFile;
 import oth.shipeditor.undo.EditDispatch;
 import oth.shipeditor.utility.StaticController;
+import oth.shipeditor.utility.Utility;
 import oth.shipeditor.utility.components.ComponentUtilities;
+import oth.shipeditor.utility.graphics.Sprite;
 
 import javax.swing.*;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeCellRenderer;
 import java.awt.*;
-import java.awt.image.BufferedImage;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -87,10 +88,10 @@ public class WingsTreePanel extends CSVDataTreePanel<WingCSVEntry>{
         GridBagConstraints constraints = DataTreePanel.getDefaultConstraints();
         constraints.gridy = 0;
         constraints.insets = new Insets(0, 5, 0, 5);
-        BufferedImage sprite = selected.getWingMemberSprite();
+        Sprite sprite = selected.getWingMemberSprite();
         if (sprite != null) {
-            String tooltip = selected.getEntryName();
-            JLabel spriteIcon = ComponentUtilities.createIconFromImage(sprite, tooltip, 32);
+            String tooltip = Utility.getTooltipForSprite(sprite);
+            JLabel spriteIcon = ComponentUtilities.createIconFromImage(sprite.image(), tooltip, 128);
             JPanel iconPanel = new JPanel();
             iconPanel.add(spriteIcon);
             rightPanel.add(iconPanel, constraints);

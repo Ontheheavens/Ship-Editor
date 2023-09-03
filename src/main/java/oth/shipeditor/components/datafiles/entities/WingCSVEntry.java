@@ -13,7 +13,6 @@ import oth.shipeditor.utility.text.StringConstants;
 import oth.shipeditor.utility.text.StringValues;
 
 import javax.swing.*;
-import java.awt.image.BufferedImage;
 import java.io.File;
 import java.nio.file.Path;
 import java.util.Map;
@@ -99,9 +98,9 @@ public class WingCSVEntry implements CSVEntry {
         return desiredSpec;
     }
 
-    public BufferedImage getWingMemberSprite() {
+    public Sprite getWingMemberSprite() {
         if (this.memberSprite != null) {
-            return this.memberSprite.image();
+            return this.memberSprite;
         }
 
         ShipSpecFile specFile;
@@ -112,10 +111,12 @@ public class WingCSVEntry implements CSVEntry {
         }
 
         if (specFile != null) {
-            File spriteFile = FileLoading.fetchDataFile(Path.of(specFile.getSpriteName()), packageFolderPath);
+            String spriteName = specFile.getSpriteName();
+            Path of = Path.of(spriteName);
+            File spriteFile = FileLoading.fetchDataFile(of, packageFolderPath);
             Sprite result = FileLoading.loadSprite(spriteFile);
             this.memberSprite = result;
-            return result.image();
+            return result;
         } else {
             JOptionPane.showMessageDialog(null,
                     "Wing member sprite loading failed, exception thrown for: " + this.wingID,

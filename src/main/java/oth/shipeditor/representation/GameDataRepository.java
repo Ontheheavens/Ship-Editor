@@ -7,6 +7,7 @@ import oth.shipeditor.communication.events.files.HullmodDataSet;
 import oth.shipeditor.communication.events.files.WingDataSet;
 import oth.shipeditor.components.datafiles.entities.*;
 import oth.shipeditor.persistence.SettingsManager;
+import oth.shipeditor.representation.weapon.ProjectileSpecFile;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -61,6 +62,12 @@ public class GameDataRepository {
     @Setter
     private Map<String, VariantFile> allVariants;
 
+    /**
+     * All projectile files by variant IDs.
+     */
+    @Setter
+    private Map<String, ProjectileSpecFile> allProjectiles;
+
     @Setter
     private boolean shipDataLoaded;
 
@@ -109,9 +116,14 @@ public class GameDataRepository {
         return style;
     }
 
-    public static VariantFile getByID(String variantID) {
+    public static VariantFile getVariantByID(String variantID) {
         var dataRepository = SettingsManager.getGameData();
         return dataRepository.allVariants.get(variantID);
+    }
+
+    public static ProjectileSpecFile getProjectileByID(String projectileID) {
+        var dataRepository = SettingsManager.getGameData();
+        return dataRepository.allProjectiles.get(projectileID);
     }
 
     public static Map<String, VariantFile> getMatchingForHullID(String shipHullID) {

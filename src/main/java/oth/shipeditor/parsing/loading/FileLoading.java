@@ -16,6 +16,7 @@ import oth.shipeditor.representation.GameDataRepository;
 import oth.shipeditor.representation.HullSpecFile;
 import oth.shipeditor.representation.SkinSpecFile;
 import oth.shipeditor.representation.VariantFile;
+import oth.shipeditor.representation.weapon.ProjectileSpecFile;
 import oth.shipeditor.representation.weapon.WeaponSpecFile;
 import oth.shipeditor.utility.ImageCache;
 import oth.shipeditor.utility.graphics.Sprite;
@@ -123,7 +124,12 @@ public final class FileLoading {
      * @param packageFolderPath supposed parent package, where search will start. Can be null.
      * @return fetched file if it exists, else NULL.
      */
+    @SuppressWarnings("MethodWithMultipleReturnPoints")
     public static File fetchDataFile(Path filePath, Path packageFolderPath) {
+        if (filePath == null) {
+            log.error("Failed to fetch data file, input path is null.");
+            return null;
+        }
         Path coreDataFolder = SettingsManager.getCoreFolderPath();
         List<Path> otherModFolders = SettingsManager.getAllModFolders();
         Path result = null;
@@ -179,6 +185,12 @@ public final class FileLoading {
         VariantFile variantFile = FileLoading.loadDataFile(file, ".variant", VariantFile.class);
         variantFile.setVariantFilePath(file.toPath());
         return variantFile;
+    }
+
+    static ProjectileSpecFile loadProjectileFile(File file) {
+        ProjectileSpecFile projectileFile = FileLoading.loadDataFile(file, ".proj", ProjectileSpecFile.class);
+        projectileFile.setProjectileSpecFilePath(file.toPath());
+        return projectileFile;
     }
 
     private static <T> T loadDataFile(File file, String extension, Class<T> dataClass) {
