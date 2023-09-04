@@ -1,59 +1,33 @@
 package oth.shipeditor.undo.edits.points;
 
-import oth.shipeditor.communication.BusEventListener;
 import oth.shipeditor.communication.EventBus;
-import oth.shipeditor.communication.events.components.*;
 import oth.shipeditor.communication.events.viewer.ViewerRepaintQueued;
-import oth.shipeditor.communication.events.viewer.points.AnchorOffsetConfirmed;
 import oth.shipeditor.components.viewer.entities.WorldPoint;
 import oth.shipeditor.undo.AbstractEdit;
-import oth.shipeditor.undo.Edit;
-import oth.shipeditor.undo.edits.ListeningEdit;
+import oth.shipeditor.utility.StaticController;
 
 import java.awt.geom.Point2D;
-import java.util.Deque;
 
 /**
  * @author Ontheheavens
  * @since 16.06.2023
  */
-public final class PointDragEdit extends AbstractEdit implements ListeningEdit, PointEdit {
+public final class PointDragEdit extends AbstractEdit implements PointEdit {
 
     private final WorldPoint point;
     private final Point2D oldPosition;
     private final Point2D newPosition;
-
-    private BusEventListener anchorDragListener;
 
     public PointDragEdit(WorldPoint worldPoint, Point2D oldInput, Point2D newInput) {
         this.point = worldPoint;
         this.oldPosition = oldInput;
         this.newPosition = newInput;
         this.setFinished(false);
-        this.registerListeners();
     }
 
-    @Override
-    public void registerListeners() {
-        this.anchorDragListener = event -> {
-            if (event instanceof AnchorOffsetConfirmed checked && checked.point() == this.point) {
-                Point2D offset = checked.difference();
-                oldPosition.setLocation(oldPosition.getX() - offset.getX(), oldPosition.getY() - offset.getY());
-                newPosition.setLocation(newPosition.getX() - offset.getX(), newPosition.getY() - offset.getY());
-            }
-        };
-        EventBus.subscribe(anchorDragListener);
-    }
-
-    @Override
-    public void unregisterListeners() {
-        Deque<Edit> subEdits = this.getSubEdits();
-        subEdits.forEach(edit -> {
-            if (edit instanceof PointDragEdit checked) {
-                checked.unregisterListeners();
-            }
-        });
-        EventBus.unsubscribe(anchorDragListener);
+    public void adjustPositionOffset(Point2D offset) {
+        oldPosition.setLocation(oldPosition.getX() - offset.getX(), oldPosition.getY() - offset.getY());
+        newPosition.setLocation(newPosition.getX() - offset.getX(), newPosition.getY() - offset.getY());
     }
 
     @Override
@@ -83,11 +57,12 @@ public final class PointDragEdit extends AbstractEdit implements ListeningEdit, 
     public static void repaintByPointType(WorldPoint point) {
         EventBus.publish(new ViewerRepaintQueued());
         if (point == null) return;
+        var repainter = StaticController.getRepainter();
         switch (point.getAssociatedMode()) {
-            case BOUNDS -> EventBus.publish(new BoundsPanelRepaintQueued());
-            case COLLISION, SHIELD -> EventBus.publish(new CenterPanelsRepaintQueued());
-            case WEAPON_SLOTS -> EventBus.publish(new SlotControlRepaintQueued());
-            case ENGINES -> EventBus.publish(new EnginesPanelRepaintQueued());
+            case BOUNDS -> repainter.queueBoundsPanelRepaint();
+            case COLLISION, SHIELD -> repainter.queueCenterPanelsRepaint();
+            case WEAPON_SLOTS -> repainter.queueSlotControlRepaint();
+            case ENGINES -> repainter.queueEnginesPanelRepaint();
         }
     }
 

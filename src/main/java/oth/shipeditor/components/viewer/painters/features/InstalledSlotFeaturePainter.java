@@ -30,8 +30,6 @@ public class InstalledSlotFeaturePainter implements Painter {
         installedFeatures = new HashMap<>();
     }
 
-
-
     public void refreshSlotData(WeaponSlotPainter slotPainter) {
         installedFeatures.forEach((slotID, layerPainter) -> layerPainter.setShouldDrawPainter(false));
 
@@ -39,7 +37,9 @@ public class InstalledSlotFeaturePainter implements Painter {
             String slotID = entry.getKey();
             LayerPainter painter = entry.getValue();
             WeaponSlotPoint slotPoint = slotPainter.getSlotByID(slotID);
-            if (slotPoint == null) continue;
+            if (slotPoint == null) {
+                continue;
+            }
             painter.setShouldDrawPainter(true);
 
             Point2D position = slotPoint.getPosition();
@@ -52,13 +52,10 @@ public class InstalledSlotFeaturePainter implements Painter {
             double x = position.getX() - entityCenter.getX();
             double y = position.getY() - entityCenter.getY();
             Point2D newAnchor = new Point2D.Double(x, y);
-//            if (!painter.getAnchor().equals(position)) {
-//                painter.setAnchor(position);
-//            }
-
-
+            Point2D painterAnchor = painter.getAnchor();
+            if (!painterAnchor.equals(newAnchor)) {
                 painter.setAnchor(newAnchor);
-
+            }
 
             double transformedAngle = Utility.transformAngle(slotPoint.getAngle());
             painter.setRotationRadians(Math.toRadians(transformedAngle + 90));

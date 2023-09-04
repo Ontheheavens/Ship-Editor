@@ -1,9 +1,6 @@
 package oth.shipeditor.communication.events;
 
-import oth.shipeditor.communication.EventBus;
-import oth.shipeditor.communication.events.components.BoundsPanelRepaintQueued;
-import oth.shipeditor.communication.events.components.CenterPanelsRepaintQueued;
-import oth.shipeditor.communication.events.viewer.ViewerRepaintQueued;
+import oth.shipeditor.utility.StaticController;
 
 /**
  * Convenience class for routine event bus declarations.
@@ -16,9 +13,10 @@ public final class Events {
     }
 
     public static void repaintView() {
-        EventBus.publish(new ViewerRepaintQueued());
-        EventBus.publish(new BoundsPanelRepaintQueued());
-        EventBus.publish(new CenterPanelsRepaintQueued());
+        var repainter = StaticController.getRepainter();
+        repainter.queueViewerRepaint();
+        repainter.queueBoundsPanelRepaint();
+        repainter.queueCenterPanelsRepaint();
     }
 
 }

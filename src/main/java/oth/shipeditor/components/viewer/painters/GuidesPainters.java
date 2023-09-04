@@ -159,29 +159,7 @@ public final class GuidesPainters {
     }
 
     private Painter createBordersPainter() {
-        return (g, worldToScreen, w, h) -> {
-            if (!drawBorders) return;
-
-            LayerPainter layer = parent.getSelectedLayer();
-            if (layer == null || layer.getSprite() == null) return;
-            RenderedImage shipSprite = layer.getSprite();
-            int width = shipSprite.getWidth();
-            int height = shipSprite.getHeight();
-            Point2D layerAnchor = layer.getAnchor();
-            Shape spriteBorder = new Rectangle((int) layerAnchor.getX(), (int) layerAnchor.getY(), width, height);
-            Shape transformed = worldToScreen.createTransformedShape(spriteBorder);
-
-            Stroke oldStroke = g.getStroke();
-            Paint oldPaint = g.getPaint();
-
-            g.setStroke(new BasicStroke(3));
-            g.draw(transformed);
-            g.setStroke(oldStroke);
-            g.setPaint(Color.WHITE);
-            g.draw(transformed);
-
-            g.setPaint(oldPaint);
-        };
+        return new BordersPainter();
     }
 
     private Painter createSpriteCenterPainter() {
@@ -272,6 +250,35 @@ public final class GuidesPainters {
                     .withPaintColor(Color.BLACK)
                     .build();
             DrawUtilities.drawDynamicCross(g, worldToScreen, positionWorld, parameters);
+        }
+
+    }
+
+    private class BordersPainter implements Painter {
+
+        @Override
+        public void paint(Graphics2D g, AffineTransform worldToScreen, double w, double h) {
+            if (!drawBorders) return;
+
+            LayerPainter layer = parent.getSelectedLayer();
+            if (layer == null || layer.getSprite() == null) return;
+            RenderedImage shipSprite = layer.getSprite();
+            int width = shipSprite.getWidth();
+            int height = shipSprite.getHeight();
+            Point2D layerAnchor = layer.getAnchor();
+            Shape spriteBorder = new Rectangle((int) layerAnchor.getX(), (int) layerAnchor.getY(), width, height);
+            Shape transformed = worldToScreen.createTransformedShape(spriteBorder);
+
+            Stroke oldStroke = g.getStroke();
+            Paint oldPaint = g.getPaint();
+
+            g.setStroke(new BasicStroke(3));
+            g.draw(transformed);
+            g.setStroke(oldStroke);
+            g.setPaint(Color.WHITE);
+            g.draw(transformed);
+
+            g.setPaint(oldPaint);
         }
 
     }

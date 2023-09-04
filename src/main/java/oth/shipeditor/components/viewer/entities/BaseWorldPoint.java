@@ -6,12 +6,12 @@ import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
 import oth.shipeditor.communication.BusEventListener;
 import oth.shipeditor.communication.EventBus;
-import oth.shipeditor.communication.events.viewer.points.AnchorOffsetConfirmed;
 import oth.shipeditor.communication.events.viewer.points.AnchorOffsetQueued;
 import oth.shipeditor.components.instrument.ship.EditorInstrument;
 import oth.shipeditor.components.instrument.ship.ShipInstrumentsPane;
 import oth.shipeditor.components.viewer.layers.LayerPainter;
 import oth.shipeditor.components.viewer.painters.TextPainter;
+import oth.shipeditor.undo.UndoOverseer;
 import oth.shipeditor.utility.StaticController;
 import oth.shipeditor.utility.Utility;
 import oth.shipeditor.utility.graphics.ColorUtilities;
@@ -104,7 +104,7 @@ public class BaseWorldPoint implements WorldPoint, Painter {
                 Point2D oldPosition = this.getPosition();
                 this.setPosition(oldPosition.getX() - offset.getX(),
                         oldPosition.getY() - offset.getY());
-                EventBus.publish(new AnchorOffsetConfirmed(this, offset));
+                UndoOverseer.adjustPointEditsOffset(this, offset);
             }
         };
         EventBus.subscribe(anchorDragListener);

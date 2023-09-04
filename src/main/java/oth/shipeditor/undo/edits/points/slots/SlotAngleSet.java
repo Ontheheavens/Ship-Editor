@@ -1,11 +1,8 @@
 package oth.shipeditor.undo.edits.points.slots;
 
-import oth.shipeditor.communication.EventBus;
-import oth.shipeditor.communication.events.components.BaysPanelRepaintQueued;
-import oth.shipeditor.communication.events.components.SlotControlRepaintQueued;
-import oth.shipeditor.communication.events.viewer.ViewerRepaintQueued;
 import oth.shipeditor.components.viewer.entities.weapon.SlotData;
 import oth.shipeditor.undo.AbstractEdit;
+import oth.shipeditor.utility.StaticController;
 
 /**
  * @author Ontheheavens
@@ -31,18 +28,20 @@ public class SlotAngleSet extends AbstractEdit {
     public void undo() {
         undoSubEdits();
         slotPoint.setAngle(oldAngle);
-        EventBus.publish(new ViewerRepaintQueued());
-        EventBus.publish(new SlotControlRepaintQueued());
-        EventBus.publish(new BaysPanelRepaintQueued());
+        var repainter = StaticController.getRepainter();
+        repainter.queueViewerRepaint();
+        repainter.queueSlotControlRepaint();
+        repainter.queueBaysPanelRepaint();
     }
 
     @Override
     public void redo() {
         slotPoint.setAngle(updatedAngle);
         redoSubEdits();
-        EventBus.publish(new ViewerRepaintQueued());
-        EventBus.publish(new SlotControlRepaintQueued());
-        EventBus.publish(new BaysPanelRepaintQueued());
+        var repainter = StaticController.getRepainter();
+        repainter.queueViewerRepaint();
+        repainter.queueSlotControlRepaint();
+        repainter.queueBaysPanelRepaint();
     }
 
     @Override

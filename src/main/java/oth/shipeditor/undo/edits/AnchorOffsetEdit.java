@@ -28,18 +28,12 @@ public class AnchorOffsetEdit extends AbstractEdit {
     @Override
     public void undo() {
         undoSubEdits();
-//        Point2D difference = new Point2D.Double(updatedOffset.getX() - oldOffset.getX(),
-//                updatedOffset.getY() - oldOffset.getY());
-//        EventBus.publish(new AnchorOffsetQueued(shipPainter, difference));
         shipPainter.setAnchor(oldOffset);
         Events.repaintView();
     }
 
     @Override
     public void redo() {
-//        Point2D difference = new Point2D.Double(oldOffset.getX() - updatedOffset.getX(),
-//                oldOffset.getY() - updatedOffset.getY());
-//        EventBus.publish(new AnchorOffsetQueued(shipPainter, difference));
         shipPainter.setAnchor(updatedOffset);
         redoSubEdits();
         Events.repaintView();

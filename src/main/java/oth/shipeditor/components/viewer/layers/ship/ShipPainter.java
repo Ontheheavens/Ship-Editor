@@ -82,6 +82,7 @@ public class ShipPainter extends LayerPainter {
         super(layer);
         this.initPainterListeners(layer);
         this.activateEmptySkin();
+        this.selectVariant(VariantFile.empty());
     }
 
     public void selectVariant(Variant variant) {
@@ -165,6 +166,7 @@ public class ShipPainter extends LayerPainter {
 
             this.activeSkin = skin;
         }
+        this.selectVariant(VariantFile.empty());
         this.notifyLayerUpdate();
     }
 
@@ -337,6 +339,7 @@ public class ShipPainter extends LayerPainter {
 
     @Override
     public void paint(Graphics2D g, AffineTransform worldToScreen, double w, double h) {
+        if (!isShouldDrawPainter()) return;
         super.paint(g, worldToScreen, w, h);
 
         if (this.isUninitialized()) return;

@@ -52,6 +52,9 @@ public final class StaticController {
     private static Point2D correctedCursor = new Point2D.Double();
 
     @Getter
+    private static final ComponentRepaint repainter = new ComponentRepaint();
+
+    @Getter
     private static CoordsDisplayMode coordsMode = CoordsDisplayMode.SHIP_CENTER;
 
     private StaticController() {

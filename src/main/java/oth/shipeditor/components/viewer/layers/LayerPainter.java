@@ -52,7 +52,7 @@ public abstract class LayerPainter implements Painter {
     private boolean uninitialized = true;
 
     @Getter @Setter
-    private boolean shouldDrawPainter;
+    private boolean shouldDrawPainter = true;
 
     @Getter
     private final List<BusEventListener> listeners;
@@ -226,6 +226,7 @@ public abstract class LayerPainter implements Painter {
     @SuppressWarnings("DuplicatedCode")
     @Override
     public void paint(Graphics2D g, AffineTransform worldToScreen, double w, double h) {
+        if (!shouldDrawPainter) return;
         AffineTransform oldAT = g.getTransform();
         g.transform(worldToScreen);
         int rule = AlphaComposite.SRC_OVER;

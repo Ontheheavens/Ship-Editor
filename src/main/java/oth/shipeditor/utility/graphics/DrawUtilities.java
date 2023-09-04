@@ -15,6 +15,12 @@ import java.awt.geom.*;
 @Log4j2
 public final class DrawUtilities {
 
+    /**
+     * This ensures more clean lines and strokes of almost all painted graphics in viewer,
+     * but causes noticeable performance issues before the app is warmed up.
+     */
+    private static final boolean enablePureStrokes = false;
+
     private DrawUtilities() {
     }
 
@@ -54,8 +60,11 @@ public final class DrawUtilities {
 
     @SuppressWarnings("WeakerAccess")
     public static void outlineShape(Graphics2D g, Shape shape, Paint color, Stroke stroke) {
-        Object renderingHint = g.getRenderingHint(RenderingHints.KEY_STROKE_CONTROL);
-        g.setRenderingHint(RenderingHints.KEY_STROKE_CONTROL, RenderingHints.VALUE_STROKE_PURE);
+        Object renderingHint = null;
+        if (enablePureStrokes) {
+            renderingHint = g.getRenderingHint(RenderingHints.KEY_STROKE_CONTROL);
+            g.setRenderingHint(RenderingHints.KEY_STROKE_CONTROL, RenderingHints.VALUE_STROKE_PURE);
+        }
 
         Paint old = g.getPaint();
         Stroke oldStroke = g.getStroke();
@@ -64,7 +73,9 @@ public final class DrawUtilities {
 
         g.draw(shape);
 
-        g.setRenderingHint(RenderingHints.KEY_STROKE_CONTROL, renderingHint);
+        if (enablePureStrokes) {
+            g.setRenderingHint(RenderingHints.KEY_STROKE_CONTROL, renderingHint);
+        }
         g.setStroke(oldStroke);
         g.setPaint(old);
     }

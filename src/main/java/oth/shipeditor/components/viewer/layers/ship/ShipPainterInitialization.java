@@ -40,8 +40,6 @@ public final class ShipPainterInitialization {
         Point2D.Double specFileModuleAnchor = hullSpecFile.getModuleAnchor();
         if (specFileModuleAnchor != null) {
             shipPainter.setModuleAnchorOffset(specFileModuleAnchor);
-//        Point2D translatedModuleAnchor = ShipPainterInitialization.rotatePointByCenter(specFileModuleAnchor, translatedCenter);
-//        shipPainter.setModuleAnchorOffset(translatedModuleAnchor);
         }
 
         ShipPainterInitialization.initCentroids(shipPainter, hullSpecFile, translatedCenter);
