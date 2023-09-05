@@ -3,11 +3,10 @@ package oth.shipeditor.undo;
 import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
 import oth.shipeditor.components.viewer.entities.BaseWorldPoint;
-import oth.shipeditor.components.viewer.entities.WorldPoint;
 import oth.shipeditor.components.viewer.layers.LayerPainter;
+import oth.shipeditor.undo.edits.LayerEdit;
 import oth.shipeditor.undo.edits.ListeningEdit;
 import oth.shipeditor.undo.edits.points.PointDragEdit;
-import oth.shipeditor.undo.edits.points.PointEdit;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;
@@ -158,9 +157,10 @@ public final class UndoOverseer {
     private static void cleanupStack(LayerPainter painter, Collection<Edit> stack) {
         Collection<Edit> toRemove = new ArrayList<>();
         for (Edit edit : stack) {
-            if (edit instanceof PointEdit checked) {
-                WorldPoint point = checked.getPoint();
-                if (point.getParentLayer() != painter) continue;
+            if (edit instanceof LayerEdit checked) {
+                LayerPainter layerPainter = checked.getLayerPainter();
+                if (layerPainter == null || layerPainter != painter) continue;
+                checked.cleanupReferences();
                 toRemove.add(edit);
                 if (checked instanceof ListeningEdit listeningEdit) {
                     listeningEdit.unregisterListeners();

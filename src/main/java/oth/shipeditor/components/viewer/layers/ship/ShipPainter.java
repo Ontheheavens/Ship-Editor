@@ -91,6 +91,7 @@ public class ShipPainter extends LayerPainter {
         } else {
             activeVariant = (ShipVariant) variant;
         }
+        this.notifyLayerUpdate();
     }
 
     private void installVariant(VariantFile file) {
@@ -167,7 +168,6 @@ public class ShipPainter extends LayerPainter {
             this.activeSkin = skin;
         }
         this.selectVariant(VariantFile.empty());
-        this.notifyLayerUpdate();
     }
 
     private void notifyLayerUpdate() {

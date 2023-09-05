@@ -3,10 +3,14 @@ package oth.shipeditor.undo.edits.points;
 import oth.shipeditor.communication.events.Events;
 import oth.shipeditor.components.viewer.entities.BaseWorldPoint;
 import oth.shipeditor.components.viewer.entities.WorldPoint;
+import oth.shipeditor.components.viewer.layers.LayerPainter;
 import oth.shipeditor.components.viewer.painters.points.AbstractPointPainter;
 import oth.shipeditor.components.viewer.painters.points.LaunchBayPainter;
 import oth.shipeditor.components.viewer.painters.points.MirrorablePointPainter;
 import oth.shipeditor.undo.AbstractEdit;
+import oth.shipeditor.undo.Edit;
+
+import java.util.Deque;
 
 /**
  * Also handles point insertion cases.
@@ -15,8 +19,8 @@ import oth.shipeditor.undo.AbstractEdit;
  */
 public class PointAdditionEdit extends AbstractEdit implements PointEdit {
 
-    private final AbstractPointPainter pointPainter;
-    private final BaseWorldPoint point;
+    private AbstractPointPainter pointPainter;
+    private BaseWorldPoint point;
     private final int insertionIndex;
 
     public PointAdditionEdit(AbstractPointPainter painter, BaseWorldPoint toAdd) {
@@ -58,6 +62,23 @@ public class PointAdditionEdit extends AbstractEdit implements PointEdit {
             name = "Insert Point";
         }
         return name;
+    }
+
+    @Override
+    public LayerPainter getLayerPainter() {
+        return point.getParentLayer();
+    }
+
+    @Override
+    public void cleanupReferences() {
+        Deque<Edit> subEdits = this.getSubEdits();
+        subEdits.forEach(edit -> {
+            if (edit instanceof PointAdditionEdit checked) {
+                checked.cleanupReferences();
+            }
+        });
+        this.pointPainter = null;
+        this.point = null;
     }
 
 }

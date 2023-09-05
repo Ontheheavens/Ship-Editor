@@ -13,6 +13,7 @@ import oth.shipeditor.communication.events.viewer.points.AnchorOffsetQueued;
 import oth.shipeditor.components.viewer.control.ControlPredicates;
 import oth.shipeditor.components.viewer.painters.points.AbstractPointPainter;
 import oth.shipeditor.undo.EditDispatch;
+import oth.shipeditor.undo.UndoOverseer;
 import oth.shipeditor.utility.StaticController;
 
 import java.awt.*;
@@ -125,6 +126,7 @@ public abstract class LayerPainter implements Painter {
             pointPainter.cleanupPointPainter();
         }
         listeners.forEach(EventBus::unsubscribe);
+        UndoOverseer.cleanupRemovedLayer(this);
     }
 
     void setSpriteOpacity(float opacity) {

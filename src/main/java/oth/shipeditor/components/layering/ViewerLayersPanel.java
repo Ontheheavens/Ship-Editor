@@ -137,6 +137,7 @@ public final class ViewerLayersPanel extends SortableTabbedPane {
     @SuppressWarnings("MethodWithMultipleReturnPoints")
     private void updateShipTab(ShipLayerTab tab, ShipLayer layer) {
         LayerPainter painter = layer.getPainter();
+        if (painter == null) return;
         BufferedImage sprite = painter.getSprite();
         if (sprite != null) {
             tab.setSpriteFileName(layer.getSpriteFileName());

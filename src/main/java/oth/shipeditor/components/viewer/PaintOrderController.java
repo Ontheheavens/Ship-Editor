@@ -15,7 +15,6 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.geom.AffineTransform;
 import java.util.List;
-import java.util.Optional;
 
 /**
  * Responsible for easy manipulation of paint order of all the painters in viewer.
@@ -87,7 +86,9 @@ public class PaintOrderController implements Painter {
     }
 
     private static void paintIfPresent(Graphics2D g, AffineTransform worldToScreen, double w, double h, Painter painter) {
-        Optional.ofNullable(painter).ifPresent(p -> p.paint(g, worldToScreen, w, h));
+        if (painter != null) {
+            painter.paint(g, worldToScreen, w, h);
+        }
     }
 
     private static void paintLayer(Graphics2D g, AffineTransform worldToScreen,
@@ -100,7 +101,9 @@ public class PaintOrderController implements Painter {
         layerPainter.paint(g, transform, w, h);
 
         List<AbstractPointPainter> allPainters = layerPainter.getAllPainters();
-        allPainters.forEach(pointPainter -> pointPainter.paint(g, transform, w, h));
+        for (AbstractPointPainter pointPainter : allPainters) {
+            pointPainter.paint(g, transform, w, h);
+        }
     }
 
     private void paintLayerDependentGuides(Graphics2D g, AffineTransform worldToScreen, double w, double h) {

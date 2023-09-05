@@ -2,6 +2,7 @@ package oth.shipeditor.components.viewer.layers.weapon;
 
 import lombok.Getter;
 import lombok.Setter;
+import oth.shipeditor.components.viewer.entities.weapon.OffsetPoint;
 import oth.shipeditor.components.viewer.layers.LayerPainter;
 import oth.shipeditor.components.viewer.layers.ViewerLayer;
 import oth.shipeditor.components.viewer.painters.features.ProjectilePainter;
@@ -70,22 +71,6 @@ public class WeaponPainter extends LayerPainter {
     }
 
     @Override
-    public void setAnchor(Point2D inputAnchor) {
-        Point2D oldAnchor = this.getAnchor();
-        super.setAnchor(inputAnchor);
-
-//        var offsetPainter = getOffsetPainter();
-//        var offsetPoints = offsetPainter.getOffsetPoints();
-//        offsetPoints.forEach(offsetPoint -> {
-//            Point2D difference = new Point2D.Double(oldAnchor.getX() - inputAnchor.getX(),
-//                    oldAnchor.getY() - inputAnchor.getY());
-//            Point2D oldPosition = offsetPoint.getPosition();
-//            offsetPoint.setPosition(oldPosition.getX() - difference.getX(),
-//                    oldPosition.getY() - difference.getY());
-//        });
-    }
-
-    @Override
     public Point2D getEntityCenter() {
         return this.getRotationAnchor();
     }
@@ -118,21 +103,22 @@ public class WeaponPainter extends LayerPainter {
         if (!renderLoadedMissiles || projectilePainter == null) return;
         var offsetPainter = this.getOffsetPainter();
         var offsets = offsetPainter.getOffsetPoints();
-        offsets.forEach(offsetPoint -> {
+        for (OffsetPoint offsetPoint : offsets) {
             projectilePainter.setPaintAnchor(offsetPoint.getPosition());
             projectilePainter.setRotationRadians(Math.toRadians(-offsetPoint.getAngle()));
             projectilePainter.setSpriteOpacity(this.getSpriteOpacity());
             projectilePainter.paint(g, worldToScreen, w, h);
-        });
+        }
     }
 
     private void drawSpritePart(Graphics2D g, Sprite part) {
         if (part == null) return;
         Point2D anchor = this.getAnchor();
         BufferedImage spriteImage = part.image();
-        int width = spriteImage.getWidth();
-        int height = spriteImage.getHeight();
-        g.drawImage(spriteImage, (int) anchor.getX(), (int) anchor.getY(), width, height, null);
+
+        AffineTransform transform = new AffineTransform();
+        transform.translate(anchor.getX(),  anchor.getY());
+        g.drawImage(spriteImage, transform, null);
     }
 
     public Point2D getWeaponCenter() {

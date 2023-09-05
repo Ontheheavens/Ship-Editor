@@ -5,10 +5,14 @@ import lombok.extern.log4j.Log4j2;
 import oth.shipeditor.communication.events.Events;
 import oth.shipeditor.components.viewer.entities.BaseWorldPoint;
 import oth.shipeditor.components.viewer.entities.WorldPoint;
+import oth.shipeditor.components.viewer.layers.LayerPainter;
 import oth.shipeditor.components.viewer.painters.points.AbstractPointPainter;
 import oth.shipeditor.components.viewer.painters.points.LaunchBayPainter;
 import oth.shipeditor.components.viewer.painters.points.MirrorablePointPainter;
 import oth.shipeditor.undo.AbstractEdit;
+import oth.shipeditor.undo.Edit;
+
+import java.util.Deque;
 
 /**
  * @author Ontheheavens
@@ -17,8 +21,8 @@ import oth.shipeditor.undo.AbstractEdit;
 @Log4j2
 @AllArgsConstructor
 public class PointRemovalEdit extends AbstractEdit implements PointEdit {
-    private final AbstractPointPainter painter;
-    private final BaseWorldPoint removed;
+    private AbstractPointPainter painter;
+    private BaseWorldPoint removed;
     private final int indexOfRemoved;
 
     @Override
@@ -37,6 +41,11 @@ public class PointRemovalEdit extends AbstractEdit implements PointEdit {
     }
 
     @Override
+    public LayerPainter getLayerPainter() {
+        return removed.getParentLayer();
+    }
+
+    @Override
     public void redo() {
         painter.removePoint(removed);
         Events.repaintView();
@@ -45,6 +54,18 @@ public class PointRemovalEdit extends AbstractEdit implements PointEdit {
     @Override
     public String getName() {
         return "Remove Point";
+    }
+
+    @Override
+    public void cleanupReferences() {
+        Deque<Edit> subEdits = this.getSubEdits();
+        subEdits.forEach(edit -> {
+            if (edit instanceof PointRemovalEdit checked) {
+                checked.cleanupReferences();
+            }
+        });
+        this.painter = null;
+        this.removed = null;
     }
 
 }

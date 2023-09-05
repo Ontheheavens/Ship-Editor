@@ -14,6 +14,7 @@ import oth.shipeditor.representation.GameDataRepository;
 import oth.shipeditor.representation.weapon.ProjectileSpecFile;
 import oth.shipeditor.representation.weapon.WeaponMount;
 import oth.shipeditor.representation.weapon.WeaponSpecFile;
+import oth.shipeditor.utility.Size2D;
 import oth.shipeditor.utility.StaticController;
 import oth.shipeditor.utility.Utility;
 import oth.shipeditor.utility.graphics.Sprite;
@@ -216,7 +217,10 @@ public class WeaponCSVEntry implements CSVEntry {
                 File file = FileLoading.fetchDataFile(projectileSpecSpritePath, containingPackage);
                 Sprite projectileSprite = FileLoading.loadSprite(file);
 
-                ProjectilePainter projectilePainter = new ProjectilePainter(projectileSprite, projectileSpec.getCenter());
+                double spriteWidth = projectileSpec.getSize()[0];
+                double spriteHeight = projectileSpec.getSize()[1];
+                ProjectilePainter projectilePainter = new ProjectilePainter(projectileSprite,
+                        projectileSpec.getCenter(), new Size2D(spriteWidth, spriteHeight));
                 weaponPainter.setProjectilePainter(projectilePainter);
             }
         }

@@ -3,6 +3,7 @@ package oth.shipeditor.components.viewer.painters.features;
 import de.javagl.viewer.Painter;
 import lombok.Getter;
 import lombok.Setter;
+import oth.shipeditor.utility.Size2D;
 import oth.shipeditor.utility.graphics.Sprite;
 
 import java.awt.*;
@@ -17,9 +18,9 @@ import java.awt.image.BufferedImage;
 @Getter @Setter
 public class ProjectilePainter implements Painter {
 
-    private Sprite projectileSprite;
+    private final Sprite projectileSprite;
 
-    private Point2D projectileCenter;
+    private final Point2D projectileCenter;
 
     private Point2D paintAnchor;
 
@@ -27,18 +28,24 @@ public class ProjectilePainter implements Painter {
 
     private double rotationRadians;
 
-    public ProjectilePainter(Sprite sprite, Point2D center) {
+    private final Size2D spriteDimensions;
+
+    public ProjectilePainter(Sprite sprite, Point2D center, Size2D size) {
         this.projectileSprite = sprite;
         this.projectileCenter = center;
+        this.spriteDimensions = size;
     }
 
     private void paintContent(Graphics2D g) {
         BufferedImage image = this.projectileSprite.image();
-        int width = image.getWidth();
-        int height = image.getHeight();
         double x = paintAnchor.getX() - projectileCenter.getX();
         double y = paintAnchor.getY() - projectileCenter.getY();
-        g.drawImage(image, (int) x, (int) y, width, height, null);
+
+        AffineTransform transform = new AffineTransform();
+        transform.translate(x, y);
+        transform.scale(spriteDimensions.getWidth()/image.getWidth(),
+                spriteDimensions.getHeight()/image.getHeight());
+        g.drawImage(image, transform, null);
     }
 
     @SuppressWarnings("DuplicatedCode")

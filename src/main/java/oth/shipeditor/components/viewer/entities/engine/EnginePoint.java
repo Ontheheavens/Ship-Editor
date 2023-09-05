@@ -217,6 +217,7 @@ public class EnginePoint extends AngledPoint {
         EnginePoint.drawFlameStatically(g, worldToScreen, position, rawAngle, engineWidth, engineLength, flameColored);
     }
 
+    @SuppressWarnings("MethodWithTooManyParameters")
     public static void drawFlameStatically(Graphics2D g, AffineTransform worldToScreen, Point2D position,
                                            double rawAngle, double engineWidth, double engineLength,
                                            BufferedImage flameColored) {
@@ -243,6 +244,7 @@ public class EnginePoint extends AngledPoint {
                 Math.toRadians(transformedAngle), graphicsAction);
     }
 
+    @SuppressWarnings("MethodWithTooManyParameters")
     public static void drawRectangleStatically(Graphics2D g, AffineTransform worldToScreen, Point2D position,
                                                double rawAngle, double engineWidth, double engineLength) {
         double transformedAngle = Utility.transformAngle(rawAngle);

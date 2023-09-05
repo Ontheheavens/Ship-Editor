@@ -3,10 +3,13 @@ package oth.shipeditor.undo.edits.points;
 import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.viewer.ViewerRepaintQueued;
 import oth.shipeditor.components.viewer.entities.WorldPoint;
+import oth.shipeditor.components.viewer.layers.LayerPainter;
 import oth.shipeditor.undo.AbstractEdit;
+import oth.shipeditor.undo.Edit;
 import oth.shipeditor.utility.StaticController;
 
 import java.awt.geom.Point2D;
+import java.util.Deque;
 
 /**
  * @author Ontheheavens
@@ -14,7 +17,7 @@ import java.awt.geom.Point2D;
  */
 public final class PointDragEdit extends AbstractEdit implements PointEdit {
 
-    private final WorldPoint point;
+    private WorldPoint point;
     private final Point2D oldPosition;
     private final Point2D newPosition;
 
@@ -54,6 +57,11 @@ public final class PointDragEdit extends AbstractEdit implements PointEdit {
         return point;
     }
 
+    @Override
+    public LayerPainter getLayerPainter() {
+        return point.getParentLayer();
+    }
+
     public static void repaintByPointType(WorldPoint point) {
         EventBus.publish(new ViewerRepaintQueued());
         if (point == null) return;
@@ -64,6 +72,17 @@ public final class PointDragEdit extends AbstractEdit implements PointEdit {
             case WEAPON_SLOTS -> repainter.queueSlotControlRepaint();
             case ENGINES -> repainter.queueEnginesPanelRepaint();
         }
+    }
+
+    @Override
+    public void cleanupReferences() {
+        Deque<Edit> subEdits = this.getSubEdits();
+        subEdits.forEach(edit -> {
+            if (edit instanceof PointDragEdit checked) {
+                checked.cleanupReferences();
+            }
+        });
+        this.point = null;
     }
 
 }
