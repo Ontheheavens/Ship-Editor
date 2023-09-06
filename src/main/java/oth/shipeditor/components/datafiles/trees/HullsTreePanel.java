@@ -5,7 +5,7 @@ import org.kordamp.ikonli.boxicons.BoxiconsRegular;
 import org.kordamp.ikonli.swing.FontIcon;
 import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.components.GameDataPanelResized;
-import oth.shipeditor.communication.events.files.HullFolderWalked;
+import oth.shipeditor.communication.events.files.HullFoldersWalked;
 import oth.shipeditor.communication.events.files.HullTreeCleanupQueued;
 import oth.shipeditor.communication.events.files.HullTreeExpansionQueued;
 import oth.shipeditor.components.datafiles.OpenDataTarget;
@@ -26,8 +26,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.nio.file.Path;
-import java.util.List;
 import java.util.*;
+import java.util.List;
 
 /**
  * @author Ontheheavens
@@ -64,12 +64,8 @@ class HullsTreePanel extends DataTreePanel {
         JTree tree = getTree();
         DefaultMutableTreeNode rootNode = getRootNode();
         EventBus.subscribe(event -> {
-            if (event instanceof HullFolderWalked checked) {
-                List<Map<String, String>> tableData = checked.csvData();
-                if (tableData == null) {
-                    throw new RuntimeException("Ship data initialization failed: table data is NULL!");
-                }
-                loadHullList(tableData, checked.hullFiles(), checked.skinFiles(), checked.folder());
+            if (event instanceof HullFoldersWalked) {
+                reloadHullList();
                 tree.repaint();
             }
         });
@@ -117,49 +113,21 @@ class HullsTreePanel extends DataTreePanel {
         createRightPanelDataTable(data);
     }
 
-    private void loadHullList(Iterable<Map<String, String>> tableData,
-                              Map<String, HullSpecFile> hullFiles, Map<String, SkinSpecFile> skinFiles, Path packagePath) {
-        DefaultMutableTreeNode packageRoot = new DefaultMutableTreeNode(packagePath.getFileName().toString());
-        for (Map<String, String> row : tableData) {
-            Map.Entry<HullSpecFile, Map<String, SkinSpecFile>> hullWithSkins = null;
-            String fileName = "";
-            String rowId = row.get("id");
-            for (String shipFileName : hullFiles.keySet()) {
-                HullSpecFile shipFile = hullFiles.get(shipFileName);
-                String hullId = shipFile.getHullId();
-                if (hullId.equals(rowId)) {
-                    fileName = shipFileName;
-                    Map<String, SkinSpecFile> skins = HullsTreePanel.fetchSkinsByHull(shipFile, skinFiles);
-                    hullWithSkins = new AbstractMap.SimpleEntry<>(shipFile, skins);
-                }
-            }
-            if (hullWithSkins != null && !fileName.isEmpty()) {
-                GameDataRepository gameData = SettingsManager.getGameData();
-                ShipCSVEntry newEntry = new ShipCSVEntry(row, hullWithSkins, packagePath, fileName);
-                Map<String, ShipCSVEntry> allShipEntries = gameData.getAllShipEntries();
-                allShipEntries.putIfAbsent(rowId, newEntry);
-                MutableTreeNode shipNode = new DefaultMutableTreeNode(newEntry);
+    private void reloadHullList() {
+        GameDataRepository gameData = SettingsManager.getGameData();
+        Map<Path, List<ShipCSVEntry>> shipEntriesByPackage = gameData.getShipEntriesByPackage();
+
+        for (Map.Entry<Path, List<ShipCSVEntry>> hullFolder : shipEntriesByPackage.entrySet()) {
+            String packageName = hullFolder.getKey().getFileName().toString();
+            DefaultMutableTreeNode packageRoot = new DefaultMutableTreeNode(packageName);
+
+            for (ShipCSVEntry entry : hullFolder.getValue()) {
+                MutableTreeNode shipNode = new DefaultMutableTreeNode(entry);
                 packageRoot.add(shipNode);
             }
+            DefaultMutableTreeNode rootNode = getRootNode();
+            rootNode.add(packageRoot);
         }
-        DefaultMutableTreeNode rootNode = getRootNode();
-        rootNode.add(packageRoot);
-    }
-
-    private static Map<String, SkinSpecFile> fetchSkinsByHull(ShipSpecFile hullSpecFile, Map<String, SkinSpecFile> skins) {
-        if (skins == null) return null;
-        String hullId = hullSpecFile.getHullId();
-        Map<String, SkinSpecFile> associated = new HashMap<>();
-        for (Map.Entry<String, SkinSpecFile> skin : skins.entrySet()) {
-            SkinSpecFile value = skin.getValue();
-            if (Objects.equals(value.getBaseHullId(), hullId)) {
-                associated.put(skin.getKey(), skin.getValue());
-            }
-        }
-        if (!associated.isEmpty()) {
-            return associated;
-        }
-        return null;
     }
 
     @Override

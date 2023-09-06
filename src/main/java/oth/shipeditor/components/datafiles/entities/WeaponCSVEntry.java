@@ -240,7 +240,10 @@ public class WeaponCSVEntry implements CSVEntry {
             Point2D rotated = ShipPainterInitialization.rotatePointByCenter(offset,
                     painter.getEntityCenter());
             OffsetPoint initialized = new OffsetPoint(rotated, painter);
-            initialized.setAngle(offsetAngles[i]);
+            if (offsetAngles.length > i) {
+                initialized.setAngle(offsetAngles[i]);
+            }
+
             offsetPainter.addPoint(initialized);
         }
     }

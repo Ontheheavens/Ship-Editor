@@ -13,9 +13,8 @@ import oth.shipeditor.utility.Utility;
 import java.awt.*;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Point2D;
-import java.util.HashMap;
+import java.util.*;
 import java.util.List;
-import java.util.Map;
 
 /**
  * @author Ontheheavens
@@ -27,7 +26,7 @@ public class InstalledSlotFeaturePainter implements Painter {
     private final Map<String, LayerPainter> installedFeatures;
 
     public InstalledSlotFeaturePainter() {
-        installedFeatures = new HashMap<>();
+        installedFeatures = new LinkedHashMap<>();
     }
 
     public void refreshSlotData(WeaponSlotPainter slotPainter) {
@@ -69,7 +68,8 @@ public class InstalledSlotFeaturePainter implements Painter {
 
     @Override
     public void paint(Graphics2D g, AffineTransform worldToScreen, double w, double h) {
-        for (Map.Entry<String, LayerPainter> entry : installedFeatures.entrySet()) {
+        Set<Map.Entry<String, LayerPainter>> entries = installedFeatures.entrySet();
+        for (Map.Entry<String, LayerPainter> entry : entries) {
             LayerPainter painter = entry.getValue();
             AffineTransform transform = painter.getWithRotation(worldToScreen);
             painter.paint(g, transform, w, h);
