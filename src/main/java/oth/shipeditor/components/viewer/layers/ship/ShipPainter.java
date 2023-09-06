@@ -145,7 +145,11 @@ public class ShipPainter extends LayerPainter {
                 throw new IllegalArgumentException("Attempted to activate invalid skin!");
             }
             Sprite loadedSkinSprite = skin.getLoadedSkinSprite();
-            this.setSprite(loadedSkinSprite.image());
+            if (loadedSkinSprite != null) {
+                this.setSprite(loadedSkinSprite.image());
+            } else {
+                this.setSprite(baseHullSprite.image());
+            }
 
             if (skin.getWeaponSlotChanges() != null) {
                 this.weaponSlotPainter.toggleSkinSlotOverride(skin);
@@ -160,7 +164,11 @@ public class ShipPainter extends LayerPainter {
             }
 
             if (parentLayer != null) {
-                parentLayer.setSpriteFileName(loadedSkinSprite.name());
+                if (loadedSkinSprite != null) {
+                    parentLayer.setSpriteFileName(loadedSkinSprite.name());
+                } else {
+                    parentLayer.setSpriteFileName(baseHullSprite.name());
+                }
                 String skinFileName = skin.getSkinFilePath().getFileName().toString();
                 parentLayer.setActiveSkinFileName(skinFileName);
             }

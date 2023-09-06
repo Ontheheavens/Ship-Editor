@@ -91,6 +91,7 @@ public class ShipVariant implements Variant {
             installedModules.forEach((slotID, variantID) -> {
                 VariantFile variant = GameDataRepository.getVariantByID(variantID);
                 ShipSpecFile specFile = GameDataRepository.retrieveSpecByID(variant.getHullId());
+                System.out.println(specFile.getHullId());
                 String baseHullId;
                 SkinSpecFile skinSpec = null;
                 if (specFile instanceof SkinSpecFile checkedSkin) {
