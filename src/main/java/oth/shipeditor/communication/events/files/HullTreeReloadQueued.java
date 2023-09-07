@@ -2,8 +2,8 @@ package oth.shipeditor.communication.events.files;
 
 /**
  * @author Ontheheavens
- * @since 02.07.2023
+ * @since 07.09.2023
  */
-public record HullTreeCleanupQueued() implements FileEvent {
+public record HullTreeReloadQueued() implements FileEvent {
 
 }

@@ -2,9 +2,8 @@ package oth.shipeditor.parsing.loading;
 
 import lombok.extern.log4j.Log4j2;
 import oth.shipeditor.communication.EventBus;
-import oth.shipeditor.communication.events.files.HullFoldersWalked;
-import oth.shipeditor.communication.events.files.HullTreeCleanupQueued;
-import oth.shipeditor.communication.events.files.HullTreeExpansionQueued;
+import oth.shipeditor.communication.events.files.HullTreeEntryCleared;
+import oth.shipeditor.communication.events.files.HullTreeReloadQueued;
 import oth.shipeditor.components.datafiles.entities.ShipCSVEntry;
 import oth.shipeditor.menubar.FileUtilities;
 import oth.shipeditor.persistence.SettingsManager;
@@ -37,8 +36,6 @@ class LoadShipDataAction extends AbstractAction {
         Map<Path, File> skinsPackages = FileUtilities.getFileFromPackages(skinFolderTarget);
         Collection<Path> modsWithSkinFolder = skinsPackages.keySet();
 
-        EventBus.publish(new HullTreeCleanupQueued());
-
         Map<String, SkinSpecFile> allSkins = new HashMap<>();
         for (Path directory : modsWithSkinFolder) {
             log.info("Skin folder found in mod directory: {}", directory);
@@ -56,8 +53,8 @@ class LoadShipDataAction extends AbstractAction {
 
         gameData.setShipEntriesByPackage(allEntriesByPackage);
         gameData.setShipDataLoaded(true);
-        EventBus.publish(new HullFoldersWalked());
-        EventBus.publish(new HullTreeExpansionQueued());
+        EventBus.publish(new HullTreeEntryCleared());
+        EventBus.publish(new HullTreeReloadQueued());
 
         Map<String, VariantFile> variants = LoadShipDataAction.collectVariants();
         gameData.setAllVariants(variants);

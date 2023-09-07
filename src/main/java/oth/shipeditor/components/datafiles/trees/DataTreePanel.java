@@ -110,6 +110,8 @@ public abstract class DataTreePanel extends JPanel {
     void resetInfoPanel() {
         rightPanel.removeAll();
         rightPanel.add(new JLabel(StringValues.NO_ENTRY_SELECTED));
+        rightPanel.revalidate();
+        rightPanel.repaint();
     }
 
     private static JScrollPane createTableFromMap(Map<String, String> data) {
@@ -157,6 +159,15 @@ public abstract class DataTreePanel extends JPanel {
         ToolTipManager.sharedInstance().registerComponent(tree);
         JScrollPane scrollContainer = new JScrollPane(tree);
         createdTreePanel.setLayout(new BorderLayout());
+        JPanel searchContainer = createSearchContainer();
+        createdTreePanel.add(searchContainer, BorderLayout.PAGE_START);
+        createdTreePanel.add(scrollContainer, BorderLayout.CENTER);
+        this.initTreePanelListeners(createdTreePanel);
+        return createdTreePanel;
+    }
+
+    @SuppressWarnings("WeakerAccess")
+    protected JPanel createSearchContainer() {
         JPanel searchContainer = new JPanel(new GridBagLayout());
         searchContainer.setBorder(new EmptyBorder(0, 0, 0, 0));
         searchField = new JTextField();
@@ -177,10 +188,7 @@ public abstract class DataTreePanel extends JPanel {
             }
         });
         searchContainer.add(searchButton);
-        createdTreePanel.add(searchContainer, BorderLayout.PAGE_START);
-        createdTreePanel.add(scrollContainer, BorderLayout.CENTER);
-        this.initTreePanelListeners(createdTreePanel);
-        return createdTreePanel;
+        return searchContainer;
     }
 
     static GridBagConstraints getDefaultConstraints() {

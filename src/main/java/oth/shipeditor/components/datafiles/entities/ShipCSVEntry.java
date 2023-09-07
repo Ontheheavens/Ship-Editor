@@ -8,6 +8,7 @@ import oth.shipeditor.components.viewer.layers.ship.ShipLayer;
 import oth.shipeditor.components.viewer.layers.ship.ShipPainter;
 import oth.shipeditor.menubar.FileUtilities;
 import oth.shipeditor.parsing.loading.FileLoading;
+import oth.shipeditor.representation.HullSize;
 import oth.shipeditor.representation.HullSpecFile;
 import oth.shipeditor.representation.SkinSpecFile;
 import oth.shipeditor.utility.graphics.Sprite;
@@ -57,6 +58,12 @@ public class ShipCSVEntry implements CSVEntry {
         if (this.skins != null) {
             this.skins.put(SkinSpecFile.DEFAULT, activeSkinSpecFile);
         }
+    }
+
+    public HullSize getSize() {
+        HullSpecFile specFile = this.getHullSpecFile();
+        String hullSize = specFile.getHullSize();
+        return HullSize.valueOf(hullSize);
     }
 
     public String getShipID() {

@@ -1,22 +1,25 @@
 package oth.shipeditor.components.datafiles.trees;
 
 import lombok.extern.log4j.Log4j2;
-import org.kordamp.ikonli.boxicons.BoxiconsRegular;
-import org.kordamp.ikonli.swing.FontIcon;
 import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.components.GameDataPanelResized;
-import oth.shipeditor.communication.events.files.HullFoldersWalked;
-import oth.shipeditor.communication.events.files.HullTreeCleanupQueued;
-import oth.shipeditor.communication.events.files.HullTreeExpansionQueued;
+import oth.shipeditor.communication.events.files.HullTreeEntryCleared;
+import oth.shipeditor.communication.events.files.HullTreeReloadQueued;
 import oth.shipeditor.components.datafiles.OpenDataTarget;
 import oth.shipeditor.components.datafiles.entities.ShipCSVEntry;
 import oth.shipeditor.menubar.FileUtilities;
-import oth.shipeditor.persistence.SettingsManager;
-import oth.shipeditor.representation.*;
+import oth.shipeditor.representation.HullSize;
+import oth.shipeditor.representation.HullSpecFile;
+import oth.shipeditor.representation.SkinSpecFile;
 import oth.shipeditor.utility.Pair;
 import oth.shipeditor.utility.components.ComponentUtilities;
+import oth.shipeditor.utility.text.StringValues;
 
 import javax.swing.*;
+import javax.swing.border.EmptyBorder;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
+import javax.swing.text.Document;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.tree.MutableTreeNode;
@@ -26,8 +29,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.nio.file.Path;
-import java.util.*;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author Ontheheavens
@@ -36,6 +39,10 @@ import java.util.List;
 @Log4j2
 public
 class HullsTreePanel extends DataTreePanel {
+
+    private ShipCSVEntry cachedEntry;
+
+    private boolean filtersOpened;
 
     public HullsTreePanel() {
         super("Hull files");
@@ -62,26 +69,61 @@ class HullsTreePanel extends DataTreePanel {
 
     private void initBusListening() {
         JTree tree = getTree();
-        DefaultMutableTreeNode rootNode = getRootNode();
         EventBus.subscribe(event -> {
-            if (event instanceof HullFoldersWalked) {
-                reloadHullList();
-                tree.repaint();
-            }
-        });
-        EventBus.subscribe(event -> {
-            if (event instanceof HullTreeCleanupQueued) {
-                rootNode.removeAllChildren();
-                tree.repaint();
+            if (event instanceof HullTreeEntryCleared) {
+                cachedEntry = null;
                 resetInfoPanel();
                 repaint();
+                tree.repaint();
             }
         });
         EventBus.subscribe(event -> {
-            if (event instanceof HullTreeExpansionQueued) {
-                sortAndExpandTree();
+            if (event instanceof HullTreeReloadQueued) {
+                this.reload();
             }
         });
+    }
+
+    @SuppressWarnings("WeakerAccess")
+    public void reload() {
+        JTree tree = getTree();
+        DefaultMutableTreeNode rootNode = getRootNode();
+        rootNode.removeAllChildren();
+        reloadHullList();
+        sortAndExpandTree();
+        repaint();
+        tree.repaint();
+    }
+
+    @SuppressWarnings("WeakerAccess")
+    protected JPanel createSearchContainer() {
+        JPanel searchContainer = new JPanel(new GridBagLayout());
+        searchContainer.setBorder(new EmptyBorder(0, 0, 0, 0));
+        JTextField searchField = new JTextField();
+        Document document = searchField.getDocument();
+        document.addDocumentListener(new DocumentListener() {
+            @Override
+            public void insertUpdate(DocumentEvent e) {
+                ShipFilterPanel.setCurrentTextFilter(searchField.getText());
+            }
+            @Override
+            public void removeUpdate(DocumentEvent e) {
+                ShipFilterPanel.setCurrentTextFilter(searchField.getText());
+            }
+            @Override
+            public void changedUpdate(DocumentEvent e) {
+                ShipFilterPanel.setCurrentTextFilter(searchField.getText());
+            }
+        });
+        GridBagConstraints gridBagConstraints = new GridBagConstraints();
+        gridBagConstraints.fill = GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new Insets(0, 0, 0, 0);
+        searchContainer.add(searchField, gridBagConstraints);
+        JButton searchButton = new JButton(StringValues.SEARCH);
+        searchButton.addActionListener(e -> reload());
+        searchContainer.add(searchButton);
+        return searchContainer;
     }
 
     private void initComponentListeners() {
@@ -111,13 +153,18 @@ class HullsTreePanel extends DataTreePanel {
         rightPanel.add(shipFilesPanel, constraints);
         Map<String, String> data = selected.getRowData();
         createRightPanelDataTable(data);
+
+        cachedEntry = selected;
+        rightPanel.revalidate();
+        rightPanel.repaint();
     }
 
     private void reloadHullList() {
-        GameDataRepository gameData = SettingsManager.getGameData();
-        Map<Path, List<ShipCSVEntry>> shipEntriesByPackage = gameData.getShipEntriesByPackage();
+        Map<Path, List<ShipCSVEntry>> shipEntries = ShipFilterPanel.getFilteredEntries();
 
-        for (Map.Entry<Path, List<ShipCSVEntry>> hullFolder : shipEntriesByPackage.entrySet()) {
+        if (shipEntries == null || shipEntries.isEmpty()) return;
+
+        for (Map.Entry<Path, List<ShipCSVEntry>> hullFolder : shipEntries.entrySet()) {
             String packageName = hullFolder.getKey().getFileName().toString();
             DefaultMutableTreeNode packageRoot = new DefaultMutableTreeNode(packageName);
 
@@ -138,7 +185,42 @@ class HullsTreePanel extends DataTreePanel {
         button.setText("Reload ship data");
         button.setToolTipText("Reload all ship, skin and variant files, grouped by package");
 
-        return singleButtonPanel.getFirst();
+        JPanel buttonPanel = singleButtonPanel.getFirst();
+
+        JButton filtersButton = new JButton("Filters");
+        filtersButton.addActionListener(e -> {
+            if (filtersOpened) {
+                if (cachedEntry != null) {
+                    updateEntryPanel(cachedEntry);
+                } else {
+                    resetInfoPanel();
+                }
+                filtersOpened = false;
+            } else {
+                JPanel rightPanel = getRightPanel();
+                rightPanel.removeAll();
+
+                GridBagConstraints constraints = new GridBagConstraints();
+                constraints.gridx = 0;
+                constraints.gridy = 0;
+                constraints.fill = GridBagConstraints.BOTH;
+                constraints.weightx = 1.0;
+                constraints.weighty = 1.0;
+                constraints.insets = new Insets(0, 0, 0, 0);
+
+                JPanel panel = new ShipFilterPanel();
+                rightPanel.add(panel, constraints);
+
+                filtersOpened = true;
+                rightPanel.revalidate();
+                rightPanel.repaint();
+            }
+        });
+
+        buttonPanel.add(filtersButton);
+
+
+        return buttonPanel;
     }
 
     private class LoadLayerFromTree extends AbstractAction {
@@ -218,15 +300,13 @@ class HullsTreePanel extends DataTreePanel {
             super.getTreeCellRendererComponent(tree, value, sel, expanded, leaf, row, hasFocus);
             Object object = ((DefaultMutableTreeNode) value).getUserObject();
             if (object instanceof ShipCSVEntry checked && leaf) {
-                HullSpecFile hullSpecFile = checked.getHullSpecFile();
-                String hullSize = hullSpecFile.getHullSize();
-                HullSize enumValue = HullSize.valueOf(hullSize);
-                switch (enumValue) {
-                    case FIGHTER -> setIcon(FontIcon.of(BoxiconsRegular.DICE_1, 16, Color.DARK_GRAY));
-                    case FRIGATE -> setIcon(FontIcon.of(BoxiconsRegular.DICE_2, 16, Color.DARK_GRAY));
-                    case DESTROYER -> setIcon(FontIcon.of(BoxiconsRegular.DICE_3, 16, Color.DARK_GRAY));
-                    case CRUISER -> setIcon(FontIcon.of(BoxiconsRegular.DICE_4, 16, Color.DARK_GRAY));
-                    case CAPITAL_SHIP -> setIcon(FontIcon.of(BoxiconsRegular.DICE_5, 16, Color.DARK_GRAY));
+                HullSize hullSize = checked.getSize();
+                switch (hullSize) {
+                    case FIGHTER -> setIcon(HullSize.FIGHTER.getIcon());
+                    case FRIGATE -> setIcon(HullSize.FRIGATE.getIcon());
+                    case DESTROYER -> setIcon(HullSize.DESTROYER.getIcon());
+                    case CRUISER -> setIcon(HullSize.CRUISER.getIcon());
+                    case CAPITAL_SHIP -> setIcon(HullSize.CAPITAL_SHIP.getIcon());
                     default -> {}
                 }
             }
