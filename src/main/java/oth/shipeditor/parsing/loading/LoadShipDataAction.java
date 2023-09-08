@@ -44,6 +44,8 @@ class LoadShipDataAction extends AbstractAction {
         }
 
         GameDataRepository gameData = SettingsManager.getGameData();
+        Map<String, ShipCSVEntry> allShipEntries = gameData.getAllShipEntries();
+        allShipEntries.clear();
         Map<Path, List<ShipCSVEntry>> allEntriesByPackage = new HashMap<>();
 
         for (Path folder : modsWithShipData) {
@@ -100,7 +102,7 @@ class LoadShipDataAction extends AbstractAction {
             if (hullWithSkins != null && !fileName.isEmpty()) {
                 ShipCSVEntry newEntry = new ShipCSVEntry(row, hullWithSkins, packagePath, fileName);
                 entriesFromPackage.add(newEntry);
-                allShipEntries.putIfAbsent(rowId, newEntry);
+                allShipEntries.put(rowId, newEntry);
             }
         }
 

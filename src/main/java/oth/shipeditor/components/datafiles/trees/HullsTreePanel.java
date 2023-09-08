@@ -135,6 +135,7 @@ class HullsTreePanel extends DataTreePanel {
             DefaultMutableTreeNode node = (DefaultMutableTreeNode) selectedNode.getLastPathComponent();
             if (node.getUserObject() instanceof ShipCSVEntry checked) {
                 updateEntryPanel(checked);
+                filtersOpened = false;
                 EventBus.publish(new GameDataPanelResized(this.getMinimumSize()));
             }
         });
@@ -187,7 +188,7 @@ class HullsTreePanel extends DataTreePanel {
 
         JPanel buttonPanel = singleButtonPanel.getFirst();
 
-        JButton filtersButton = new JButton("Filters");
+        JButton filtersButton = new JButton(StringValues.FILTERS);
         filtersButton.addActionListener(e -> {
             if (filtersOpened) {
                 if (cachedEntry != null) {
@@ -219,7 +220,6 @@ class HullsTreePanel extends DataTreePanel {
 
         buttonPanel.add(filtersButton);
 
-
         return buttonPanel;
     }
 
@@ -249,6 +249,7 @@ class HullsTreePanel extends DataTreePanel {
         custom.setCellRenderer(new HullsTreeCellRenderer());
         return custom;
     }
+
     @Override
     JPopupMenu getContextMenu() {
         JPopupMenu menu = super.getContextMenu();

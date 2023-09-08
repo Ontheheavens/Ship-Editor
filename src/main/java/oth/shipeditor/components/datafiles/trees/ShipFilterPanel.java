@@ -58,12 +58,13 @@ class ShipFilterPanel extends JPanel {
 
     private static boolean shouldDisplayByHandle(ShipCSVEntry entry) {
         if (currentTextFilter == null || currentTextFilter.isEmpty()) return true;
+        String currentInput = currentTextFilter.toLowerCase(Locale.ROOT);
         String name = entry.toString();
-        if (name.toLowerCase(Locale.ROOT).contains(currentTextFilter)) {
+        if (name.toLowerCase(Locale.ROOT).contains(currentInput)) {
             return true;
         }
         String id = entry.getHullID();
-        return id.toLowerCase(Locale.ROOT).contains(currentTextFilter);
+        return id.toLowerCase(Locale.ROOT).contains(currentInput);
     }
 
     static Map<Path, List<ShipCSVEntry>> getFilteredEntries() {

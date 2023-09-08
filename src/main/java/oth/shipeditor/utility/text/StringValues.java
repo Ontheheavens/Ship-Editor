@@ -38,6 +38,7 @@ public final class StringValues {
     public static final String BUILT_IN_DOES_NOT_COST_ORDNANCE = "Built-in: does not cost ordnance";
     public static final String EMPTY = "Empty";
     public static final String FILES = "Files";
+    public static final String FILTERS = "Filters";
 
     private StringValues() {
     }

@@ -27,6 +27,9 @@ public class GameDataRepository {
      */
     private final Map<String, ShipCSVEntry> allShipEntries;
 
+    /**
+     * Holds the same instances as id-entry collection, used for quick repopulating of entry tree with filtering.
+     */
     @Setter
     private Map<Path, List<ShipCSVEntry>> shipEntriesByPackage;
 
@@ -48,6 +51,9 @@ public class GameDataRepository {
     private final Map<String, WingCSVEntry> allWingEntries;
 
     private final Map<String, WeaponCSVEntry> allWeaponEntries;
+
+    @Setter
+    private Map<Path, List<WeaponCSVEntry>> weaponEntriesByPackage;
 
     /**
      * Hull styles by their IDs (field names in JSON).

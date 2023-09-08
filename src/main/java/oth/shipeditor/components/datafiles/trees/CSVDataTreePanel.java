@@ -56,7 +56,7 @@ public abstract class CSVDataTreePanel<T extends CSVEntry> extends DataTreePanel
 
     protected abstract void setLoadedStatus();
 
-    private void loadAllEntries(Map<String, List<T>> entries) {
+    protected void loadAllEntries(Map<String, List<T>> entries) {
         Map<String, T> entriesRepository = getRepository();
         for (Map.Entry<String, List<T>> entry : entries.entrySet()) {
             Path folderPath = Paths.get(entry.getKey(), "");
@@ -65,8 +65,8 @@ public abstract class CSVDataTreePanel<T extends CSVEntry> extends DataTreePanel
             List<T> entriesInPackage = entry.getValue();
             for (T dataEntry : entriesInPackage) {
                 entriesRepository.putIfAbsent(dataEntry.getID(), dataEntry);
-                MutableTreeNode shipNode = new DefaultMutableTreeNode(dataEntry);
-                packageRoot.add(shipNode);
+                MutableTreeNode node = new DefaultMutableTreeNode(dataEntry);
+                packageRoot.add(node);
             }
             DefaultMutableTreeNode rootNode = getRootNode();
             rootNode.add(packageRoot);

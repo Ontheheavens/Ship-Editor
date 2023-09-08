@@ -11,9 +11,7 @@ import oth.shipeditor.components.viewer.layers.weapon.WeaponSprites;
 import oth.shipeditor.components.viewer.painters.features.ProjectilePainter;
 import oth.shipeditor.parsing.loading.FileLoading;
 import oth.shipeditor.representation.GameDataRepository;
-import oth.shipeditor.representation.weapon.ProjectileSpecFile;
-import oth.shipeditor.representation.weapon.WeaponMount;
-import oth.shipeditor.representation.weapon.WeaponSpecFile;
+import oth.shipeditor.representation.weapon.*;
 import oth.shipeditor.utility.Size2D;
 import oth.shipeditor.utility.StaticController;
 import oth.shipeditor.utility.Utility;
@@ -65,6 +63,19 @@ public class WeaponCSVEntry implements CSVEntry {
 
     public void setSpecFile(WeaponSpecFile weaponSpecFile) {
         this.specFile = weaponSpecFile;
+    }
+
+    public WeaponType getType() {
+        WeaponType mountTypeOverride = specFile.getMountTypeOverride();
+        if (mountTypeOverride != null) {
+            return mountTypeOverride;
+        } else {
+            return specFile.getType();
+        }
+    }
+
+    public WeaponSize getSize() {
+        return specFile.getSize();
     }
 
     public WeaponSprites getSprites() {
