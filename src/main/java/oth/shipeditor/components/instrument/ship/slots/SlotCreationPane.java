@@ -13,11 +13,9 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.border.MatteBorder;
 import javax.swing.border.TitledBorder;
 import java.awt.*;
-import java.awt.event.MouseWheelEvent;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.function.Consumer;
 
 /**
  * @author Ontheheavens
@@ -91,59 +89,14 @@ public class SlotCreationPane extends JPanel {
         return container;
     }
 
-    private static void addLabelWithSpinner(JPanel container, String labelText, Consumer<Double> spinnerEffect, int y) {
-        GridBagConstraints constraints = new GridBagConstraints();
-
-        constraints.insets = new Insets(3, 10, 0, 3);
-        constraints.gridx = 0;
-        constraints.gridy = y;
-        constraints.weightx = 0.0;
-        constraints.weighty = 1.0;
-        constraints.fill = GridBagConstraints.NONE;
-        constraints.anchor = GridBagConstraints.LINE_START;
-
-        JLabel selectorLabel = new JLabel(labelText);
-        container.add(selectorLabel, constraints);
-
-        constraints.gridx = 1;
-        constraints.weightx = 1.0;
-        constraints.gridy = y;
-        constraints.fill = GridBagConstraints.HORIZONTAL;
-        constraints.insets = new Insets(3, 3, 0, 6);
-        constraints.anchor = GridBagConstraints.LINE_END;
-
-        double minValue = 0;
-        double maxValue = 360;
-        SpinnerNumberModel spinnerNumberModel = new SpinnerNumberModel(0,
-                minValue, maxValue, 0.5d);
-        JSpinner spinner = new JSpinner(spinnerNumberModel);
-
-        spinner.addChangeListener(e -> {
-            Number modelNumber = spinnerNumberModel.getNumber();
-            double current = modelNumber.doubleValue();
-            spinnerEffect.accept(current);
-        });
-        spinner.addMouseWheelListener(e -> {
-            if (e.getScrollType() != MouseWheelEvent.WHEEL_UNIT_SCROLL) {
-                return;
-            }
-            double value = (Double) spinner.getValue();
-            double newValue = value - e.getUnitsToScroll();
-            newValue = Math.min(maxValue, Math.max(minValue, newValue));
-            spinner.setValue(newValue);
-        });
-
-        container.add(spinner, constraints);
-    }
-
     private static JPanel createDefaultValueSpinners() {
         JPanel container = new JPanel();
         container.setLayout(new GridBagLayout());
 
-        SlotCreationPane.addLabelWithSpinner(container, "Default angle:",
+        ComponentUtilities.addLabelWithSpinner(container, "Default angle:",
                 aDouble -> defaultAngle = aDouble, 0);
 
-        SlotCreationPane.addLabelWithSpinner(container, "Default arc:",
+        ComponentUtilities.addLabelWithSpinner(container, "Default arc:",
                 aDouble -> defaultArc = aDouble, 1);
 
         JPanel wrapper = new JPanel();

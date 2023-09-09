@@ -26,12 +26,14 @@ import javax.swing.border.TitledBorder;
 import javax.swing.event.ChangeListener;
 import java.awt.*;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseWheelEvent;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.nio.file.Path;
 import java.util.Dictionary;
 import java.util.Hashtable;
 import java.util.Map;
+import java.util.function.Consumer;
 
 /**
  * @author Ontheheavens
@@ -453,6 +455,66 @@ public final class ComponentUtilities {
 
         container.setAlignmentY(0);
         return container;
+    }
+
+    /**
+     * Default values for spinner are set to 0/360.
+     */
+    @SuppressWarnings("UnusedReturnValue")
+    public static JSpinner addLabelWithSpinner(JPanel container, String labelText, Consumer<Double> spinnerEffect, int y) {
+        return ComponentUtilities.addLabelWithSpinner(container, labelText, spinnerEffect, 0, 360, y);
+    }
+
+    /**
+     * @param container expected to have GridBagLayout.
+     * @param y vertical grid position in layout, 0 corresponds to first/top.
+     */
+    @SuppressWarnings("MethodWithTooManyParameters")
+    public static JSpinner addLabelWithSpinner(JPanel container, String labelText, Consumer<Double> spinnerEffect,
+                                               double minValue, double maxValue, int y) {
+        GridBagConstraints constraints = new GridBagConstraints();
+
+        constraints.insets = new Insets(3, 10, 0, 3);
+        constraints.gridx = 0;
+        constraints.gridy = y;
+        constraints.weightx = 0.0;
+        constraints.weighty = 1.0;
+        constraints.fill = GridBagConstraints.NONE;
+        constraints.anchor = GridBagConstraints.LINE_START;
+
+        JLabel selectorLabel = new JLabel(labelText);
+        container.add(selectorLabel, constraints);
+
+        constraints.gridx = 1;
+        constraints.weightx = 1.0;
+        constraints.gridy = y;
+        constraints.fill = GridBagConstraints.HORIZONTAL;
+        constraints.insets = new Insets(3, 3, 0, 6);
+        constraints.anchor = GridBagConstraints.LINE_END;
+
+        SpinnerNumberModel spinnerNumberModel = new SpinnerNumberModel(0,
+                minValue, maxValue, 0.5d);
+        JSpinner spinner = new JSpinner(spinnerNumberModel);
+
+        spinner.addChangeListener(e -> {
+            Number modelNumber = spinnerNumberModel.getNumber();
+            double current = modelNumber.doubleValue();
+            if (spinnerEffect != null) {
+                spinnerEffect.accept(current);
+            }
+        });
+        spinner.addMouseWheelListener(e -> {
+            if (e.getScrollType() != MouseWheelEvent.WHEEL_UNIT_SCROLL) {
+                return;
+            }
+            double value = (Double) spinner.getValue();
+            double newValue = value - e.getUnitsToScroll();
+            newValue = Math.min(maxValue, Math.max(minValue, newValue));
+            spinner.setValue(newValue);
+        });
+
+        container.add(spinner, constraints);
+        return spinner;
     }
 
 }

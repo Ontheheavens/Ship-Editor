@@ -37,11 +37,6 @@ public final class ShipPainterInitialization {
 
         Point2D translatedCenter = ShipPainterInitialization.rotateCenter(hullCenter, anchor);
 
-        Point2D.Double specFileModuleAnchor = hullSpecFile.getModuleAnchor();
-        if (specFileModuleAnchor != null) {
-            shipPainter.setModuleAnchorOffset(specFileModuleAnchor);
-        }
-
         ShipPainterInitialization.initCentroids(shipPainter, hullSpecFile, translatedCenter);
 
         ShipPainterInitialization.initBounds(shipPainter, hullSpecFile, translatedCenter);
@@ -56,6 +51,11 @@ public final class ShipPainterInitialization {
     private static void initCentroids(ShipPainter shipPainter, HullSpecFile hullSpecFile, Point2D translatedCenter) {
         CenterPointPainter centerPointPainter = shipPainter.getCenterPointPainter();
         centerPointPainter.initCenterPoint(translatedCenter, hullSpecFile);
+
+        Point2D.Double specFileModuleAnchor = hullSpecFile.getModuleAnchor();
+        if (specFileModuleAnchor != null) {
+            centerPointPainter.setModuleAnchorOffset(specFileModuleAnchor);
+        }
 
         Point2D shieldCenter = hullSpecFile.getShieldCenter();
 
@@ -175,7 +175,7 @@ public final class ShipPainterInitialization {
         return new Point2D.Double(translatedX, translatedY);
     }
 
-    public static Point2D rotateCenter(Point2D hullCenter, Point2D anchor) {
+    private static Point2D rotateCenter(Point2D hullCenter, Point2D anchor) {
         double anchorX = anchor.getX();
         double anchorY = anchor.getY();
         return new Point2D.Double(hullCenter.getX() + anchorX, -hullCenter.getY() + anchorY);

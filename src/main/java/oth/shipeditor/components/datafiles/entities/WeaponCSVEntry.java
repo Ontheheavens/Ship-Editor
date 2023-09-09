@@ -32,6 +32,7 @@ import java.util.function.Consumer;
  * @author Ontheheavens
  * @since 05.08.2023
  */
+@SuppressWarnings("OverlyCoupledClass")
 @Getter
 public class WeaponCSVEntry implements CSVEntry {
 

@@ -333,7 +333,9 @@ final class ViewerStatusPanel extends JPanel {
                 }
             }
         }
-        cursorCoords.setText(cursor.getX() + "," + cursor.getY());
+        double cursorX = Utility.round(cursor.getX(), 5);
+        double cursorY = Utility.round(cursor.getY(), 5);
+        cursorCoords.setText(cursorX + "," + cursorY);
     }
 
     private static Point2D adjustCursorCoordinates(Point2D cursor, Point2D center) {

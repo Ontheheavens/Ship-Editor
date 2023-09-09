@@ -40,14 +40,11 @@ import java.util.stream.Collectors;
  * @author Ontheheavens
  * @since 29.05.2023
  */
-@SuppressWarnings({"OverlyCoupledClass", "ClassWithTooManyFields"})
+@SuppressWarnings("OverlyCoupledClass")
 @Log4j2
 public class ShipPainter extends LayerPainter {
 
     private static final char SPACE = ' ';
-
-    @Getter @Setter
-    private Point2D moduleAnchorOffset;
 
     @Getter
     private BoundPointsPainter boundsPainter;
@@ -256,6 +253,8 @@ public class ShipPainter extends LayerPainter {
 
     @Override
     protected Point2D getRotationAnchor() {
+        CenterPointPainter pointPainter = this.getCenterPointPainter();
+        Point2D moduleAnchorOffset = pointPainter.getModuleAnchorOffset();
         if (moduleAnchorOffset == null) {
             return getEntityCenter();
         } else {

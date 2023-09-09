@@ -8,8 +8,8 @@ import oth.shipeditor.communication.events.viewer.layers.LayerWasSelected;
 import oth.shipeditor.communication.events.viewer.layers.PainterOpacityChangeQueued;
 import oth.shipeditor.components.viewer.entities.ShipCenterPoint;
 import oth.shipeditor.components.viewer.layers.ViewerLayer;
-import oth.shipeditor.components.viewer.layers.ship.ShipPainter;
 import oth.shipeditor.components.viewer.layers.ship.ShipLayer;
+import oth.shipeditor.components.viewer.layers.ship.ShipPainter;
 import oth.shipeditor.components.viewer.painters.PainterVisibility;
 import oth.shipeditor.components.viewer.painters.points.CenterPointPainter;
 import oth.shipeditor.utility.Pair;
@@ -24,6 +24,8 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.event.ChangeListener;
 import java.awt.*;
 import java.awt.event.ActionListener;
+import java.awt.geom.Point2D;
+import java.util.function.Consumer;
 
 /**
  * @author Ontheheavens
@@ -45,13 +47,14 @@ public final class CollisionPanel extends JPanel {
 
     private JPopupMenu shipCenterMenu;
     private JPopupMenu collisionRadiusMenu;
+    private JPanel anchorWrapper;
 
     public CollisionPanel() {
         LayoutManager layout = new BorderLayout();
         this.setLayout(layout);
 
         JPanel hullCenterPanel = createCollisionPanel();
-        this.add(hullCenterPanel, BorderLayout.CENTER);
+        this.add(hullCenterPanel, BorderLayout.PAGE_START);
 
         this.initLayerListeners();
         this.initPointListener();
@@ -90,6 +93,8 @@ public final class CollisionPanel extends JPanel {
 
     private void refresh() {
         this.updateHullLabels();
+        this.refreshModuleAnchor();
+        this.revalidate();
         this.repaint();
     }
 
@@ -140,6 +145,10 @@ public final class CollisionPanel extends JPanel {
 
         hullCenterPanel.add(createShipCenterInfo());
         hullCenterPanel.add(createCollisionInfo());
+
+        hullCenterPanel.add(Box.createVerticalStrut(6));
+
+        hullCenterPanel.add(createModuleAnchorPanel());
 
         return hullCenterPanel;
     }
@@ -237,6 +246,80 @@ public final class CollisionPanel extends JPanel {
                 collisionOpacitySlider, sidePadding);
 
         return container;
+    }
+
+    private void refreshModuleAnchor() {
+        anchorWrapper.removeAll();
+
+        JPanel container = new JPanel();
+        container.setLayout(new GridBagLayout());
+
+        GridBagConstraints constraints = new GridBagConstraints();
+
+        constraints.insets = new Insets(3, 10, 0, 6);
+        constraints.gridwidth = 2;
+        constraints.gridx = 0;
+        constraints.gridy = 0;
+        constraints.weightx = 1.0;
+        constraints.weighty = 1.0;
+        constraints.fill = GridBagConstraints.HORIZONTAL;
+        constraints.anchor = GridBagConstraints.LINE_START;
+
+        ComponentUtilities.outfitPanelWithTitle(container,
+                new Insets(1, 0, 0, 0), StringValues.MODULE_ANCHOR);
+
+        if (centerPainter != null && centerPainter.getModuleAnchorOffset() != null) {
+            Consumer<Double> spinnerEffectX = value -> {
+                Point2D original = centerPainter.getModuleAnchorOffset();
+                Point2D changed = new Point2D.Double(value, original.getY());
+                centerPainter.setModuleAnchorOffset(changed);
+            };
+            JSpinner spinnerX = ComponentUtilities.addLabelWithSpinner(container, "X coordinate:",
+                    spinnerEffectX, -9000, 9000, 0);
+
+            Consumer<Double> spinnerEffectY = value -> {
+                Point2D original = centerPainter.getModuleAnchorOffset();
+                Point2D changed = new Point2D.Double(original.getX(), value);
+                centerPainter.setModuleAnchorOffset(changed);
+            };
+            JSpinner spinnerY = ComponentUtilities.addLabelWithSpinner(container, "Y coordinate:",
+                    spinnerEffectY, -9000, 9000, 1);
+
+            Point2D moduleAnchorOffset = centerPainter.getModuleAnchorOffset();
+            spinnerX.setValue(moduleAnchorOffset.getX());
+            spinnerY.setValue(moduleAnchorOffset.getY());
+
+            JButton removeAnchor = new JButton("Clear anchor");
+            removeAnchor.addActionListener(e -> {
+                centerPainter.setModuleAnchorOffset(null);
+                this.refresh();
+            });
+            constraints.gridy = 3;
+            container.add(removeAnchor, constraints);
+        } else {
+            JButton defineAnchor = new JButton("Define anchor");
+            if (centerPainter != null) {
+                defineAnchor.addActionListener(e -> {
+                    centerPainter.setModuleAnchorOffset(new Point2D.Double());
+                    this.refresh();
+                });
+            } else {
+                defineAnchor.setEnabled(false);
+            }
+            container.add(defineAnchor, constraints);
+        }
+        anchorWrapper.add(container, BorderLayout.CENTER);
+
+        Dimension containerPreferredSize = container.getPreferredSize();
+        anchorWrapper.setMaximumSize(new Dimension(container.getMaximumSize().width, containerPreferredSize.height));
+    }
+
+    private JPanel createModuleAnchorPanel() {
+        anchorWrapper = new JPanel();
+        anchorWrapper.setLayout(new BorderLayout());
+        anchorWrapper.setAlignmentX(0.5f);
+        anchorWrapper.setAlignmentY(0);
+        return anchorWrapper;
     }
 
 }
