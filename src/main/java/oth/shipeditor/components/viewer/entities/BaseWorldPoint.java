@@ -176,7 +176,7 @@ public class BaseWorldPoint implements WorldPoint, Painter {
 
         this.cursorInBounds = StaticController.checkIsHovered(shape);
 
-        DrawUtilities.outlineShape(g, shape, Color.BLACK, 1.5d);
+        DrawUtilities.outlineShape(g, shape, Color.BLACK, 1.5f);
         DrawUtilities.fillShape(g, shape, getCurrentColor());
     }
 

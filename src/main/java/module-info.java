@@ -35,6 +35,7 @@
     exports oth.shipeditor.communication;
     exports oth.shipeditor.communication.events;
     exports oth.shipeditor.communication.events.viewer.points;
+    exports oth.shipeditor.components.viewer.painters.features;
 
     opens oth.shipeditor.components;
     exports oth.shipeditor.components.viewer.control;

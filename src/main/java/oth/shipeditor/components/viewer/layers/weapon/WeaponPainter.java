@@ -82,6 +82,7 @@ public class WeaponPainter extends LayerPainter {
     }
 
     protected void paintContent(Graphics2D g, AffineTransform worldToScreen, double w, double h) {
+        if (mount == WeaponMount.HIDDEN) return;
         this.drawSpritePart(g, weaponSprites.getUnderSprite(mount));
 
         if (renderBarrelsBelow) {

@@ -1,42 +1,39 @@
 package oth.shipeditor.components.viewer.painters.features;
 
-import de.javagl.viewer.Painter;
-import lombok.Getter;
 import oth.shipeditor.components.viewer.entities.weapon.WeaponSlotPoint;
 import oth.shipeditor.components.viewer.layers.LayerPainter;
 import oth.shipeditor.components.viewer.layers.ship.ShipPainter;
 import oth.shipeditor.components.viewer.layers.weapon.WeaponPainter;
 import oth.shipeditor.components.viewer.painters.points.AbstractPointPainter;
-import oth.shipeditor.components.viewer.painters.points.WeaponSlotPainter;
 import oth.shipeditor.utility.Utility;
 
 import java.awt.*;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Point2D;
-import java.util.*;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author Ontheheavens
  * @since 27.08.2023
  */
-public class InstalledSlotFeaturePainter implements Painter {
+public final class InstalledSlotFeaturePainter {
 
-    @Getter
-    private final Map<String, LayerPainter> installedFeatures;
-
-    public InstalledSlotFeaturePainter() {
-        installedFeatures = new LinkedHashMap<>();
+    private InstalledSlotFeaturePainter() {
     }
 
-    public void refreshSlotData(WeaponSlotPainter slotPainter) {
-        for (Map.Entry<String, LayerPainter> entry : installedFeatures.entrySet()) {
+    public static void refreshSlotData(ShipPainter painter) {
+        var slotPainter = painter.getWeaponSlotPainter();
+        var allFeatures = painter.getAllInstallables();
+
+        for (Map.Entry<String, InstalledFeature> entry : allFeatures.entrySet()) {
             String slotID = entry.getKey();
-            LayerPainter painter = entry.getValue();
-            painter.setShouldDrawPainter(false);
+            InstalledFeature installedFeature = entry.getValue();
+            LayerPainter featurePainter = installedFeature.getFeaturePainter();
+            featurePainter.setShouldDrawPainter(false);
 
             WeaponSlotPoint slotPoint = slotPainter.getSlotByID(slotID);
-            InstalledSlotFeaturePainter.refreshInstalledPainter(slotPoint, painter);
+            InstalledSlotFeaturePainter.refreshInstalledPainter(slotPoint, featurePainter);
         }
     }
 
@@ -51,6 +48,8 @@ public class InstalledSlotFeaturePainter implements Painter {
         Point2D entityCenter = painter.getEntityCenter();
         if (painter instanceof WeaponPainter weaponPainter) {
             entityCenter = weaponPainter.getWeaponCenter();
+
+            weaponPainter.setMount(slotPoint.getWeaponMount());
         } else if (painter instanceof ShipPainter shipPainter) {
             entityCenter = shipPainter.getCenterAnchorDifference();
         }
@@ -66,15 +65,16 @@ public class InstalledSlotFeaturePainter implements Painter {
         painter.setRotationRadians(Math.toRadians(transformedAngle + 90));
     }
 
-    @Override
-    public void paint(Graphics2D g, AffineTransform worldToScreen, double w, double h) {
-        Set<Map.Entry<String, LayerPainter>> entries = installedFeatures.entrySet();
-        for (Map.Entry<String, LayerPainter> entry : entries) {
-            LayerPainter painter = entry.getValue();
-            AffineTransform transform = painter.getWithRotation(worldToScreen);
-            painter.paint(g, transform, w, h);
+    public static void paint(Graphics2D g, AffineTransform worldToScreen, double w, double h, ShipPainter painter) {
+        var allFeatures = painter.getAllInstallables();
 
-            List<AbstractPointPainter> allPainters = painter.getAllPainters();
+        for (Map.Entry<String, InstalledFeature> entry : allFeatures.entrySet()) {
+            InstalledFeature installedFeature = entry.getValue();
+            LayerPainter featurePainter = installedFeature.getFeaturePainter();
+            AffineTransform transform = featurePainter.getWithRotation(worldToScreen);
+            featurePainter.paint(g, transform, w, h);
+
+            List<AbstractPointPainter> allPainters = featurePainter.getAllPainters();
             allPainters.forEach(pointPainter -> pointPainter.paint(g, transform, w, h));
         }
     }

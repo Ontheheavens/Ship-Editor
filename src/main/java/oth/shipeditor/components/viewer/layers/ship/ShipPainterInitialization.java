@@ -1,18 +1,19 @@
 package oth.shipeditor.components.viewer.layers.ship;
 
 import lombok.extern.log4j.Log4j2;
+import oth.shipeditor.components.datafiles.entities.WeaponCSVEntry;
 import oth.shipeditor.components.viewer.entities.BoundPoint;
 import oth.shipeditor.components.viewer.entities.bays.LaunchBay;
 import oth.shipeditor.components.viewer.entities.bays.LaunchPortPoint;
 import oth.shipeditor.components.viewer.entities.engine.EnginePoint;
 import oth.shipeditor.components.viewer.entities.weapon.WeaponSlotPoint;
+import oth.shipeditor.components.viewer.layers.weapon.WeaponPainter;
+import oth.shipeditor.components.viewer.painters.features.InstalledFeature;
 import oth.shipeditor.components.viewer.painters.points.*;
 import oth.shipeditor.representation.EngineSlot;
+import oth.shipeditor.representation.GameDataRepository;
 import oth.shipeditor.representation.HullSpecFile;
-import oth.shipeditor.representation.weapon.WeaponMount;
-import oth.shipeditor.representation.weapon.WeaponSize;
-import oth.shipeditor.representation.weapon.WeaponSlot;
-import oth.shipeditor.representation.weapon.WeaponType;
+import oth.shipeditor.representation.weapon.*;
 import oth.shipeditor.utility.text.StringConstants;
 
 import java.awt.geom.Point2D;
@@ -44,6 +45,8 @@ public final class ShipPainterInitialization {
         ShipPainterInitialization.initSlots(shipPainter, hullSpecFile, translatedCenter);
 
         ShipPainterInitialization.initEngines(shipPainter, hullSpecFile, translatedCenter);
+
+        ShipPainterInitialization.initBuiltIns(shipPainter, hullSpecFile);
 
         shipPainter.finishInitialization();
     }
@@ -160,6 +163,20 @@ public final class ShipPainterInitialization {
             newEnginePoint.setStyleID(styleID);
 
             engineSlotPainter.addPoint(newEnginePoint);
+        });
+    }
+
+    private static void initBuiltIns(ShipPainter shipPainter, HullSpecFile hullSpecFile) {
+        var specBuiltIns = hullSpecFile.getBuiltInWeapons();
+        if (specBuiltIns == null || specBuiltIns.isEmpty()) return;
+
+        var runtimeBuiltIns = shipPainter.getBuiltInWeapons();
+
+        specBuiltIns.forEach((slotID, weaponID) -> {
+            WeaponCSVEntry weaponEntry = GameDataRepository.getWeaponByID(weaponID);
+            WeaponSpecFile specFile = weaponEntry.getSpecFile();
+            WeaponPainter weaponPainter = weaponEntry.createPainterFromEntry(null, specFile);
+            runtimeBuiltIns.put(slotID, new InstalledFeature(slotID, weaponID, weaponPainter));
         });
     }
 
