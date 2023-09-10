@@ -28,7 +28,7 @@ import java.util.Map;
  * @author Ontheheavens
  * @since 18.08.2023
  */
-@SuppressWarnings("ClassWithTooManyFields")
+@SuppressWarnings({"ClassWithTooManyFields", "ClassWithTooManyMethods"})
 public class EnginePoint extends AngledPoint {
 
     private static final Paint SIZING_RECTANGLE = new Color(0, 0, 0, 20);
@@ -217,6 +217,7 @@ public class EnginePoint extends AngledPoint {
         EnginePoint.drawFlameStatically(g, worldToScreen, position, rawAngle, engineWidth, engineLength, flameColored);
     }
 
+    @SuppressWarnings("MethodWithTooManyParameters")
     public static void drawFlameStatically(Graphics2D g, AffineTransform worldToScreen, Point2D position,
                                            double rawAngle, double engineWidth, double engineLength,
                                            BufferedImage flameColored) {
@@ -226,8 +227,14 @@ public class EnginePoint extends AngledPoint {
         Point2D topLeft = new Point2D.Double(position.getX(), position.getY() - halfWidth);
 
         GraphicsAction graphicsAction = graphics2D -> {
+            RenderingHints hints = g.getRenderingHints();
+
             g.setRenderingHint(RenderingHints.KEY_INTERPOLATION,
                     RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+            g.setRenderingHint(RenderingHints.KEY_RENDERING,
+                    RenderingHints.VALUE_RENDER_SPEED);
+            g.setRenderingHint(RenderingHints.KEY_ALPHA_INTERPOLATION,
+                    RenderingHints.VALUE_ALPHA_INTERPOLATION_SPEED);
 
             AffineTransform transform = new AffineTransform();
             transform.translate(topLeft.getX(), topLeft.getY());
@@ -236,13 +243,13 @@ public class EnginePoint extends AngledPoint {
             g.drawImage(flameColored, transform, null);
             g.drawImage(FLAME_CORE, transform, null);
 
-            g.setRenderingHint(RenderingHints.KEY_INTERPOLATION,
-                    RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR);
+            g.setRenderingHints(hints);
         };
         DrawUtilities.drawWithRotationTransform(g, worldToScreen, position,
                 Math.toRadians(transformedAngle), graphicsAction);
     }
 
+    @SuppressWarnings("MethodWithTooManyParameters")
     public static void drawRectangleStatically(Graphics2D g, AffineTransform worldToScreen, Point2D position,
                                                double rawAngle, double engineWidth, double engineLength) {
         double transformedAngle = Utility.transformAngle(rawAngle);

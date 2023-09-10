@@ -1,11 +1,9 @@
 package oth.shipeditor.undo.edits.points.slots;
 
-import oth.shipeditor.communication.EventBus;
-import oth.shipeditor.communication.events.components.SlotControlRepaintQueued;
-import oth.shipeditor.communication.events.viewer.ViewerRepaintQueued;
 import oth.shipeditor.components.viewer.entities.weapon.WeaponSlotPoint;
 import oth.shipeditor.components.viewer.painters.points.WeaponSlotPainter;
 import oth.shipeditor.undo.AbstractEdit;
+import oth.shipeditor.utility.StaticController;
 
 import java.util.List;
 
@@ -30,15 +28,17 @@ public class WeaponSlotsSortEdit extends AbstractEdit {
     @Override
     public void undo() {
         pointPainter.setSlotPoints(oldList);
-        EventBus.publish(new ViewerRepaintQueued());
-        EventBus.publish(new SlotControlRepaintQueued());
+        var repainter = StaticController.getRepainter();
+        repainter.queueViewerRepaint();
+        repainter.queueSlotControlRepaint();
     }
 
     @Override
     public void redo() {
         pointPainter.setSlotPoints(newList);
-        EventBus.publish(new ViewerRepaintQueued());
-        EventBus.publish(new SlotControlRepaintQueued());
+        var repainter = StaticController.getRepainter();
+        repainter.queueViewerRepaint();
+        repainter.queueSlotControlRepaint();
     }
 
     @Override

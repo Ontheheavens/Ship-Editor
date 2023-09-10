@@ -1,6 +1,7 @@
 package oth.shipeditor.components.viewer.painters.points;
 
 import lombok.Getter;
+import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
 import oth.shipeditor.communication.BusEventListener;
 import oth.shipeditor.communication.EventBus;
@@ -8,17 +9,23 @@ import oth.shipeditor.communication.events.components.CenterPanelsRepaintQueued;
 import oth.shipeditor.communication.events.viewer.ViewerRepaintQueued;
 import oth.shipeditor.communication.events.viewer.points.InstrumentModeChanged;
 import oth.shipeditor.communication.events.viewer.points.RadiusDragQueued;
-import oth.shipeditor.components.instrument.ship.ShipInstrumentsPane;
 import oth.shipeditor.components.instrument.ship.EditorInstrument;
 import oth.shipeditor.components.viewer.control.ControlPredicates;
 import oth.shipeditor.components.viewer.entities.BaseWorldPoint;
 import oth.shipeditor.components.viewer.entities.ShipCenterPoint;
 import oth.shipeditor.components.viewer.layers.ship.ShipPainter;
+import oth.shipeditor.components.viewer.painters.TextPainter;
 import oth.shipeditor.representation.HullSpecFile;
+import oth.shipeditor.representation.weapon.WeaponType;
 import oth.shipeditor.undo.EditDispatch;
+import oth.shipeditor.utility.StaticController;
+import oth.shipeditor.utility.Utility;
+import oth.shipeditor.utility.graphics.DrawUtilities;
+import oth.shipeditor.utility.text.StringValues;
 
 import java.awt.*;
 import java.awt.event.KeyEvent;
+import java.awt.geom.AffineTransform;
 import java.awt.geom.Point2D;
 import java.util.ArrayList;
 import java.util.List;
@@ -37,6 +44,11 @@ public class CenterPointPainter extends SinglePointPainter {
     @Getter
     private ShipCenterPoint centerPoint;
 
+    @Getter @Setter
+    private Point2D moduleAnchorOffset;
+
+    private final TextPainter moduleAnchorText;
+
     private final int dragCollisionRadiusHotkey = KeyEvent.VK_C;
 
     private boolean collisionRadiusHotkeyPressed;
@@ -47,8 +59,10 @@ public class CenterPointPainter extends SinglePointPainter {
         super(parent);
         this.initModeListening();
         this.initHotkeys();
-        this.setInteractionEnabled(ShipInstrumentsPane.getCurrentMode() == EditorInstrument.COLLISION);
+        this.setInteractionEnabled(StaticController.getEditorMode() == EditorInstrument.COLLISION);
         this.setPaintOpacity(COLLISION_OPACITY);
+
+        this.moduleAnchorText = new TextPainter();
     }
 
     @Override
@@ -110,6 +124,37 @@ public class CenterPointPainter extends SinglePointPainter {
         this.centerPoint = new ShipCenterPoint(translatedCenter,
                 (float) hullSpecFile.getCollisionRadius(), this.getParentLayer(), this);
         this.addPoint(centerPoint);
+    }
+
+    @Override
+    void paintPainterContent(Graphics2D g, AffineTransform worldToScreen, double w, double h) {
+        if (moduleAnchorOffset == null) return;
+
+        Composite old = null;
+        if (this.getPaintOpacity() != 0.0f) {
+            old = Utility.setFullAlpha(g);
+        }
+
+        Point2D centerPosition = this.centerPoint.getPosition();
+        double x = centerPosition.getX() - moduleAnchorOffset.getY();
+        double y = centerPosition.getY() - moduleAnchorOffset.getX();
+        Point2D resultAnchorLocation = new Point2D.Double(x, y);
+        Color moduleColor = WeaponType.STATION_MODULE.getColor();
+        DrawUtilities.drawEntityCenterCross(g, worldToScreen, resultAnchorLocation, moduleColor);
+
+        Point2D toDisplay = Utility.getPointCoordinatesForDisplay(resultAnchorLocation);
+
+        DrawUtilities.drawWithConditionalOpacity(g, graphics2D -> {
+            String coords = StringValues.MODULE_ANCHOR + " (" + toDisplay.getX() + ", " + toDisplay.getY() + ")";
+
+            moduleAnchorText.setWorldPosition(resultAnchorLocation);
+            moduleAnchorText.setText(coords);
+            moduleAnchorText.paintText(graphics2D, worldToScreen);
+        });
+
+        if (old != null) {
+            g.setComposite(old);
+        }
     }
 
     @Override

@@ -1,18 +1,19 @@
 package oth.shipeditor.components.viewer.layers.ship;
 
 import lombok.extern.log4j.Log4j2;
+import oth.shipeditor.components.datafiles.entities.WeaponCSVEntry;
 import oth.shipeditor.components.viewer.entities.BoundPoint;
 import oth.shipeditor.components.viewer.entities.bays.LaunchBay;
 import oth.shipeditor.components.viewer.entities.bays.LaunchPortPoint;
 import oth.shipeditor.components.viewer.entities.engine.EnginePoint;
 import oth.shipeditor.components.viewer.entities.weapon.WeaponSlotPoint;
+import oth.shipeditor.components.viewer.layers.weapon.WeaponPainter;
+import oth.shipeditor.components.viewer.painters.features.InstalledFeature;
 import oth.shipeditor.components.viewer.painters.points.*;
 import oth.shipeditor.representation.EngineSlot;
+import oth.shipeditor.representation.GameDataRepository;
 import oth.shipeditor.representation.HullSpecFile;
-import oth.shipeditor.representation.weapon.WeaponMount;
-import oth.shipeditor.representation.weapon.WeaponSize;
-import oth.shipeditor.representation.weapon.WeaponSlot;
-import oth.shipeditor.representation.weapon.WeaponType;
+import oth.shipeditor.representation.weapon.*;
 import oth.shipeditor.utility.text.StringConstants;
 
 import java.awt.geom.Point2D;
@@ -37,13 +38,6 @@ public final class ShipPainterInitialization {
 
         Point2D translatedCenter = ShipPainterInitialization.rotateCenter(hullCenter, anchor);
 
-        Point2D.Double specFileModuleAnchor = hullSpecFile.getModuleAnchor();
-        if (specFileModuleAnchor != null) {
-            shipPainter.setModuleAnchorOffset(specFileModuleAnchor);
-//        Point2D translatedModuleAnchor = ShipPainterInitialization.rotatePointByCenter(specFileModuleAnchor, translatedCenter);
-//        shipPainter.setModuleAnchorOffset(translatedModuleAnchor);
-        }
-
         ShipPainterInitialization.initCentroids(shipPainter, hullSpecFile, translatedCenter);
 
         ShipPainterInitialization.initBounds(shipPainter, hullSpecFile, translatedCenter);
@@ -52,12 +46,21 @@ public final class ShipPainterInitialization {
 
         ShipPainterInitialization.initEngines(shipPainter, hullSpecFile, translatedCenter);
 
+        ShipPainterInitialization.initBuiltIns(shipPainter, hullSpecFile);
+
+        shipPainter.setBaseHullId(hullSpecFile.getHullId());
+
         shipPainter.finishInitialization();
     }
 
     private static void initCentroids(ShipPainter shipPainter, HullSpecFile hullSpecFile, Point2D translatedCenter) {
         CenterPointPainter centerPointPainter = shipPainter.getCenterPointPainter();
         centerPointPainter.initCenterPoint(translatedCenter, hullSpecFile);
+
+        Point2D.Double specFileModuleAnchor = hullSpecFile.getModuleAnchor();
+        if (specFileModuleAnchor != null) {
+            centerPointPainter.setModuleAnchorOffset(specFileModuleAnchor);
+        }
 
         Point2D shieldCenter = hullSpecFile.getShieldCenter();
 
@@ -165,6 +168,20 @@ public final class ShipPainterInitialization {
         });
     }
 
+    private static void initBuiltIns(ShipPainter shipPainter, HullSpecFile hullSpecFile) {
+        var specBuiltIns = hullSpecFile.getBuiltInWeapons();
+        if (specBuiltIns == null || specBuiltIns.isEmpty()) return;
+
+        var runtimeBuiltIns = shipPainter.getBuiltInWeapons();
+
+        specBuiltIns.forEach((slotID, weaponID) -> {
+            WeaponCSVEntry weaponEntry = GameDataRepository.getWeaponByID(weaponID);
+            WeaponSpecFile specFile = weaponEntry.getSpecFile();
+            WeaponPainter weaponPainter = weaponEntry.createPainterFromEntry(null, specFile);
+            runtimeBuiltIns.put(slotID, new InstalledFeature(slotID, weaponID, weaponPainter));
+        });
+    }
+
     /**
      * Rotates point 90 degrees counterclockwise around specified center point.
      * @param input point to be rotated.
@@ -177,7 +194,7 @@ public final class ShipPainterInitialization {
         return new Point2D.Double(translatedX, translatedY);
     }
 
-    public static Point2D rotateCenter(Point2D hullCenter, Point2D anchor) {
+    private static Point2D rotateCenter(Point2D hullCenter, Point2D anchor) {
         double anchorX = anchor.getX();
         double anchorY = anchor.getY();
         return new Point2D.Double(hullCenter.getX() + anchorX, -hullCenter.getY() + anchorY);

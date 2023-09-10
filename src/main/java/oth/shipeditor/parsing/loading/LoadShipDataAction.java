@@ -2,15 +2,13 @@ package oth.shipeditor.parsing.loading;
 
 import lombok.extern.log4j.Log4j2;
 import oth.shipeditor.communication.EventBus;
-import oth.shipeditor.communication.events.files.HullFolderWalked;
-import oth.shipeditor.communication.events.files.HullTreeCleanupQueued;
-import oth.shipeditor.communication.events.files.HullTreeExpansionQueued;
+import oth.shipeditor.communication.events.files.HullTreeEntryCleared;
+import oth.shipeditor.communication.events.files.HullTreeReloadQueued;
+import oth.shipeditor.components.datafiles.entities.ShipCSVEntry;
 import oth.shipeditor.menubar.FileUtilities;
 import oth.shipeditor.persistence.SettingsManager;
-import oth.shipeditor.representation.GameDataRepository;
-import oth.shipeditor.representation.HullSpecFile;
-import oth.shipeditor.representation.SkinSpecFile;
-import oth.shipeditor.representation.VariantFile;
+import oth.shipeditor.representation.*;
+import oth.shipeditor.utility.Pair;
 import oth.shipeditor.utility.text.StringConstants;
 
 import javax.swing.*;
@@ -18,10 +16,7 @@ import java.awt.event.ActionEvent;
 import java.io.File;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * @author Ontheheavens
@@ -41,8 +36,6 @@ class LoadShipDataAction extends AbstractAction {
         Map<Path, File> skinsPackages = FileUtilities.getFileFromPackages(skinFolderTarget);
         Collection<Path> modsWithSkinFolder = skinsPackages.keySet();
 
-        EventBus.publish(new HullTreeCleanupQueued());
-
         Map<String, SkinSpecFile> allSkins = new HashMap<>();
         for (Path directory : modsWithSkinFolder) {
             log.info("Skin folder found in mod directory: {}", directory);
@@ -50,18 +43,26 @@ class LoadShipDataAction extends AbstractAction {
             allSkins.putAll(containedSkins);
         }
 
-        for (Path folder : modsWithShipData) {
-            LoadShipDataAction.walkHullFolder(folder.toString(), allSkins);
-        }
-        EventBus.publish(new HullTreeExpansionQueued());
         GameDataRepository gameData = SettingsManager.getGameData();
+        Map<String, ShipCSVEntry> allShipEntries = gameData.getAllShipEntries();
+        allShipEntries.clear();
+        Map<Path, List<ShipCSVEntry>> allEntriesByPackage = new HashMap<>();
+
+        for (Path folder : modsWithShipData) {
+            Pair<Path, List<ShipCSVEntry>> packageShipData = LoadShipDataAction.walkHullFolder(folder.toString(), allSkins);
+            allEntriesByPackage.put(packageShipData.getFirst(), packageShipData.getSecond());
+        }
+
+        gameData.setShipEntriesByPackage(allEntriesByPackage);
         gameData.setShipDataLoaded(true);
+        EventBus.publish(new HullTreeEntryCleared());
+        EventBus.publish(new HullTreeReloadQueued());
 
         Map<String, VariantFile> variants = LoadShipDataAction.collectVariants();
         gameData.setAllVariants(variants);
     }
 
-    private static void walkHullFolder(String folderPath, Map<String, SkinSpecFile> skins) {
+    private static Pair<Path, List<ShipCSVEntry>> walkHullFolder(String folderPath, Map<String, SkinSpecFile> skins) {
         Path shipTablePath = Paths.get(folderPath, "data", StringConstants.HULLS, StringConstants.SHIP_DATA_CSV);
 
         log.info("Parsing ship CSV data at: {}..", shipTablePath);
@@ -79,8 +80,49 @@ class LoadShipDataAction extends AbstractAction {
         }
         log.info("Fetched and mapped {} hull files.", mappedHulls.size());
 
-        EventBus.publish(new HullFolderWalked(csvData, mappedHulls,
-                skins, Paths.get(folderPath, "")));
+        Path packagePath = Paths.get(folderPath, "");
+        List<ShipCSVEntry> entriesFromPackage = new ArrayList<>();
+
+        GameDataRepository gameData = SettingsManager.getGameData();
+        Map<String, ShipCSVEntry> allShipEntries = gameData.getAllShipEntries();
+
+        for (Map<String, String> row : csvData) {
+            Map.Entry<HullSpecFile, Map<String, SkinSpecFile>> hullWithSkins = null;
+            String fileName = "";
+            String rowId = row.get("id");
+            for (String shipFileName : mappedHulls.keySet()) {
+                HullSpecFile shipFile = mappedHulls.get(shipFileName);
+                String hullId = shipFile.getHullId();
+                if (hullId.equals(rowId)) {
+                    fileName = shipFileName;
+                    Map<String, SkinSpecFile> skinsOfHull = LoadShipDataAction.fetchSkinsByHull(shipFile, skins);
+                    hullWithSkins = new AbstractMap.SimpleEntry<>(shipFile, skinsOfHull);
+                }
+            }
+            if (hullWithSkins != null && !fileName.isEmpty()) {
+                ShipCSVEntry newEntry = new ShipCSVEntry(row, hullWithSkins, packagePath, fileName);
+                entriesFromPackage.add(newEntry);
+                allShipEntries.put(rowId, newEntry);
+            }
+        }
+
+        return new Pair<>(packagePath, entriesFromPackage);
+    }
+
+    private static Map<String, SkinSpecFile> fetchSkinsByHull(ShipSpecFile hullSpecFile, Map<String, SkinSpecFile> skins) {
+        if (skins == null) return null;
+        String hullId = hullSpecFile.getHullId();
+        Map<String, SkinSpecFile> associated = new HashMap<>();
+        for (Map.Entry<String, SkinSpecFile> skin : skins.entrySet()) {
+            SkinSpecFile value = skin.getValue();
+            if (Objects.equals(value.getBaseHullId(), hullId)) {
+                associated.put(skin.getKey(), skin.getValue());
+            }
+        }
+        if (!associated.isEmpty()) {
+            return associated;
+        }
+        return null;
     }
 
     private static Map<String, SkinSpecFile> walkSkinFolder(Path skinFolder) {

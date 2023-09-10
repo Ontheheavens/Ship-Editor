@@ -7,8 +7,8 @@ import com.fasterxml.jackson.databind.JsonDeserializer;
 import com.fasterxml.jackson.databind.JsonNode;
 
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 /**
@@ -22,7 +22,7 @@ public class ModulesDeserializer extends JsonDeserializer<Map<String, String>> {
         ObjectCodec codec = p.getCodec();
         JsonNode node = codec.readTree(p);
 
-        Map<String, String> moduleMap = new HashMap<>();
+        Map<String, String> moduleMap = new LinkedHashMap<>();
 
         if (node.isArray()) {
             for (JsonNode entry : node) {

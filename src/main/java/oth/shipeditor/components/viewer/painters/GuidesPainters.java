@@ -9,7 +9,6 @@ import lombok.extern.log4j.Log4j2;
 import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.viewer.ViewerRepaintQueued;
 import oth.shipeditor.communication.events.viewer.control.ViewerGuidesToggled;
-import oth.shipeditor.components.instrument.ship.ShipInstrumentsPane;
 import oth.shipeditor.components.instrument.ship.EditorInstrument;
 import oth.shipeditor.components.viewer.PrimaryViewer;
 import oth.shipeditor.components.viewer.control.ControlPredicates;
@@ -18,11 +17,11 @@ import oth.shipeditor.components.viewer.entities.WorldPoint;
 import oth.shipeditor.components.viewer.layers.LayerPainter;
 import oth.shipeditor.components.viewer.layers.ship.ShipPainter;
 import oth.shipeditor.components.viewer.painters.points.BoundPointsPainter;
-import oth.shipeditor.utility.graphics.RectangleCorner;
 import oth.shipeditor.utility.StaticController;
 import oth.shipeditor.utility.Utility;
 import oth.shipeditor.utility.graphics.DrawUtilities;
 import oth.shipeditor.utility.graphics.DrawingParameters;
+import oth.shipeditor.utility.graphics.RectangleCorner;
 
 import java.awt.*;
 import java.awt.geom.AffineTransform;
@@ -159,29 +158,7 @@ public final class GuidesPainters {
     }
 
     private Painter createBordersPainter() {
-        return (g, worldToScreen, w, h) -> {
-            if (!drawBorders) return;
-
-            LayerPainter layer = parent.getSelectedLayer();
-            if (layer == null || layer.getSprite() == null) return;
-            RenderedImage shipSprite = layer.getSprite();
-            int width = shipSprite.getWidth();
-            int height = shipSprite.getHeight();
-            Point2D layerAnchor = layer.getAnchor();
-            Shape spriteBorder = new Rectangle((int) layerAnchor.getX(), (int) layerAnchor.getY(), width, height);
-            Shape transformed = worldToScreen.createTransformedShape(spriteBorder);
-
-            Stroke oldStroke = g.getStroke();
-            Paint oldPaint = g.getPaint();
-
-            g.setStroke(new BasicStroke(3));
-            g.draw(transformed);
-            g.setStroke(oldStroke);
-            g.setPaint(Color.WHITE);
-            g.draw(transformed);
-
-            g.setPaint(oldPaint);
-        };
+        return new BordersPainter();
     }
 
     private Painter createSpriteCenterPainter() {
@@ -217,7 +194,7 @@ public final class GuidesPainters {
 
     @SuppressWarnings("MethodWithMultipleReturnPoints")
     private static void drawPointPositionHint(Graphics2D g, Point2D position, LayerPainter painter) {
-        if (ShipInstrumentsPane.getCurrentMode() == EditorInstrument.BOUNDS) {
+        if (StaticController.getEditorMode() == EditorInstrument.BOUNDS) {
             Font hintFont = Utility.getOrbitron(12);
             if (!(painter instanceof ShipPainter checkedPainter)) return;
             BoundPointsPainter boundsPainter = checkedPainter.getBoundsPainter();
@@ -272,6 +249,35 @@ public final class GuidesPainters {
                     .withPaintColor(Color.BLACK)
                     .build();
             DrawUtilities.drawDynamicCross(g, worldToScreen, positionWorld, parameters);
+        }
+
+    }
+
+    private class BordersPainter implements Painter {
+
+        @Override
+        public void paint(Graphics2D g, AffineTransform worldToScreen, double w, double h) {
+            if (!drawBorders) return;
+
+            LayerPainter layer = parent.getSelectedLayer();
+            if (layer == null || layer.getSprite() == null) return;
+            RenderedImage shipSprite = layer.getSprite();
+            int width = shipSprite.getWidth();
+            int height = shipSprite.getHeight();
+            Point2D layerAnchor = layer.getAnchor();
+            Shape spriteBorder = new Rectangle((int) layerAnchor.getX(), (int) layerAnchor.getY(), width, height);
+            Shape transformed = worldToScreen.createTransformedShape(spriteBorder);
+
+            Stroke oldStroke = g.getStroke();
+            Paint oldPaint = g.getPaint();
+
+            g.setStroke(new BasicStroke(3));
+            g.draw(transformed);
+            g.setStroke(oldStroke);
+            g.setPaint(Color.WHITE);
+            g.draw(transformed);
+
+            g.setPaint(oldPaint);
         }
 
     }

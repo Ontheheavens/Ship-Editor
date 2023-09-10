@@ -7,6 +7,8 @@ import oth.shipeditor.utility.Utility;
 import java.awt.*;
 import java.awt.font.GlyphVector;
 import java.awt.geom.*;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * @author Ontheheavens
@@ -14,6 +16,15 @@ import java.awt.geom.*;
  */
 @Log4j2
 public final class DrawUtilities {
+
+    @SuppressWarnings("StaticCollection")
+    private static final Map<Float, Stroke> CACHED_STROKES = new HashMap<>();
+
+    private static final DrawMode DRAW_MODE = DrawMode.FAST;
+
+    private enum DrawMode {
+        NORMAL, QUALITY, FAST
+    }
 
     private DrawUtilities() {
     }
@@ -48,14 +59,31 @@ public final class DrawUtilities {
         DrawUtilities.fillShape(g, transformed,color);
     }
 
-    public static void outlineShape(Graphics2D g, Shape shape, Paint color, double strokeWidth) {
-        DrawUtilities.outlineShape(g, shape, color, new BasicStroke((float) strokeWidth));
+    public static void outlineShape(Graphics2D g, Shape shape, Paint color, float strokeWidth) {
+        Stroke cached = CACHED_STROKES.get(strokeWidth);
+        if (cached == null) {
+            cached = new BasicStroke(strokeWidth);
+            CACHED_STROKES.put(strokeWidth, cached);
+        }
+        DrawUtilities.outlineShape(g, shape, color, cached);
     }
 
     @SuppressWarnings("WeakerAccess")
     public static void outlineShape(Graphics2D g, Shape shape, Paint color, Stroke stroke) {
-        Object renderingHint = g.getRenderingHint(RenderingHints.KEY_STROKE_CONTROL);
-        g.setRenderingHint(RenderingHints.KEY_STROKE_CONTROL, RenderingHints.VALUE_STROKE_PURE);
+        RenderingHints hints = g.getRenderingHints();
+        switch (DRAW_MODE) {
+            case NORMAL -> {}
+            case QUALITY -> g.setRenderingHint(RenderingHints.KEY_STROKE_CONTROL,
+                    RenderingHints.VALUE_STROKE_PURE);
+            case FAST -> {
+                g.setRenderingHint(RenderingHints.KEY_RENDERING,
+                        RenderingHints.VALUE_RENDER_SPEED);
+                g.setRenderingHint(RenderingHints.KEY_ALPHA_INTERPOLATION,
+                        RenderingHints.VALUE_ALPHA_INTERPOLATION_SPEED);
+                g.setRenderingHint(RenderingHints.KEY_COLOR_RENDERING,
+                        RenderingHints.VALUE_COLOR_RENDER_SPEED);
+            }
+        }
 
         Paint old = g.getPaint();
         Stroke oldStroke = g.getStroke();
@@ -64,7 +92,7 @@ public final class DrawUtilities {
 
         g.draw(shape);
 
-        g.setRenderingHint(RenderingHints.KEY_STROKE_CONTROL, renderingHint);
+        g.setRenderingHints(hints);
         g.setStroke(oldStroke);
         g.setPaint(old);
     }
@@ -95,7 +123,6 @@ public final class DrawUtilities {
         if (quality) {
             g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
             g.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
-
             g.setRenderingHint(RenderingHints.KEY_STROKE_CONTROL, RenderingHints.VALUE_STROKE_PURE);
         }
         Paint oldPaint = g.getPaint();

@@ -86,8 +86,20 @@ public class WeaponSpecFile {
     @JsonProperty("renderBelowAllWeapons")
     private boolean renderBelowAllWeapons;
 
+    @JsonProperty("renderAboveAllWeapons")
+    private boolean renderAboveAllWeapons;
+
+    @JsonProperty("renderAdditive")
+    private boolean renderAdditive;
+
+    @JsonProperty("passThroughMissiles")
+    private boolean passThroughMissiles;
+
     @JsonProperty("displayArcRadius")
     private double displayArcRadius;
+
+    @JsonProperty("fringeScrollSpeedMult")
+    private double fringeScrollSpeedMult;
 
     @JsonProperty("turretSprite")
     private String turretSprite;

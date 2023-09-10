@@ -9,7 +9,9 @@ import oth.shipeditor.components.datafiles.entities.*;
 import oth.shipeditor.persistence.SettingsManager;
 import oth.shipeditor.representation.weapon.ProjectileSpecFile;
 
+import java.nio.file.Path;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -24,6 +26,12 @@ public class GameDataRepository {
      * All ship entries by their hull IDs.
      */
     private final Map<String, ShipCSVEntry> allShipEntries;
+
+    /**
+     * Holds the same instances as id-entry collection, used for quick repopulating of entry tree with filtering.
+     */
+    @Setter
+    private Map<Path, List<ShipCSVEntry>> shipEntriesByPackage;
 
     /**
      * Base hull and skin entries by their ship hull IDs. Used when layer needs to be loaded from variant ID.
@@ -43,6 +51,9 @@ public class GameDataRepository {
     private final Map<String, WingCSVEntry> allWingEntries;
 
     private final Map<String, WeaponCSVEntry> allWeaponEntries;
+
+    @Setter
+    private Map<Path, List<WeaponCSVEntry>> weaponEntriesByPackage;
 
     /**
      * Hull styles by their IDs (field names in JSON).
@@ -94,6 +105,12 @@ public class GameDataRepository {
         GameDataRepository dataRepository = SettingsManager.getGameData();
         var shipEntries = dataRepository.getAllShipEntries();
         return shipEntries.get(baseHullID);
+    }
+
+    public static WeaponCSVEntry retrieveWeaponCSVEntryByID(String weaponID) {
+        GameDataRepository dataRepository = SettingsManager.getGameData();
+        var weaponEntries = dataRepository.getAllWeaponEntries();
+        return weaponEntries.get(weaponID);
     }
 
     public static ShipSpecFile retrieveSpecByID(String hullID) {

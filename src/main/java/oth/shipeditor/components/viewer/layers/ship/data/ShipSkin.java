@@ -1,18 +1,14 @@
 package oth.shipeditor.components.viewer.layers.ship.data;
 
 import lombok.Getter;
-import oth.shipeditor.components.datafiles.entities.HullmodCSVEntry;
-import oth.shipeditor.components.datafiles.entities.ShipSystemCSVEntry;
-import oth.shipeditor.components.datafiles.entities.WeaponCSVEntry;
-import oth.shipeditor.components.datafiles.entities.WingCSVEntry;
+import oth.shipeditor.components.datafiles.entities.*;
 import oth.shipeditor.components.viewer.entities.engine.EngineDataOverride;
 import oth.shipeditor.components.viewer.entities.weapon.WeaponSlotOverride;
+import oth.shipeditor.components.viewer.layers.weapon.WeaponPainter;
+import oth.shipeditor.components.viewer.painters.features.InstalledFeature;
 import oth.shipeditor.persistence.SettingsManager;
 import oth.shipeditor.representation.*;
-import oth.shipeditor.representation.weapon.WeaponMount;
-import oth.shipeditor.representation.weapon.WeaponSize;
-import oth.shipeditor.representation.weapon.WeaponSlot;
-import oth.shipeditor.representation.weapon.WeaponType;
+import oth.shipeditor.representation.weapon.*;
 import oth.shipeditor.utility.graphics.Sprite;
 import oth.shipeditor.utility.text.StringValues;
 
@@ -112,9 +108,51 @@ public final class ShipSkin {
 
     private Map<String, WeaponCSVEntry> builtInWeapons;
 
+
+    /**
+     * For runtime usage in viewer.
+     */
+    private Map<String, InstalledFeature> initializedBuiltIns;
+
     private Map<String, WeaponSlotOverride> weaponSlotChanges;
 
     private Map<Integer, EngineDataOverride> engineSlotChanges;
+
+    /**
+     * Needs to be called after every change in CSV-type built-ins map.
+     * For example, if built-in entry is added or removed, initialized list needs to be invalidated for refresh.
+     */
+    public void invalidateBuiltIns() {
+        initializedBuiltIns = null;
+    }
+
+    public Map<String, InstalledFeature> getInitializedBuiltIns() {
+        if (initializedBuiltIns == null) {
+            initializedBuiltIns = new LinkedHashMap<>();
+
+            builtInWeapons.forEach((slotID, weaponEntry) -> {
+                WeaponSpecFile specFile = weaponEntry.getSpecFile();
+                WeaponPainter weaponPainter = weaponEntry.createPainterFromEntry(null, specFile);
+                initializedBuiltIns.put(slotID, new InstalledFeature(slotID, weaponEntry.getWeaponID(), weaponPainter));
+            });
+        }
+        return initializedBuiltIns;
+    }
+
+    public List<ShipTypeHints> getHintsModifiedBySkin() {
+        ShipCSVEntry dataEntry = GameDataRepository.retrieveShipCSVEntryByID(this.baseHullId);
+        var fromBaseHull = dataEntry.getBaseHullHints();
+        var toRemove = this.getRemoveHints();
+        if (toRemove != null && !toRemove.isEmpty()) {
+            fromBaseHull.removeAll(toRemove);
+        }
+
+        var toAdd = this.getAddHints();
+        if (toAdd != null && !toAdd.isEmpty()) {
+            fromBaseHull.addAll(toAdd);
+        }
+        return fromBaseHull;
+    }
 
     @Override
     public String toString() {
@@ -348,7 +386,7 @@ public final class ShipSkin {
             if (builtInWeapons == null) return this;
             GameDataRepository gameData = SettingsManager.getGameData();
             Map<String, WeaponCSVEntry> allWeapons = gameData.getAllWeaponEntries();
-            Map<String, WeaponCSVEntry> weapons = new HashMap<>(builtInWeapons.size());
+            Map<String, WeaponCSVEntry> weapons = new LinkedHashMap<>(builtInWeapons.size());
 
             builtInWeapons.forEach((slotID, weaponID) -> {
                 WeaponCSVEntry entry = allWeapons.get(weaponID);
@@ -361,7 +399,7 @@ public final class ShipSkin {
 
         public Builder withWeaponSlotChanges(Map<String, WeaponSlot> weaponSlotChanges) {
             if (weaponSlotChanges == null) return this;
-            Map<String, WeaponSlotOverride> overrides = new HashMap<>(weaponSlotChanges.size());
+            Map<String, WeaponSlotOverride> overrides = new LinkedHashMap<>(weaponSlotChanges.size());
 
             weaponSlotChanges.forEach((slotID, weaponSlot) -> {
 
@@ -384,7 +422,7 @@ public final class ShipSkin {
         public Builder withEngineSlotChanges(Map<String, EngineSlot> engineSlotChanges) {
             if (engineSlotChanges == null) return this;
 
-            Map<Integer, EngineDataOverride> overrides = new HashMap<>(engineSlotChanges.size());
+            Map<Integer, EngineDataOverride> overrides = new LinkedHashMap<>(engineSlotChanges.size());
 
             engineSlotChanges.forEach((slotIndex, engineSlot) -> {
                 EngineDataOverride.EngineDataOverrideBuilder overrideBlueprint = EngineDataOverride.builder();

@@ -1,10 +1,8 @@
 package oth.shipeditor.undo.edits.points.engines;
 
-import oth.shipeditor.communication.EventBus;
-import oth.shipeditor.communication.events.components.EnginesPanelRepaintQueued;
-import oth.shipeditor.communication.events.viewer.ViewerRepaintQueued;
 import oth.shipeditor.components.viewer.entities.engine.EnginePoint;
 import oth.shipeditor.undo.AbstractEdit;
+import oth.shipeditor.utility.StaticController;
 
 /**
  * @author Ontheheavens
@@ -29,16 +27,18 @@ public class EngineAngleSet extends AbstractEdit {
     public void undo() {
         undoSubEdits();
         enginePoint.setAngle(oldAngle);
-        EventBus.publish(new ViewerRepaintQueued());
-        EventBus.publish(new EnginesPanelRepaintQueued());
+        var repainter = StaticController.getRepainter();
+        repainter.queueViewerRepaint();
+        repainter.queueEnginesPanelRepaint();
     }
 
     @Override
     public void redo() {
         enginePoint.setAngle(updatedAngle);
         redoSubEdits();
-        EventBus.publish(new ViewerRepaintQueued());
-        EventBus.publish(new EnginesPanelRepaintQueued());
+        var repainter = StaticController.getRepainter();
+        repainter.queueViewerRepaint();
+        repainter.queueEnginesPanelRepaint();
     }
 
     @Override

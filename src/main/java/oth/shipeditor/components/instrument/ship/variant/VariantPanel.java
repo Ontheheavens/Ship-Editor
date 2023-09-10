@@ -16,7 +16,7 @@ import oth.shipeditor.utility.text.StringValues;
 
 import javax.swing.*;
 import java.awt.*;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Vector;
 
@@ -52,7 +52,7 @@ public class VariantPanel extends JPanel {
             return;
         }
 
-        Map<String, Variant> variantFiles = new HashMap<>();
+        Map<String, Variant> variantFiles = new LinkedHashMap<>();
         Variant empty = VariantFile.empty();
         variantFiles.put(StringValues.EMPTY, empty);
 

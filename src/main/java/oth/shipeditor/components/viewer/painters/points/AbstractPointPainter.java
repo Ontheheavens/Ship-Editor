@@ -6,6 +6,7 @@ import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
 import oth.shipeditor.communication.BusEventListener;
 import oth.shipeditor.communication.EventBus;
+import oth.shipeditor.communication.events.BusEvent;
 import oth.shipeditor.communication.events.viewer.ViewerRepaintQueued;
 import oth.shipeditor.communication.events.viewer.layers.PainterOpacityChangeQueued;
 import oth.shipeditor.communication.events.viewer.layers.PainterVisibilityChanged;
@@ -87,6 +88,11 @@ public abstract class AbstractPointPainter implements Painter {
         this.cleanupListeners();
     }
 
+    @SuppressWarnings("WeakerAccess")
+    protected BusEventListener createSelectionListener() {
+        return new SimplePointSelectionListener();
+    }
+
     @SuppressWarnings("OverlyComplexMethod")
     private void initPointListeners() {
         BusEventListener pointRemovalListener = event -> {
@@ -96,14 +102,11 @@ public abstract class AbstractPointPainter implements Painter {
         };
         listeners.add(pointRemovalListener);
         EventBus.subscribe(pointRemovalListener);
-        BusEventListener pointSelectionListener = event -> {
-            if (event instanceof PointSelectQueued checked && this.isPointEligible(checked.point())) {
-                if (!this.isInteractionEnabled()) return;
-                this.handlePointSelectionEvent((BaseWorldPoint) checked.point());
-            }
-        };
+
+        BusEventListener pointSelectionListener = createSelectionListener();
         listeners.add(pointSelectionListener);
         EventBus.subscribe(pointSelectionListener);
+
         BusEventListener pointDragListener = event -> {
             if (event instanceof PointDragQueued checked) {
                 if (!this.isInteractionEnabled()) return;
@@ -263,7 +266,8 @@ public abstract class AbstractPointPainter implements Painter {
 
     protected abstract Class<? extends BaseWorldPoint> getTypeReference();
 
-    private boolean isPointEligible(WorldPoint point) {
+    @SuppressWarnings("WeakerAccess")
+    protected boolean isPointEligible(WorldPoint point) {
         if (point != null) {
             Class<? extends BaseWorldPoint> typeReferenceClass = getTypeReference();
             return typeReferenceClass.isAssignableFrom(point.getClass());
@@ -359,6 +363,16 @@ public abstract class AbstractPointPainter implements Painter {
     protected void throwIllegalPoint() {
         Class<? extends AbstractPointPainter> identity = this.getClass();
         throw new IllegalArgumentException("Illegal point type in " + identity.getSimpleName());
+    }
+
+    private class SimplePointSelectionListener implements BusEventListener {
+        @Override
+        public void handleEvent(BusEvent event) {
+            if (event instanceof PointSelectQueued checked && AbstractPointPainter.this.isPointEligible(checked.point())) {
+                if (!AbstractPointPainter.this.isInteractionEnabled()) return;
+                AbstractPointPainter.this.handlePointSelectionEvent((BaseWorldPoint) checked.point());
+            }
+        }
     }
 
 }

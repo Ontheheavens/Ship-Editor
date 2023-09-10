@@ -60,6 +60,15 @@ public class BuiltInWingsPanel extends AbstractBuiltInsPanel<WingCSVEntry> {
         this.repaint();
     }
 
+    @Override
+    void installPlaceholderLabel(String text) {
+        super.installPlaceholderLabel(text);
+        if (bayPanel != null) {
+            this.remove(bayPanel);
+        }
+
+    }
+
     private void announceBayCapacity(ShipLayer layer) {
         if (bayPanel != null) {
             this.remove(bayPanel);

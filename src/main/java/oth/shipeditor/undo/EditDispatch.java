@@ -4,10 +4,6 @@ import oth.shipeditor.communication.BusEventListener;
 import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.BusEvent;
 import oth.shipeditor.communication.events.Events;
-import oth.shipeditor.communication.events.components.BaysPanelRepaintQueued;
-import oth.shipeditor.communication.events.components.EnginesPanelRepaintQueued;
-import oth.shipeditor.communication.events.components.SlotControlRepaintQueued;
-import oth.shipeditor.communication.events.viewer.ViewerRepaintQueued;
 import oth.shipeditor.communication.events.viewer.control.ViewerMouseReleased;
 import oth.shipeditor.components.datafiles.entities.HullmodCSVEntry;
 import oth.shipeditor.components.datafiles.entities.WingCSVEntry;
@@ -27,6 +23,7 @@ import oth.shipeditor.undo.edits.points.*;
 import oth.shipeditor.undo.edits.points.engines.*;
 import oth.shipeditor.undo.edits.points.slots.*;
 import oth.shipeditor.utility.Size2D;
+import oth.shipeditor.utility.StaticController;
 
 import java.awt.geom.Point2D;
 import java.util.List;
@@ -84,7 +81,8 @@ public final class EditDispatch {
         Edit rearrangeEdit = new WeaponSlotsSortEdit(pointPainter, old, changed);
         UndoOverseer.post(rearrangeEdit);
         pointPainter.setSlotPoints(changed);
-        EventBus.publish(new SlotControlRepaintQueued());
+        var repainter = StaticController.getRepainter();
+        repainter.queueSlotControlRepaint();
     }
 
     public static void postEnginesRearranged(EngineSlotPainter pointPainter,
@@ -93,7 +91,8 @@ public final class EditDispatch {
         Edit rearrangeEdit = new EnginesSortEdit(pointPainter, old, changed);
         UndoOverseer.post(rearrangeEdit);
         pointPainter.setEnginePoints(changed);
-        EventBus.publish(new EnginesPanelRepaintQueued());
+        var repainter = StaticController.getRepainter();
+        repainter.queueEnginesPanelRepaint();
     }
 
     public static void postPointAdded(AbstractPointPainter pointPainter, BaseWorldPoint point) {
@@ -116,9 +115,6 @@ public final class EditDispatch {
         Point2D oldOffset = layerPainter.getAnchor();
         Edit offsetChangeEdit = new AnchorOffsetEdit(layerPainter, oldOffset, updated);
         EditDispatch.handleContinuousEdit(offsetChangeEdit);
-//        Point2D difference = new Point2D.Double(oldOffset.getX() - updated.getX(),
-//                oldOffset.getY() - updated.getY());
-//        EventBus.publish(new AnchorOffsetQueued(layerPainter, difference));
         layerPainter.setAnchor(updated);
         Events.repaintView();
     }
@@ -127,17 +123,19 @@ public final class EditDispatch {
         Edit angleEdit = new SlotAngleSet(slotPoint, old, updated);
         EditDispatch.handleContinuousEdit(angleEdit);
         slotPoint.setAngle(updated);
-        EventBus.publish(new ViewerRepaintQueued());
-        EventBus.publish(new SlotControlRepaintQueued());
-        EventBus.publish(new BaysPanelRepaintQueued());
+        var repainter = StaticController.getRepainter();
+        repainter.queueViewerRepaint();
+        repainter.queueSlotControlRepaint();
+        repainter.queueBaysPanelRepaint();
     }
 
     public static void postEngineAngleSet(EnginePoint enginePoint, double old, double updated ) {
         Edit angleEdit = new EngineAngleSet(enginePoint, old, updated);
         EditDispatch.handleContinuousEdit(angleEdit);
         enginePoint.setAngle(updated);
-        EventBus.publish(new ViewerRepaintQueued());
-        EventBus.publish(new EnginesPanelRepaintQueued());
+        var repainter = StaticController.getRepainter();
+        repainter.queueViewerRepaint();
+        repainter.queueEnginesPanelRepaint();
     }
 
     public static void postEngineSizeChanged(EnginePoint enginePoint, Size2D updated) {
@@ -145,8 +143,9 @@ public final class EditDispatch {
         Edit sizeEdit = new EngineSizeSet(enginePoint, oldSize, updated);
         EditDispatch.handleContinuousEdit(sizeEdit);
         enginePoint.setSize(updated);
-        EventBus.publish(new ViewerRepaintQueued());
-        EventBus.publish(new EnginesPanelRepaintQueued());
+        var repainter = StaticController.getRepainter();
+        repainter.queueViewerRepaint();
+        repainter.queueEnginesPanelRepaint();
     }
 
     public static void postEngineContrailChanged(EnginePoint enginePoint, int updated) {
@@ -154,8 +153,9 @@ public final class EditDispatch {
         Edit contrailEdit = new EngineContrailSet(enginePoint, oldContrail, updated);
         EditDispatch.handleContinuousEdit(contrailEdit);
         enginePoint.setContrailSize(updated);
-        EventBus.publish(new ViewerRepaintQueued());
-        EventBus.publish(new EnginesPanelRepaintQueued());
+        var repainter = StaticController.getRepainter();
+        repainter.queueViewerRepaint();
+        repainter.queueEnginesPanelRepaint();
     }
 
     public static void postEngineStyleChanged(EnginePoint enginePoint, EngineStyle updated) {
@@ -163,17 +163,19 @@ public final class EditDispatch {
         Edit styleEdit = new EngineStyleSet(enginePoint, oldStyle, updated);
         UndoOverseer.post(styleEdit);
         enginePoint.setStyle(updated);
-        EventBus.publish(new ViewerRepaintQueued());
-        EventBus.publish(new EnginesPanelRepaintQueued());
+        var repainter = StaticController.getRepainter();
+        repainter.queueViewerRepaint();
+        repainter.queueEnginesPanelRepaint();
     }
 
     public static void postSlotArcSet(SlotData slotPoint, double old, double updated ) {
         Edit arcEdit = new SlotArcSet(slotPoint, old, updated);
         EditDispatch.handleContinuousEdit(arcEdit);
         slotPoint.setArc(updated);
-        EventBus.publish(new ViewerRepaintQueued());
-        EventBus.publish(new SlotControlRepaintQueued());
-        EventBus.publish(new BaysPanelRepaintQueued());
+        var repainter = StaticController.getRepainter();
+        repainter.queueViewerRepaint();
+        repainter.queueSlotControlRepaint();
+        repainter.queueBaysPanelRepaint();
     }
 
     public static void postLayerRotated(LayerPainter painter, double old, double updated) {
@@ -221,7 +223,8 @@ public final class EditDispatch {
         Edit typeChangeEdit = new SlotTypeChangeEdit(point, oldType, newType);
         UndoOverseer.post(typeChangeEdit);
         point.setWeaponType(newType);
-        EventBus.publish(new ViewerRepaintQueued());
+        var repainter = StaticController.getRepainter();
+        repainter.queueViewerRepaint();
     }
 
     public static void postSlotMountChanged(SlotData point, WeaponMount newMount) {
@@ -229,7 +232,8 @@ public final class EditDispatch {
         Edit mountChangeEdit = new SlotMountChangeEdit(point, oldMount, newMount);
         UndoOverseer.post(mountChangeEdit);
         point.setWeaponMount(newMount);
-        EventBus.publish(new ViewerRepaintQueued());
+        var repainter = StaticController.getRepainter();
+        repainter.queueViewerRepaint();
     }
 
     public static void postSlotSizeChanged(SlotData point, WeaponSize newSize) {
@@ -237,7 +241,8 @@ public final class EditDispatch {
         Edit sizeChangeEdit = new SlotSizeChangeEdit(point, oldSize, newSize);
         UndoOverseer.post(sizeChangeEdit);
         point.setWeaponSize(newSize);
-        EventBus.publish(new ViewerRepaintQueued());
+        var repainter = StaticController.getRepainter();
+        repainter.queueViewerRepaint();
     }
 
     public static void postHullmodAdded(List<HullmodCSVEntry> index, ShipLayer shipLayer, HullmodCSVEntry hullmod) {

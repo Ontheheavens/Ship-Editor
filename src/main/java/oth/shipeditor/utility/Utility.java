@@ -1,6 +1,7 @@
 package oth.shipeditor.utility;
 
 import lombok.extern.log4j.Log4j2;
+import oth.shipeditor.components.CoordsDisplayMode;
 import oth.shipeditor.components.viewer.entities.BaseWorldPoint;
 import oth.shipeditor.components.viewer.layers.LayerPainter;
 import oth.shipeditor.components.viewer.layers.ViewerLayer;
@@ -21,6 +22,7 @@ import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.Locale;
 import java.util.function.Consumer;
+import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
 /**
@@ -29,6 +31,9 @@ import java.util.stream.Stream;
  */
 @Log4j2
 public final class Utility {
+
+    @SuppressWarnings("RegExpSimplifiable")
+    public static final Pattern SPLIT_BY_COMMA = Pattern.compile(",[ ]*");
 
     /**
      * Private constructor prevents instantiation of utility class.
@@ -114,18 +119,25 @@ public final class Utility {
     }
 
     public static Point2D getPointCoordinatesForDisplay(Point2D pointPosition) {
-        Point2D result = pointPosition;
+        CoordsDisplayMode coordsMode = StaticController.getCoordsMode();
         ViewerLayer activeLayer = StaticController.getActiveLayer();
         if (activeLayer == null) {
-            return result;
+            return pointPosition;
         }
         LayerPainter layerPainter = activeLayer.getPainter();
         if (layerPainter == null || layerPainter.isUninitialized()) {
-            return result;
+            return pointPosition;
         }
+        return Utility.getPointCoordinatesForDisplay(pointPosition, layerPainter, coordsMode);
+    }
+
+    public static Point2D getPointCoordinatesForDisplay(Point2D pointPosition, LayerPainter layerPainter,
+                                                        CoordsDisplayMode mode) {
+        Point2D result = pointPosition;
+
         double positionX = pointPosition.getX();
         double positionY = pointPosition.getY();
-        switch (StaticController.getCoordsMode()) {
+        switch (mode) {
             case WORLD -> {
                 AffineTransform transform = layerPainter.getRotationTransform();
                 result = transform.transform(result, null);

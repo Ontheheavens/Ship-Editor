@@ -2,17 +2,20 @@ package oth.shipeditor.components.viewer.layers.weapon;
 
 import lombok.Getter;
 import lombok.Setter;
+import oth.shipeditor.components.viewer.entities.weapon.OffsetPoint;
 import oth.shipeditor.components.viewer.layers.LayerPainter;
 import oth.shipeditor.components.viewer.layers.ViewerLayer;
 import oth.shipeditor.components.viewer.painters.features.ProjectilePainter;
 import oth.shipeditor.components.viewer.painters.points.WeaponOffsetPainter;
 import oth.shipeditor.representation.weapon.WeaponMount;
+import oth.shipeditor.representation.weapon.WeaponRenderHints;
 import oth.shipeditor.utility.graphics.Sprite;
 
 import java.awt.*;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Point2D;
 import java.awt.image.BufferedImage;
+import java.util.List;
 
 /**
  * Sprite field of superclass (which is an image layer painter is initialized with)
@@ -36,14 +39,17 @@ public class WeaponPainter extends LayerPainter {
     private final WeaponOffsetPainter hardpointOffsetPainter;
 
     @Getter @Setter
-    private boolean renderBarrelsBelow;
+    private List<WeaponRenderHints> renderHints;
 
     @Getter @Setter
-    private boolean renderLoadedMissiles;
+    private WeaponRenderOrdering renderOrderType;
 
     @SuppressWarnings("unused")
     private boolean drawGlow;
 
+    /**
+     * Stamp-pattern: single instance is mutated and painted for each offset point.
+     */
     @Getter @Setter
     private ProjectilePainter projectilePainter;
 
@@ -70,22 +76,6 @@ public class WeaponPainter extends LayerPainter {
     }
 
     @Override
-    public void setAnchor(Point2D inputAnchor) {
-        Point2D oldAnchor = this.getAnchor();
-        super.setAnchor(inputAnchor);
-
-//        var offsetPainter = getOffsetPainter();
-//        var offsetPoints = offsetPainter.getOffsetPoints();
-//        offsetPoints.forEach(offsetPoint -> {
-//            Point2D difference = new Point2D.Double(oldAnchor.getX() - inputAnchor.getX(),
-//                    oldAnchor.getY() - inputAnchor.getY());
-//            Point2D oldPosition = offsetPoint.getPosition();
-//            offsetPoint.setPosition(oldPosition.getX() - difference.getX(),
-//                    oldPosition.getY() - difference.getY());
-//        });
-    }
-
-    @Override
     public Point2D getEntityCenter() {
         return this.getRotationAnchor();
     }
@@ -96,43 +86,57 @@ public class WeaponPainter extends LayerPainter {
         return mainSprite.image();
     }
 
-    protected void paintContent(Graphics2D g, AffineTransform worldToScreen, double w, double h) {
-        this.drawSpritePart(g, weaponSprites.getUnderSprite(mount));
+    @SuppressWarnings("SameParameterValue")
+    private boolean hasHint(WeaponRenderHints hint) {
+        if (renderHints == null || renderHints.isEmpty()) return false;
+        return renderHints.contains(hint);
+    }
 
-        if (renderBarrelsBelow) {
-            this.drawSpritePart(g, weaponSprites.getGunSprite(mount));
-            this.drawSpritePart(g, weaponSprites.getMainSprite(mount));
-        } else {
-            this.drawSpritePart(g, weaponSprites.getMainSprite(mount));
-            this.drawSpritePart(g, weaponSprites.getGunSprite(mount));
+    protected void paintContent(Graphics2D g, AffineTransform worldToScreen, double w, double h) {
+        if (mount != WeaponMount.HIDDEN) {
+            this.drawSpritePart(g, weaponSprites.getUnderSprite(mount));
+
+            if (hasHint(WeaponRenderHints.RENDER_BARREL_BELOW)) {
+                this.drawSpritePart(g, weaponSprites.getGunSprite(mount));
+                this.drawSpritePart(g, weaponSprites.getMainSprite(mount));
+            } else {
+                this.drawSpritePart(g, weaponSprites.getMainSprite(mount));
+                this.drawSpritePart(g, weaponSprites.getGunSprite(mount));
+            }
         }
 
         this.paintLoadedMissiles(g, worldToScreen, w, h);
 
-        if (drawGlow) {
+        if (mount != WeaponMount.HIDDEN && drawGlow) {
             this.drawSpritePart(g, weaponSprites.getGlowSprite(mount));
         }
     }
 
     private void paintLoadedMissiles(Graphics2D g, AffineTransform worldToScreen, double w, double h) {
-        if (!renderLoadedMissiles || projectilePainter == null) return;
+        boolean renderLoadedMissiles = hasHint(WeaponRenderHints.RENDER_LOADED_MISSILES);
+        boolean renderMissilesNotHidden = mount != WeaponMount.HIDDEN
+                && hasHint(WeaponRenderHints.RENDER_LOADED_MISSILES_UNLESS_HIDDEN);
+        boolean render = renderLoadedMissiles || renderMissilesNotHidden;
+
+        if (!render || projectilePainter == null) return;
         var offsetPainter = this.getOffsetPainter();
         var offsets = offsetPainter.getOffsetPoints();
-        offsets.forEach(offsetPoint -> {
+        for (OffsetPoint offsetPoint : offsets) {
             projectilePainter.setPaintAnchor(offsetPoint.getPosition());
             projectilePainter.setRotationRadians(Math.toRadians(-offsetPoint.getAngle()));
             projectilePainter.setSpriteOpacity(this.getSpriteOpacity());
             projectilePainter.paint(g, worldToScreen, w, h);
-        });
+        }
     }
 
     private void drawSpritePart(Graphics2D g, Sprite part) {
         if (part == null) return;
         Point2D anchor = this.getAnchor();
         BufferedImage spriteImage = part.image();
-        int width = spriteImage.getWidth();
-        int height = spriteImage.getHeight();
-        g.drawImage(spriteImage, (int) anchor.getX(), (int) anchor.getY(), width, height, null);
+
+        AffineTransform transform = new AffineTransform();
+        transform.translate(anchor.getX(),  anchor.getY());
+        g.drawImage(spriteImage, transform, null);
     }
 
     public Point2D getWeaponCenter() {

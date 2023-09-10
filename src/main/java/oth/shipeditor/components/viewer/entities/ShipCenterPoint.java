@@ -3,10 +3,10 @@ package oth.shipeditor.components.viewer.entities;
 import lombok.Getter;
 import lombok.Setter;
 import oth.shipeditor.components.instrument.ship.EditorInstrument;
-import oth.shipeditor.components.instrument.ship.ShipInstrumentsPane;
 import oth.shipeditor.components.viewer.layers.LayerPainter;
 import oth.shipeditor.components.viewer.layers.ship.ShipPainter;
 import oth.shipeditor.components.viewer.painters.points.CenterPointPainter;
+import oth.shipeditor.utility.StaticController;
 import oth.shipeditor.utility.Utility;
 import oth.shipeditor.utility.graphics.ColorUtilities;
 import oth.shipeditor.utility.graphics.DrawUtilities;
@@ -39,10 +39,10 @@ public class ShipCenterPoint extends BaseWorldPoint {
 
     @Override
     protected boolean isInteractable() {
-        LayerPainter shipPainter = super.getParentLayer();
+        LayerPainter shipPainter = super.getParent();
         if (shipPainter instanceof ShipPainter checkedLayer) {
             CenterPointPainter painter = checkedLayer.getCenterPointPainter();
-            return ShipInstrumentsPane.getCurrentMode() == getAssociatedMode() && painter.isInteractionEnabled();
+            return StaticController.getEditorMode() == getAssociatedMode() && painter.isInteractionEnabled();
         } else {
             throw new IllegalStateException("Illegal parent layer of ship center point!");
         }

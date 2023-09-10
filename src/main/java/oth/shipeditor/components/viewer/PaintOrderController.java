@@ -15,7 +15,6 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.geom.AffineTransform;
 import java.util.List;
-import java.util.Optional;
 
 /**
  * Responsible for easy manipulation of paint order of all the painters in viewer.
@@ -71,7 +70,7 @@ public class PaintOrderController implements Painter {
 
     @Override
     public void paint(Graphics2D g, AffineTransform worldToScreen, double w, double h) {
-        this.paintIfPresent(g, worldToScreen, w, h, guidesPainters.getAxesPaint());
+        PaintOrderController.paintIfPresent(g, worldToScreen, w, h, guidesPainters.getAxesPaint());
 
         LayerManager layerManager = parent.getLayerManager();
         List<ViewerLayer> layers = layerManager.getLayers();
@@ -81,14 +80,15 @@ public class PaintOrderController implements Painter {
 
         this.paintLayerDependentGuides(g, worldToScreen, w, h);
 
-        this.paintIfPresent(g, worldToScreen, w, h, miscPointsPainter);
+        PaintOrderController.paintIfPresent(g, worldToScreen, w, h, miscPointsPainter);
 
-        this.paintIfPresent(g, worldToScreen, w, h, hotkeyPainter);
+        PaintOrderController.paintIfPresent(g, worldToScreen, w, h, hotkeyPainter);
     }
 
-    @SuppressWarnings("MethodMayBeStatic")
-    private void paintIfPresent(Graphics2D g, AffineTransform worldToScreen, double w, double h, Painter painter) {
-        Optional.ofNullable(painter).ifPresent(p -> p.paint(g, worldToScreen, w, h));
+    private static void paintIfPresent(Graphics2D g, AffineTransform worldToScreen, double w, double h, Painter painter) {
+        if (painter != null) {
+            painter.paint(g, worldToScreen, w, h);
+        }
     }
 
     private static void paintLayer(Graphics2D g, AffineTransform worldToScreen,
@@ -101,7 +101,9 @@ public class PaintOrderController implements Painter {
         layerPainter.paint(g, transform, w, h);
 
         List<AbstractPointPainter> allPainters = layerPainter.getAllPainters();
-        allPainters.forEach(pointPainter -> pointPainter.paint(g, transform, w, h));
+        for (AbstractPointPainter pointPainter : allPainters) {
+            pointPainter.paint(g, transform, w, h);
+        }
     }
 
     private void paintLayerDependentGuides(Graphics2D g, AffineTransform worldToScreen, double w, double h) {
@@ -111,10 +113,10 @@ public class PaintOrderController implements Painter {
             transform = selected.getWithRotation(worldToScreen);
         }
 
-        this.paintIfPresent(g, transform, w, h, guidesPainters.getBordersPaint());
-        this.paintIfPresent(g, transform, w, h, guidesPainters.getCenterPaint());
+        PaintOrderController.paintIfPresent(g, transform, w, h, guidesPainters.getBordersPaint());
+        PaintOrderController.paintIfPresent(g, transform, w, h, guidesPainters.getCenterPaint());
         if (parent.isCursorInViewer()) {
-            this.paintIfPresent(g, transform, w, h, guidesPainters.getGuidesPaint());
+            PaintOrderController.paintIfPresent(g, transform, w, h, guidesPainters.getGuidesPaint());
         }
     }
 

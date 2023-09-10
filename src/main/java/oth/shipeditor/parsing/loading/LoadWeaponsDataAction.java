@@ -2,7 +2,7 @@ package oth.shipeditor.parsing.loading;
 
 import lombok.extern.log4j.Log4j2;
 import oth.shipeditor.communication.EventBus;
-import oth.shipeditor.communication.events.files.WeaponDataLoaded;
+import oth.shipeditor.communication.events.files.WeaponTreeReloadQueued;
 import oth.shipeditor.components.datafiles.entities.WeaponCSVEntry;
 import oth.shipeditor.menubar.FileUtilities;
 import oth.shipeditor.persistence.SettingsManager;
@@ -16,10 +16,7 @@ import java.awt.event.ActionEvent;
 import java.io.File;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * @author Ontheheavens
@@ -36,16 +33,19 @@ public class LoadWeaponsDataAction extends AbstractAction {
 
         GameDataRepository gameData = SettingsManager.getGameData();
         Map<String, WeaponCSVEntry> allWeapons = gameData.getAllWeaponEntries();
+        Map<Path, List<WeaponCSVEntry>> entryListsByPackage = new HashMap<>();
 
-        Map<Path, Map<String, WeaponCSVEntry>> weaponsByPackage = new HashMap<>();
         for (Path folder : modsWithWeaponFolder) {
             Map<String, WeaponCSVEntry> weaponsFromPackage = LoadWeaponsDataAction.walkWeaponsFolder(folder);
             allWeapons.putAll(weaponsFromPackage);
-            weaponsByPackage.put(folder, weaponsFromPackage);
+            List<WeaponCSVEntry> entries = new ArrayList<>(weaponsFromPackage.values());
+            entryListsByPackage.put(folder, entries);
         }
-
-        EventBus.publish(new WeaponDataLoaded(weaponsByPackage));
         gameData.setWeaponsDataLoaded(true);
+        gameData.setWeaponEntriesByPackage(entryListsByPackage);
+
+        EventBus.publish(new WeaponTreeReloadQueued());
+
 
         Map<String, ProjectileSpecFile> projectiles = LoadWeaponsDataAction.collectProjectiles();
         gameData.setAllProjectiles(projectiles);

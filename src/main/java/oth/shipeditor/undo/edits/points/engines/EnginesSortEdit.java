@@ -1,11 +1,9 @@
 package oth.shipeditor.undo.edits.points.engines;
 
-import oth.shipeditor.communication.EventBus;
-import oth.shipeditor.communication.events.components.EnginesPanelRepaintQueued;
-import oth.shipeditor.communication.events.viewer.ViewerRepaintQueued;
 import oth.shipeditor.components.viewer.entities.engine.EnginePoint;
 import oth.shipeditor.components.viewer.painters.points.EngineSlotPainter;
 import oth.shipeditor.undo.AbstractEdit;
+import oth.shipeditor.utility.StaticController;
 
 import java.util.List;
 
@@ -30,15 +28,17 @@ public class EnginesSortEdit extends AbstractEdit {
     @Override
     public void undo() {
         pointPainter.setEnginePoints(oldList);
-        EventBus.publish(new ViewerRepaintQueued());
-        EventBus.publish(new EnginesPanelRepaintQueued());
+        var repainter = StaticController.getRepainter();
+        repainter.queueViewerRepaint();
+        repainter.queueEnginesPanelRepaint();
     }
 
     @Override
     public void redo() {
         pointPainter.setEnginePoints(newList);
-        EventBus.publish(new ViewerRepaintQueued());
-        EventBus.publish(new EnginesPanelRepaintQueued());
+        var repainter = StaticController.getRepainter();
+        repainter.queueViewerRepaint();
+        repainter.queueEnginesPanelRepaint();
     }
 
     @Override

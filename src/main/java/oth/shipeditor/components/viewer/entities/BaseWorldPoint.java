@@ -6,12 +6,11 @@ import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
 import oth.shipeditor.communication.BusEventListener;
 import oth.shipeditor.communication.EventBus;
-import oth.shipeditor.communication.events.viewer.points.AnchorOffsetConfirmed;
 import oth.shipeditor.communication.events.viewer.points.AnchorOffsetQueued;
 import oth.shipeditor.components.instrument.ship.EditorInstrument;
-import oth.shipeditor.components.instrument.ship.ShipInstrumentsPane;
 import oth.shipeditor.components.viewer.layers.LayerPainter;
 import oth.shipeditor.components.viewer.painters.TextPainter;
+import oth.shipeditor.undo.UndoOverseer;
 import oth.shipeditor.utility.StaticController;
 import oth.shipeditor.utility.Utility;
 import oth.shipeditor.utility.graphics.ColorUtilities;
@@ -30,7 +29,7 @@ import java.awt.geom.Point2D;
 public class BaseWorldPoint implements WorldPoint, Painter {
 
     @Getter @Setter
-    private LayerPainter parentLayer;
+    private LayerPainter parent;
 
     @Getter
     private final Point2D position;
@@ -65,12 +64,12 @@ public class BaseWorldPoint implements WorldPoint, Painter {
 
     }
 
-    public BaseWorldPoint(Point2D pointPosition, LayerPainter layer) {
+    public BaseWorldPoint(Point2D pointPosition, LayerPainter parentPainter) {
         this.position = new Point2D.Double(pointPosition.getX(), pointPosition.getY());
-        this.parentLayer = layer;
+        this.parent = parentPainter;
         this.delegateWorldToScreen = new AffineTransform();
         this.coordsLabel = new TextPainter();
-        if (layer != null) {
+        if (parentPainter != null) {
             this.initLayerListening();
         }
     }
@@ -99,12 +98,12 @@ public class BaseWorldPoint implements WorldPoint, Painter {
     
     private void initLayerListening() {
         anchorDragListener = event -> {
-            if (event instanceof AnchorOffsetQueued checked && checked.layer() == this.parentLayer) {
+            if (event instanceof AnchorOffsetQueued checked && checked.layer() == this.parent) {
                 Point2D offset = checked.difference();
                 Point2D oldPosition = this.getPosition();
                 this.setPosition(oldPosition.getX() - offset.getX(),
                         oldPosition.getY() - offset.getY());
-                EventBus.publish(new AnchorOffsetConfirmed(this, offset));
+                UndoOverseer.adjustPointEditsOffset(this, offset);
             }
         };
         EventBus.subscribe(anchorDragListener);
@@ -129,11 +128,11 @@ public class BaseWorldPoint implements WorldPoint, Painter {
 
 
     boolean isInteractable() {
-        LayerPainter layer = getParentLayer();
+        LayerPainter layer = getParent();
         if (layer == null) {
             return true;
         }
-        return ShipInstrumentsPane.getCurrentMode() == getAssociatedMode() && layer.isLayerActive();
+        return StaticController.getEditorMode() == getAssociatedMode() && layer.isLayerActive();
     }
 
     @SuppressWarnings("WeakerAccess")
@@ -176,7 +175,7 @@ public class BaseWorldPoint implements WorldPoint, Painter {
 
         this.cursorInBounds = StaticController.checkIsHovered(shape);
 
-        DrawUtilities.outlineShape(g, shape, Color.BLACK, 1.5d);
+        DrawUtilities.outlineShape(g, shape, Color.BLACK, 1.5f);
         DrawUtilities.fillShape(g, shape, getCurrentColor());
     }
 

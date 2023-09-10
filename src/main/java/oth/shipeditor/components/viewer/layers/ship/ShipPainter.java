@@ -11,17 +11,17 @@ import oth.shipeditor.communication.events.viewer.ViewerRepaintQueued;
 import oth.shipeditor.communication.events.viewer.layers.ActiveLayerUpdated;
 import oth.shipeditor.communication.events.viewer.layers.ships.LayerShipDataInitialized;
 import oth.shipeditor.communication.events.viewer.layers.ships.ShipDataCreated;
+import oth.shipeditor.components.datafiles.entities.ShipCSVEntry;
 import oth.shipeditor.components.viewer.entities.ShipCenterPoint;
 import oth.shipeditor.components.viewer.entities.bays.LaunchBay;
 import oth.shipeditor.components.viewer.entities.weapon.WeaponSlotPoint;
 import oth.shipeditor.components.viewer.layers.LayerPainter;
 import oth.shipeditor.components.viewer.layers.ViewerLayer;
 import oth.shipeditor.components.viewer.layers.ship.data.*;
+import oth.shipeditor.components.viewer.painters.features.InstalledFeature;
 import oth.shipeditor.components.viewer.painters.features.InstalledSlotFeaturePainter;
 import oth.shipeditor.components.viewer.painters.points.*;
-import oth.shipeditor.representation.HullSpecFile;
-import oth.shipeditor.representation.ShipData;
-import oth.shipeditor.representation.VariantFile;
+import oth.shipeditor.representation.*;
 import oth.shipeditor.utility.graphics.Sprite;
 import oth.shipeditor.utility.text.StringValues;
 
@@ -31,7 +31,7 @@ import java.awt.geom.AffineTransform;
 import java.awt.geom.Point2D;
 import java.awt.image.BufferedImage;
 import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -40,14 +40,11 @@ import java.util.stream.Collectors;
  * @author Ontheheavens
  * @since 29.05.2023
  */
-@SuppressWarnings({"OverlyCoupledClass", "ClassWithTooManyFields"})
+@SuppressWarnings({"OverlyCoupledClass", "ClassWithTooManyFields", "ClassWithTooManyMethods"})
 @Log4j2
 public class ShipPainter extends LayerPainter {
 
     private static final char SPACE = ' ';
-
-    @Getter @Setter
-    private Point2D moduleAnchorOffset;
 
     @Getter
     private BoundPointsPainter boundsPainter;
@@ -66,6 +63,9 @@ public class ShipPainter extends LayerPainter {
     @Getter
     private EngineSlotPainter enginePainter;
 
+    @Getter
+    private Map<String, InstalledFeature> builtInWeapons;
+
     /**
      * Backup for when sprite is switched to skin version.
      */
@@ -78,10 +78,14 @@ public class ShipPainter extends LayerPainter {
     @Getter @Setter
     private ShipVariant activeVariant;
 
+    @Getter @Setter
+    private String baseHullId;
+
     public ShipPainter(ShipLayer layer) {
         super(layer);
         this.initPainterListeners(layer);
         this.activateEmptySkin();
+        this.selectVariant(VariantFile.empty());
     }
 
     public void selectVariant(Variant variant) {
@@ -90,6 +94,7 @@ public class ShipPainter extends LayerPainter {
         } else {
             activeVariant = (ShipVariant) variant;
         }
+        this.notifyLayerUpdate();
     }
 
     private void installVariant(VariantFile file) {
@@ -111,10 +116,12 @@ public class ShipPainter extends LayerPainter {
     @Override
     public void cleanupForRemoval() {
         super.cleanupForRemoval();
-        ShipVariant variant = getActiveVariant();
-        if (variant != null && !variant.isEmpty()) {
-            variant.cleanupForRemoval();
-        }
+
+        var allInstallables = this.getAllLoadedInstallables();
+        allInstallables.forEach((s, installedFeature) -> {
+            var featurePainter = installedFeature.getFeaturePainter();
+            featurePainter.cleanupForRemoval();
+        });
     }
 
     private void activateEmptySkin() {
@@ -143,7 +150,11 @@ public class ShipPainter extends LayerPainter {
                 throw new IllegalArgumentException("Attempted to activate invalid skin!");
             }
             Sprite loadedSkinSprite = skin.getLoadedSkinSprite();
-            this.setSprite(loadedSkinSprite.image());
+            if (loadedSkinSprite != null) {
+                this.setSprite(loadedSkinSprite.image());
+            } else {
+                this.setSprite(baseHullSprite.image());
+            }
 
             if (skin.getWeaponSlotChanges() != null) {
                 this.weaponSlotPainter.toggleSkinSlotOverride(skin);
@@ -158,14 +169,18 @@ public class ShipPainter extends LayerPainter {
             }
 
             if (parentLayer != null) {
-                parentLayer.setSpriteFileName(loadedSkinSprite.name());
+                if (loadedSkinSprite != null) {
+                    parentLayer.setSpriteFileName(loadedSkinSprite.name());
+                } else {
+                    parentLayer.setSpriteFileName(baseHullSprite.name());
+                }
                 String skinFileName = skin.getSkinFilePath().getFileName().toString();
                 parentLayer.setActiveSkinFileName(skinFileName);
             }
 
             this.activeSkin = skin;
         }
-        this.notifyLayerUpdate();
+        this.selectVariant(VariantFile.empty());
     }
 
     private void notifyLayerUpdate() {
@@ -192,6 +207,8 @@ public class ShipPainter extends LayerPainter {
         this.weaponSlotPainter = new WeaponSlotPainter(this);
         this.bayPainter = new LaunchBayPainter(this);
         this.enginePainter = new EngineSlotPainter(this);
+
+        this.builtInWeapons = new LinkedHashMap<>();
 
         List<AbstractPointPainter> allPainters = getAllPainters();
         allPainters.add(centerPointPainter);
@@ -246,6 +263,11 @@ public class ShipPainter extends LayerPainter {
 
     @Override
     protected Point2D getRotationAnchor() {
+        CenterPointPainter pointPainter = this.getCenterPointPainter();
+        if (pointPainter == null) {
+            return this.getSpriteCenter();
+        }
+        Point2D moduleAnchorOffset = pointPainter.getModuleAnchorOffset();
         if (moduleAnchorOffset == null) {
             return getEntityCenter();
         } else {
@@ -335,17 +357,70 @@ public class ShipPainter extends LayerPainter {
         }
     }
 
+    public List<ShipTypeHints> getHintsModified() {
+        ShipCSVEntry dataEntry = GameDataRepository.retrieveShipCSVEntryByID(this.getBaseHullId());
+
+        var skin  = this.getActiveSkin();
+        if (skin != null && !skin.isBase()) {
+            return skin.getHintsModifiedBySkin();
+        }
+        return dataEntry.getBaseHullHints();
+    }
+
+    public Map<String, InstalledFeature> getBuiltInWeaponsWithSkin() {
+        Map<String, InstalledFeature> builtIns = this.getBuiltInWeapons();
+
+        Map<String, InstalledFeature> result = new LinkedHashMap<>(builtIns);
+        if (activeSkin != null && !activeSkin.isBase()) {
+            var removedBuiltIns = activeSkin.getRemoveBuiltInWeapons();
+            removedBuiltIns.forEach(result::remove);
+
+            var addedBuiltIns = activeSkin.getInitializedBuiltIns();
+            if (!addedBuiltIns.isEmpty()) {
+                result.putAll(addedBuiltIns);
+            }
+        }
+
+        return result;
+    }
+
+    private Map<String, InstalledFeature> getAllLoadedInstallables() {
+        var builtIns = this.getBuiltInWeaponsWithSkin();
+        Map<String, InstalledFeature> allFeatures = new LinkedHashMap<>(builtIns);
+
+        ShipVariant shipVariant = this.getActiveVariant();
+        Collection<ShipVariant> allLoaded = new HashSet<>();
+        allLoaded.add(shipVariant);
+
+        var parentLayer = this.getParentLayer();
+        if (parentLayer != null) {
+            var loadedToLayer = parentLayer.getLoadedVariants();
+            allLoaded.addAll(loadedToLayer.values());
+        }
+
+        allLoaded.forEach(variant -> {
+            if (variant != null && !variant.isEmpty()) {
+                var modules = variant.getFittedModules();
+                if (modules != null) {
+                    allFeatures.putAll(modules);
+                }
+                var allWeapons = variant.getAllFittedWeapons();
+                if (allWeapons != null) {
+                    allFeatures.putAll(allWeapons);
+                }
+            }
+        });
+
+        return allFeatures;
+    }
+
     @Override
     public void paint(Graphics2D g, AffineTransform worldToScreen, double w, double h) {
+        if (!isShouldDrawPainter()) return;
         super.paint(g, worldToScreen, w, h);
 
         if (this.isUninitialized()) return;
-        ShipVariant shipVariant = this.getActiveVariant();
-        if (shipVariant != null && !shipVariant.isEmpty()) {
-            InstalledSlotFeaturePainter slotFeaturePainter = shipVariant.getSlotFeaturePainter();
-            slotFeaturePainter.refreshSlotData(this.getWeaponSlotPainter());
-            slotFeaturePainter.paint(g, worldToScreen, w, h);
-        }
+        InstalledSlotFeaturePainter.paint(g, worldToScreen, w, h, this);
     }
 
 }

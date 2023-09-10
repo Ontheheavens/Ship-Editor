@@ -2,7 +2,6 @@ package oth.shipeditor.components.viewer.painters;
 
 import de.javagl.viewer.Painter;
 import lombok.extern.log4j.Log4j2;
-import oth.shipeditor.components.instrument.ship.ShipInstrumentsPane;
 import oth.shipeditor.components.instrument.ship.EditorInstrument;
 import oth.shipeditor.components.viewer.layers.LayerPainter;
 import oth.shipeditor.components.viewer.layers.ViewerLayer;
@@ -58,7 +57,7 @@ public class HotkeyHelpPainter implements Painter {
     }
 
     private static List<String> getHintsToDisplay() {
-        EditorInstrument current = ShipInstrumentsPane.getCurrentMode();
+        EditorInstrument current = StaticController.getEditorMode();
         List<String> hints = new ArrayList<>();
         switch (current) {
             case COLLISION -> {

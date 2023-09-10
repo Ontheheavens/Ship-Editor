@@ -13,6 +13,7 @@ import oth.shipeditor.communication.events.viewer.points.AnchorOffsetQueued;
 import oth.shipeditor.components.viewer.control.ControlPredicates;
 import oth.shipeditor.components.viewer.painters.points.AbstractPointPainter;
 import oth.shipeditor.undo.EditDispatch;
+import oth.shipeditor.undo.UndoOverseer;
 import oth.shipeditor.utility.StaticController;
 
 import java.awt.*;
@@ -52,7 +53,7 @@ public abstract class LayerPainter implements Painter {
     private boolean uninitialized = true;
 
     @Getter @Setter
-    private boolean shouldDrawPainter;
+    private boolean shouldDrawPainter = true;
 
     @Getter
     private final List<BusEventListener> listeners;
@@ -125,6 +126,7 @@ public abstract class LayerPainter implements Painter {
             pointPainter.cleanupPointPainter();
         }
         listeners.forEach(EventBus::unsubscribe);
+        UndoOverseer.cleanupRemovedLayer(this);
     }
 
     void setSpriteOpacity(float opacity) {
@@ -226,6 +228,7 @@ public abstract class LayerPainter implements Painter {
     @SuppressWarnings("DuplicatedCode")
     @Override
     public void paint(Graphics2D g, AffineTransform worldToScreen, double w, double h) {
+        if (!shouldDrawPainter) return;
         AffineTransform oldAT = g.getTransform();
         g.transform(worldToScreen);
         int rule = AlphaComposite.SRC_OVER;

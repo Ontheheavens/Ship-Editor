@@ -11,7 +11,7 @@ import java.util.Map;
  * @since 05.08.2023
  */
 @Getter
-public class WeaponGroup {
+public class SpecWeaponGroup {
 
     @JsonProperty("autofire")
     private boolean autofire;

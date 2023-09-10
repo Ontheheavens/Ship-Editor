@@ -86,7 +86,7 @@ public class VariantFile implements Variant {
     private String variantId;
 
     @JsonProperty("weaponGroups")
-    private List<WeaponGroup> weaponGroups;
+    private List<SpecWeaponGroup> weaponGroups;
 
     @JsonProperty("wings")
     private List<String> wings;

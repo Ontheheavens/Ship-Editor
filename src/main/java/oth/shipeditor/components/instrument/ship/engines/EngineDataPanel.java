@@ -49,7 +49,7 @@ public class EngineDataPanel extends JPanel {
 
     private void addAngleController() {
         Consumer<Double> action = current -> {
-            ShipPainter slotParent = (ShipPainter) selected.getParentLayer();
+            ShipPainter slotParent = (ShipPainter) selected.getParent();
             EngineSlotPainter enginePainter = slotParent.getEnginePainter();
             enginePainter.changePointAngleWithMirrorCheck(selected, current);
         };
@@ -73,7 +73,7 @@ public class EngineDataPanel extends JPanel {
 
     private void addWidthController() {
         Consumer<Double> action = current -> {
-            ShipPainter slotParent = (ShipPainter) selected.getParentLayer();
+            ShipPainter slotParent = (ShipPainter) selected.getParent();
             EngineSlotPainter enginePainter = slotParent.getEnginePainter();
             double currentLength = selected.getLength();
             Size2D newSize = new Size2D(current, currentLength);
@@ -99,7 +99,7 @@ public class EngineDataPanel extends JPanel {
 
     private void addLengthController() {
         Consumer<Double> action = current -> {
-            ShipPainter slotParent = (ShipPainter) selected.getParentLayer();
+            ShipPainter slotParent = (ShipPainter) selected.getParent();
             EngineSlotPainter enginePainter = slotParent.getEnginePainter();
             double selectedWidth = selected.getWidth();
             Size2D newSize = new Size2D(selectedWidth, current);
@@ -125,7 +125,7 @@ public class EngineDataPanel extends JPanel {
 
     private void addContrailController() {
         Consumer<Double> action = current -> {
-            ShipPainter slotParent = (ShipPainter) selected.getParentLayer();
+            ShipPainter slotParent = (ShipPainter) selected.getParent();
             EngineSlotPainter enginePainter = slotParent.getEnginePainter();
             enginePainter.changeEngineContrailWithMirrorCheck(selected, (int) Math.round(current));
         };
@@ -155,7 +155,7 @@ public class EngineDataPanel extends JPanel {
             styleSelector.setSelectedItem(selected.getStyle());
 
             styleSelector.addActionListener(e -> {
-                ShipPainter slotParent = (ShipPainter) selected.getParentLayer();
+                ShipPainter slotParent = (ShipPainter) selected.getParent();
                 EngineSlotPainter enginePainter = slotParent.getEnginePainter();
                 EngineStyle selectedValue = (EngineStyle) styleSelector.getSelectedItem();
                 enginePainter.changeEngineStyleWithMirrorCheck(selected, selectedValue);

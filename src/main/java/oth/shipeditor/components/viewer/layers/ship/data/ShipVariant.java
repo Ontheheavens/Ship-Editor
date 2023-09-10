@@ -4,16 +4,18 @@ import lombok.Getter;
 import lombok.Setter;
 import oth.shipeditor.components.datafiles.entities.ShipCSVEntry;
 import oth.shipeditor.components.datafiles.entities.WeaponCSVEntry;
-import oth.shipeditor.components.viewer.layers.LayerPainter;
 import oth.shipeditor.components.viewer.layers.ship.ShipPainter;
 import oth.shipeditor.components.viewer.layers.weapon.WeaponPainter;
-import oth.shipeditor.components.viewer.painters.features.InstalledSlotFeaturePainter;
+import oth.shipeditor.components.viewer.painters.features.FireMode;
+import oth.shipeditor.components.viewer.painters.features.FittedWeaponGroup;
+import oth.shipeditor.components.viewer.painters.features.InstalledFeature;
 import oth.shipeditor.representation.*;
 import oth.shipeditor.representation.weapon.WeaponSpecFile;
 import oth.shipeditor.utility.text.StringValues;
 
 import java.nio.file.Path;
-import java.util.HashMap;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -41,7 +43,9 @@ public class ShipVariant implements Variant {
 
     private String displayName;
 
-    private InstalledSlotFeaturePainter slotFeaturePainter;
+    private Map<String, InstalledFeature> fittedModules;
+
+    private List<FittedWeaponGroup> weaponGroups;
 
     public ShipVariant() {
         this(true);
@@ -57,10 +61,13 @@ public class ShipVariant implements Variant {
         return variantFilePath.getFileName().toString();
     }
 
-    public void cleanupForRemoval() {
-        InstalledSlotFeaturePainter featurePainter = this.getSlotFeaturePainter();
-        Map<String, LayerPainter> installedFeatures = featurePainter.getInstalledFeatures();
-        installedFeatures.forEach((slotID, layerPainter) -> layerPainter.cleanupForRemoval());
+    public Map<String, InstalledFeature> getAllFittedWeapons() {
+        Map<String, InstalledFeature> result = new LinkedHashMap<>();
+        for (FittedWeaponGroup weaponGroup : weaponGroups) {
+            var weaponsInGroup = weaponGroup.getWeapons();
+            result.putAll(weaponsInGroup);
+        }
+        return result;
     }
 
     @SuppressWarnings("OverlyCoupledMethod")
@@ -71,23 +78,27 @@ public class ShipVariant implements Variant {
         this.setContainingPackage(file.getContainingPackage());
         this.setDisplayName(file.getDisplayName());
 
-        this.slotFeaturePainter = new InstalledSlotFeaturePainter();
+        weaponGroups = new ArrayList<>();
 
-        Map<String, String> allInstalledWeapons = new HashMap<>();
-        List<WeaponGroup> weaponGroups = file.getWeaponGroups();
-        weaponGroups.forEach(weaponGroup -> allInstalledWeapons.putAll(weaponGroup.getWeapons()));
-
-        var installedFeatures = slotFeaturePainter.getInstalledFeatures();
-
-        allInstalledWeapons.forEach((slotID, weaponID) -> {
-            WeaponCSVEntry weaponEntry = GameDataRepository.getWeaponByID(weaponID);
-            WeaponSpecFile specFile = weaponEntry.getSpecFile();
-            WeaponPainter weaponPainter = weaponEntry.createPainterFromEntry(null, specFile);
-            installedFeatures.put(slotID, weaponPainter);
+        List<SpecWeaponGroup> specWeaponGroups = file.getWeaponGroups();
+        specWeaponGroups.forEach(weaponGroup -> {
+            String weaponGroupMode = weaponGroup.getMode();
+            FireMode mode = FireMode.valueOf(weaponGroupMode);
+            FittedWeaponGroup initialized = new FittedWeaponGroup(weaponGroup.isAutofire(), mode);
+            var fitted = initialized.getWeapons();
+            Map<String, String> specGroupWeapons = weaponGroup.getWeapons();
+            specGroupWeapons.forEach((slotID, weaponID) -> {
+                WeaponCSVEntry weaponEntry = GameDataRepository.getWeaponByID(weaponID);
+                WeaponSpecFile specFile = weaponEntry.getSpecFile();
+                WeaponPainter weaponPainter = weaponEntry.createPainterFromEntry(null, specFile);
+                fitted.put(slotID, new InstalledFeature(slotID, weaponID, weaponPainter));
+            });
+            weaponGroups.add(initialized);
         });
 
         var installedModules = file.getModules();
         if (installedModules != null) {
+            fittedModules = new LinkedHashMap<>();
             installedModules.forEach((slotID, variantID) -> {
                 VariantFile variant = GameDataRepository.getVariantByID(variantID);
                 ShipSpecFile specFile = GameDataRepository.retrieveSpecByID(variant.getHullId());
@@ -108,7 +119,7 @@ public class ShipVariant implements Variant {
                 }
 
                 modulePainter.selectVariant(variant);
-                installedFeatures.put(slotID, modulePainter);
+                fittedModules.put(slotID, new InstalledFeature(slotID, variantID, modulePainter));
             });
         }
 

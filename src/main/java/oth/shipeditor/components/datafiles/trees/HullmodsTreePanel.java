@@ -6,7 +6,6 @@ import oth.shipeditor.communication.events.files.HullmodFoldersWalked;
 import oth.shipeditor.communication.events.viewer.layers.ActiveLayerUpdated;
 import oth.shipeditor.components.datafiles.entities.HullmodCSVEntry;
 import oth.shipeditor.components.instrument.ship.EditorInstrument;
-import oth.shipeditor.components.instrument.ship.ShipInstrumentsPane;
 import oth.shipeditor.components.viewer.layers.ViewerLayer;
 import oth.shipeditor.components.viewer.layers.ship.ShipLayer;
 import oth.shipeditor.components.viewer.layers.ship.ShipPainter;
@@ -181,7 +180,7 @@ class HullmodsTreePanel extends CSVDataTreePanel<HullmodCSVEntry>{
     }
 
     private static boolean isNotActiveInstrument() {
-        return ShipInstrumentsPane.getCurrentMode() != EditorInstrument.BUILT_IN_MODS;
+        return StaticController.getEditorMode() != EditorInstrument.BUILT_IN_MODS;
     }
 
     private boolean isPushEntryToListSuccessful(List<HullmodCSVEntry> list, ShipLayer layer,

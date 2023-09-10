@@ -2,13 +2,15 @@ package oth.shipeditor.undo;
 
 import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
-import oth.shipeditor.components.viewer.entities.WorldPoint;
+import oth.shipeditor.components.viewer.entities.BaseWorldPoint;
 import oth.shipeditor.components.viewer.layers.LayerPainter;
+import oth.shipeditor.undo.edits.LayerEdit;
 import oth.shipeditor.undo.edits.ListeningEdit;
-import oth.shipeditor.undo.edits.points.PointEdit;
+import oth.shipeditor.undo.edits.points.PointDragEdit;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;
+import java.awt.geom.Point2D;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -18,6 +20,7 @@ import java.util.Deque;
  * @author Ontheheavens
  * @since 15.06.2023
  */
+@SuppressWarnings("StaticMethodOnlyUsedInOneClass")
 @Log4j2
 public final class UndoOverseer {
 
@@ -125,9 +128,23 @@ public final class UndoOverseer {
         });
     }
 
-    public static void finishAllEdits() {
+    private static Collection<Edit> getAllEdits() {
         Collection<Edit> allEdits = new ArrayList<>(seer.undoStack);
         allEdits.addAll(seer.redoStack);
+        return allEdits;
+    }
+
+    public static void adjustPointEditsOffset(BaseWorldPoint point, Point2D offset) {
+        var allEdits = UndoOverseer.getAllEdits();
+        allEdits.forEach(edit -> {
+            if (edit instanceof PointDragEdit dragEdit && dragEdit.getPoint() == point)  {
+                dragEdit.adjustPositionOffset(offset);
+            }
+        });
+    }
+
+    public static void finishAllEdits() {
+        var allEdits = UndoOverseer.getAllEdits();
         allEdits.forEach(edit -> edit.setFinished(true));
     }
 
@@ -140,9 +157,10 @@ public final class UndoOverseer {
     private static void cleanupStack(LayerPainter painter, Collection<Edit> stack) {
         Collection<Edit> toRemove = new ArrayList<>();
         for (Edit edit : stack) {
-            if (edit instanceof PointEdit checked) {
-                WorldPoint point = checked.getPoint();
-                if (point.getParentLayer() != painter) continue;
+            if (edit instanceof LayerEdit checked) {
+                LayerPainter layerPainter = checked.getLayerPainter();
+                if (layerPainter == null || layerPainter != painter) continue;
+                checked.cleanupReferences();
                 toRemove.add(edit);
                 if (checked instanceof ListeningEdit listeningEdit) {
                     listeningEdit.unregisterListeners();

@@ -5,10 +5,12 @@ import lombok.Setter;
 import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.components.SlotControlRepaintQueued;
 import oth.shipeditor.communication.events.viewer.ViewerRepaintQueued;
+import oth.shipeditor.components.CoordsDisplayMode;
 import oth.shipeditor.components.instrument.ship.EditorInstrument;
 import oth.shipeditor.components.viewer.entities.AngledPoint;
 import oth.shipeditor.components.viewer.layers.ship.ShipPainter;
 import oth.shipeditor.components.viewer.painters.points.WeaponSlotPainter;
+import oth.shipeditor.representation.ShipTypeHints;
 import oth.shipeditor.representation.weapon.WeaponMount;
 import oth.shipeditor.representation.weapon.WeaponSize;
 import oth.shipeditor.representation.weapon.WeaponType;
@@ -19,6 +21,7 @@ import oth.shipeditor.utility.graphics.ColorUtilities;
 import java.awt.*;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Point2D;
+import java.util.List;
 
 /**
  * @author Ontheheavens
@@ -72,6 +75,11 @@ public class WeaponSlotPoint extends AngledPoint implements SlotPoint {
         }
     }
 
+    @Override
+    public ShipPainter getParent() {
+        return (ShipPainter) super.getParent();
+    }
+
     private void initHelper() {
         this.drawingHelper = new SlotDrawingHelper(this);
     }
@@ -116,7 +124,7 @@ public class WeaponSlotPoint extends AngledPoint implements SlotPoint {
     }
 
     public void changeSlotID(String newId) {
-        ShipPainter parent = (ShipPainter) this.getParentLayer();
+        ShipPainter parent = this.getParent();
         if (!parent.isGeneratedIDUnassigned(newId)) {
             EventBus.publish(new ViewerRepaintQueued());
             EventBus.publish(new SlotControlRepaintQueued());
@@ -194,6 +202,28 @@ public class WeaponSlotPoint extends AngledPoint implements SlotPoint {
         g.setComposite(old);
 
         this.paintCoordsLabel(g, worldToScreen);
+    }
+
+    public double getOffsetRelativeToAxis() {
+        double result;
+
+        ShipPainter shipPainter = this.getParent();
+        List<ShipTypeHints> hints = shipPainter.getHintsModified();
+
+        Point2D locationRelativeToCenter = Utility.getPointCoordinatesForDisplay(this.getPosition(),
+                shipPainter, CoordsDisplayMode.SHIP_CENTER);
+
+        if (hints.contains(ShipTypeHints.WEAPONS_FRONT_TO_BACK)) {
+            result = Math.abs(locationRelativeToCenter.getY() / 50000)
+                    + (locationRelativeToCenter.getX() / 10000);
+        } else if (hints.contains(ShipTypeHints.WEAPONS_BACK_TO_FRONT)) {
+            result = Math.abs(locationRelativeToCenter.getY() / 50000)
+                    - (locationRelativeToCenter.getX() / 10000);
+        } else {
+            result = Math.abs(locationRelativeToCenter.getY() / 10000)
+                    + Math.abs(locationRelativeToCenter.getX() / 10000000);
+        }
+        return result;
     }
 
 }
