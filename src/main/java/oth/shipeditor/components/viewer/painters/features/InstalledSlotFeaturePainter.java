@@ -1,81 +1,107 @@
 package oth.shipeditor.components.viewer.painters.features;
 
+import lombok.Getter;
+import lombok.Setter;
+import lombok.extern.log4j.Log4j2;
+import oth.shipeditor.components.instrument.ship.EditorInstrument;
 import oth.shipeditor.components.viewer.entities.weapon.WeaponSlotPoint;
-import oth.shipeditor.components.viewer.layers.LayerPainter;
 import oth.shipeditor.components.viewer.layers.ship.ShipPainter;
-import oth.shipeditor.components.viewer.layers.weapon.WeaponPainter;
-import oth.shipeditor.components.viewer.painters.points.AbstractPointPainter;
-import oth.shipeditor.utility.Utility;
+import oth.shipeditor.components.viewer.layers.ship.data.ShipVariant;
+import oth.shipeditor.components.viewer.painters.PainterVisibility;
 
 import java.awt.*;
 import java.awt.geom.AffineTransform;
-import java.awt.geom.Point2D;
-import java.util.List;
+import java.util.LinkedHashSet;
 import java.util.Map;
+import java.util.Set;
+import java.util.TreeMap;
 
 /**
  * @author Ontheheavens
  * @since 27.08.2023
  */
+@Getter @Setter
+@Log4j2
 public final class InstalledSlotFeaturePainter {
+
+    // TODO: class still under construction, will need a cleanup!.
+
+    private static PainterVisibility builtInsVisibility;
+
+    private static PainterVisibility modulesVisibility;
+
+    private static PainterVisibility fittedWeaponsVisibility;
+
+    @SuppressWarnings("StaticCollection")
+    private static Map<EditorInstrument, PainterVisibility> installableKindVisibility;
 
     private InstalledSlotFeaturePainter() {
     }
 
-    public static void refreshSlotData(ShipPainter painter) {
-        var slotPainter = painter.getWeaponSlotPainter();
-        var allFeatures = painter.getAllInstallables();
+//    static boolean checkVisibilityForInstallableKind(ShipPainter painter) {
+//        PainterVisibility visibility = getVisibilityMode();
+//        if (visibility == PainterVisibility.ALWAYS_HIDDEN) return false;
+//        if (visibility == PainterVisibility.SHOWN_WHEN_EDITED && this.isInteractionEnabled()) return true;
+//        if (visibility == PainterVisibility.SHOWN_WHEN_SELECTED && painter.isLayerActive()) return true;
+//        return visibility == PainterVisibility.ALWAYS_SHOWN;
+//    }
 
-        for (Map.Entry<String, InstalledFeature> entry : allFeatures.entrySet()) {
-            String slotID = entry.getKey();
-            InstalledFeature installedFeature = entry.getValue();
-            LayerPainter featurePainter = installedFeature.getFeaturePainter();
-            featurePainter.setShouldDrawPainter(false);
+    @SuppressWarnings("CodeBlock2Expr")
+    private static Map<Integer, Set<InstalledFeature>> getInstallablesToPaint(ShipPainter painter) {
+        Map<Integer, Set<InstalledFeature>> result = new TreeMap<>();
 
-            WeaponSlotPoint slotPoint = slotPainter.getSlotByID(slotID);
-            InstalledSlotFeaturePainter.refreshInstalledPainter(slotPoint, featurePainter);
+        // TODO: implement visibility for installable feature kinds.
+
+        var builtIns = painter.getBuiltInWeaponsWithSkin();
+        if (true) {
+            builtIns.forEach((slotID, feature) -> {
+                InstalledSlotFeaturePainter.prepareInstalledForPainting(result, painter, slotID, feature);
+            });
         }
+
+        ShipVariant shipVariant = painter.getActiveVariant();
+        if (shipVariant != null && !shipVariant.isEmpty()) {
+            var modules = shipVariant.getFittedModules();
+            if (modules != null && true) {
+                modules.forEach((slotID, feature) -> {
+                    InstalledSlotFeaturePainter.prepareInstalledForPainting(result, painter, slotID, feature);
+                });
+            }
+            var allWeapons = shipVariant.getAllFittedWeapons();
+            if (allWeapons != null && true) {
+                allWeapons.forEach((slotID, feature) -> {
+                    InstalledSlotFeaturePainter.prepareInstalledForPainting(result, painter, slotID, feature);
+                });
+            }
+        }
+        return result;
     }
 
-    @SuppressWarnings("ChainOfInstanceofChecks")
-    private static void refreshInstalledPainter(WeaponSlotPoint slotPoint, LayerPainter painter) {
-        if (slotPoint == null) {
-            return;
-        }
-        painter.setShouldDrawPainter(true);
+    private static void prepareInstalledForPainting(Map<Integer, Set<InstalledFeature>> collection,
+                                                          ShipPainter painter, String slotID,
+                                                          InstalledFeature feature) {
+        int renderOrder = InstalledSlotFeaturePainter.refreshSlotData(painter, slotID, feature);
+        var renderLayer = collection.computeIfAbsent(renderOrder,
+                k -> new LinkedHashSet<>());
+        renderLayer.add(feature);
+        collection.put(renderOrder, renderLayer);
+    }
 
-        Point2D position = slotPoint.getPosition();
-        Point2D entityCenter = painter.getEntityCenter();
-        if (painter instanceof WeaponPainter weaponPainter) {
-            entityCenter = weaponPainter.getWeaponCenter();
+    private static int refreshSlotData(ShipPainter painter, String slotID, InstalledFeature feature) {
+        var slotPainter = painter.getWeaponSlotPainter();
+        WeaponSlotPoint slotPoint = slotPainter.getSlotByID(slotID);
 
-            weaponPainter.setMount(slotPoint.getWeaponMount());
-        } else if (painter instanceof ShipPainter shipPainter) {
-            entityCenter = shipPainter.getCenterAnchorDifference();
-        }
-        double x = position.getX() - entityCenter.getX();
-        double y = position.getY() - entityCenter.getY();
-        Point2D newAnchor = new Point2D.Double(x, y);
-        Point2D painterAnchor = painter.getAnchor();
-        if (!painterAnchor.equals(newAnchor)) {
-            painter.setAnchor(newAnchor);
-        }
-
-        double transformedAngle = Utility.transformAngle(slotPoint.getAngle());
-        painter.setRotationRadians(Math.toRadians(transformedAngle + 90));
+        int renderOrder = feature.computeRenderOrder(slotPoint);
+        feature.refreshPaintCircumstance(slotPoint);
+        return renderOrder;
     }
 
     public static void paint(Graphics2D g, AffineTransform worldToScreen, double w, double h, ShipPainter painter) {
-        var allFeatures = painter.getAllInstallables();
+        var allFeatures = InstalledSlotFeaturePainter.getInstallablesToPaint(painter);
 
-        for (Map.Entry<String, InstalledFeature> entry : allFeatures.entrySet()) {
-            InstalledFeature installedFeature = entry.getValue();
-            LayerPainter featurePainter = installedFeature.getFeaturePainter();
-            AffineTransform transform = featurePainter.getWithRotation(worldToScreen);
-            featurePainter.paint(g, transform, w, h);
-
-            List<AbstractPointPainter> allPainters = featurePainter.getAllPainters();
-            allPainters.forEach(pointPainter -> pointPainter.paint(g, transform, w, h));
+        for (Map.Entry<Integer, Set<InstalledFeature>> entry : allFeatures.entrySet()) {
+            Set<InstalledFeature> featuresRenderLayer = entry.getValue();
+            featuresRenderLayer.forEach(feature -> feature.paint(g, worldToScreen, w, h));
         }
     }
 

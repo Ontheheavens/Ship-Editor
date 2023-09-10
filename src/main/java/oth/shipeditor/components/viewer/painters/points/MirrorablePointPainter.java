@@ -6,12 +6,12 @@ import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.viewer.points.InstrumentModeChanged;
 import oth.shipeditor.communication.events.viewer.points.PointCreationQueued;
 import oth.shipeditor.components.instrument.ship.EditorInstrument;
-import oth.shipeditor.components.instrument.ship.ShipInstrumentsPane;
 import oth.shipeditor.components.viewer.control.ControlPredicates;
 import oth.shipeditor.components.viewer.entities.BaseWorldPoint;
 import oth.shipeditor.components.viewer.entities.WorldPoint;
 import oth.shipeditor.components.viewer.layers.LayerPainter;
 import oth.shipeditor.components.viewer.painters.PainterVisibility;
+import oth.shipeditor.utility.StaticController;
 import oth.shipeditor.utility.Utility;
 
 import java.awt.*;
@@ -32,7 +32,7 @@ public abstract class MirrorablePointPainter extends AbstractPointPainter {
     MirrorablePointPainter(LayerPainter parent) {
         this.parentLayer = parent;
         initModeListener();
-        this.setInteractionEnabled(ShipInstrumentsPane.getCurrentMode() == getInstrumentType());
+        this.setInteractionEnabled(StaticController.getEditorMode() == getInstrumentType());
     }
 
     void initInteractionListeners() {

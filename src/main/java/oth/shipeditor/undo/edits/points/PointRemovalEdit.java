@@ -42,7 +42,7 @@ public class PointRemovalEdit extends AbstractEdit implements PointEdit {
 
     @Override
     public LayerPainter getLayerPainter() {
-        return removed.getParentLayer();
+        return removed.getParent();
     }
 
     @Override

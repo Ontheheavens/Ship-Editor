@@ -11,6 +11,7 @@ import oth.shipeditor.communication.events.viewer.ViewerRepaintQueued;
 import oth.shipeditor.communication.events.viewer.layers.ActiveLayerUpdated;
 import oth.shipeditor.communication.events.viewer.layers.ships.LayerShipDataInitialized;
 import oth.shipeditor.communication.events.viewer.layers.ships.ShipDataCreated;
+import oth.shipeditor.components.datafiles.entities.ShipCSVEntry;
 import oth.shipeditor.components.viewer.entities.ShipCenterPoint;
 import oth.shipeditor.components.viewer.entities.bays.LaunchBay;
 import oth.shipeditor.components.viewer.entities.weapon.WeaponSlotPoint;
@@ -20,9 +21,7 @@ import oth.shipeditor.components.viewer.layers.ship.data.*;
 import oth.shipeditor.components.viewer.painters.features.InstalledFeature;
 import oth.shipeditor.components.viewer.painters.features.InstalledSlotFeaturePainter;
 import oth.shipeditor.components.viewer.painters.points.*;
-import oth.shipeditor.representation.HullSpecFile;
-import oth.shipeditor.representation.ShipData;
-import oth.shipeditor.representation.VariantFile;
+import oth.shipeditor.representation.*;
 import oth.shipeditor.utility.graphics.Sprite;
 import oth.shipeditor.utility.text.StringValues;
 
@@ -31,10 +30,8 @@ import java.awt.*;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Point2D;
 import java.awt.image.BufferedImage;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -43,7 +40,7 @@ import java.util.stream.Collectors;
  * @author Ontheheavens
  * @since 29.05.2023
  */
-@SuppressWarnings({"OverlyCoupledClass", "ClassWithTooManyFields"})
+@SuppressWarnings({"OverlyCoupledClass", "ClassWithTooManyFields", "ClassWithTooManyMethods"})
 @Log4j2
 public class ShipPainter extends LayerPainter {
 
@@ -81,6 +78,9 @@ public class ShipPainter extends LayerPainter {
     @Getter @Setter
     private ShipVariant activeVariant;
 
+    @Getter @Setter
+    private String baseHullId;
+
     public ShipPainter(ShipLayer layer) {
         super(layer);
         this.initPainterListeners(layer);
@@ -117,7 +117,7 @@ public class ShipPainter extends LayerPainter {
     public void cleanupForRemoval() {
         super.cleanupForRemoval();
 
-        var allInstallables = this.getAllInstallables();
+        var allInstallables = this.getAllLoadedInstallables();
         allInstallables.forEach((s, installedFeature) -> {
             var featurePainter = installedFeature.getFeaturePainter();
             featurePainter.cleanupForRemoval();
@@ -264,6 +264,9 @@ public class ShipPainter extends LayerPainter {
     @Override
     protected Point2D getRotationAnchor() {
         CenterPointPainter pointPainter = this.getCenterPointPainter();
+        if (pointPainter == null) {
+            return this.getSpriteCenter();
+        }
         Point2D moduleAnchorOffset = pointPainter.getModuleAnchorOffset();
         if (moduleAnchorOffset == null) {
             return getEntityCenter();
@@ -354,21 +357,60 @@ public class ShipPainter extends LayerPainter {
         }
     }
 
-    public Map<String, InstalledFeature> getAllInstallables() {
-        var builtIns = this.getBuiltInWeapons();
+    public List<ShipTypeHints> getHintsModified() {
+        ShipCSVEntry dataEntry = GameDataRepository.retrieveShipCSVEntryByID(this.getBaseHullId());
+
+        var skin  = this.getActiveSkin();
+        if (skin != null && !skin.isBase()) {
+            return skin.getHintsModifiedBySkin();
+        }
+        return dataEntry.getBaseHullHints();
+    }
+
+    public Map<String, InstalledFeature> getBuiltInWeaponsWithSkin() {
+        Map<String, InstalledFeature> builtIns = this.getBuiltInWeapons();
+
+        Map<String, InstalledFeature> result = new LinkedHashMap<>(builtIns);
+        if (activeSkin != null && !activeSkin.isBase()) {
+            var removedBuiltIns = activeSkin.getRemoveBuiltInWeapons();
+            removedBuiltIns.forEach(result::remove);
+
+            var addedBuiltIns = activeSkin.getInitializedBuiltIns();
+            if (!addedBuiltIns.isEmpty()) {
+                result.putAll(addedBuiltIns);
+            }
+        }
+
+        return result;
+    }
+
+    private Map<String, InstalledFeature> getAllLoadedInstallables() {
+        var builtIns = this.getBuiltInWeaponsWithSkin();
         Map<String, InstalledFeature> allFeatures = new LinkedHashMap<>(builtIns);
 
         ShipVariant shipVariant = this.getActiveVariant();
-        if (shipVariant != null && !shipVariant.isEmpty()) {
-            var modules = shipVariant.getFittedModules();
-            if (modules != null) {
-                allFeatures.putAll(modules);
-            }
-            var allWeapons = shipVariant.getAllFittedWeapons();
-            if (allWeapons != null) {
-                allFeatures.putAll(allWeapons);
-            }
+        Collection<ShipVariant> allLoaded = new HashSet<>();
+        allLoaded.add(shipVariant);
+
+        var parentLayer = this.getParentLayer();
+        if (parentLayer != null) {
+            var loadedToLayer = parentLayer.getLoadedVariants();
+            allLoaded.addAll(loadedToLayer.values());
         }
+
+        allLoaded.forEach(variant -> {
+            if (variant != null && !variant.isEmpty()) {
+                var modules = variant.getFittedModules();
+                if (modules != null) {
+                    allFeatures.putAll(modules);
+                }
+                var allWeapons = variant.getAllFittedWeapons();
+                if (allWeapons != null) {
+                    allFeatures.putAll(allWeapons);
+                }
+            }
+        });
+
         return allFeatures;
     }
 
@@ -378,7 +420,6 @@ public class ShipPainter extends LayerPainter {
         super.paint(g, worldToScreen, w, h);
 
         if (this.isUninitialized()) return;
-        InstalledSlotFeaturePainter.refreshSlotData(this);
         InstalledSlotFeaturePainter.paint(g, worldToScreen, w, h, this);
     }
 

@@ -45,7 +45,7 @@ public class LaunchPortPoint extends BaseWorldPoint implements SlotPoint {
 
     @Override
     public void changeSlotID(String newId) {
-        ShipPainter parent = (ShipPainter) this.getParentLayer();
+        ShipPainter parent = (ShipPainter) this.getParent();
         if (!parent.isGeneratedIDUnassigned(newId)) {
             EventBus.publish(new ViewerRepaintQueued());
             EventBus.publish(new BaysPanelRepaintQueued());

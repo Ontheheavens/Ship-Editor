@@ -100,6 +100,7 @@ class HullsTreePanel extends DataTreePanel {
         JPanel searchContainer = new JPanel(new GridBagLayout());
         searchContainer.setBorder(new EmptyBorder(0, 0, 0, 0));
         JTextField searchField = new JTextField();
+        searchField.setToolTipText("Input is checked against displayed name and base hull ID as a substring.");
         Document document = searchField.getDocument();
         document.addDocumentListener(new DocumentListener() {
             @Override

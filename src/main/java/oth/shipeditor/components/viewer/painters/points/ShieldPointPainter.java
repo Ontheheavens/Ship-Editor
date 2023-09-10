@@ -8,7 +8,6 @@ import oth.shipeditor.communication.events.viewer.ViewerRepaintQueued;
 import oth.shipeditor.communication.events.viewer.points.InstrumentModeChanged;
 import oth.shipeditor.communication.events.viewer.points.RadiusDragQueued;
 import oth.shipeditor.components.instrument.ship.EditorInstrument;
-import oth.shipeditor.components.instrument.ship.ShipInstrumentsPane;
 import oth.shipeditor.components.viewer.control.ControlPredicates;
 import oth.shipeditor.components.viewer.entities.BaseWorldPoint;
 import oth.shipeditor.components.viewer.entities.ShieldCenterPoint;
@@ -17,6 +16,7 @@ import oth.shipeditor.representation.GameDataRepository;
 import oth.shipeditor.representation.HullSpecFile;
 import oth.shipeditor.representation.HullStyle;
 import oth.shipeditor.undo.EditDispatch;
+import oth.shipeditor.utility.StaticController;
 import oth.shipeditor.utility.graphics.ColorUtilities;
 
 import java.awt.*;
@@ -46,7 +46,7 @@ public class ShieldPointPainter extends SinglePointPainter {
         super(parent);
         this.initModeListening();
         this.initHotkeys();
-        this.setInteractionEnabled(ShipInstrumentsPane.getCurrentMode() == EditorInstrument.SHIELD);
+        this.setInteractionEnabled(StaticController.getEditorMode() == EditorInstrument.SHIELD);
     }
 
     @Override

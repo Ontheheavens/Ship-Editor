@@ -9,7 +9,6 @@ import lombok.extern.log4j.Log4j2;
 import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.viewer.ViewerRepaintQueued;
 import oth.shipeditor.communication.events.viewer.control.ViewerGuidesToggled;
-import oth.shipeditor.components.instrument.ship.ShipInstrumentsPane;
 import oth.shipeditor.components.instrument.ship.EditorInstrument;
 import oth.shipeditor.components.viewer.PrimaryViewer;
 import oth.shipeditor.components.viewer.control.ControlPredicates;
@@ -18,11 +17,11 @@ import oth.shipeditor.components.viewer.entities.WorldPoint;
 import oth.shipeditor.components.viewer.layers.LayerPainter;
 import oth.shipeditor.components.viewer.layers.ship.ShipPainter;
 import oth.shipeditor.components.viewer.painters.points.BoundPointsPainter;
-import oth.shipeditor.utility.graphics.RectangleCorner;
 import oth.shipeditor.utility.StaticController;
 import oth.shipeditor.utility.Utility;
 import oth.shipeditor.utility.graphics.DrawUtilities;
 import oth.shipeditor.utility.graphics.DrawingParameters;
+import oth.shipeditor.utility.graphics.RectangleCorner;
 
 import java.awt.*;
 import java.awt.geom.AffineTransform;
@@ -195,7 +194,7 @@ public final class GuidesPainters {
 
     @SuppressWarnings("MethodWithMultipleReturnPoints")
     private static void drawPointPositionHint(Graphics2D g, Point2D position, LayerPainter painter) {
-        if (ShipInstrumentsPane.getCurrentMode() == EditorInstrument.BOUNDS) {
+        if (StaticController.getEditorMode() == EditorInstrument.BOUNDS) {
             Font hintFont = Utility.getOrbitron(12);
             if (!(painter instanceof ShipPainter checkedPainter)) return;
             BoundPointsPainter boundsPainter = checkedPainter.getBoundsPainter();

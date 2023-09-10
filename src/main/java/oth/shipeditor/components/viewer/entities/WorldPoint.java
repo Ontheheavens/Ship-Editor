@@ -32,7 +32,7 @@ public interface WorldPoint {
     /**
      * @return layer associated with this point; can be null.
      */
-    LayerPainter getParentLayer();
+    LayerPainter getParent();
 
     void setPointSelected(boolean selected);
 

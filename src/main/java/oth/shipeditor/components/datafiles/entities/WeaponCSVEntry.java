@@ -7,6 +7,7 @@ import oth.shipeditor.components.viewer.entities.weapon.OffsetPoint;
 import oth.shipeditor.components.viewer.layers.ship.ShipPainterInitialization;
 import oth.shipeditor.components.viewer.layers.weapon.WeaponLayer;
 import oth.shipeditor.components.viewer.layers.weapon.WeaponPainter;
+import oth.shipeditor.components.viewer.layers.weapon.WeaponRenderOrdering;
 import oth.shipeditor.components.viewer.layers.weapon.WeaponSprites;
 import oth.shipeditor.components.viewer.painters.features.ProjectilePainter;
 import oth.shipeditor.parsing.loading.FileLoading;
@@ -25,6 +26,8 @@ import java.awt.geom.Point2D;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
 
@@ -73,6 +76,16 @@ public class WeaponCSVEntry implements CSVEntry {
         } else {
             return specFile.getType();
         }
+    }
+
+    public int getDrawOrder() {
+        int result = 0;
+        switch (specFile.getSize()) {
+            case SMALL -> result = 1;
+            case MEDIUM -> result = 2;
+            case LARGE -> result = 3;
+        }
+        return result;
     }
 
     public WeaponSize getSize() {
@@ -200,6 +213,14 @@ public class WeaponCSVEntry implements CSVEntry {
         weaponPainter.setWeaponSprites(spriteHolder);
         weaponPainter.setWeaponID(weaponSpecFile.getId());
 
+        if (weaponSpecFile.isRenderBelowAllWeapons()) {
+            weaponPainter.setRenderOrderType(WeaponRenderOrdering.BELOW_ALL);
+        } else if (weaponSpecFile.isRenderAboveAllWeapons()) {
+            weaponPainter.setRenderOrderType(WeaponRenderOrdering.ABOVE_ALL);
+        } else {
+            weaponPainter.setRenderOrderType(WeaponRenderOrdering.NORMAL);
+        }
+
         var hardpointOffsets = weaponSpecFile.getHardpointOffsets();
         var hardpointAngles = weaponSpecFile.getHardpointAngleOffsets();
         WeaponCSVEntry.initializeOffsets(weaponPainter, WeaponMount.HARDPOINT,
@@ -212,12 +233,9 @@ public class WeaponCSVEntry implements CSVEntry {
 
         var renderHints = specFile.getRenderHints();
         if (renderHints != null && !renderHints.isEmpty()) {
-            if (renderHints.contains("RENDER_LOADED_MISSILES")) {
-                weaponPainter.setRenderLoadedMissiles(true);
-            }
-            if (renderHints.contains(StringConstants.RENDER_BARREL_BELOW)) {
-                weaponPainter.setRenderBarrelsBelow(true);
-            }
+            List<WeaponRenderHints> hintEnums = new ArrayList<>();
+            renderHints.forEach(hintText -> hintEnums.add(WeaponRenderHints.valueOf(hintText)));
+            weaponPainter.setRenderHints(hintEnums);
         }
 
         ProjectileSpecFile projectileSpec = GameDataRepository.getProjectileByID(specFile.getProjectileSpecId());
@@ -238,7 +256,9 @@ public class WeaponCSVEntry implements CSVEntry {
         }
 
         Sprite loadedTurretSprite = spriteHolder.getTurretSprite();
-        weaponPainter.setSprite(loadedTurretSprite.image());
+        if (loadedTurretSprite != null) {
+            weaponPainter.setSprite(loadedTurretSprite.image());
+        }
         return weaponPainter;
     }
 

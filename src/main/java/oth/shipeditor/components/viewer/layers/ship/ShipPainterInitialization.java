@@ -48,6 +48,8 @@ public final class ShipPainterInitialization {
 
         ShipPainterInitialization.initBuiltIns(shipPainter, hullSpecFile);
 
+        shipPainter.setBaseHullId(hullSpecFile.getHullId());
+
         shipPainter.finishInitialization();
     }
 

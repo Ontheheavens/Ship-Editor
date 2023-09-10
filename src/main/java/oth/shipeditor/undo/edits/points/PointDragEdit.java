@@ -59,7 +59,7 @@ public final class PointDragEdit extends AbstractEdit implements PointEdit {
 
     @Override
     public LayerPainter getLayerPainter() {
-        return point.getParentLayer();
+        return point.getParent();
     }
 
     public static void repaintByPointType(WorldPoint point) {

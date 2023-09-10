@@ -5,6 +5,7 @@ import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
 import oth.shipeditor.communication.BusEventListener;
 import oth.shipeditor.communication.EventBus;
+import oth.shipeditor.communication.events.BusEvent;
 import oth.shipeditor.communication.events.viewer.points.*;
 import oth.shipeditor.components.instrument.ship.EditorInstrument;
 import oth.shipeditor.components.instrument.ship.slots.SlotCreationPane;
@@ -36,7 +37,7 @@ import java.util.*;
  * @author Ontheheavens
  * @since 25.07.2023
  */
-@SuppressWarnings("OverlyCoupledClass")
+@SuppressWarnings({"OverlyCoupledClass", "OverlyComplexClass"})
 @Log4j2
 public class WeaponSlotPainter extends AngledPointPainter {
 
@@ -322,7 +323,7 @@ public class WeaponSlotPainter extends AngledPointPainter {
     protected void handleSelectionHighlight() {
         WorldPoint selection = this.getSelected();
         double full = 1.0d;
-        if (selection != null && isInteractionEnabled()) {
+        if (selection != null && isSlotSelectionEnabled()) {
             this.setSlotTransparency(selection, full);
             WorldPoint counterpart = this.getMirroredCounterpart(selection);
             if (counterpart != null && ControlPredicates.isMirrorModeEnabled()) {
@@ -394,6 +395,32 @@ public class WeaponSlotPainter extends AngledPointPainter {
     @Override
     protected Class<WeaponSlotPoint> getTypeReference() {
         return WeaponSlotPoint.class;
+    }
+
+    @SuppressWarnings("WeakerAccess")
+    protected BusEventListener createSelectionListener() {
+        return new SharedSelectionListener();
+    }
+
+    private boolean isSlotSelectionEnabled() {
+        return this.isInteractionEnabled() ||
+                (isParentLayerActive() && SharedSelectionListener.isRelatedEditorModeActive());
+    }
+
+    private class SharedSelectionListener implements BusEventListener {
+        @Override
+        public void handleEvent(BusEvent event) {
+            if (event instanceof PointSelectQueued checked && WeaponSlotPainter.this.isPointEligible(checked.point())) {
+                if (!isSlotSelectionEnabled()) return;
+                WeaponSlotPainter.this.handlePointSelectionEvent((BaseWorldPoint) checked.point());
+            }
+        }
+
+        private static boolean isRelatedEditorModeActive() {
+            EditorInstrument editorMode = StaticController.getEditorMode();
+            return editorMode == EditorInstrument.BUILT_IN_WEAPONS
+                    || editorMode == EditorInstrument.VARIANT;
+        }
     }
 
 }

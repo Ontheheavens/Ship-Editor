@@ -10,7 +10,6 @@ import oth.shipeditor.communication.events.viewer.ViewerRepaintQueued;
 import oth.shipeditor.communication.events.viewer.points.InstrumentModeChanged;
 import oth.shipeditor.communication.events.viewer.points.RadiusDragQueued;
 import oth.shipeditor.components.instrument.ship.EditorInstrument;
-import oth.shipeditor.components.instrument.ship.ShipInstrumentsPane;
 import oth.shipeditor.components.viewer.control.ControlPredicates;
 import oth.shipeditor.components.viewer.entities.BaseWorldPoint;
 import oth.shipeditor.components.viewer.entities.ShipCenterPoint;
@@ -19,6 +18,7 @@ import oth.shipeditor.components.viewer.painters.TextPainter;
 import oth.shipeditor.representation.HullSpecFile;
 import oth.shipeditor.representation.weapon.WeaponType;
 import oth.shipeditor.undo.EditDispatch;
+import oth.shipeditor.utility.StaticController;
 import oth.shipeditor.utility.Utility;
 import oth.shipeditor.utility.graphics.DrawUtilities;
 import oth.shipeditor.utility.text.StringValues;
@@ -59,7 +59,7 @@ public class CenterPointPainter extends SinglePointPainter {
         super(parent);
         this.initModeListening();
         this.initHotkeys();
-        this.setInteractionEnabled(ShipInstrumentsPane.getCurrentMode() == EditorInstrument.COLLISION);
+        this.setInteractionEnabled(StaticController.getEditorMode() == EditorInstrument.COLLISION);
         this.setPaintOpacity(COLLISION_OPACITY);
 
         this.moduleAnchorText = new TextPainter();

@@ -107,6 +107,12 @@ public class GameDataRepository {
         return shipEntries.get(baseHullID);
     }
 
+    public static WeaponCSVEntry retrieveWeaponCSVEntryByID(String weaponID) {
+        GameDataRepository dataRepository = SettingsManager.getGameData();
+        var weaponEntries = dataRepository.getAllWeaponEntries();
+        return weaponEntries.get(weaponID);
+    }
+
     public static ShipSpecFile retrieveSpecByID(String hullID) {
         GameDataRepository dataRepository = SettingsManager.getGameData();
         var allSpecs = dataRepository.getAllSpecEntries();

@@ -10,8 +10,8 @@ import java.awt.geom.Point2D;
  */
 public abstract class AngledPoint extends BaseWorldPoint {
 
-    protected AngledPoint(Point2D pointPosition, LayerPainter layer) {
-        super(pointPosition, layer);
+    protected AngledPoint(Point2D pointPosition, LayerPainter parentPainter) {
+        super(pointPosition, parentPainter);
     }
 
     public abstract void setAngle(double degrees);

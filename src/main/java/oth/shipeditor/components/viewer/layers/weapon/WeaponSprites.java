@@ -71,14 +71,21 @@ public class WeaponSprites {
                 BufferedImage spriteImage;
                 if (hardpointSprite != null) {
                     spriteImage = hardpointSprite.image();
-                } else {
+                } else if (turretSprite != null) {
                     spriteImage = turretSprite.image();
+                } else {
+                    return new Point2D.Double(0, 0);
                 }
                 float centerY = 0.75f;
                 result = new Point2D.Double(spriteImage.getWidth() * centerRatio, spriteImage.getHeight() * centerY);
             }
             case TURRET, HIDDEN -> {
-                BufferedImage spriteImage = turretSprite.image();
+                BufferedImage spriteImage;
+                if (turretSprite != null) {
+                    spriteImage = turretSprite.image();
+                } else {
+                    return new Point2D.Double(0, 0);
+                }
                 result = new Point2D.Double(spriteImage.getWidth() * centerRatio, spriteImage.getHeight() * centerRatio);
             }
         }

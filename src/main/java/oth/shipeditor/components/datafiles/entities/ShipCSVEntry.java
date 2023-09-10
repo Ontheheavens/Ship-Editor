@@ -10,16 +10,15 @@ import oth.shipeditor.menubar.FileUtilities;
 import oth.shipeditor.parsing.loading.FileLoading;
 import oth.shipeditor.representation.HullSize;
 import oth.shipeditor.representation.HullSpecFile;
+import oth.shipeditor.representation.ShipTypeHints;
 import oth.shipeditor.representation.SkinSpecFile;
+import oth.shipeditor.utility.Utility;
 import oth.shipeditor.utility.graphics.Sprite;
 import oth.shipeditor.utility.text.StringConstants;
 
 import java.io.File;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * @author Ontheheavens
@@ -58,6 +57,17 @@ public class ShipCSVEntry implements CSVEntry {
         if (this.skins != null) {
             this.skins.put(SkinSpecFile.DEFAULT, activeSkinSpecFile);
         }
+    }
+
+    @SuppressWarnings("WeakerAccess")
+    public List<ShipTypeHints> getBaseHullHints() {
+        List<ShipTypeHints> result = new ArrayList<>();
+        String cellData = rowData.get("hints");
+        if (cellData != null && !cellData.isEmpty()) {
+            Iterable<String> hintsText = new ArrayList<>(Arrays.asList(Utility.SPLIT_BY_COMMA.split(cellData)));
+            hintsText.forEach(hintText -> result.add(ShipTypeHints.valueOf(hintText)));
+        }
+        return result;
     }
 
     public HullSize getSize() {
