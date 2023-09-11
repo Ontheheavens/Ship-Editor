@@ -76,5 +76,7 @@
     opens oth.shipeditor.components.instrument.ship.bays;
     exports oth.shipeditor.components.instrument.ship.engines;
     opens oth.shipeditor.components.instrument.ship.engines;
+    exports oth.shipeditor.components.instrument.ship.builtins;
+    opens oth.shipeditor.components.instrument.ship.builtins;
 
 }

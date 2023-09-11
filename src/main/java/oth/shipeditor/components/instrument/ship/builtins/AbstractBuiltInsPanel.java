@@ -1,4 +1,4 @@
-package oth.shipeditor.components.instrument.ship;
+package oth.shipeditor.components.instrument.ship.builtins;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -6,7 +6,6 @@ import org.kordamp.ikonli.fluentui.FluentUiRegularAL;
 import org.kordamp.ikonli.swing.FontIcon;
 import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.viewer.layers.LayerWasSelected;
-import oth.shipeditor.components.datafiles.entities.CSVEntry;
 import oth.shipeditor.components.viewer.layers.ViewerLayer;
 import oth.shipeditor.components.viewer.layers.ship.ShipLayer;
 import oth.shipeditor.components.viewer.layers.ship.ShipPainter;
@@ -23,7 +22,7 @@ import java.util.function.Consumer;
  * @author Ontheheavens
  * @since 27.08.2023
  */
-public abstract class AbstractBuiltInsPanel<T extends CSVEntry> extends JPanel {
+public abstract class AbstractBuiltInsPanel<T> extends JPanel {
 
     @Getter @Setter
     private ShipLayer cachedLayer;
@@ -90,7 +89,7 @@ public abstract class AbstractBuiltInsPanel<T extends CSVEntry> extends JPanel {
         hintPanel.setLayout(new BoxLayout(hintPanel, BoxLayout.LINE_AXIS));
 
         JLabel hintIcon = new JLabel(icon);
-        hintIcon.setBorder(new EmptyBorder(4, 4, 0, 0));
+        hintIcon.setBorder(new EmptyBorder(4, 4, 4, 0));
         hintIcon.setAlignmentY(0.5f);
         hintPanel.add(hintIcon);
 
