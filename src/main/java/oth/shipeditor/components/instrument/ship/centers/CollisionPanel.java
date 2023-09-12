@@ -274,7 +274,7 @@ public final class CollisionPanel extends JPanel {
                 Point2D changed = new Point2D.Double(value, original.getY());
                 centerPainter.setModuleAnchorOffset(changed);
             };
-            JSpinner spinnerX = ComponentUtilities.addLabelWithSpinner(container, "X coordinate:",
+            JSpinner spinnerX = ComponentUtilities.addLabelWithSpinner(container, "Y coordinate:",
                     spinnerEffectX, -9000, 9000, 0);
 
             Consumer<Double> spinnerEffectY = value -> {
@@ -282,7 +282,7 @@ public final class CollisionPanel extends JPanel {
                 Point2D changed = new Point2D.Double(original.getX(), value);
                 centerPainter.setModuleAnchorOffset(changed);
             };
-            JSpinner spinnerY = ComponentUtilities.addLabelWithSpinner(container, "Y coordinate:",
+            JSpinner spinnerY = ComponentUtilities.addLabelWithSpinner(container, "X coordinate:",
                     spinnerEffectY, -9000, 9000, 1);
 
             Point2D moduleAnchorOffset = centerPainter.getModuleAnchorOffset();

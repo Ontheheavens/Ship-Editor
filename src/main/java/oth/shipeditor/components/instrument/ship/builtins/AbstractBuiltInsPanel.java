@@ -24,6 +24,8 @@ import java.util.function.Consumer;
  */
 public abstract class AbstractBuiltInsPanel<T> extends JPanel {
 
+    static final String REMOVED_BY_SKIN = "Removed by skin";
+
     @Getter @Setter
     private ShipLayer cachedLayer;
 
@@ -103,9 +105,13 @@ public abstract class AbstractBuiltInsPanel<T> extends JPanel {
     }
 
     void handleSkinChanges(List<T> entryList, Color panelColor) {
+        handleSkinChanges(entryList, panelColor, "Added by skin");
+    }
+
+    void handleSkinChanges(List<T> entryList, Color panelColor, String panelTitle) {
         if (entryList != null && !entryList.isEmpty()) {
             contentPane.add(Box.createVerticalStrut(2));
-            JPanel title = ComponentUtilities.createTitledSeparatorPanel("Added by skin");
+            JPanel title = ComponentUtilities.createTitledSeparatorPanel(panelTitle);
             title.setMaximumSize(new Dimension(Integer.MAX_VALUE, 4));
             title.setAlignmentY(0);
             contentPane.add(title);

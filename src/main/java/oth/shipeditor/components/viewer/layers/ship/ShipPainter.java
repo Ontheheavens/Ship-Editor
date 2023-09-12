@@ -19,7 +19,7 @@ import oth.shipeditor.components.viewer.layers.LayerPainter;
 import oth.shipeditor.components.viewer.layers.ViewerLayer;
 import oth.shipeditor.components.viewer.layers.ship.data.*;
 import oth.shipeditor.components.viewer.painters.features.InstalledFeature;
-import oth.shipeditor.components.viewer.painters.features.InstalledSlotFeaturePainter;
+import oth.shipeditor.components.viewer.painters.features.InstalledFeaturePainter;
 import oth.shipeditor.components.viewer.painters.points.*;
 import oth.shipeditor.representation.*;
 import oth.shipeditor.utility.graphics.Sprite;
@@ -65,6 +65,9 @@ public class ShipPainter extends LayerPainter {
 
     @Getter
     private Map<String, InstalledFeature> builtInWeapons;
+
+    @Getter
+    private InstalledFeaturePainter installablesPainter;
 
     /**
      * Backup for when sprite is switched to skin version.
@@ -119,8 +122,8 @@ public class ShipPainter extends LayerPainter {
 
         var allInstallables = this.getAllLoadedInstallables();
         allInstallables.forEach((s, installedFeature) -> {
-            var featurePainter = installedFeature.getFeaturePainter();
-            featurePainter.cleanupForRemoval();
+            var painter = installedFeature.getFeaturePainter();
+            painter.cleanupForRemoval();
         });
     }
 
@@ -208,6 +211,7 @@ public class ShipPainter extends LayerPainter {
         this.bayPainter = new LaunchBayPainter(this);
         this.enginePainter = new EngineSlotPainter(this);
 
+        this.installablesPainter = new InstalledFeaturePainter();
         this.builtInWeapons = new LinkedHashMap<>();
 
         List<AbstractPointPainter> allPainters = getAllPainters();
@@ -420,7 +424,8 @@ public class ShipPainter extends LayerPainter {
         super.paint(g, worldToScreen, w, h);
 
         if (this.isUninitialized()) return;
-        InstalledSlotFeaturePainter.paint(g, worldToScreen, w, h, this);
+        var installedFeaturePainter = this.getInstallablesPainter();
+        installedFeaturePainter.paint(g, worldToScreen, w, h, this);
     }
 
 }

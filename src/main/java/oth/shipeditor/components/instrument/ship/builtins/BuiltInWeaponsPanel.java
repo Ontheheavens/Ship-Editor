@@ -72,7 +72,7 @@ public class BuiltInWeaponsPanel extends AbstractBuiltInsPanel<Pair<String, Stri
         List<Pair<String, String>> removedInputPairs = new ArrayList<>();
         removed.forEach(slotID -> removedInputPairs.add(new Pair<>(slotID, "")));
 
-        super.handleSkinChanges(removedInputPairs, new Color(255, 200, 200, 255));
+        super.handleSkinChanges(removedInputPairs, new Color(255, 200, 200, 255), REMOVED_BY_SKIN);
 
         var added = skin.getInitializedBuiltIns();
         List<Pair<String, String>> addedInputPairs = new ArrayList<>();

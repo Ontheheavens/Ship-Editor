@@ -25,6 +25,7 @@ import java.util.Map;
  * @author Ontheheavens
  * @since 08.06.2023
  */
+@SuppressWarnings("OverlyCoupledClass")
 @Log4j2
 public final class ShipInstrumentsPane extends AbstractInstrumentsPane {
 

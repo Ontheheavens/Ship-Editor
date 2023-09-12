@@ -129,7 +129,7 @@ public abstract class LayerPainter implements Painter {
         UndoOverseer.cleanupRemovedLayer(this);
     }
 
-    void setSpriteOpacity(float opacity) {
+    public void setSpriteOpacity(float opacity) {
         if (opacity < 0.0f) {
             this.spriteOpacity = 0.0f;
         } else this.spriteOpacity = Math.min(opacity, 1.0f);
@@ -232,7 +232,7 @@ public abstract class LayerPainter implements Painter {
         AffineTransform oldAT = g.getTransform();
         g.transform(worldToScreen);
         int rule = AlphaComposite.SRC_OVER;
-        float alpha = this.spriteOpacity;
+        float alpha = this.getSpriteOpacity();
         Composite old = g.getComposite();
         Composite opacity = AlphaComposite.getInstance(rule, alpha) ;
         g.setComposite(opacity);

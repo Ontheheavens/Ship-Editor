@@ -63,7 +63,7 @@ public class BuiltInHullmodsPanel extends AbstractBuiltInsPanel<HullmodCSVEntry>
 
     private void handleSkinModChanges(ShipSkin skin) {
         var removed = skin.getRemoveBuiltInMods();
-        super.handleSkinChanges(removed, new Color(255, 200, 200, 255));
+        super.handleSkinChanges(removed, new Color(255, 200, 200, 255), REMOVED_BY_SKIN);
         var added = skin.getBuiltInMods();
         super.handleSkinChanges(added, new Color(200, 255, 200, 255));
     }

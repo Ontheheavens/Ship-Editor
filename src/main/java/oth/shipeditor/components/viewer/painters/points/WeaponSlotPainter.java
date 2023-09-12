@@ -127,10 +127,15 @@ public class WeaponSlotPainter extends AngledPointPainter {
     }
 
     @Override
+    public ShipPainter getParentLayer() {
+        return (ShipPainter) super.getParentLayer();
+    }
+
+    @Override
     protected void handleCreation(PointCreationQueued event) {
         if (!isCreationHotkeyPressed()) return;
 
-        ShipPainter parentLayer = (ShipPainter) this.getParentLayer();
+        ShipPainter parentLayer = this.getParentLayer();
         Point2D position = event.position();
         boolean mirrorMode = ControlPredicates.isMirrorModeEnabled();
 
@@ -183,7 +188,7 @@ public class WeaponSlotPainter extends AngledPointPainter {
     }
 
     private String generateUniqueSlotID() {
-        ShipPainter parentLayer = (ShipPainter) getParentLayer();
+        ShipPainter parentLayer = getParentLayer();
         return parentLayer.generateUniqueSlotID("WS");
     }
 
