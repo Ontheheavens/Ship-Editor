@@ -38,9 +38,6 @@ public class PaintOrderController implements Painter {
     @Setter
     private boolean repaintQueued;
 
-    @Setter
-    private boolean revalidateQueued;
-
     PaintOrderController(PrimaryViewer viewer) {
         this.parent = viewer;
 
@@ -48,20 +45,13 @@ public class PaintOrderController implements Painter {
         this.guidesPainters = new GuidesPainters(viewer);
         this.hotkeyPainter = new HotkeyHelpPainter();
 
-        Timer repaintTimer = new Timer(2, e -> {
+        Timer repaintTimer = new Timer(4, e -> {
             if (repaintQueued) {
                 repaintViewer();
-            }
-            if (revalidateQueued) {
-                revalidateViewer();
             }
         });
         repaintTimer.setRepeats(true);
         repaintTimer.start();
-    }
-
-    private void revalidateViewer() {
-        parent.revalidate();
     }
 
     private void repaintViewer() {

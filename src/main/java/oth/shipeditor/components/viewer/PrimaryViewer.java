@@ -104,11 +104,6 @@ public final class PrimaryViewer extends Viewer implements LayerViewer {
         this.paintOrderController.setRepaintQueued(true);
     }
 
-    @SuppressWarnings("WeakerAccess")
-    public void setRevalidateQueued() {
-        this.paintOrderController.setRevalidateQueued(true);
-    }
-
     private void initViewerStateListeners() {
         EventBus.subscribe(event -> {
             if(event instanceof ViewerRepaintQueued || event instanceof LayerWasSelected) {
@@ -132,7 +127,6 @@ public final class PrimaryViewer extends Viewer implements LayerViewer {
                 Color opaque = new Color(background.getRed(),
                         background.getGreen(), background.getBlue(), 255);
                 this.setBackground(opaque);
-                setRevalidateQueued();
                 setRepaintQueued();
             }
         });
