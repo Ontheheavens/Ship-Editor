@@ -19,6 +19,7 @@ public enum EditorInstrument {
     BUILT_IN_MODS("Built-in Mods"),
     BUILT_IN_WINGS("Built-in Wings"),
     BUILT_IN_WEAPONS("Built-in Weapons"),
+    DECORATIVES("Decoratives"),
     SKIN("Skin"),
     VARIANT("Variant");
 

@@ -10,6 +10,7 @@ import oth.shipeditor.components.instrument.ship.bays.LaunchBaysPanel;
 import oth.shipeditor.components.instrument.ship.builtins.BuiltInHullmodsPanel;
 import oth.shipeditor.components.instrument.ship.builtins.BuiltInWeaponsPanel;
 import oth.shipeditor.components.instrument.ship.builtins.BuiltInWingsPanel;
+import oth.shipeditor.components.instrument.ship.builtins.DecorativesPanel;
 import oth.shipeditor.components.instrument.ship.centers.CollisionPanel;
 import oth.shipeditor.components.instrument.ship.centers.ShieldPanel;
 import oth.shipeditor.components.instrument.ship.engines.EnginesPanel;
@@ -52,6 +53,7 @@ public final class ShipInstrumentsPane extends AbstractInstrumentsPane {
         this.createTab(new BuiltInHullmodsPanel(), EditorInstrument.BUILT_IN_MODS);
         this.createTab(new BuiltInWingsPanel(), EditorInstrument.BUILT_IN_WINGS);
         this.createTab(new BuiltInWeaponsPanel(), EditorInstrument.BUILT_IN_WEAPONS);
+        this.createTab(new DecorativesPanel(), EditorInstrument.DECORATIVES);
         this.createTab(new SkinPanel(), EditorInstrument.SKIN);
         this.createTab(new VariantPanel(), EditorInstrument.VARIANT);
         updateTooltipText();

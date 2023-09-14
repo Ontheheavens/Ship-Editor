@@ -43,9 +43,11 @@ public final class Main {
 
     private Main() {}
 
+    @SuppressWarnings("AccessOfSystemProperties")
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> {
             // These method calls are initialization block; the order of calls is important.
+            System.setProperty("sun.java2d.opengl", "True");
             Main.configureLaf();
             PrimaryWindow window = PrimaryWindow.create();
             Initializations.updateStateFromSettings(window);
