@@ -218,18 +218,33 @@ public abstract class AbstractPointPainter implements Painter {
         this.selectPointClosest();
     }
 
-    void selectPointClosest() {
-        Point2D cursor = StaticController.getCorrectedCursor();
-        WorldPoint toSelect = null;
-        double minDistance = Double.MAX_VALUE;
-        for (WorldPoint point : this.getPointsIndex()) {
+    @SuppressWarnings("WeakerAccess")
+    public BaseWorldPoint findClosestPoint(Point2D target) {
+        BaseWorldPoint closestPoint = null;
+        double closestDistance = Double.MAX_VALUE;
+
+        for (BaseWorldPoint point : this.getEligibleForSelection()) {
             Point2D position = point.getPosition();
-            double distance = position.distance(cursor);
-            if (distance < minDistance) {
-                minDistance = distance;
-                toSelect = point;
+            double distance = target.distance(position);
+
+            if (distance < closestDistance) {
+                closestPoint = point;
+                closestDistance = distance;
             }
         }
+
+        return closestPoint;
+    }
+
+    @SuppressWarnings("WeakerAccess")
+    protected List<? extends BaseWorldPoint> getEligibleForSelection() {
+        return this.getPointsIndex();
+    }
+
+    void selectPointClosest() {
+        Point2D cursor = StaticController.getCorrectedCursor();
+        BaseWorldPoint toSelect = findClosestPoint(cursor);
+
         WorldPoint selectedPoint = this.getSelected();
         if (selectedPoint != null) {
             selectedPoint.setPointSelected(false);

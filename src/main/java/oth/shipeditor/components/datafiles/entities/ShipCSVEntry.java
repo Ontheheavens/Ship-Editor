@@ -28,7 +28,7 @@ import java.util.*;
  */
 @Log4j2
 @Getter
-public class ShipCSVEntry implements CSVEntry {
+public class ShipCSVEntry implements CSVEntry, InstallableEntry {
 
     private final Map<String, String> rowData;
 

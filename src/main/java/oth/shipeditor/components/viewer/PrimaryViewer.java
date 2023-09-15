@@ -69,6 +69,7 @@ public final class PrimaryViewer extends Viewer implements LayerViewer {
         this.layerManager.initListeners();
     }
 
+    @SuppressWarnings("OverlyComplexAnonymousInnerClass")
     public PrimaryViewer commenceInitialization() {
         this.paintOrderController = new PaintOrderController(this);
         this.addPainter(this.paintOrderController);
@@ -79,6 +80,7 @@ public final class PrimaryViewer extends Viewer implements LayerViewer {
         this.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseEntered(MouseEvent e) {
+                if (cursorInViewer) return;
                 PrimaryViewer.this.requestFocusInWindow();
                 cursorInViewer = true;
                 setRepaintQueued();
@@ -86,6 +88,7 @@ public final class PrimaryViewer extends Viewer implements LayerViewer {
 
             @Override
             public void mouseExited(MouseEvent e) {
+                if (!cursorInViewer) return;
                 cursorInViewer = false;
                 setRepaintQueued();
             }

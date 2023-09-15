@@ -1,6 +1,9 @@
 package oth.shipeditor.representation.weapon;
 
 import lombok.Getter;
+import oth.shipeditor.components.datafiles.entities.CSVEntry;
+import oth.shipeditor.components.datafiles.entities.WeaponCSVEntry;
+import oth.shipeditor.components.viewer.entities.weapon.SlotData;
 import oth.shipeditor.utility.text.StringConstants;
 
 import java.awt.*;
@@ -43,6 +46,81 @@ public enum WeaponType {
         if (textValue == null || textValue.isEmpty()) {
             return null;
         } else return WeaponType.valueOf(textValue);
+    }
+
+    /**
+     * @param entry only relevant for ship and weapon entries.
+     */
+    public static boolean isValidForSlot(SlotData slotPoint, CSVEntry entry) {
+        if (entry instanceof WeaponCSVEntry weaponEntry) {
+            return WeaponType.isWeaponFitting(slotPoint, weaponEntry);
+        } else {
+            WeaponType slotPointType = slotPoint.getWeaponType();
+            return slotPointType == WeaponType.STATION_MODULE;
+        }
+    }
+
+    /**
+     * Yeah, this sucks, but... weapon type rules suck in the first place, sorry Alex!
+     */
+    @SuppressWarnings({"OverlyComplexBooleanExpression", "RedundantLabeledSwitchRuleCodeBlock", "OverlyComplexMethod"})
+    static boolean isWeaponFitting(SlotData slotPoint, WeaponCSVEntry weaponEntry) {
+        WeaponType slotType = slotPoint.getWeaponType();
+        WeaponType weaponType = weaponEntry.getType();
+
+        int sizeDifference = WeaponSize.getSizeDifference(slotPoint.getWeaponSize(), weaponEntry.getSize());
+        boolean isSameOrSmaller = 1 >= sizeDifference && sizeDifference >= 0;
+        boolean isSameSize = sizeDifference == 0;
+
+        boolean result;
+
+        switch (slotType) {
+            case BALLISTIC -> {
+                result = (weaponType == WeaponType.BALLISTIC && isSameOrSmaller)
+                        || (weaponType == WeaponType.HYBRID && isSameSize)
+                        || (weaponType == WeaponType.COMPOSITE && isSameSize);
+            }
+            case ENERGY -> {
+                result = (weaponType == WeaponType.ENERGY && isSameOrSmaller)
+                        || (weaponType == WeaponType.HYBRID && isSameSize)
+                        || (weaponType == WeaponType.SYNERGY && isSameSize);
+            }
+            case MISSILE -> {
+                result = (weaponType == WeaponType.MISSILE && isSameOrSmaller)
+                        || (weaponType == WeaponType.COMPOSITE && isSameSize)
+                        || (weaponType == WeaponType.SYNERGY && isSameSize);
+            }
+            case HYBRID -> {
+                result = (weaponType == WeaponType.HYBRID && isSameOrSmaller)
+                        || (weaponType == WeaponType.BALLISTIC && isSameSize)
+                        || (weaponType == WeaponType.ENERGY && isSameSize);
+            }
+            case COMPOSITE -> {
+                result = (weaponType == WeaponType.COMPOSITE && isSameOrSmaller)
+                        || (weaponType == WeaponType.BALLISTIC && isSameSize)
+                        || (weaponType == WeaponType.MISSILE && isSameSize);
+            }
+            case SYNERGY -> {
+                result = (weaponType == WeaponType.SYNERGY && isSameOrSmaller)
+                        || (weaponType == WeaponType.ENERGY && isSameSize)
+                        || (weaponType == WeaponType.MISSILE && isSameSize);
+            }
+            case UNIVERSAL -> {
+                result = (weaponType == WeaponType.UNIVERSAL && isSameOrSmaller)
+                        || (weaponType != WeaponType.LAUNCH_BAY
+                        && weaponType != WeaponType.BUILT_IN
+                        && weaponType != WeaponType.DECORATIVE
+                        && weaponType != WeaponType.SYSTEM
+                        && weaponType != WeaponType.STATION_MODULE
+                        && isSameSize);
+            }
+            case BUILT_IN -> result = (weaponType != WeaponType.DECORATIVE && isSameSize);
+            case DECORATIVE -> result = (weaponType == WeaponType.DECORATIVE && isSameSize);
+            default -> {
+                result = false;
+            }
+        }
+        return result;
     }
 
 }

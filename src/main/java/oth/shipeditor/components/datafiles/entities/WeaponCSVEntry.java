@@ -37,7 +37,7 @@ import java.util.function.Consumer;
  */
 @SuppressWarnings("OverlyCoupledClass")
 @Getter
-public class WeaponCSVEntry implements CSVEntry {
+public class WeaponCSVEntry implements CSVEntry, InstallableEntry {
 
     private final Map<String, String> rowData;
 

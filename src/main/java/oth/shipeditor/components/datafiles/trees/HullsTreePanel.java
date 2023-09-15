@@ -181,7 +181,7 @@ class HullsTreePanel extends DataTreePanel {
 
     @Override
     protected JPanel createTopPanel() {
-        Pair<JPanel, JButton> singleButtonPanel = ComponentUtilities.createSingleButtonPanel("Ship data:",
+        Pair<JPanel, JButton> singleButtonPanel = ComponentUtilities.createSingleButtonPanel("",
                 FileUtilities.getLoadShipDataAction());
         JButton button = singleButtonPanel.getSecond();
         button.setText("Reload ship data");

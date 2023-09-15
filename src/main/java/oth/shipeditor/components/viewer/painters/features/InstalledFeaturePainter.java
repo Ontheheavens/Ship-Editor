@@ -54,13 +54,11 @@ public final class InstalledFeaturePainter {
     }
 
     private static boolean isInteractable(ShipPainter painter) {
-        boolean eligibleMode = InstalledFeaturePainter.isInBuiltInsMode()
-                || StaticController.getEditorMode() == EditorInstrument.VARIANT;
+        EditorInstrument editorMode = StaticController.getEditorMode();
+        boolean eligibleMode = editorMode == EditorInstrument.BUILT_IN_WEAPONS
+                || editorMode == EditorInstrument.DECORATIVES
+                || editorMode == EditorInstrument.VARIANT;
         return eligibleMode && painter.isLayerActive();
-    }
-
-    private static boolean isInBuiltInsMode() {
-        return StaticController.getEditorMode() == EditorInstrument.BUILT_IN_WEAPONS;
     }
 
     private Map<Integer, Set<InstalledFeature>> getInstallablesToPaint(ShipPainter painter) {
@@ -106,17 +104,25 @@ public final class InstalledFeaturePainter {
                                 WeaponSlotPainter slotPainter, String slotID,
                                 InstalledFeature feature) {
         int renderOrder = this.refreshSlotData(slotPainter, slotID, feature);
+        if (renderOrder == Integer.MAX_VALUE) return;
         var renderLayer = collection.computeIfAbsent(renderOrder,
                 k -> new LinkedHashSet<>());
         renderLayer.add(feature);
         collection.put(renderOrder, renderLayer);
     }
 
+    /**
+     * @return integer's max value as a magic number if the respective slot is not found or invalid.
+     */
     private int refreshSlotData(WeaponSlotPainter slotPainter, String slotID,
                                 InstalledFeature feature) {
         WeaponSlotPoint slotPoint = slotPainter.getSlotByID(slotID);
 
         LayerPainter installablePainter = feature.getFeaturePainter();
+        if (slotPoint == null || !slotPoint.canFit(feature)) {
+            feature.setInvalidated(true);
+            return Integer.MAX_VALUE;
+        }
         if (slotPoint.isPointSelected() && InstalledFeaturePainter.isInteractable(slotPainter.getParentLayer())) {
             installablePainter.setSpriteOpacity(0.75f);
             cachedSelectCounterpart = (WeaponSlotPoint) slotPainter.getMirroredCounterpart(slotPoint);
@@ -124,6 +130,7 @@ public final class InstalledFeaturePainter {
             installablePainter.setSpriteOpacity(1.0f);
         }
 
+        feature.setInvalidated(false);
         int renderOrder = feature.computeRenderOrder(slotPoint);
         feature.refreshPaintCircumstance(slotPoint);
         return renderOrder;

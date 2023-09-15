@@ -8,18 +8,30 @@ import lombok.Getter;
  */
 public enum WeaponSize {
 
-    SMALL("SMALL", "Small"),
-    MEDIUM("MEDIUM", "Medium"),
-    LARGE("LARGE", "Large");
+    SMALL("SMALL", "Small", 1),
+    MEDIUM("MEDIUM", "Medium", 2),
+    LARGE("LARGE", "Large", 3);
 
     @Getter
     private final String id;
     @Getter
     private final String displayName;
 
-    WeaponSize(String serialized, String name) {
+    @Getter
+    private final int numericSize;
+
+    WeaponSize(String serialized, String name, int numeric) {
         this.id = serialized;
         this.displayName = name;
+        this.numericSize = numeric;
+    }
+
+    public static int getSizeDifference(WeaponSize firstSize, WeaponSize secondSize) {
+        if (firstSize == null || secondSize == null) {
+            throw new IllegalArgumentException("Both sizes must be non-null");
+        }
+
+        return firstSize.numericSize - secondSize.numericSize;
     }
 
     public static WeaponSize value(String textValue) {

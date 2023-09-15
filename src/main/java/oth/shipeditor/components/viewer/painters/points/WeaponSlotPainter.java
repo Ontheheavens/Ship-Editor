@@ -318,10 +318,12 @@ public class WeaponSlotPainter extends AngledPointPainter {
 
     @Override
     void paintDelegates(Graphics2D g, AffineTransform worldToScreen, double w, double h) {
-        super.paintDelegates(g, worldToScreen, w, h);
-        for (WeaponSlotPoint point : getPointsIndex()) {
-            this.setSlotTransparency(point, 0.8d);
-        }
+        List<WeaponSlotPoint> pointsIndex = this.getEligibleForSelection();
+        pointsIndex.forEach(slotPoint -> {
+            paintDelegate(g, worldToScreen, w, h, slotPoint);
+            slotPoint.setPaintSizeMultiplier(1);
+            setSlotTransparency(slotPoint, 0.8d);
+        });
     }
 
     @Override
@@ -407,9 +409,39 @@ public class WeaponSlotPainter extends AngledPointPainter {
         return new SharedSelectionListener();
     }
 
+    @Override
+    protected List<WeaponSlotPoint> getEligibleForSelection() {
+        List<WeaponSlotPoint> eligibleForSelection = this.getSlotPoints();
+        List<WeaponSlotPoint> result;
+        EditorInstrument mode = StaticController.getEditorMode();
+        switch (mode) {
+            case BUILT_IN_WEAPONS ->
+                    result = eligibleForSelection.stream().filter(WeaponSlotPoint::isBuiltIn).toList();
+            case DECORATIVES ->
+                    result = eligibleForSelection.stream().filter(WeaponSlotPoint::isDecorative).toList();
+            case VARIANT ->
+                    result = eligibleForSelection.stream().filter(WeaponSlotPoint::isFittable).toList();
+            default -> result = eligibleForSelection;
+        }
+        return result;
+    }
+
+    @Override
+    public void paint(Graphics2D g, AffineTransform worldToScreen, double w, double h) {
+        if (checkVisibility() || isVisibleForRelatedMode()) {
+            this.paintPainterContent(g, worldToScreen, w, h);
+
+            this.handleSelectionHighlight();
+            this.paintDelegates(g, worldToScreen, w, h);
+        }
+    }
+
+    private boolean isVisibleForRelatedMode() {
+        return isParentLayerActive() && SharedSelectionListener.isRelatedEditorModeActive();
+    }
+
     private boolean isSlotSelectionEnabled() {
-        return this.isInteractionEnabled() ||
-                (isParentLayerActive() && SharedSelectionListener.isRelatedEditorModeActive());
+        return this.isInteractionEnabled() || isVisibleForRelatedMode();
     }
 
     private class SharedSelectionListener implements BusEventListener {
@@ -424,6 +456,7 @@ public class WeaponSlotPainter extends AngledPointPainter {
         private static boolean isRelatedEditorModeActive() {
             EditorInstrument editorMode = StaticController.getEditorMode();
             return editorMode == EditorInstrument.BUILT_IN_WEAPONS
+                    || editorMode == EditorInstrument.DECORATIVES
                     || editorMode == EditorInstrument.VARIANT;
         }
     }

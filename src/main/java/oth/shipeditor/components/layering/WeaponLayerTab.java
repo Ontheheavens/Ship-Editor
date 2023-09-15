@@ -36,31 +36,31 @@ public class WeaponLayerTab extends LayerTab {
         String notLoaded = StringValues.NOT_LOADED;
 
         String mainSprite = spriteName;
-        if (Objects.equals(mainSprite, "")) {
+        if (Objects.equals(mainSprite, "") || mainSprite == null) {
             mainSprite = notLoaded;
         }
         String mainSpriteNameLine = "Main sprite file: " + mainSprite;
 
         String gunSprite = gunSpriteName;
-        if (Objects.equals(gunSprite, "")) {
+        if (Objects.equals(gunSprite, "") || gunSprite == null) {
             gunSprite = notLoaded;
         }
         String gunSpriteNameLine = "Gun sprite file: " + gunSprite;
 
         String underSprite = underSpriteName;
-        if (Objects.equals(underSprite, "")) {
+        if (Objects.equals(underSprite, "") || underSprite == null) {
             underSprite = notLoaded;
         }
         String underSpriteNameLine = "Under sprite file: " + underSprite;
 
         String glowSprite = glowSpriteName;
-        if (Objects.equals(glowSprite, "")) {
+        if (Objects.equals(glowSprite, "") || glowSprite == null) {
             glowSprite = notLoaded;
         }
         String glowSpriteNameLine = "Glow sprite file: " + glowSprite;
 
         String specFile = specFileName;
-        if (Objects.equals(specFile, "")) {
+        if (Objects.equals(specFile, "") || specFile == null) {
             specFile = notLoaded;
         }
         String specFileNameLine = "Weapon spec file: " + specFile;
