@@ -95,6 +95,11 @@ public class WeaponSlotPainter extends AngledPointPainter {
         return result;
     }
 
+    public boolean isSlotDecorative(String slotID) {
+        WeaponSlotPoint slotPoint = this.getSlotByID(slotID);
+        return slotPoint != null && slotPoint.isDecorative();
+    }
+
     @Override
     protected void handlePointSelectionEvent(BaseWorldPoint point) {
         if (controlHotkeyStaticPressed) return;

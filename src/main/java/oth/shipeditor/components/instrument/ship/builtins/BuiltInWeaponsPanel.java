@@ -43,7 +43,7 @@ public class BuiltInWeaponsPanel extends AbstractBuiltInsPanel<Pair<String, Stri
         ShipSkin activeSkin = painter.getActiveSkin();
 
         if (activeSkin != null && !activeSkin.isBase()) {
-            this.handleSkinBuiltInsChanges(activeSkin);
+            this.handleSkinBuiltInsChanges(layer);
         }
 
         contentPane.add(Box.createVerticalGlue());
@@ -53,8 +53,7 @@ public class BuiltInWeaponsPanel extends AbstractBuiltInsPanel<Pair<String, Stri
     }
 
     private void populateWeaponBuiltIns(ShipLayer selected) {
-        var painter = selected.getPainter();
-        var builtInWeapons = painter.getBuiltInWeapons();
+        var builtInWeapons = selected.getBuiltInsFromBaseHull();
         JPanel contentPane = getContentPane();
         if (builtInWeapons == null || builtInWeapons.isEmpty()) {
             JPanel placeholderLabel = AbstractBuiltInsPanel.createPlaceholderLabel("Hull has no built-in weapons");
@@ -67,18 +66,21 @@ public class BuiltInWeaponsPanel extends AbstractBuiltInsPanel<Pair<String, Stri
         }
     }
 
-    private void handleSkinBuiltInsChanges(ShipSkin skin) {
-        var removed = skin.getRemoveBuiltInWeapons();
-        List<Pair<String, String>> removedInputPairs = new ArrayList<>();
-        removed.forEach(slotID -> removedInputPairs.add(new Pair<>(slotID, "")));
+    private void handleSkinBuiltInsChanges(ShipLayer layer) {
+        var removed = layer.getBuiltInsRemovedBySkin();
+        if (removed != null) {
+            List<Pair<String, String>> removedInputPairs = new ArrayList<>();
+            removed.forEach(slotID -> removedInputPairs.add(new Pair<>(slotID, "")));
+            super.handleSkinChanges(removedInputPairs,
+                    new Color(255, 200, 200, 255), REMOVED_BY_SKIN);
+        }
 
-        super.handleSkinChanges(removedInputPairs, new Color(255, 200, 200, 255), REMOVED_BY_SKIN);
-
-        var added = skin.getInitializedBuiltIns();
-        List<Pair<String, String>> addedInputPairs = new ArrayList<>();
-        added.forEach((slotID, feature) -> addedInputPairs.add(new Pair<>(feature.getSlotID(), feature.getFeatureID())));
-
-        super.handleSkinChanges(addedInputPairs, new Color(200, 255, 200, 255));
+        var added = layer.getBuiltInsFromSkin();
+        if (added != null) {
+            List<Pair<String, String>> addedInputPairs = new ArrayList<>();
+            added.forEach((slotID, feature) -> addedInputPairs.add(new Pair<>(feature.getSlotID(), feature.getFeatureID())));
+            super.handleSkinChanges(addedInputPairs, new Color(200, 255, 200, 255));
+        }
     }
 
     @Override

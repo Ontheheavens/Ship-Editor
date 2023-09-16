@@ -198,7 +198,8 @@ public final class Utility {
 
     public static void setSpriteFromPath(String pathInPackage, Consumer<Sprite> setter, Path packageFolderPath) {
         if (pathInPackage != null && !pathInPackage.isEmpty()) {
-            File spriteFile = FileLoading.fetchDataFile(Path.of(pathInPackage), packageFolderPath);
+            Path filePath = Path.of(pathInPackage);
+            File spriteFile = FileLoading.fetchDataFile(filePath, packageFolderPath);
 
             Sprite newSprite = FileLoading.loadSprite(spriteFile);
             setter.accept(newSprite);
