@@ -20,12 +20,15 @@ import java.util.function.Consumer;
  * @author Ontheheavens
  * @since 17.09.2023
  */
-public abstract class InstalledFeatureList extends SortableList<InstalledFeature> {
+public class InstalledFeatureList extends SortableList<InstalledFeature> {
 
     private boolean propagationBlock;
 
-    protected InstalledFeatureList(ListModel<InstalledFeature> dataModel) {
+    private final Consumer<InstalledFeature> uninstall;
+
+    public InstalledFeatureList(ListModel<InstalledFeature> dataModel, Consumer<InstalledFeature> removeAction) {
         super(dataModel);
+        this.uninstall = removeAction;
         this.addListSelectionListener(e -> {
             this.actOnSelectedEntry(feature -> {
 
@@ -46,9 +49,6 @@ public abstract class InstalledFeatureList extends SortableList<InstalledFeature
     private static ListCellRenderer<InstalledFeature> createCellRenderer() {
         return new InstalledFeatureCellRenderer();
     }
-
-    @SuppressWarnings("WeakerAccess")
-    protected abstract Consumer<InstalledFeature> createUninstallAction();
 
     /**
      * This is quite a hack; it is assumed that whatever feature is selected is installed onto
@@ -112,10 +112,7 @@ public abstract class InstalledFeatureList extends SortableList<InstalledFeature
         private JPopupMenu getContextMenu() {
             JPopupMenu menu = new JPopupMenu();
             JMenuItem removePoint = new JMenuItem("Uninstall feature");
-            removePoint.addActionListener(event -> actOnSelectedEntry(feature -> {
-                Consumer<InstalledFeature> uninstallAction = createUninstallAction();
-                uninstallAction.accept(feature);
-            }
+            removePoint.addActionListener(event -> actOnSelectedEntry(feature -> uninstall.accept(feature)
             ));
             menu.add(removePoint);
             return menu;

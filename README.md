@@ -16,6 +16,23 @@ Visualizer and editor of object data in JSON and CSV format. Developed as utilit
  - Ikonli: https://github.com/kordamp/ikonli
  - Flatlaf: https://github.com/JFormDesigner/FlatLaf
 
+## Development Note 17.09.23:
+
+![](showcase/history/Sample%205.png)
+
+### Implemented:
+
+- Engine slots.
+- Built-ins components: hullmods, wings.
+- Ship/Wing sprite previews.
+- Variants code groundwork, weapon layer refactors.
+- Layerless entity painters functionality (requirement for fitted weapons and modules).
+- Projectile specs deserialization, missile rendering, weapon images.
+- Performance optimizations, repaint timers.
+- Hull and weapon search refactor and filtering.
+- Module anchors functionality.
+- Weapon render order, installable features painter framework.
+
 ## Development Note 17.08.23:
 
 ![](showcase/history/Sample%204.png)

@@ -1,6 +1,7 @@
 package oth.shipeditor.components.instrument.ship.builtins.weapons;
 
 import oth.shipeditor.components.instrument.ship.builtins.AbstractBuiltInsPanel;
+import oth.shipeditor.components.instrument.ship.shared.InstalledFeatureList;
 import oth.shipeditor.components.viewer.layers.ship.ShipLayer;
 import oth.shipeditor.components.viewer.layers.ship.ShipPainter;
 import oth.shipeditor.components.viewer.layers.ship.data.ShipSkin;
@@ -62,14 +63,21 @@ public class BuiltInWeaponsPanel extends AbstractBuiltInsPanel {
             contentPane.add(placeholderLabel);
         } else {
             Collection<InstalledFeature> values = builtInWeapons.values();
-            List<Pair<String, String>> builtInsList = new ArrayList<>();
-            values.forEach(feature -> builtInsList.add(new Pair<>(feature.getSlotID(), feature.getFeatureID())));
-            Consumer<Pair<String, String>> removeAction = entry -> {
+
+            DefaultListModel<InstalledFeature> listModel = new DefaultListModel<>();
+            listModel.addAll(values);
+
+            Consumer<InstalledFeature> removeAction = entry -> {
                 ShipPainter painter = selected.getPainter();
                 var weapons = painter.getBuiltInWeapons();
-                weapons.remove(entry.getFirst());
+                weapons.remove(entry.getSlotID());
+                this.refreshPanel(selected);
             };
-            this.populateWithEntries(contentPane, builtInsList, null, removeAction);
+
+            var listContainer = new InstalledFeatureList(listModel, removeAction);
+            JScrollPane scrollableContainer = new JScrollPane(listContainer);
+
+            contentPane.add(scrollableContainer);
         }
     }
 
