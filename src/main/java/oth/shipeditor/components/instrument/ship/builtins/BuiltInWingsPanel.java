@@ -26,7 +26,7 @@ import java.util.function.Consumer;
  * @author Ontheheavens
  * @since 27.08.2023
  */
-public class BuiltInWingsPanel extends AbstractBuiltInsPanel<WingCSVEntry> {
+public class BuiltInWingsPanel extends CSVEntryBuiltInsPanel<WingCSVEntry> {
 
     private JPanel bayPanel;
 
@@ -61,7 +61,7 @@ public class BuiltInWingsPanel extends AbstractBuiltInsPanel<WingCSVEntry> {
     }
 
     @Override
-    void installPlaceholderLabel(String text) {
+    protected void installPlaceholderLabel(String text) {
         super.installPlaceholderLabel(text);
         if (bayPanel != null) {
             this.remove(bayPanel);

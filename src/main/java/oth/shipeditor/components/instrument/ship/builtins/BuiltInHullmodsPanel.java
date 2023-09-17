@@ -20,7 +20,7 @@ import java.util.function.Consumer;
  * @author Ontheheavens
  * @since 24.08.2023
  */
-public class BuiltInHullmodsPanel extends AbstractBuiltInsPanel<HullmodCSVEntry> {
+public class BuiltInHullmodsPanel extends CSVEntryBuiltInsPanel<HullmodCSVEntry> {
 
     @Override
     protected void refreshPanel(ShipLayer layer) {

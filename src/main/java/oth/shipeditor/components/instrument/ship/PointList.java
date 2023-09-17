@@ -6,7 +6,7 @@ import oth.shipeditor.communication.events.viewer.points.PointRemoveQueued;
 import oth.shipeditor.communication.events.viewer.points.PointSelectQueued;
 import oth.shipeditor.communication.events.viewer.points.PointSelectedConfirmed;
 import oth.shipeditor.components.viewer.entities.BaseWorldPoint;
-import oth.shipeditor.utility.components.SortableList;
+import oth.shipeditor.utility.components.containers.SortableList;
 import oth.shipeditor.utility.components.dialog.DialogUtilities;
 import oth.shipeditor.utility.text.StringValues;
 
@@ -15,6 +15,7 @@ import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
@@ -40,11 +41,21 @@ public abstract class PointList<T extends BaseWorldPoint> extends SortableList<T
                 EventBus.publish(new ViewerRepaintQueued());
             });
         });
-        this.addMouseListener(new ListContextMenuListener());
-        this.setCellRenderer(new PointCellRenderer());
+        this.addMouseListener(createContextMenuListener());
+        this.setCellRenderer(createCellRenderer());
         int margin = 3;
         this.setBorder(new EmptyBorder(margin, margin, margin, margin));
         this.initListeners();
+    }
+
+    @SuppressWarnings("WeakerAccess")
+    protected MouseListener createContextMenuListener() {
+        return new PointContextMenuListener();
+    }
+
+    @SuppressWarnings("WeakerAccess")
+    protected ListCellRenderer<? super T> createCellRenderer() {
+        return new PointCellRenderer();
     }
 
     protected abstract void handlePointSelection(T point);
@@ -95,7 +106,7 @@ public abstract class PointList<T extends BaseWorldPoint> extends SortableList<T
         }
     }
 
-    private class ListContextMenuListener extends MouseAdapter {
+    private class PointContextMenuListener extends MouseAdapter {
 
         private JPopupMenu getContextMenu() {
             JPopupMenu menu = new JPopupMenu();

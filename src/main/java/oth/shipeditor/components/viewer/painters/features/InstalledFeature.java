@@ -83,8 +83,7 @@ public final class InstalledFeature {
                 }
             }
             return (int) Math.ceil(rawResult);
-        }
-        else return Integer.MIN_VALUE;
+        } else return Integer.MIN_VALUE;
     }
 
     @SuppressWarnings("ChainOfInstanceofChecks")

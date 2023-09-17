@@ -4,6 +4,7 @@ import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.viewer.points.SlotPointsSorted;
 import oth.shipeditor.components.instrument.ship.PointList;
 import oth.shipeditor.components.viewer.entities.weapon.WeaponSlotPoint;
+import oth.shipeditor.utility.components.rendering.WeaponSlotCellRenderer;
 
 import javax.swing.*;
 import java.awt.*;
@@ -23,7 +24,7 @@ public class WeaponSlotList extends PointList<WeaponSlotPoint> {
     WeaponSlotList(ListModel<WeaponSlotPoint> dataModel, JPanel infoPane) {
         super(dataModel);
         this.infoPanel = infoPane;
-        this.setCellRenderer(new SlotCellRenderer());
+        this.setCellRenderer(new WeaponSlotCellRenderer());
     }
 
     @Override
@@ -45,18 +46,6 @@ public class WeaponSlotList extends PointList<WeaponSlotPoint> {
     @Override
     protected void publishPointsSorted(List<WeaponSlotPoint> rearrangedPoints) {
         EventBus.publish(new SlotPointsSorted(rearrangedPoints));
-    }
-
-    private static class SlotCellRenderer extends DefaultListCellRenderer{
-        @Override
-        public Component getListCellRendererComponent(JList<?> list, Object value, int index,
-                                                      boolean isSelected, boolean cellHasFocus) {
-            super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
-            WeaponSlotPoint checked = (WeaponSlotPoint) value;
-            String displayText = checked.getId() +": " + checked.getPositionText();
-            setText(displayText);
-            return this;
-        }
     }
 
 }

@@ -3,7 +3,7 @@ package oth.shipeditor.components.help;
 import lombok.Getter;
 import oth.shipeditor.utility.Utility;
 import oth.shipeditor.utility.components.ComponentUtilities;
-import oth.shipeditor.utility.components.TextScrollPanel;
+import oth.shipeditor.utility.components.containers.TextScrollPanel;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;

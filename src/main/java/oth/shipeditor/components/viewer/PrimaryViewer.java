@@ -203,13 +203,17 @@ public final class PrimaryViewer extends Viewer implements LayerViewer {
             List<ViewerLayer> layers = layerManager.getLayers();
 
             if (layers.size() > 1) {
+                // Ideally, this needs to loop through all layers starting from last, checking if painter is present.
+                // Then get anchor of that and place new painter anchor next to it.
                 var prevLayer = layers.get(layers.indexOf(layer) - 1);
                 var layerPainter = prevLayer.getPainter();
-                var layerAnchor = layerPainter.getAnchor();
-                var prevLayerWidth = layerPainter.getSpriteSize();
-                Point2D widthPoint = new Point2D.Double(layerAnchor.getX() + prevLayerWidth.width, layerAnchor.getY());
+                if (layerPainter != null) {
+                    var layerAnchor = layerPainter.getAnchor();
+                    var prevLayerWidth = layerPainter.getSpriteSize();
+                    Point2D widthPoint = new Point2D.Double(layerAnchor.getX() + prevLayerWidth.width, layerAnchor.getY());
 
-                newPainter.updateAnchorOffset(widthPoint);
+                    newPainter.updateAnchorOffset(widthPoint);
+                }
             }
         }
         layer.setSpriteFileName(sprite.name());

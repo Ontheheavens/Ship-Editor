@@ -14,6 +14,8 @@ import java.awt.*;
 @SuppressWarnings("NonSerializableFieldInSerializableClass")
 public enum HullSize {
 
+    // TODO: dynamic getter of icons to account for selection color and size change.
+
     DEFAULT(FontIcon.of(BoxiconsRegular.DICE_1, 16, Color.DARK_GRAY), StringValues.DEFAULT),
     FIGHTER(FontIcon.of(BoxiconsRegular.DICE_1, 16, Color.DARK_GRAY), "Fighter"),
     FRIGATE(FontIcon.of(BoxiconsRegular.DICE_2, 16, Color.DARK_GRAY), "Frigate"),

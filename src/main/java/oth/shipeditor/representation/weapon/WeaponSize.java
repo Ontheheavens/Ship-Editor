@@ -1,6 +1,11 @@
 package oth.shipeditor.representation.weapon;
 
 import lombok.Getter;
+import org.kordamp.ikonli.boxicons.BoxiconsRegular;
+import org.kordamp.ikonli.swing.FontIcon;
+
+import javax.swing.*;
+import java.awt.*;
 
 /**
  * @author Ontheheavens
@@ -8,9 +13,14 @@ import lombok.Getter;
  */
 public enum WeaponSize {
 
-    SMALL("SMALL", "Small", 1),
-    MEDIUM("MEDIUM", "Medium", 2),
-    LARGE("LARGE", "Large", 3);
+    // TODO: dynamic getter of icons to account for selection color and size change.
+
+    SMALL("SMALL", "Small",
+            FontIcon.of(BoxiconsRegular.DICE_1, 18, Color.DARK_GRAY), 1),
+    MEDIUM("MEDIUM", "Medium",
+            FontIcon.of(BoxiconsRegular.DICE_2, 18, Color.DARK_GRAY), 2),
+    LARGE("LARGE", "Large",
+            FontIcon.of(BoxiconsRegular.DICE_3, 18, Color.DARK_GRAY), 3);
 
     @Getter
     private final String id;
@@ -20,10 +30,14 @@ public enum WeaponSize {
     @Getter
     private final int numericSize;
 
-    WeaponSize(String serialized, String name, int numeric) {
+    @Getter
+    private final Icon icon;
+
+    WeaponSize(String serialized, String name, Icon iconImage, int numeric) {
         this.id = serialized;
         this.displayName = name;
         this.numericSize = numeric;
+        this.icon = iconImage;
     }
 
     public static int getSizeDifference(WeaponSize firstSize, WeaponSize secondSize) {

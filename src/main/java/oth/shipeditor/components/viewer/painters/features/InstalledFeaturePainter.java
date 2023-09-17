@@ -64,10 +64,19 @@ public final class InstalledFeaturePainter {
     private Map<Integer, Set<InstalledFeature>> getInstallablesToPaint(ShipPainter painter) {
         Map<Integer, Set<InstalledFeature>> result = new TreeMap<>();
 
-        var builtIns = painter.getBuiltInWeaponsWithSkin();
         var slotPainter = painter.getWeaponSlotPainter();
+
+        var builtIns = painter.getBuiltInWeaponsWithSkin(false, true);
         if (checkVisibilityForBuiltIns(painter)) {
             builtIns.forEach((slotID, feature) ->
+                    this.prepareFeature(result, slotPainter, slotID, feature));
+        }
+
+        // TODO: implement visibility for decoratives.
+
+        var decoratives = painter.getBuiltInWeaponsWithSkin(true, false);
+        if (true) {
+            decoratives.forEach((slotID, feature) ->
                     this.prepareFeature(result, slotPainter, slotID, feature));
         }
 

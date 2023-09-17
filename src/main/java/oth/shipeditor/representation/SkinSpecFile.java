@@ -140,6 +140,8 @@ public class SkinSpecFile implements ShipSpecFile {
     @JsonProperty(StringConstants.REMOVE_BUILT_IN_MODS)
     private List<String> removeBuiltInMods;
 
+    // TODO: add removeBuiltInWings field and all related functionality.
+
     @JsonProperty(StringConstants.REMOVE_BUILT_IN_WEAPONS)
     private List<String> removeBuiltInWeapons;
 

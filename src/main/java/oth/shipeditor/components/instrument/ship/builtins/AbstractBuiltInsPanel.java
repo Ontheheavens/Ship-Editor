@@ -10,21 +10,19 @@ import oth.shipeditor.components.viewer.layers.ViewerLayer;
 import oth.shipeditor.components.viewer.layers.ship.ShipLayer;
 import oth.shipeditor.components.viewer.layers.ship.ShipPainter;
 import oth.shipeditor.utility.components.ComponentUtilities;
-import oth.shipeditor.utility.components.ScrollableHeightContainer;
+import oth.shipeditor.utility.components.containers.ScrollableHeightContainer;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
-import java.util.List;
-import java.util.function.Consumer;
 
 /**
  * @author Ontheheavens
  * @since 27.08.2023
  */
-public abstract class AbstractBuiltInsPanel<T> extends JPanel {
+public abstract class AbstractBuiltInsPanel extends JPanel {
 
-    static final String REMOVED_BY_SKIN = "Removed by skin";
+    protected static final String REMOVED_BY_SKIN = "Removed by skin";
 
     @Getter @Setter
     private ShipLayer cachedLayer;
@@ -32,7 +30,7 @@ public abstract class AbstractBuiltInsPanel<T> extends JPanel {
     @Getter
     private final JPanel contentPane;
 
-    AbstractBuiltInsPanel() {
+    public AbstractBuiltInsPanel() {
         this.setLayout(new BorderLayout());
 
         String hintText = "Use right-click context menu of " +
@@ -67,13 +65,13 @@ public abstract class AbstractBuiltInsPanel<T> extends JPanel {
         });
     }
 
-    void installPlaceholderLabel(String text) {
+    protected void installPlaceholderLabel(String text) {
         contentPane.removeAll();
         contentPane.setLayout(new BorderLayout());
         contentPane.add(AbstractBuiltInsPanel.createPlaceholderLabel(text), BorderLayout.CENTER);
     }
 
-    static JPanel createPlaceholderLabel(String text) {
+    protected static JPanel createPlaceholderLabel(String text) {
         var emptyContainer = new JPanel();
         emptyContainer.setBorder(new EmptyBorder(6, 2, 6, 2));
         emptyContainer.setLayout(new BoxLayout(emptyContainer, BoxLayout.LINE_AXIS));
@@ -103,29 +101,5 @@ public abstract class AbstractBuiltInsPanel<T> extends JPanel {
         hintPanel.setMaximumSize(new Dimension(Integer.MAX_VALUE, 45));
         return hintPanel;
     }
-
-    void handleSkinChanges(List<T> entryList, Color panelColor) {
-        handleSkinChanges(entryList, panelColor, "Added by skin");
-    }
-
-    void handleSkinChanges(List<T> entryList, Color panelColor, String panelTitle) {
-        if (entryList != null && !entryList.isEmpty()) {
-            contentPane.add(Box.createVerticalStrut(2));
-            JPanel title = ComponentUtilities.createTitledSeparatorPanel(panelTitle);
-            title.setMaximumSize(new Dimension(Integer.MAX_VALUE, 4));
-            title.setAlignmentY(0);
-            contentPane.add(title);
-
-            this.populateWithEntries(contentPane, entryList, panel -> {
-                if (panelColor != null) {
-                    panel.setBackground(panelColor);
-                }
-            });
-        }
-    }
-
-    protected abstract  void populateWithEntries(JPanel container, List<T> entryList,
-                                     Consumer<JPanel> panelMutator);
-
 
 }

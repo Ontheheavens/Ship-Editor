@@ -24,7 +24,7 @@ import oth.shipeditor.representation.HullSpecFile;
 import oth.shipeditor.representation.ShipData;
 import oth.shipeditor.representation.weapon.WeaponMount;
 import oth.shipeditor.representation.weapon.WeaponSpecFile;
-import oth.shipeditor.utility.components.SortableTabbedPane;
+import oth.shipeditor.utility.components.containers.SortableTabbedPane;
 import oth.shipeditor.utility.graphics.Sprite;
 
 import javax.swing.*;

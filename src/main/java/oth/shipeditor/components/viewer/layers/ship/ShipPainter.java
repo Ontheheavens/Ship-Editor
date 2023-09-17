@@ -40,7 +40,7 @@ import java.util.stream.Collectors;
  * @author Ontheheavens
  * @since 29.05.2023
  */
-@SuppressWarnings({"OverlyCoupledClass", "ClassWithTooManyFields", "ClassWithTooManyMethods"})
+@SuppressWarnings({"OverlyCoupledClass", "ClassWithTooManyFields", "ClassWithTooManyMethods", "OverlyComplexClass"})
 @Log4j2
 public class ShipPainter extends LayerPainter {
 
@@ -371,17 +371,36 @@ public class ShipPainter extends LayerPainter {
         return dataEntry.getBaseHullHints();
     }
 
-    public Map<String, InstalledFeature> getBuiltInWeaponsWithSkin() {
+    @SuppressWarnings({"BooleanParameter", "OverlyComplexMethod"})
+    public Map<String, InstalledFeature> getBuiltInWeaponsWithSkin(boolean includeDecorative,
+                                                                   boolean includeNonDecorative) {
         Map<String, InstalledFeature> builtIns = this.getBuiltInWeapons();
 
-        Map<String, InstalledFeature> result = new LinkedHashMap<>(builtIns);
+        Map<String, InstalledFeature> result = new LinkedHashMap<>();
+        var slotPainter = this.getWeaponSlotPainter();
+        builtIns.forEach((slotID, feature) -> {
+            boolean isSlotDecorative = slotPainter.isSlotDecorative(slotID);
+            if (isSlotDecorative && includeDecorative) {
+                result.put(slotID, feature);
+            } else if (slotPainter.getSlotByID(slotID) != null && !isSlotDecorative && includeNonDecorative) {
+                result.put(slotID, feature);
+            }
+        });
+
         if (activeSkin != null && !activeSkin.isBase()) {
             var removedBuiltIns = activeSkin.getRemoveBuiltInWeapons();
             removedBuiltIns.forEach(result::remove);
 
             var addedBuiltIns = activeSkin.getInitializedBuiltIns();
             if (!addedBuiltIns.isEmpty()) {
-                result.putAll(addedBuiltIns);
+                addedBuiltIns.forEach((slotID, feature) -> {
+                    boolean isSlotDecorative = slotPainter.isSlotDecorative(slotID);
+                    if (isSlotDecorative && includeDecorative) {
+                        result.put(slotID, feature);
+                    } else if (slotPainter.getSlotByID(slotID) != null && !isSlotDecorative && includeNonDecorative) {
+                        result.put(slotID, feature);
+                    }
+                });
             }
         }
 
@@ -389,7 +408,7 @@ public class ShipPainter extends LayerPainter {
     }
 
     private Map<String, InstalledFeature> getAllLoadedInstallables() {
-        var builtIns = this.getBuiltInWeaponsWithSkin();
+        var builtIns = this.getBuiltInWeaponsWithSkin(true, true);
         Map<String, InstalledFeature> allFeatures = new LinkedHashMap<>(builtIns);
 
         ShipVariant shipVariant = this.getActiveVariant();

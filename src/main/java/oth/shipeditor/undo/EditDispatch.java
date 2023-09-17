@@ -216,6 +216,8 @@ public final class EditDispatch {
         Edit renameEdit = new SlotIDChangeEdit(point, newID, oldID);
         UndoOverseer.post(renameEdit);
         point.changeSlotID(newID);
+        var repainter = StaticController.getRepainter();
+        repainter.queueSlotControlRepaint();
     }
 
     public static void postSlotTypeChanged(SlotData point, WeaponType newType) {
@@ -225,6 +227,7 @@ public final class EditDispatch {
         point.setWeaponType(newType);
         var repainter = StaticController.getRepainter();
         repainter.queueViewerRepaint();
+        repainter.queueSlotControlRepaint();
     }
 
     public static void postSlotMountChanged(SlotData point, WeaponMount newMount) {
@@ -234,6 +237,7 @@ public final class EditDispatch {
         point.setWeaponMount(newMount);
         var repainter = StaticController.getRepainter();
         repainter.queueViewerRepaint();
+        repainter.queueSlotControlRepaint();
     }
 
     public static void postSlotSizeChanged(SlotData point, WeaponSize newSize) {
@@ -243,6 +247,7 @@ public final class EditDispatch {
         point.setWeaponSize(newSize);
         var repainter = StaticController.getRepainter();
         repainter.queueViewerRepaint();
+        repainter.queueSlotControlRepaint();
     }
 
     public static void postHullmodAdded(List<HullmodCSVEntry> index, ShipLayer shipLayer, HullmodCSVEntry hullmod) {

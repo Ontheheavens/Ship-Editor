@@ -58,6 +58,8 @@ public class SlotCreationPane extends JPanel {
         selectorsPane.add(Box.createVerticalGlue());
 
         JScrollPane scrollContainer = new JScrollPane(selectorsPane);
+        JScrollBar verticalScrollBar = scrollContainer.getVerticalScrollBar();
+        verticalScrollBar.setUnitIncrement(12);
 
         this.add(scrollContainer, BorderLayout.CENTER);
         this.setPreferredSize(this.getMinimumSize());

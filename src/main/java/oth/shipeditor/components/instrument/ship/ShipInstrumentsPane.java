@@ -8,7 +8,7 @@ import oth.shipeditor.communication.events.viewer.points.InstrumentModeChanged;
 import oth.shipeditor.components.instrument.AbstractInstrumentsPane;
 import oth.shipeditor.components.instrument.ship.bays.LaunchBaysPanel;
 import oth.shipeditor.components.instrument.ship.builtins.BuiltInHullmodsPanel;
-import oth.shipeditor.components.instrument.ship.builtins.BuiltInWeaponsPanel;
+import oth.shipeditor.components.instrument.ship.builtins.weapons.BuiltInWeaponsPanel;
 import oth.shipeditor.components.instrument.ship.builtins.BuiltInWingsPanel;
 import oth.shipeditor.components.instrument.ship.builtins.DecorativesPanel;
 import oth.shipeditor.components.instrument.ship.centers.CollisionPanel;

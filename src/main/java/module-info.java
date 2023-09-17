@@ -78,5 +78,9 @@
     opens oth.shipeditor.components.instrument.ship.engines;
     exports oth.shipeditor.components.instrument.ship.builtins;
     opens oth.shipeditor.components.instrument.ship.builtins;
+    exports oth.shipeditor.components.instrument.ship.builtins.weapons;
+    opens oth.shipeditor.components.instrument.ship.builtins.weapons;
+    exports oth.shipeditor.components.instrument.ship.shared;
+    opens oth.shipeditor.components.instrument.ship.shared;
 
 }
