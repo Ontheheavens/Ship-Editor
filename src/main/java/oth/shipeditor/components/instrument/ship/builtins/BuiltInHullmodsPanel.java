@@ -1,4 +1,4 @@
-package oth.shipeditor.components.instrument.ship;
+package oth.shipeditor.components.instrument.ship.builtins;
 
 import oth.shipeditor.components.datafiles.entities.HullmodCSVEntry;
 import oth.shipeditor.components.viewer.layers.ship.ShipLayer;
@@ -20,7 +20,7 @@ import java.util.function.Consumer;
  * @author Ontheheavens
  * @since 24.08.2023
  */
-public class BuiltInHullmodsPanel extends AbstractBuiltInsPanel<HullmodCSVEntry> {
+public class BuiltInHullmodsPanel extends CSVEntryBuiltInsPanel<HullmodCSVEntry> {
 
     @Override
     protected void refreshPanel(ShipLayer layer) {
@@ -63,7 +63,7 @@ public class BuiltInHullmodsPanel extends AbstractBuiltInsPanel<HullmodCSVEntry>
 
     private void handleSkinModChanges(ShipSkin skin) {
         var removed = skin.getRemoveBuiltInMods();
-        super.handleSkinChanges(removed, new Color(255, 200, 200, 255));
+        super.handleSkinChanges(removed, new Color(255, 200, 200, 255), REMOVED_BY_SKIN);
         var added = skin.getBuiltInMods();
         super.handleSkinChanges(added, new Color(200, 255, 200, 255));
     }

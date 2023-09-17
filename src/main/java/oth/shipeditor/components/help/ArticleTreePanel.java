@@ -4,7 +4,7 @@ import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.components.GameDataPanelResized;
 import oth.shipeditor.components.datafiles.trees.DataTreePanel;
 import oth.shipeditor.components.datafiles.OpenDataTarget;
-import oth.shipeditor.utility.components.TextScrollPanel;
+import oth.shipeditor.utility.components.containers.TextScrollPanel;
 
 import javax.swing.*;
 import javax.swing.tree.DefaultMutableTreeNode;

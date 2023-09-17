@@ -15,7 +15,9 @@ import oth.shipeditor.representation.SkinSpecFile;
 import oth.shipeditor.utility.Utility;
 import oth.shipeditor.utility.graphics.Sprite;
 import oth.shipeditor.utility.text.StringConstants;
+import oth.shipeditor.utility.text.StringValues;
 
+import javax.swing.*;
 import java.io.File;
 import java.nio.file.Path;
 import java.util.*;
@@ -26,7 +28,7 @@ import java.util.*;
  */
 @Log4j2
 @Getter
-public class ShipCSVEntry implements CSVEntry {
+public class ShipCSVEntry implements CSVEntry, InstallableEntry {
 
     private final Map<String, String> rowData;
 
@@ -126,10 +128,20 @@ public class ShipCSVEntry implements CSVEntry {
         return displayedName;
     }
 
+    @SuppressWarnings("MethodWithMultipleReturnPoints")
     public void loadLayerFromEntry() {
         String spriteName = this.hullSpecFile.getSpriteName();
         Path spriteFilePath = Path.of(spriteName);
         File spriteFile = FileLoading.fetchDataFile(spriteFilePath, this.packageFolderPath);
+
+        if (spriteFile == null) {
+            log.error("Sprite file for ship not found: {}", spriteFilePath.toString());
+            JOptionPane.showMessageDialog(null,
+                    "Sprite file for ship not found, layer not created: " + spriteFilePath,
+                    StringValues.FILE_LOADING_ERROR,
+                    JOptionPane.ERROR_MESSAGE);
+            return;
+        }
 
         ShipLayer newLayer = FileUtilities.createShipLayerWithSprite(spriteFile);
         newLayer.createShipData(this.hullSpecFile);

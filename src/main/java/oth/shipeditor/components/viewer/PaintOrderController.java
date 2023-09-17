@@ -38,8 +38,7 @@ public class PaintOrderController implements Painter {
     @Setter
     private boolean repaintQueued;
 
-    @Setter
-    private boolean revalidateQueued;
+    private int framesDrawn;
 
     PaintOrderController(PrimaryViewer viewer) {
         this.parent = viewer;
@@ -48,20 +47,14 @@ public class PaintOrderController implements Painter {
         this.guidesPainters = new GuidesPainters(viewer);
         this.hotkeyPainter = new HotkeyHelpPainter();
 
-        Timer repaintTimer = new Timer(2, e -> {
+        Timer repaintTimer = new Timer(12, e -> {
             if (repaintQueued) {
                 repaintViewer();
-            }
-            if (revalidateQueued) {
-                revalidateViewer();
+                framesDrawn++;
             }
         });
         repaintTimer.setRepeats(true);
         repaintTimer.start();
-    }
-
-    private void revalidateViewer() {
-        parent.revalidate();
     }
 
     private void repaintViewer() {
@@ -83,6 +76,8 @@ public class PaintOrderController implements Painter {
         PaintOrderController.paintIfPresent(g, worldToScreen, w, h, miscPointsPainter);
 
         PaintOrderController.paintIfPresent(g, worldToScreen, w, h, hotkeyPainter);
+
+        g.drawString(String.valueOf(framesDrawn), 10, 20);
     }
 
     private static void paintIfPresent(Graphics2D g, AffineTransform worldToScreen, double w, double h, Painter painter) {

@@ -40,6 +40,7 @@ public final class StringValues {
     public static final String FILES = "Files";
     public static final String FILTERS = "Filters";
     public static final String MODULE_ANCHOR = "Module Anchor";
+    public static final String ADDED_BY_SKIN = "Added by skin";
 
     private StringValues() {
     }

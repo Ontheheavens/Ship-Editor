@@ -15,6 +15,7 @@ import oth.shipeditor.menubar.FileUtilities;
 import oth.shipeditor.parsing.loading.FileLoading;
 import oth.shipeditor.utility.Pair;
 import oth.shipeditor.utility.Utility;
+import oth.shipeditor.utility.components.containers.TextScrollPanel;
 import oth.shipeditor.utility.graphics.ColorUtilities;
 import oth.shipeditor.utility.text.StringValues;
 
@@ -206,7 +207,6 @@ public final class ComponentUtilities {
         return new FlatLineBorder(insets, Color.LIGHT_GRAY);
     }
 
-    @SuppressWarnings({"unused", "WeakerAccess"})
     public static ImageIcon createIconFromColor(Color color, int width, int height) {
         BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
         Graphics2D graphics = image.createGraphics();

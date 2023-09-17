@@ -106,14 +106,26 @@ public final class DrawUtilities {
     }
 
     public static void drawOutlined(Graphics2D g, Shape shape, Paint color) {
-        DrawUtilities.drawOutlined(g, shape, color, false,
-                new BasicStroke(5), new BasicStroke(3));
+        DrawUtilities.drawOutlined(g, shape, color, false);
     }
 
     @SuppressWarnings({"BooleanParameter", "WeakerAccess"})
     public static void drawOutlined(Graphics2D g, Shape shape, Paint color, boolean quality) {
-        DrawUtilities.drawOutlined(g, shape, color, quality,
-                new BasicStroke(5), new BasicStroke(3));
+        float widthFive = 5.0f;
+        Stroke cachedFive = CACHED_STROKES.get(widthFive);
+        if (cachedFive == null) {
+            cachedFive = new BasicStroke(widthFive);
+            CACHED_STROKES.put(widthFive, cachedFive);
+        }
+
+        float widthThree = 3.0f;
+        Stroke cachedThree = CACHED_STROKES.get(widthThree);
+        if (cachedThree == null) {
+            cachedThree = new BasicStroke(widthThree);
+            CACHED_STROKES.put(widthThree, cachedThree);
+        }
+
+        DrawUtilities.drawOutlined(g, shape, color, quality, cachedFive, cachedThree);
     }
 
     @SuppressWarnings({"BooleanParameter", "MethodWithTooManyParameters", "WeakerAccess"})

@@ -157,23 +157,4 @@ public abstract class MirrorablePointPainter extends AbstractPointPainter {
         return null;
     }
 
-    @SuppressWarnings("WeakerAccess")
-    public BaseWorldPoint findClosestPoint(Point2D target) {
-        List<? extends BaseWorldPoint> pointsIndex = this.getPointsIndex();
-        BaseWorldPoint closestPoint = null;
-        double closestDistance = Double.MAX_VALUE;
-
-        for (BaseWorldPoint point : pointsIndex) {
-            Point2D position = point.getPosition();
-            double distance = target.distance(position);
-
-            if (distance < closestDistance) {
-                closestPoint = point;
-                closestDistance = distance;
-            }
-        }
-
-        return closestPoint;
-    }
-
 }

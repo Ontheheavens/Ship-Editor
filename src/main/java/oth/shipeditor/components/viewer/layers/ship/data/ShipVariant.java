@@ -91,7 +91,7 @@ public class ShipVariant implements Variant {
                 WeaponCSVEntry weaponEntry = GameDataRepository.getWeaponByID(weaponID);
                 WeaponSpecFile specFile = weaponEntry.getSpecFile();
                 WeaponPainter weaponPainter = weaponEntry.createPainterFromEntry(null, specFile);
-                fitted.put(slotID, new InstalledFeature(slotID, weaponID, weaponPainter));
+                fitted.put(slotID, InstalledFeature.of(slotID, weaponID, weaponPainter, weaponEntry));
             });
             weaponGroups.add(initialized);
         });
@@ -119,7 +119,7 @@ public class ShipVariant implements Variant {
                 }
 
                 modulePainter.selectVariant(variant);
-                fittedModules.put(slotID, new InstalledFeature(slotID, variantID, modulePainter));
+                fittedModules.put(slotID, InstalledFeature.of(slotID, variantID, modulePainter, csvEntry));
             });
         }
 

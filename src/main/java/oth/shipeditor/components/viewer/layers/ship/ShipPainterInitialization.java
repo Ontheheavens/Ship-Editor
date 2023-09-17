@@ -178,7 +178,7 @@ public final class ShipPainterInitialization {
             WeaponCSVEntry weaponEntry = GameDataRepository.getWeaponByID(weaponID);
             WeaponSpecFile specFile = weaponEntry.getSpecFile();
             WeaponPainter weaponPainter = weaponEntry.createPainterFromEntry(null, specFile);
-            runtimeBuiltIns.put(slotID, new InstalledFeature(slotID, weaponID, weaponPainter));
+            runtimeBuiltIns.put(slotID, InstalledFeature.of(slotID, weaponID, weaponPainter, weaponEntry));
         });
     }
 

@@ -69,6 +69,7 @@ public final class PrimaryViewer extends Viewer implements LayerViewer {
         this.layerManager.initListeners();
     }
 
+    @SuppressWarnings("OverlyComplexAnonymousInnerClass")
     public PrimaryViewer commenceInitialization() {
         this.paintOrderController = new PaintOrderController(this);
         this.addPainter(this.paintOrderController);
@@ -79,6 +80,7 @@ public final class PrimaryViewer extends Viewer implements LayerViewer {
         this.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseEntered(MouseEvent e) {
+                if (cursorInViewer) return;
                 PrimaryViewer.this.requestFocusInWindow();
                 cursorInViewer = true;
                 setRepaintQueued();
@@ -86,6 +88,7 @@ public final class PrimaryViewer extends Viewer implements LayerViewer {
 
             @Override
             public void mouseExited(MouseEvent e) {
+                if (!cursorInViewer) return;
                 cursorInViewer = false;
                 setRepaintQueued();
             }
@@ -102,11 +105,6 @@ public final class PrimaryViewer extends Viewer implements LayerViewer {
 
     public void setRepaintQueued() {
         this.paintOrderController.setRepaintQueued(true);
-    }
-
-    @SuppressWarnings("WeakerAccess")
-    public void setRevalidateQueued() {
-        this.paintOrderController.setRevalidateQueued(true);
     }
 
     private void initViewerStateListeners() {
@@ -132,7 +130,6 @@ public final class PrimaryViewer extends Viewer implements LayerViewer {
                 Color opaque = new Color(background.getRed(),
                         background.getGreen(), background.getBlue(), 255);
                 this.setBackground(opaque);
-                setRevalidateQueued();
                 setRepaintQueued();
             }
         });
@@ -206,13 +203,17 @@ public final class PrimaryViewer extends Viewer implements LayerViewer {
             List<ViewerLayer> layers = layerManager.getLayers();
 
             if (layers.size() > 1) {
+                // Ideally, this needs to loop through all layers starting from last, checking if painter is present.
+                // Then get anchor of that and place new painter anchor next to it.
                 var prevLayer = layers.get(layers.indexOf(layer) - 1);
                 var layerPainter = prevLayer.getPainter();
-                var layerAnchor = layerPainter.getAnchor();
-                var prevLayerWidth = layerPainter.getSpriteSize();
-                Point2D widthPoint = new Point2D.Double(layerAnchor.getX() + prevLayerWidth.width, layerAnchor.getY());
+                if (layerPainter != null) {
+                    var layerAnchor = layerPainter.getAnchor();
+                    var prevLayerWidth = layerPainter.getSpriteSize();
+                    Point2D widthPoint = new Point2D.Double(layerAnchor.getX() + prevLayerWidth.width, layerAnchor.getY());
 
-                newPainter.updateAnchorOffset(widthPoint);
+                    newPainter.updateAnchorOffset(widthPoint);
+                }
             }
         }
         layer.setSpriteFileName(sprite.name());

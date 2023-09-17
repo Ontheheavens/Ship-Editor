@@ -6,9 +6,11 @@ import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.components.SlotControlRepaintQueued;
 import oth.shipeditor.communication.events.viewer.ViewerRepaintQueued;
 import oth.shipeditor.components.CoordsDisplayMode;
+import oth.shipeditor.components.datafiles.entities.CSVEntry;
 import oth.shipeditor.components.instrument.ship.EditorInstrument;
 import oth.shipeditor.components.viewer.entities.AngledPoint;
 import oth.shipeditor.components.viewer.layers.ship.ShipPainter;
+import oth.shipeditor.components.viewer.painters.features.InstalledFeature;
 import oth.shipeditor.components.viewer.painters.points.WeaponSlotPainter;
 import oth.shipeditor.representation.ShipTypeHints;
 import oth.shipeditor.representation.weapon.WeaponMount;
@@ -202,6 +204,25 @@ public class WeaponSlotPoint extends AngledPoint implements SlotPoint {
         g.setComposite(old);
 
         this.paintCoordsLabel(g, worldToScreen);
+    }
+
+    public boolean isDecorative() {
+        return this.getWeaponType() == WeaponType.DECORATIVE;
+    }
+
+    public boolean isBuiltIn() {
+        return this.getWeaponType() == WeaponType.BUILT_IN;
+    }
+
+    public boolean isFittable() {
+        WeaponType type = this.getWeaponType();
+        return type != WeaponType.BUILT_IN && type != WeaponType.DECORATIVE && type != WeaponType.SYSTEM;
+    }
+
+    public boolean canFit(InstalledFeature feature) {
+        CSVEntry dataEntry = feature.getDataEntry();
+        if (dataEntry == null) return false;
+        return WeaponType.isValidForSlot(this, dataEntry);
     }
 
     public double getOffsetRelativeToAxis() {

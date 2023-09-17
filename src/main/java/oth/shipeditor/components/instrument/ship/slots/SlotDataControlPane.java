@@ -72,7 +72,7 @@ public class SlotDataControlPane extends AbstractSlotValuesPanel {
                 Number modelNumber = spinnerNumberModel.getNumber();
                 double current = modelNumber.doubleValue();
 
-                ShipPainter slotParent = (ShipPainter) weaponSlotPoint.getParent();
+                ShipPainter slotParent = weaponSlotPoint.getParent();
                 WeaponSlotPainter weaponSlotPainter = slotParent.getWeaponSlotPainter();
                 weaponSlotPainter.changePointAngleWithMirrorCheck(weaponSlotPoint, current);
 
@@ -92,7 +92,7 @@ public class SlotDataControlPane extends AbstractSlotValuesPanel {
 
                 Number modelNumber = spinnerNumberModel.getNumber();
                 double current = modelNumber.doubleValue();
-                ShipPainter slotParent = (ShipPainter) weaponSlotPoint.getParent();
+                ShipPainter slotParent = weaponSlotPoint.getParent();
                 WeaponSlotPainter weaponSlotPainter = slotParent.getWeaponSlotPainter();
                 weaponSlotPainter.changeArcWithMirrorCheck(weaponSlotPoint, current);
 
@@ -104,7 +104,7 @@ public class SlotDataControlPane extends AbstractSlotValuesPanel {
     private void actOnSelectedValues(BiConsumer<WeaponSlotPainter, List<WeaponSlotPoint>> action) {
         WeaponSlotPoint selectedValue = slotList.getSelectedValue();
         if (selectedValue == null) return;
-        ShipPainter parentLayer = (ShipPainter) selectedValue.getParent();
+        ShipPainter parentLayer = selectedValue.getParent();
         WeaponSlotPainter slotPainter = parentLayer.getWeaponSlotPainter();
         List<WeaponSlotPoint> selectedValuesList = slotList.getSelectedValuesList();
         if (!selectedValuesList.isEmpty()) {

@@ -32,11 +32,12 @@ public abstract class CSVDataTreePanel<T extends CSVEntry> extends DataTreePanel
 
     protected abstract String getEntryTypeName();
 
+    @SuppressWarnings("unused")
     @Override
     protected JPanel createTopPanel() {
         String entryTypeName = getEntryTypeName();
         String capitalized = Utility.capitalizeFirstLetter(entryTypeName);
-        Pair<JPanel, JButton> singleButtonPanel = ComponentUtilities.createSingleButtonPanel(capitalized + " data:",
+        Pair<JPanel, JButton> singleButtonPanel = ComponentUtilities.createSingleButtonPanel("",
                 getLoadDataAction());
         JButton button = singleButtonPanel.getSecond();
         button.setText("Reload " + entryTypeName + " data");

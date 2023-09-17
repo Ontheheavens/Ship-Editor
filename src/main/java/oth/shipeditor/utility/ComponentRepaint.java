@@ -87,6 +87,7 @@ public class ComponentRepaint {
         this.enginesPanelRepaintQueued = true;
     }
 
+    @SuppressWarnings("unused")
     public void queueSkinPanelRepaint() {
         this.skinPanelRepaintQueued = true;
     }
@@ -95,6 +96,7 @@ public class ComponentRepaint {
         this.slotControlRepaintQueued = true;
     }
 
+    @SuppressWarnings("unused")
     public void queueSlotsPanelRepaint() {
         this.slotsPanelRepaintQueued = true;
     }

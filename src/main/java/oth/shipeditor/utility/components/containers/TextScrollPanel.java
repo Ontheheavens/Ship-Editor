@@ -1,4 +1,4 @@
-package oth.shipeditor.utility.components;
+package oth.shipeditor.utility.components.containers;
 
 import javax.swing.*;
 import java.awt.*;

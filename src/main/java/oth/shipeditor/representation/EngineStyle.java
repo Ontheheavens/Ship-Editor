@@ -80,6 +80,9 @@ public class EngineStyle {
     @JsonProperty("contrailAngularVelocityMult")
     private double contrailAngularVelocityMult;
 
+    @JsonProperty("contrailSpawnDistMult")
+    private double contrailSpawnDistMult;
+
     @JsonProperty("contrailParticleDuration")
     private double contrailParticleDuration;
 

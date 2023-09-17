@@ -70,6 +70,10 @@ public class WeaponsTreePanel extends CSVDataTreePanel<WeaponCSVEntry>{
         return custom;
     }
 
+    /**
+     * This could very well be a full-fledged panel stamp, with type icon borders and size icon too.
+     * Unfortunately, there's not enough development time for that.
+     */
     private static class WeaponsTreeCellRenderer extends DefaultTreeCellRenderer {
 
         @SuppressWarnings("ParameterHidesMemberVariable")
