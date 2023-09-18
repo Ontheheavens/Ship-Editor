@@ -107,6 +107,12 @@ public abstract class DataTreePanel extends JPanel {
 
     protected abstract JPanel createTopPanel();
 
+    void expandAllNodes() {
+        for (int i = 0; i < tree.getRowCount(); i++) {
+            tree.expandRow(i);
+        }
+    }
+
     void resetInfoPanel() {
         rightPanel.removeAll();
         rightPanel.add(new JLabel(StringValues.NO_ENTRY_SELECTED));

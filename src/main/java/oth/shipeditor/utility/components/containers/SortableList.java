@@ -13,7 +13,7 @@ import java.awt.dnd.*;
  * @author Terai Atsuhiro, refactored by Ontheheavens
  * @since 25.07.2023
  */
-@SuppressWarnings({"AbstractClassWithOnlyOneDirectInheritor", "NoopMethodInAbstractClass"})
+@SuppressWarnings("NoopMethodInAbstractClass")
 public abstract class SortableList<E> extends JList<E> implements DragGestureListener, DragSourceListener, Transferable {
 
     private static final String NAME = "Sortable Entry";

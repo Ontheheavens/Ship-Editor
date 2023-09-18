@@ -28,6 +28,8 @@ public class ComponentRepaint {
 
     private boolean slotsPanelRepaintQueued;
 
+    private boolean builtInsPanelRepaintQueued;
+
     ComponentRepaint() {
         Timer repaintTimer = new Timer(2, e -> {
             if (viewerRepaintQueued) {
@@ -61,6 +63,10 @@ public class ComponentRepaint {
             if (slotsPanelRepaintQueued) {
                 EventBus.publish(new SlotsPanelRepaintQueued());
                 slotsPanelRepaintQueued = false;
+            }
+            if (builtInsPanelRepaintQueued) {
+                EventBus.publish(new BuiltInsPanelsRepaintQueued());
+                builtInsPanelRepaintQueued = false;
             }
         });
         repaintTimer.setRepeats(true);
@@ -99,6 +105,10 @@ public class ComponentRepaint {
     @SuppressWarnings("unused")
     public void queueSlotsPanelRepaint() {
         this.slotsPanelRepaintQueued = true;
+    }
+
+    public void queueBuiltInsRepaint() {
+        this.builtInsPanelRepaintQueued = true;
     }
 
 }

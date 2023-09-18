@@ -99,7 +99,8 @@ public final class ComponentUtilities {
     public static JLabel createHullmodIcon(HullmodCSVEntry entry) {
         Map<String, String> rowData = entry.getRowData();
         String name = rowData.get("name");
-        return ComponentUtilities.createIconFromImage(entry.fetchHullmodSpriteFile(), name);
+        File imageFile = entry.fetchHullmodSpriteFile();
+        return ComponentUtilities.createIconFromImage(imageFile, name);
     }
 
     @SuppressWarnings("WeakerAccess")

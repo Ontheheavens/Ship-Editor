@@ -64,7 +64,7 @@ public class ShipCSVEntry implements CSVEntry, InstallableEntry {
     @SuppressWarnings("WeakerAccess")
     public List<ShipTypeHints> getBaseHullHints() {
         List<ShipTypeHints> result = new ArrayList<>();
-        String cellData = rowData.get("hints");
+        String cellData = rowData.get(StringConstants.HINTS);
         if (cellData != null && !cellData.isEmpty()) {
             Iterable<String> hintsText = new ArrayList<>(Arrays.asList(Utility.SPLIT_BY_COMMA.split(cellData)));
             hintsText.forEach(hintText -> result.add(ShipTypeHints.valueOf(hintText)));

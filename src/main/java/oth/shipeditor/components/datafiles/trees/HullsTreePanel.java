@@ -95,7 +95,6 @@ class HullsTreePanel extends DataTreePanel {
         tree.repaint();
     }
 
-    @SuppressWarnings("WeakerAccess")
     protected JPanel createSearchContainer() {
         JPanel searchContainer = new JPanel(new GridBagLayout());
         searchContainer.setBorder(new EmptyBorder(0, 0, 0, 0));

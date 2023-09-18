@@ -80,11 +80,11 @@ public final class ShipSkin {
 
     private Color coversColor;
 
-    private List<String> tags;
+    private List<String> tags = new ArrayList<>();
 
     private String tech;
 
-    private List<WingCSVEntry> builtInWings;
+    private List<WingCSVEntry> builtInWings = new ArrayList<>();
 
     private int fighterBays;
 
@@ -92,31 +92,31 @@ public final class ShipSkin {
 
     private double baseValueMult;
 
-    private List<ShipTypeHints> removeHints;
+    private List<ShipTypeHints> removeHints = new ArrayList<>();
 
-    private List<ShipTypeHints> addHints;
+    private List<ShipTypeHints> addHints = new ArrayList<>();
 
-    private List<String> removeWeaponSlots;
+    private List<String> removeWeaponSlots = new ArrayList<>();
 
-    private List<Integer> removeEngineSlots;
+    private List<Integer> removeEngineSlots = new ArrayList<>();
 
-    private List<HullmodCSVEntry> removeBuiltInMods;
+    private List<HullmodCSVEntry> removeBuiltInMods = new ArrayList<>();
 
-    private List<String> removeBuiltInWeapons;
+    private List<String> removeBuiltInWeapons = new ArrayList<>();
 
-    private List<HullmodCSVEntry> builtInMods;
+    private List<HullmodCSVEntry> builtInMods = new ArrayList<>();
 
-    private Map<String, WeaponCSVEntry> builtInWeapons;
+    private Map<String, WeaponCSVEntry> builtInWeapons = new LinkedHashMap<>();
 
 
     /**
      * For runtime usage in viewer.
      */
-    private Map<String, InstalledFeature> initializedBuiltIns;
+    private Map<String, InstalledFeature> initializedBuiltIns = new LinkedHashMap<>();
 
-    private Map<String, WeaponSlotOverride> weaponSlotChanges;
+    private Map<String, WeaponSlotOverride> weaponSlotChanges = new LinkedHashMap<>();
 
-    private Map<Integer, EngineDataOverride> engineSlotChanges;
+    private Map<Integer, EngineDataOverride> engineSlotChanges = new LinkedHashMap<>();
 
     /**
      * Needs to be called after every change in CSV-type built-ins map.
@@ -384,7 +384,10 @@ public final class ShipSkin {
          * @param builtInWeapons map where keys are slot IDs and values are weapon IDs.
          */
         public Builder withBuiltInWeapons(Map<String, String> builtInWeapons) {
-            if (builtInWeapons == null) return this;
+            if (builtInWeapons == null) {
+                skin.builtInWeapons = new LinkedHashMap<>();
+                return this;
+            }
             GameDataRepository gameData = SettingsManager.getGameData();
             Map<String, WeaponCSVEntry> allWeapons = gameData.getAllWeaponEntries();
             Map<String, WeaponCSVEntry> weapons = new LinkedHashMap<>(builtInWeapons.size());

@@ -84,17 +84,24 @@ public class BuiltInWingsPanel extends CSVEntryBuiltInsPanel<WingCSVEntry> {
             var skinEntries = activeSkin.getBuiltInWings();
             totalEntries.addAll(skinEntries);
         }
-        var shipData = layer.getShipData();
-        var hullSpecFile = shipData.getHullSpecFile();
 
-        var gameData = SettingsManager.getGameData();
-        var allShipEntries = gameData.getAllShipEntries();
-        var selectedCSVEntry = allShipEntries.get(hullSpecFile.getHullId());
-        var entryRowData = selectedCSVEntry.getRowData();
-        String fighterBays = entryRowData.get("fighter bays");
         int bayCount = 0;
-        if (fighterBays != null && !fighterBays.isEmpty()) {
-            bayCount = Integer.parseInt(fighterBays);
+
+        var shipData = layer.getShipData();
+        if (shipData != null && shipData.getHullSpecFile() != null) {
+            var hullSpecFile = shipData.getHullSpecFile();
+
+            var gameData = SettingsManager.getGameData();
+            var allShipEntries = gameData.getAllShipEntries();
+            var selectedCSVEntry = allShipEntries.get(hullSpecFile.getHullId());
+            if (selectedCSVEntry != null) {
+                var entryRowData = selectedCSVEntry.getRowData();
+                String fighterBays = entryRowData.get("fighter bays");
+
+                if (fighterBays != null && !fighterBays.isEmpty()) {
+                    bayCount = Integer.parseInt(fighterBays);
+                }
+            }
         }
 
         int wingsSize = totalEntries.size();

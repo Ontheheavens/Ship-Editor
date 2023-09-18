@@ -372,8 +372,8 @@ public class ShipPainter extends LayerPainter {
     }
 
     @SuppressWarnings({"BooleanParameter", "OverlyComplexMethod"})
-    public Map<String, InstalledFeature> getBuiltInWeaponsWithSkin(boolean includeDecorative,
-                                                                   boolean includeNonDecorative) {
+    public Map<String, InstalledFeature> getBuiltInsWithSkin(boolean includeDecorative,
+                                                             boolean includeNonDecorative) {
         Map<String, InstalledFeature> builtIns = this.getBuiltInWeapons();
 
         Map<String, InstalledFeature> result = new LinkedHashMap<>();
@@ -389,7 +389,9 @@ public class ShipPainter extends LayerPainter {
 
         if (activeSkin != null && !activeSkin.isBase()) {
             var removedBuiltIns = activeSkin.getRemoveBuiltInWeapons();
-            removedBuiltIns.forEach(result::remove);
+            if (removedBuiltIns != null) {
+                removedBuiltIns.forEach(result::remove);
+            }
 
             var addedBuiltIns = activeSkin.getInitializedBuiltIns();
             if (!addedBuiltIns.isEmpty()) {
@@ -408,7 +410,7 @@ public class ShipPainter extends LayerPainter {
     }
 
     private Map<String, InstalledFeature> getAllLoadedInstallables() {
-        var builtIns = this.getBuiltInWeaponsWithSkin(true, true);
+        var builtIns = this.getBuiltInsWithSkin(true, true);
         Map<String, InstalledFeature> allFeatures = new LinkedHashMap<>(builtIns);
 
         ShipVariant shipVariant = this.getActiveVariant();

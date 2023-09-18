@@ -1,8 +1,10 @@
 package oth.shipeditor.utility;
 
 import lombok.extern.log4j.Log4j2;
+import oth.shipeditor.utility.text.StringValues;
 
 import javax.imageio.ImageIO;
+import javax.swing.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
@@ -34,6 +36,10 @@ public final class ImageCache {
         try {
             sprite = ImageIO.read(file);
         } catch (IOException ex) {
+            JOptionPane.showMessageDialog(null,
+                    "Image file loading failed: " + file,
+                    StringValues.FILE_LOADING_ERROR,
+                    JOptionPane.ERROR_MESSAGE);
             throw new UncheckedIOException("Failed to load sprite: " + file.getName(), ex);
         }
         log.info("Opening sprite: {}.", file.getName());

@@ -2,6 +2,8 @@ package oth.shipeditor.components;
 
 import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
+import oth.shipeditor.communication.EventBus;
+import oth.shipeditor.communication.events.components.SelectWeaponDataEntry;
 import oth.shipeditor.components.layering.ViewerLayersPanel;
 import oth.shipeditor.components.viewer.LayerViewer;
 import oth.shipeditor.components.viewer.PrimaryViewer;
@@ -39,8 +41,15 @@ public final class WindowContentPanes {
     @Getter
     private TripleSplitContainer tripleSplitter;
 
+    private JTabbedPane westTabsPane;
+
     public WindowContentPanes(Container pane) {
         this.primaryContentPane = pane;
+        EventBus.subscribe(event -> {
+            if (event instanceof SelectWeaponDataEntry) {
+                westTabsPane.setSelectedIndex(0);
+            }
+        });
     }
 
     public void loadLayerHandling() {
@@ -77,7 +86,7 @@ public final class WindowContentPanes {
         LayoutManager layout = new GridLayout(2, 1);
         westPanelsContainer.setLayout(layout);
 
-        JTabbedPane westTabsPane = new JTabbedPane();
+        westTabsPane = new JTabbedPane();
         westTabsPane.setTabPlacement(SwingConstants.LEFT);
         westTabsPane.addTab("Game data", new LeftsidePanelTab(LeftsideTabType.GAME_DATA));
         westTabsPane.addTab("Help", new LeftsidePanelTab(LeftsideTabType.HELP));

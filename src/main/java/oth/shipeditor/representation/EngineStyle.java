@@ -101,6 +101,9 @@ public class EngineStyle {
     @JsonProperty("glowSizeMult")
     private double glowSizeMult;
 
+    @JsonProperty("engineGlowGlowMult")
+    private double engineGlowGlowMult;
+
     @JsonDeserialize(using = ColorArrayRGBADeserializer.class)
     @JsonSerialize(using = ColorArrayRGBASerializer.class)
     @JsonProperty("glowAlternateColor")

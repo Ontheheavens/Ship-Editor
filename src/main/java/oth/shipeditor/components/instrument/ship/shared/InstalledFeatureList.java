@@ -1,11 +1,16 @@
 package oth.shipeditor.components.instrument.ship.shared;
 
+import lombok.Getter;
 import oth.shipeditor.communication.EventBus;
+import oth.shipeditor.communication.events.components.SelectWeaponDataEntry;
 import oth.shipeditor.communication.events.viewer.points.PointSelectQueued;
 import oth.shipeditor.communication.events.viewer.points.PointSelectedConfirmed;
+import oth.shipeditor.components.datafiles.entities.CSVEntry;
+import oth.shipeditor.components.datafiles.entities.WeaponCSVEntry;
 import oth.shipeditor.components.viewer.entities.weapon.WeaponSlotPoint;
 import oth.shipeditor.components.viewer.layers.ship.ShipLayer;
 import oth.shipeditor.components.viewer.painters.features.InstalledFeature;
+import oth.shipeditor.components.viewer.painters.points.WeaponSlotPainter;
 import oth.shipeditor.utility.StaticController;
 import oth.shipeditor.utility.components.containers.SortableList;
 import oth.shipeditor.utility.components.rendering.InstalledFeatureCellRenderer;
@@ -24,10 +29,15 @@ public class InstalledFeatureList extends SortableList<InstalledFeature> {
 
     private boolean propagationBlock;
 
+    @Getter
+    private final WeaponSlotPainter slotPainter;
+
     private final Consumer<InstalledFeature> uninstall;
 
-    public InstalledFeatureList(ListModel<InstalledFeature> dataModel, Consumer<InstalledFeature> removeAction) {
+    public InstalledFeatureList(ListModel<InstalledFeature> dataModel, WeaponSlotPainter painter,
+                                Consumer<InstalledFeature> removeAction) {
         super(dataModel);
+        this.slotPainter = painter;
         this.uninstall = removeAction;
         this.addListSelectionListener(e -> {
             this.actOnSelectedEntry(feature -> {
@@ -101,7 +111,6 @@ public class InstalledFeatureList extends SortableList<InstalledFeature> {
         }
     }
 
-    @SuppressWarnings("NoopMethodInAbstractClass")
     @Override
     protected void sortListModel() {
 
@@ -112,9 +121,22 @@ public class InstalledFeatureList extends SortableList<InstalledFeature> {
         private JPopupMenu getContextMenu() {
             JPopupMenu menu = new JPopupMenu();
             JMenuItem removePoint = new JMenuItem("Uninstall feature");
-            removePoint.addActionListener(event -> actOnSelectedEntry(feature -> uninstall.accept(feature)
-            ));
+            removePoint.addActionListener(event -> actOnSelectedEntry(uninstall));
             menu.add(removePoint);
+
+            JMenuItem selectEntry = new JMenuItem("Select weapon entry");
+            selectEntry.addActionListener(event -> actOnSelectedEntry(feature -> {
+                CSVEntry dataEntry = feature.getDataEntry();
+                if (dataEntry instanceof WeaponCSVEntry weaponEntry) {
+                    EventBus.publish(new SelectWeaponDataEntry(weaponEntry));
+                }
+            }));
+            InstalledFeature selected = getSelectedValue();
+            if (!(selected.getDataEntry() instanceof WeaponCSVEntry)) {
+                selectEntry.setEnabled(false);
+            }
+            menu.add(selectEntry);
+
             return menu;
         }
 

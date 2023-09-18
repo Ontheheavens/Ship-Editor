@@ -6,6 +6,8 @@ import oth.shipeditor.components.viewer.layers.ship.ShipPainter;
 import oth.shipeditor.components.viewer.layers.ship.data.ShipHull;
 import oth.shipeditor.components.viewer.layers.ship.data.ShipSkin;
 import oth.shipeditor.persistence.SettingsManager;
+import oth.shipeditor.representation.HullSize;
+import oth.shipeditor.representation.HullSpecFile;
 import oth.shipeditor.undo.EditDispatch;
 import oth.shipeditor.utility.components.ComponentUtilities;
 import oth.shipeditor.utility.text.StringValues;
@@ -89,8 +91,20 @@ public class BuiltInHullmodsPanel extends CSVEntryBuiltInsPanel<HullmodCSVEntry>
         JLabel label = new JLabel(mod.toString(), SwingConstants.LEFT);
 
         var cachedLayer = this.getCachedLayer();
-        var shipData = cachedLayer.getShipData();
-        int hullmodCost = mod.getOrdnanceCostForHull(shipData.getHullSpecFile());
+
+        HullSize size;
+
+        ShipHull shipHull = cachedLayer.getHull();
+        if (shipHull != null) {
+            size = shipHull.getHullSize();
+        } else {
+            var shipData = cachedLayer.getShipData();
+            HullSpecFile hullSpecFile = shipData.getHullSpecFile();
+            String hullSize = hullSpecFile.getHullSize();
+            size = HullSize.valueOf(hullSize);
+        }
+
+        int hullmodCost = mod.getOrdnanceCostForHull(size);
 
         JLabel middleLower = new JLabel("Base cost: " + hullmodCost);
         middleLower.setForeground(Color.GRAY);

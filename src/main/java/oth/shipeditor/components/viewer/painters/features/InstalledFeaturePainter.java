@@ -3,7 +3,6 @@ package oth.shipeditor.components.viewer.painters.features;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
-import oth.shipeditor.components.datafiles.entities.ShipCSVEntry;
 import oth.shipeditor.components.datafiles.entities.WeaponCSVEntry;
 import oth.shipeditor.components.instrument.ship.EditorInstrument;
 import oth.shipeditor.components.viewer.control.ControlPredicates;
@@ -17,10 +16,7 @@ import oth.shipeditor.utility.StaticController;
 
 import java.awt.*;
 import java.awt.geom.AffineTransform;
-import java.util.LinkedHashSet;
-import java.util.Map;
-import java.util.Set;
-import java.util.TreeMap;
+import java.util.*;
 
 /**
  * @author Ontheheavens
@@ -30,11 +26,8 @@ import java.util.TreeMap;
 @Log4j2
 public final class InstalledFeaturePainter {
 
-    @Getter @Setter
-    private static WeaponCSVEntry selectedWeaponForInstall;
-
-    @Getter @Setter
-    private static ShipCSVEntry selectedModuleForInstall;
+    @Getter
+    private static WeaponCSVEntry weaponForInstall;
 
     private PainterVisibility builtInsVisibility;
 
@@ -53,6 +46,15 @@ public final class InstalledFeaturePainter {
         return visibility == PainterVisibility.ALWAYS_SHOWN;
     }
 
+    public static void setWeaponForInstall(WeaponCSVEntry entry) {
+        InstalledFeaturePainter.weaponForInstall = entry;
+        var mode = StaticController.getEditorMode();
+        var repainter = StaticController.getRepainter();
+        if (mode == EditorInstrument.BUILT_IN_WEAPONS) {
+            repainter.queueBuiltInsRepaint();
+        }
+    }
+
     private static boolean isInteractable(ShipPainter painter) {
         EditorInstrument editorMode = StaticController.getEditorMode();
         boolean eligibleMode = editorMode == EditorInstrument.BUILT_IN_WEAPONS
@@ -61,38 +63,40 @@ public final class InstalledFeaturePainter {
         return eligibleMode && painter.isLayerActive();
     }
 
+    @SuppressWarnings("CollectionAddAllCanBeReplacedWithConstructor")
     private Map<Integer, Set<InstalledFeature>> getInstallablesToPaint(ShipPainter painter) {
         Map<Integer, Set<InstalledFeature>> result = new TreeMap<>();
 
         var slotPainter = painter.getWeaponSlotPainter();
 
-        var builtIns = painter.getBuiltInWeaponsWithSkin(false, true);
-        if (checkVisibilityForBuiltIns(painter)) {
-            builtIns.forEach((slotID, feature) ->
-                    this.prepareFeature(result, slotPainter, slotID, feature));
-        }
+        Map<String, InstalledFeature> toPrepare = new LinkedHashMap<>();
+
 
         // TODO: implement visibility for decoratives.
 
-        var decoratives = painter.getBuiltInWeaponsWithSkin(true, false);
+        var decoratives = painter.getBuiltInsWithSkin(true, false);
         if (true) {
-            decoratives.forEach((slotID, feature) ->
-                    this.prepareFeature(result, slotPainter, slotID, feature));
+            toPrepare.putAll(decoratives);
+        }
+
+        var builtIns = painter.getBuiltInsWithSkin(false, true);
+        if (checkVisibilityForBuiltIns(painter)) {
+            toPrepare.putAll(builtIns);
         }
 
         ShipVariant shipVariant = painter.getActiveVariant();
         if (shipVariant != null && !shipVariant.isEmpty()) {
             var modules = shipVariant.getFittedModules();
             if (modules != null) {
-                modules.forEach((slotID, feature) ->
-                        this.prepareFeature(result, slotPainter, slotID, feature));
+                toPrepare.putAll(modules);
             }
             var allWeapons = shipVariant.getAllFittedWeapons();
             if (allWeapons != null) {
-                allWeapons.forEach((slotID, feature) ->
-                        this.prepareFeature(result, slotPainter, slotID, feature));
+                toPrepare.putAll(allWeapons);
             }
         }
+
+        toPrepare.forEach((slotID, feature) -> this.prepareFeature(result, slotPainter, slotID, feature));
 
         if (cachedSelectCounterpart != null && ControlPredicates.isMirrorModeEnabled()) {
             result.forEach((integer, installedFeatures) -> installedFeatures.forEach(feature -> {

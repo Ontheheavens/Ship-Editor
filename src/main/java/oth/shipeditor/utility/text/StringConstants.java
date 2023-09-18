@@ -112,4 +112,6 @@ public interface StringConstants {
 
     String RENDER_LOADED_MISSILES_UNLESS_HIDDEN = "RENDER_LOADED_MISSILES_UNLESS_HIDDEN";
 
+    String HINTS = "hints";
+
 }

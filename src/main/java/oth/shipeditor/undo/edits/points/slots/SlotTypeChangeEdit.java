@@ -29,6 +29,7 @@ public class SlotTypeChangeEdit extends AbstractEdit {
         var repainter = StaticController.getRepainter();
         repainter.queueViewerRepaint();
         repainter.queueSlotControlRepaint();
+        repainter.queueBuiltInsRepaint();
     }
 
     @Override
@@ -37,6 +38,7 @@ public class SlotTypeChangeEdit extends AbstractEdit {
         var repainter = StaticController.getRepainter();
         repainter.queueViewerRepaint();
         repainter.queueSlotControlRepaint();
+        repainter.queueBuiltInsRepaint();
     }
 
     @Override

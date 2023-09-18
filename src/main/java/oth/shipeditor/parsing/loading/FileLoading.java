@@ -57,6 +57,7 @@ public final class FileLoading {
         mapper.configure(JsonParser.Feature.ALLOW_YAML_COMMENTS, true);
         mapper.configure(JsonReadFeature.ALLOW_TRAILING_COMMA.mappedFeature(), true);
         mapper.configure(JsonReadFeature.ALLOW_LEADING_DECIMAL_POINT_FOR_NUMBERS.mappedFeature(), true);
+        mapper.configure(JsonReadFeature.ALLOW_UNESCAPED_CONTROL_CHARS.mappedFeature(), true);
     }
 
     static File lastDirectory;
@@ -108,6 +109,9 @@ public final class FileLoading {
     }
 
     public static BufferedImage loadSpriteAsImage(File file) {
+        if (file == null) {
+
+        }
         return ImageCache.loadImage(file);
     }
 

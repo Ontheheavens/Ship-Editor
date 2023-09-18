@@ -121,8 +121,8 @@ public class ShipLayer extends ViewerLayer {
         var painter = this.getPainter();
         Supplier<Map<String, InstalledFeature>> getter = painter::getBuiltInWeapons;
         return getFilteredInstallables(getter, (slotPainter, featureEntry) -> {
-            String slotID = featureEntry.getKey();
-            return slotPainter.getSlotByID(slotID) != null && !slotPainter.isSlotDecorative(slotID);
+            InstalledFeature installedFeature = featureEntry.getValue();
+            return installedFeature.isNormalWeapon();
         });
     }
 
@@ -130,19 +130,21 @@ public class ShipLayer extends ViewerLayer {
         var painter = this.getPainter();
         Supplier<Map<String, InstalledFeature>> getter = painter::getBuiltInWeapons;
         return getFilteredInstallables(getter, (slotPainter, featureEntry) -> {
-            String slotID = featureEntry.getKey();
-            return slotPainter.isSlotDecorative(slotID);
+            InstalledFeature installedFeature = featureEntry.getValue();
+            return installedFeature.isDecoWeapon();
         });
     }
 
     public List<String> getBuiltInsRemovedBySkin() {
-        return getFilteredRemovables((slotPainter, slotID) ->
-                slotPainter.getSlotByID(slotID) != null
-                        && !slotPainter.isSlotDecorative(slotID));
-    }
+        ShipPainter painter = this.getPainter();
+        if (painter == null) return null;
+        ShipSkin activeSkin = painter.getActiveSkin();
 
-    public List<String> getDecorativesRemovedBySkin() {
-        return getFilteredRemovables(WeaponSlotPainter::isSlotDecorative);
+        if (activeSkin != null && !activeSkin.isBase()) {
+            return activeSkin.getRemoveBuiltInWeapons();
+
+        }
+        return null;
     }
 
     public Map<String, InstalledFeature> getBuiltInsFromSkin() {
@@ -152,8 +154,8 @@ public class ShipLayer extends ViewerLayer {
         if (activeSkin != null && !activeSkin.isBase()) {
             Supplier<Map<String, InstalledFeature>> getter = activeSkin::getInitializedBuiltIns;
             return getFilteredInstallables(getter, (slotPainter, featureEntry) -> {
-                String slotID = featureEntry.getKey();
-                return slotPainter.getSlotByID(slotID) != null && !slotPainter.isSlotDecorative(slotID);
+                InstalledFeature installedFeature = featureEntry.getValue();
+                return installedFeature.isNormalWeapon();
             });
         }
         return null;
@@ -166,30 +168,9 @@ public class ShipLayer extends ViewerLayer {
         if (activeSkin != null && !activeSkin.isBase()) {
             Supplier<Map<String, InstalledFeature>> getter = activeSkin::getInitializedBuiltIns;
             return getFilteredInstallables(getter, (slotPainter, featureEntry) -> {
-                String slotID = featureEntry.getKey();
-                return slotPainter.isSlotDecorative(slotID);
+                InstalledFeature installedFeature = featureEntry.getValue();
+                return installedFeature.isDecoWeapon();
             });
-        }
-        return null;
-    }
-
-    private List<String> getFilteredRemovables(BiFunction<WeaponSlotPainter, String, Boolean> filter) {
-        ShipPainter painter = this.getPainter();
-        if (painter == null) return null;
-        ShipSkin activeSkin = painter.getActiveSkin();
-
-        if (activeSkin != null && !activeSkin.isBase()) {
-            var removed = activeSkin.getRemoveBuiltInWeapons();
-            if (removed == null || removed.isEmpty()) return null;
-
-            var slotPainter = painter.getWeaponSlotPainter();
-            List<String> result = new ArrayList<>(removed.size());
-            removed.forEach(slotID -> {
-                if (filter.apply(slotPainter, slotID)) {
-                    result.add(slotID);
-                }
-            });
-            return result;
         }
         return null;
     }
@@ -204,7 +185,7 @@ public class ShipLayer extends ViewerLayer {
         var painter = this.getPainter();
         if (painter == null) return null;
         var installedFeatureMap = getter.get();
-        if (installedFeatureMap == null || installedFeatureMap.isEmpty()) return null;
+        if (installedFeatureMap == null) return null;
         var slotPainter = painter.getWeaponSlotPainter();
         if (slotPainter == null) return null;
 

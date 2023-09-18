@@ -1,6 +1,8 @@
 package oth.shipeditor.components.datafiles;
 
 import lombok.extern.log4j.Log4j2;
+import oth.shipeditor.communication.EventBus;
+import oth.shipeditor.communication.events.components.SelectWeaponDataEntry;
 import oth.shipeditor.components.datafiles.styles.EngineStylesPanel;
 import oth.shipeditor.components.datafiles.styles.HullStylesPanel;
 import oth.shipeditor.components.datafiles.trees.*;
@@ -27,6 +29,12 @@ public class GameDataPanel extends JPanel {
         container.setTabLayoutPolicy(JTabbedPane.SCROLL_TAB_LAYOUT);
         this.setLayout(new BorderLayout());
         this.add(container, BorderLayout.CENTER);
+
+        EventBus.subscribe(event -> {
+            if (event instanceof SelectWeaponDataEntry) {
+                container.setSelectedIndex(1);
+            }
+        });
     }
 
 }

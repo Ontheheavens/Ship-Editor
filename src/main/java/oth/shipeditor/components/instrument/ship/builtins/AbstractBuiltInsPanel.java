@@ -22,7 +22,7 @@ import java.awt.*;
  */
 public abstract class AbstractBuiltInsPanel extends JPanel {
 
-    protected static final String REMOVED_BY_SKIN = "Removed by skin";
+    static final String REMOVED_BY_SKIN = "Removed by skin";
 
     @Getter @Setter
     private ShipLayer cachedLayer;
@@ -30,13 +30,11 @@ public abstract class AbstractBuiltInsPanel extends JPanel {
     @Getter
     private final JPanel contentPane;
 
-    public AbstractBuiltInsPanel() {
+    protected AbstractBuiltInsPanel() {
         this.setLayout(new BorderLayout());
 
-        String hintText = "Use right-click context menu of " +
-                "game data widget to add entries.";
         FontIcon hintIcon = FontIcon.of(FluentUiRegularAL.INFO_28, 28);
-        JPanel hintPanel = AbstractBuiltInsPanel.createHintPanel(hintText, hintIcon);
+        JPanel hintPanel = AbstractBuiltInsPanel.createHintPanel(getHintText(), hintIcon);
         this.add(hintPanel, BorderLayout.PAGE_START);
 
         contentPane = new ScrollableHeightContainer();
@@ -48,7 +46,12 @@ public abstract class AbstractBuiltInsPanel extends JPanel {
         this.initLayerListeners();
     }
 
-    private void initLayerListeners() {
+    protected String getHintText() {
+        return "Use right-click context menu of " +
+                "game data widget to add entries.";
+    }
+
+    protected void initLayerListeners() {
         EventBus.subscribe(event -> {
             if (event instanceof LayerWasSelected checked) {
                 contentPane.removeAll();

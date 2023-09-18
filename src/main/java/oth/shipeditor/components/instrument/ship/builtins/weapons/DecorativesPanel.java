@@ -1,4 +1,4 @@
-package oth.shipeditor.components.instrument.ship.builtins;
+package oth.shipeditor.components.instrument.ship.builtins.weapons;
 
 import javax.swing.*;
 

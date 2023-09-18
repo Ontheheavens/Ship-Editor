@@ -6,6 +6,7 @@ import oth.shipeditor.communication.events.BusEvent;
 import oth.shipeditor.communication.events.Events;
 import oth.shipeditor.communication.events.viewer.control.ViewerMouseReleased;
 import oth.shipeditor.components.datafiles.entities.HullmodCSVEntry;
+import oth.shipeditor.components.datafiles.entities.InstallableEntry;
 import oth.shipeditor.components.datafiles.entities.WingCSVEntry;
 import oth.shipeditor.components.viewer.entities.*;
 import oth.shipeditor.components.viewer.entities.engine.EnginePoint;
@@ -27,6 +28,7 @@ import oth.shipeditor.utility.StaticController;
 
 import java.awt.geom.Point2D;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Convenience class meant to free viewer classes from burden of also implementing all the edit dispatch methods.
@@ -218,6 +220,7 @@ public final class EditDispatch {
         point.changeSlotID(newID);
         var repainter = StaticController.getRepainter();
         repainter.queueSlotControlRepaint();
+        repainter.queueBuiltInsRepaint();
     }
 
     public static void postSlotTypeChanged(SlotData point, WeaponType newType) {
@@ -228,6 +231,7 @@ public final class EditDispatch {
         var repainter = StaticController.getRepainter();
         repainter.queueViewerRepaint();
         repainter.queueSlotControlRepaint();
+        repainter.queueBuiltInsRepaint();
     }
 
     public static void postSlotMountChanged(SlotData point, WeaponMount newMount) {
@@ -248,6 +252,7 @@ public final class EditDispatch {
         var repainter = StaticController.getRepainter();
         repainter.queueViewerRepaint();
         repainter.queueSlotControlRepaint();
+        repainter.queueBuiltInsRepaint();
     }
 
     public static void postHullmodAdded(List<HullmodCSVEntry> index, ShipLayer shipLayer, HullmodCSVEntry hullmod) {
@@ -272,6 +277,16 @@ public final class EditDispatch {
         Edit wingRemoveEdit = new WingRemoveEdit(index, shipLayer, wing);
         UndoOverseer.post(wingRemoveEdit);
         index.remove(wing);
+    }
+
+    public static<T extends InstallableEntry> void postFeatureUninstalled(Map<String, T> collection,
+                                                                          String slotID, T feature) {
+        Edit uninstallEdit = new FeatureUninstallEdit<>(collection, slotID, feature);
+        UndoOverseer.post(uninstallEdit);
+        collection.remove(slotID, feature);
+        var repainter = StaticController.getRepainter();
+        repainter.queueViewerRepaint();
+        repainter.queueBuiltInsRepaint();
     }
 
 }

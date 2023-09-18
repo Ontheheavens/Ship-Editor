@@ -26,7 +26,7 @@ import java.util.List;
  * @since 09.09.2023
  */
 @Getter
-public final class InstalledFeature {
+public final class InstalledFeature implements InstallableEntry {
 
     private final String slotID;
 
@@ -51,6 +51,20 @@ public final class InstalledFeature {
         if (entry instanceof InstallableEntry) {
             return new InstalledFeature(slot, id, painter, entry);
         } else throw new IllegalArgumentException("Illegal data entry passed for installable feature!");
+    }
+
+    public boolean isDecoWeapon() {
+        if (dataEntry instanceof WeaponCSVEntry weaponEntry) {
+            return weaponEntry.getType() == WeaponType.DECORATIVE;
+        }
+        return false;
+    }
+
+    public boolean isNormalWeapon() {
+        if (dataEntry instanceof WeaponCSVEntry weaponEntry) {
+            return weaponEntry.getType() != WeaponType.DECORATIVE;
+        }
+        return false;
     }
 
     int computeRenderOrder(WeaponSlotPoint slotPoint) {
@@ -123,6 +137,11 @@ public final class InstalledFeature {
 
         List<AbstractPointPainter> allPainters = layerPainter.getAllPainters();
         allPainters.forEach(pointPainter -> pointPainter.paint(g, transform, w, h));
+    }
+
+    @Override
+    public String getID() {
+        return featureID;
     }
 
 }
