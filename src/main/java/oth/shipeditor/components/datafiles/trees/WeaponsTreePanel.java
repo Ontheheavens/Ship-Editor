@@ -5,8 +5,8 @@ import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.components.SelectWeaponDataEntry;
 import oth.shipeditor.communication.events.files.WeaponTreeReloadQueued;
 import oth.shipeditor.components.datafiles.entities.WeaponCSVEntry;
+import oth.shipeditor.components.viewer.layers.ship.FeaturesOverseer;
 import oth.shipeditor.components.viewer.layers.weapon.WeaponSprites;
-import oth.shipeditor.components.viewer.painters.features.InstalledFeaturePainter;
 import oth.shipeditor.menubar.FileUtilities;
 import oth.shipeditor.persistence.SettingsManager;
 import oth.shipeditor.representation.GameDataRepository;
@@ -290,7 +290,7 @@ public class WeaponsTreePanel extends CSVDataTreePanel<WeaponCSVEntry>{
 
         cachedEntry = selected;
 
-        InstalledFeaturePainter.setWeaponForInstall(selected);
+        FeaturesOverseer.setWeaponForInstall(selected);
     }
 
     private static void populateSpriteFileLabels(JPanel labelContainer, WeaponSprites sprites) {

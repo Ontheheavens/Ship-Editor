@@ -64,6 +64,11 @@ public class WeaponSlotPainter extends AngledPointPainter {
     }
 
     @Override
+    public WeaponSlotPoint getSelected() {
+        return (WeaponSlotPoint) super.getSelected();
+    }
+
+    @Override
     public void setControlHotkeyPressed(boolean pressed) {
         this.controlHotkeyPressed = pressed;
         controlHotkeyStaticPressed = pressed;
@@ -415,7 +420,7 @@ public class WeaponSlotPainter extends AngledPointPainter {
     }
 
     @Override
-    protected List<WeaponSlotPoint> getEligibleForSelection() {
+    public List<WeaponSlotPoint> getEligibleForSelection() {
         List<WeaponSlotPoint> eligibleForSelection = this.getSlotPoints();
         List<WeaponSlotPoint> result;
         EditorInstrument mode = StaticController.getEditorMode();

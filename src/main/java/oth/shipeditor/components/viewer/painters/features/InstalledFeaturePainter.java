@@ -3,7 +3,6 @@ package oth.shipeditor.components.viewer.painters.features;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
-import oth.shipeditor.components.datafiles.entities.WeaponCSVEntry;
 import oth.shipeditor.components.instrument.ship.EditorInstrument;
 import oth.shipeditor.components.viewer.control.ControlPredicates;
 import oth.shipeditor.components.viewer.entities.weapon.WeaponSlotPoint;
@@ -26,9 +25,6 @@ import java.util.*;
 @Log4j2
 public final class InstalledFeaturePainter {
 
-    @Getter
-    private static WeaponCSVEntry weaponForInstall;
-
     private PainterVisibility builtInsVisibility;
 
     private WeaponSlotPoint cachedSelectCounterpart;
@@ -44,15 +40,6 @@ public final class InstalledFeaturePainter {
         if (visibility == PainterVisibility.SHOWN_WHEN_EDITED && InstalledFeaturePainter.isInteractable(painter)) return true;
         if (visibility == PainterVisibility.SHOWN_WHEN_SELECTED && layerActive) return true;
         return visibility == PainterVisibility.ALWAYS_SHOWN;
-    }
-
-    public static void setWeaponForInstall(WeaponCSVEntry entry) {
-        InstalledFeaturePainter.weaponForInstall = entry;
-        var mode = StaticController.getEditorMode();
-        var repainter = StaticController.getRepainter();
-        if (mode == EditorInstrument.BUILT_IN_WEAPONS) {
-            repainter.queueBuiltInsRepaint();
-        }
     }
 
     private static boolean isInteractable(ShipPainter painter) {

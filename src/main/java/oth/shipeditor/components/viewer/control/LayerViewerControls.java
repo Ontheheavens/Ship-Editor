@@ -25,6 +25,11 @@ import java.awt.geom.AffineTransform;
 import java.awt.geom.Point2D;
 
 /**
+ * Note 19.09.2023: This class has some serious conceptual issues: ideally, it should not be concerned with entities,
+ * should not publish a plethora of different events that are opinionated as to what their receivers should do.
+ * Instead, its sole purpose should be collecting input control data and publishing it on event bus;
+ * Interested classes like painters and viewer entities should listen for that input.
+ * However, given the constraints and the fact that current implementation works fine, best to leave things be.
  * @author Ontheheavens
  * @since 29.04.2023
  */
@@ -150,7 +155,7 @@ public final class LayerViewerControls implements ViewerControl {
     public void mousePressed(MouseEvent e) {
         Point point = e.getPoint();
         this.pressPoint.setLocation(point);
-        // This layer dragging subroutine took a long time to figure out; careful here in the future.
+        // This layer dragging feature took a long time to figure out; careful here in the future.
         // Should any difficulties arise, employ logging liberally.
         if (this.parentViewer.getSelectedLayer() != null) {
             LayerPainter selected = this.parentViewer.getSelectedLayer();
@@ -161,7 +166,7 @@ public final class LayerViewerControls implements ViewerControl {
             this.layerDragPoint.setLocation(e.getX() - transformed.getX(), e.getY() - transformed.getY());
         }
         if (e.getButton() == MouseEvent.BUTTON1) {
-            this.tryPointCreation(point);
+            this.publishMousePressWithPosition(point);
         }
         if (ControlPredicates.removePointPredicate.test(e)) {
             EventBus.publish(new PointRemoveQueued(null, false));
@@ -175,7 +180,7 @@ public final class LayerViewerControls implements ViewerControl {
     /**
      * Respective hotkey checks are being done in points painter itself.
      */
-    private void tryPointCreation(Point2D point) {
+    private void publishMousePressWithPosition(Point2D point) {
         AffineTransform screenToWorld = StaticController.getScreenToWorld();
         Point2D position = screenToWorld.transform(point, null);
         if (ControlPredicates.isCursorSnappingEnabled()) {
@@ -183,6 +188,7 @@ public final class LayerViewerControls implements ViewerControl {
             position = Utility.correctAdjustedCursor(screenPoint, screenToWorld);
         }
         EventBus.publish(new PointCreationQueued(position));
+        EventBus.publish(new LeftMouseButtonPressed(position));
     }
 
     @Override

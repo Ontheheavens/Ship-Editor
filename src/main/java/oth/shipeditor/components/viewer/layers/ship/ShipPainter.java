@@ -63,7 +63,7 @@ public class ShipPainter extends LayerPainter {
     @Getter
     private EngineSlotPainter enginePainter;
 
-    @Getter
+    @Getter @Setter
     private Map<String, InstalledFeature> builtInWeapons;
 
     @Getter
@@ -125,6 +125,10 @@ public class ShipPainter extends LayerPainter {
             var painter = installedFeature.getFeaturePainter();
             painter.cleanupForRemoval();
         });
+
+        var parentLayer = getParentLayer();
+        var featuresOverseer = parentLayer.getFeaturesOverseer();
+        featuresOverseer.cleanupListeners();
     }
 
     private void activateEmptySkin() {

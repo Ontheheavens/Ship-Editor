@@ -7,14 +7,13 @@ import org.kordamp.ikonli.swing.FontIcon;
 import oth.shipeditor.communication.BusEventListener;
 import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.components.datafiles.entities.HullmodCSVEntry;
-import oth.shipeditor.components.instrument.ship.PointList;
-import oth.shipeditor.components.viewer.entities.BaseWorldPoint;
 import oth.shipeditor.components.viewer.painters.PainterVisibility;
 import oth.shipeditor.components.viewer.painters.points.AbstractPointPainter;
 import oth.shipeditor.menubar.FileUtilities;
 import oth.shipeditor.parsing.loading.FileLoading;
 import oth.shipeditor.utility.Pair;
 import oth.shipeditor.utility.Utility;
+import oth.shipeditor.utility.components.containers.SortableList;
 import oth.shipeditor.utility.components.containers.TextScrollPanel;
 import oth.shipeditor.utility.graphics.ColorUtilities;
 import oth.shipeditor.utility.text.StringValues;
@@ -293,7 +292,7 @@ public final class ComponentUtilities {
         return new Insets(0, 3, 2, 4);
     }
 
-    public static Pair<JPanel, JCheckBox> createReorderCheckboxPanel(PointList<? extends BaseWorldPoint> pointList) {
+    public static<T> Pair<JPanel, JCheckBox> createReorderCheckboxPanel(SortableList<T> pointList) {
         JPanel container = new JPanel();
         container.setLayout(new BoxLayout(container, BoxLayout.LINE_AXIS));
         container.setBorder(new EmptyBorder(2, 0, 2, 0));

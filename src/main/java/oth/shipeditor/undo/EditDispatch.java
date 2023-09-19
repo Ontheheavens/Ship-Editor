@@ -20,6 +20,8 @@ import oth.shipeditor.representation.weapon.WeaponMount;
 import oth.shipeditor.representation.weapon.WeaponSize;
 import oth.shipeditor.representation.weapon.WeaponType;
 import oth.shipeditor.undo.edits.*;
+import oth.shipeditor.undo.edits.features.FeatureSortEdit;
+import oth.shipeditor.undo.edits.features.FeatureUninstallEdit;
 import oth.shipeditor.undo.edits.points.*;
 import oth.shipeditor.undo.edits.points.engines.*;
 import oth.shipeditor.undo.edits.points.slots.*;
@@ -29,6 +31,7 @@ import oth.shipeditor.utility.StaticController;
 import java.awt.geom.Point2D;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Consumer;
 
 /**
  * Convenience class meant to free viewer classes from burden of also implementing all the edit dispatch methods.
@@ -284,6 +287,17 @@ public final class EditDispatch {
         Edit uninstallEdit = new FeatureUninstallEdit<>(collection, slotID, feature);
         UndoOverseer.post(uninstallEdit);
         collection.remove(slotID, feature);
+        var repainter = StaticController.getRepainter();
+        repainter.queueViewerRepaint();
+        repainter.queueBuiltInsRepaint();
+    }
+
+    public static<T extends InstallableEntry> void postFeaturesSorted(Consumer<Map<String, T>> consumer,
+                                                                      Map<String, T>  oldMap,
+                                                                      Map<String, T> newMap) {
+        Edit sortEdit = new FeatureSortEdit<>(consumer, oldMap, newMap);
+        UndoOverseer.post(sortEdit);
+        consumer.accept(newMap);
         var repainter = StaticController.getRepainter();
         repainter.queueViewerRepaint();
         repainter.queueBuiltInsRepaint();

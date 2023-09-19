@@ -1,6 +1,7 @@
 package oth.shipeditor.components.viewer.layers.ship.data;
 
 import lombok.Getter;
+import lombok.Setter;
 import oth.shipeditor.components.datafiles.entities.*;
 import oth.shipeditor.components.viewer.entities.engine.EngineDataOverride;
 import oth.shipeditor.components.viewer.entities.weapon.WeaponSlotOverride;
@@ -106,6 +107,7 @@ public final class ShipSkin {
 
     private List<HullmodCSVEntry> builtInMods = new ArrayList<>();
 
+    @Setter
     private Map<String, WeaponCSVEntry> builtInWeapons = new LinkedHashMap<>();
 
 
@@ -138,6 +140,16 @@ public final class ShipSkin {
             });
         }
         return initializedBuiltIns;
+    }
+
+    @SuppressWarnings("StaticMethodOnlyUsedInOneClass")
+    public static Map<String, WeaponCSVEntry> reconstructAsEntries(Map<String, InstalledFeature> initialized) {
+        Map<String, WeaponCSVEntry> result = new LinkedHashMap<>();
+        initialized.forEach((slotID, feature) -> {
+            WeaponCSVEntry entry = (WeaponCSVEntry) feature.getDataEntry();
+            result.put(slotID, entry);
+        });
+        return result;
     }
 
     public List<ShipTypeHints> getHintsModifiedBySkin() {

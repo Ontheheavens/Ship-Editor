@@ -5,11 +5,11 @@ import oth.shipeditor.communication.events.components.BuiltInsPanelsRepaintQueue
 import oth.shipeditor.components.datafiles.entities.WeaponCSVEntry;
 import oth.shipeditor.components.instrument.ship.builtins.AbstractBuiltInsPanel;
 import oth.shipeditor.components.instrument.ship.shared.InstalledFeatureList;
+import oth.shipeditor.components.viewer.layers.ship.FeaturesOverseer;
 import oth.shipeditor.components.viewer.layers.ship.ShipLayer;
 import oth.shipeditor.components.viewer.layers.ship.ShipPainter;
 import oth.shipeditor.components.viewer.layers.ship.data.ShipSkin;
 import oth.shipeditor.components.viewer.painters.features.InstalledFeature;
-import oth.shipeditor.components.viewer.painters.features.InstalledFeaturePainter;
 import oth.shipeditor.persistence.SettingsManager;
 import oth.shipeditor.undo.EditDispatch;
 import oth.shipeditor.utility.components.ComponentUtilities;
@@ -68,7 +68,7 @@ public class BuiltInWeaponsPanel extends AbstractBuiltInsPanel {
             this.remove(weaponPickPanel);
         }
 
-        WeaponCSVEntry pickedForInstall = InstalledFeaturePainter.getWeaponForInstall();
+        WeaponCSVEntry pickedForInstall = FeaturesOverseer.getWeaponForInstall();
         if (pickedForInstall != null) {
             weaponPickPanel = pickedForInstall.createPickedWeaponPanel();
             this.add(weaponPickPanel, BorderLayout.PAGE_END);
@@ -84,8 +84,11 @@ public class BuiltInWeaponsPanel extends AbstractBuiltInsPanel {
     }
 
     private void populateWeaponBuiltIns(ShipLayer selected) {
-        var builtInWeapons = selected.getBuiltInsFromBaseHull();
+        FeaturesOverseer featuresOverseer = selected.getFeaturesOverseer();
+        var builtInWeapons = featuresOverseer.getBuiltInsFromBaseHull();
         JPanel contentPane = getContentPane();
+
+        ShipPainter shipPainter = selected.getPainter();
         if (builtInWeapons == null || builtInWeapons.isEmpty()) {
             JPanel placeholderLabel = AbstractBuiltInsPanel.createPlaceholderLabel("Hull has no built-in weapons");
             contentPane.add(placeholderLabel);
@@ -96,15 +99,14 @@ public class BuiltInWeaponsPanel extends AbstractBuiltInsPanel {
             listModel.addAll(values);
 
             Consumer<InstalledFeature> removeAction = entry -> {
-                ShipPainter painter = selected.getPainter();
-                var weapons = painter.getBuiltInWeapons();
+                var weapons = shipPainter.getBuiltInWeapons();
                 EditDispatch.postFeatureUninstalled(weapons, entry.getSlotID(), entry);
             };
 
-            var shipPainter = selected.getPainter();
             var slotPainter = shipPainter.getWeaponSlotPainter();
 
-            var listContainer = new InstalledFeatureList(listModel, slotPainter, removeAction);
+            var listContainer = new InstalledFeatureList(listModel, slotPainter,
+                    removeAction, featuresOverseer::setBaseBuiltInsWithNewNormal);
             JScrollPane scrollableContainer = new JScrollPane(listContainer);
 
             contentPane.add(scrollableContainer);
@@ -112,8 +114,9 @@ public class BuiltInWeaponsPanel extends AbstractBuiltInsPanel {
     }
 
     private void handleSkinBuiltInsChanges(ShipLayer layer) {
-        var added = layer.getBuiltInsFromSkin();
-        if (added != null && !added.isEmpty()) {
+        FeaturesOverseer featuresOverseer = layer.getFeaturesOverseer();
+        var added = featuresOverseer.getBuiltInsFromSkin();
+        if (added != null) {
             DefaultListModel<InstalledFeature> listModel = new DefaultListModel<>();
             listModel.addAll(added.values());
 
@@ -137,7 +140,8 @@ public class BuiltInWeaponsPanel extends AbstractBuiltInsPanel {
 
             var slotPainter = painter.getWeaponSlotPainter();
 
-            var listContainer = new InstalledFeatureList(listModel, slotPainter, removeAction);
+            var listContainer = new InstalledFeatureList(listModel, slotPainter, removeAction,
+                    featuresOverseer::setSkinBuiltInsWithNewNormal);
             JScrollPane scrollableContainer = new JScrollPane(listContainer);
 
             contentPane.add(scrollableContainer);

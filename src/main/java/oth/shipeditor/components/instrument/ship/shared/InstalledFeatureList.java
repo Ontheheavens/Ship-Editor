@@ -19,6 +19,8 @@ import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.function.Consumer;
 
 /**
@@ -32,13 +34,17 @@ public class InstalledFeatureList extends SortableList<InstalledFeature> {
     @Getter
     private final WeaponSlotPainter slotPainter;
 
-    private final Consumer<InstalledFeature> uninstall;
+    private final Consumer<InstalledFeature> uninstaller;
+
+    private final Consumer<Map<String, InstalledFeature>> sorter;
 
     public InstalledFeatureList(ListModel<InstalledFeature> dataModel, WeaponSlotPainter painter,
-                                Consumer<InstalledFeature> removeAction) {
+                                Consumer<InstalledFeature> removeAction,
+                                Consumer<Map<String, InstalledFeature>> sortAction) {
         super(dataModel);
         this.slotPainter = painter;
-        this.uninstall = removeAction;
+        this.uninstaller = removeAction;
+        this.sorter = sortAction;
         this.addListSelectionListener(e -> {
             this.actOnSelectedEntry(feature -> {
 
@@ -54,6 +60,8 @@ public class InstalledFeatureList extends SortableList<InstalledFeature> {
         int margin = 3;
         this.setBorder(new EmptyBorder(margin, margin, margin, margin));
         this.initListeners();
+
+        this.setDragEnabled(true);
     }
 
     private static ListCellRenderer<InstalledFeature> createCellRenderer() {
@@ -113,7 +121,13 @@ public class InstalledFeatureList extends SortableList<InstalledFeature> {
 
     @Override
     protected void sortListModel() {
-
+        ListModel<InstalledFeature> model = this.getModel();
+        Map<String, InstalledFeature> rearranged = new LinkedHashMap<>(model.getSize());
+        for (int i = 0; i < model.getSize(); i++) {
+            InstalledFeature feature = model.getElementAt(i);
+            rearranged.put(feature.getSlotID(), feature);
+        }
+        this.sorter.accept(rearranged);
     }
 
     private class FeatureContextMenuListener extends MouseAdapter {
@@ -121,7 +135,7 @@ public class InstalledFeatureList extends SortableList<InstalledFeature> {
         private JPopupMenu getContextMenu() {
             JPopupMenu menu = new JPopupMenu();
             JMenuItem removePoint = new JMenuItem("Uninstall feature");
-            removePoint.addActionListener(event -> actOnSelectedEntry(uninstall));
+            removePoint.addActionListener(event -> actOnSelectedEntry(uninstaller));
             menu.add(removePoint);
 
             JMenuItem selectEntry = new JMenuItem("Select weapon entry");

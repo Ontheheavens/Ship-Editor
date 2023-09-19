@@ -1,4 +1,4 @@
-package oth.shipeditor.undo.edits;
+package oth.shipeditor.undo.edits.features;
 
 import lombok.AllArgsConstructor;
 import lombok.extern.log4j.Log4j2;
