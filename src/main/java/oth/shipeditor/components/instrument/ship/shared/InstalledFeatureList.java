@@ -87,6 +87,10 @@ public class InstalledFeatureList extends SortableList<InstalledFeature> {
     }
 
     private void initListeners() {
+        // TODO: this one is currently not cleaned up from event bus. As it's a UI class, should not be super spammy...
+        //  However, keep in mind for future refactors. Difficulty here is, you can't easily get a hold of time
+        //  when old feature list is discarded - it's done in Swing internals. Possible solutions are:
+        //  Either move listener to outer panel classes or employ WeakHashMap (entails huge refactor).
         EventBus.subscribe(event -> {
             if (event instanceof PointSelectedConfirmed checked) {
                 DefaultListModel<InstalledFeature> model = (DefaultListModel<InstalledFeature>) this.getModel();
@@ -102,7 +106,6 @@ public class InstalledFeatureList extends SortableList<InstalledFeature> {
                         target = feature;
                     }
                 }
-                if (target == null) return;
 
                 propagationBlock = true;
                 this.setSelectedValue(target, true);

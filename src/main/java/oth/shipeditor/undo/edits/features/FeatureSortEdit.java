@@ -13,6 +13,9 @@ import java.util.function.Consumer;
  */
 public class FeatureSortEdit<T extends InstallableEntry> extends AbstractEdit {
 
+    /**
+     * Is expected to also provide invalidation in case collection belongs to skin.
+     */
     private final Consumer<Map<String, T>> setter;
 
     private final Map<String, T> oldCollection;

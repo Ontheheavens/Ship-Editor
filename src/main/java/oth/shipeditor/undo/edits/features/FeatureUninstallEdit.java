@@ -22,9 +22,17 @@ public class FeatureUninstallEdit<T extends InstallableEntry> extends AbstractEd
 
     private final T feature;
 
+    /**
+     * Can be null, needed for skin built-ins reloading.
+     */
+    private final Runnable invalidator;
+
     @Override
     public void undo() {
         collection.put(slotID, feature);
+        if (invalidator != null) {
+            invalidator.run();
+        }
         var repainter = StaticController.getRepainter();
         repainter.queueViewerRepaint();
         repainter.queueBuiltInsRepaint();
@@ -33,6 +41,9 @@ public class FeatureUninstallEdit<T extends InstallableEntry> extends AbstractEd
     @Override
     public void redo() {
         collection.remove(slotID, feature);
+        if (invalidator != null) {
+            invalidator.run();
+        }
         var repainter = StaticController.getRepainter();
         repainter.queueViewerRepaint();
         repainter.queueBuiltInsRepaint();

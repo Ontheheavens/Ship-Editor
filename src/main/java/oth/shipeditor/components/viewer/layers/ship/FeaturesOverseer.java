@@ -3,7 +3,7 @@ package oth.shipeditor.components.viewer.layers.ship;
 import lombok.Getter;
 import oth.shipeditor.communication.BusEventListener;
 import oth.shipeditor.communication.EventBus;
-import oth.shipeditor.communication.events.viewer.control.LeftMouseButtonPressed;
+import oth.shipeditor.communication.events.viewer.control.FeatureInstallQueued;
 import oth.shipeditor.components.datafiles.entities.WeaponCSVEntry;
 import oth.shipeditor.components.instrument.ship.EditorInstrument;
 import oth.shipeditor.components.viewer.entities.weapon.SlotData;
@@ -137,6 +137,9 @@ public class FeaturesOverseer {
         return result;
     }
 
+    // Following four setters are chunky duplicated code - not a beautiful sight.
+    // However, the alternative is a lot of quite tricky generics; so let's leave this be.
+
     public void setBaseBuiltInsWithNewNormal(Map<String, InstalledFeature> rearrangedNormal) {
         Map<String, InstalledFeature> combined = new LinkedHashMap<>(rearrangedNormal);
         var decoratives = this.getDecorativesFromBaseHull();
@@ -161,20 +164,28 @@ public class FeaturesOverseer {
         EditDispatch.postFeaturesSorted(activeSkin::setBuiltInWeapons, oldCollection, reconstructed);
     }
 
-    private boolean areHullBuiltInsInitialized() {
-        var shipPainter = parent.getPainter();
-        if (shipPainter == null || shipPainter.isUninitialized()) return false;
-        Map<String, InstalledFeature> builtInWeapons = shipPainter.getBuiltInWeapons();
-        return builtInWeapons != null;
+    public void setBaseBuiltInsWithNewDecos(Map<String, InstalledFeature> rearrangedDecos) {
+        Map<String, InstalledFeature> combined = new LinkedHashMap<>(rearrangedDecos);
+        var normal = this.getBuiltInsFromBaseHull();
+        combined.putAll(normal);
+        ShipPainter shipPainter = parent.getPainter();
+
+        var oldCollection = shipPainter.getBuiltInWeapons();
+        EditDispatch.postFeaturesSorted(shipPainter::setBuiltInWeapons, oldCollection, combined);
     }
 
-    private boolean areSkinBuiltInsAvailable() {
-        var shipPainter = parent.getPainter();
-        if (shipPainter == null || shipPainter.isUninitialized()) return false;
-        var activeSkin = shipPainter.getActiveSkin();
-        if (activeSkin == null || activeSkin.isBase()) return false;
-        Map<String, WeaponCSVEntry> skinBuiltIns = activeSkin.getBuiltInWeapons();
-        return skinBuiltIns != null;
+    public void setSkinBuiltInsWithNewDecos(Map<String, InstalledFeature> rearrangedDecos) {
+        Map<String, InstalledFeature> combined = new LinkedHashMap<>(rearrangedDecos);
+        var normal = this.getBuiltInsFromSkin();
+        combined.putAll(normal);
+        ShipPainter shipPainter = parent.getPainter();
+
+        ShipSkin activeSkin = shipPainter.getActiveSkin();
+
+        var reconstructed = ShipSkin.reconstructAsEntries(combined);
+
+        var oldCollection = activeSkin.getBuiltInWeapons();
+        EditDispatch.postFeaturesSorted(activeSkin::setBuiltInWeapons, oldCollection, reconstructed);
     }
 
     public void cleanupListeners() {
@@ -186,7 +197,7 @@ public class FeaturesOverseer {
     @SuppressWarnings("OverlyComplexMethod")
     private void initInstallListeners() {
         BusEventListener installListener = event -> {
-            if (event instanceof LeftMouseButtonPressed) {
+            if (event instanceof FeatureInstallQueued) {
                 if (StaticController.getActiveLayer() != parent || weaponForInstall == null) return;
                 var shipPainter = parent.getPainter();
                 if (shipPainter == null || shipPainter.isUninitialized()) return;
@@ -206,7 +217,7 @@ public class FeaturesOverseer {
                         }
                     }
                     case DECORATIVES -> {
-
+                        // TODO: implement decoratives installation!
                     }
                     case VARIANT -> {
 

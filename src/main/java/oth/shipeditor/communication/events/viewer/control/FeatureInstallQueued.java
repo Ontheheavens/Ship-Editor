@@ -9,6 +9,6 @@ import java.awt.geom.Point2D;
  * @author Ontheheavens
  * @since 19.09.2023
  */
-public record LeftMouseButtonPressed(Point2D worldPosition) implements ViewerEvent {
+public record FeatureInstallQueued(Point2D worldPosition) implements ViewerEvent {
 
 }

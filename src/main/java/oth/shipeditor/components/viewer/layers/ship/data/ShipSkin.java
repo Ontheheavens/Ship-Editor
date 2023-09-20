@@ -1,7 +1,7 @@
 package oth.shipeditor.components.viewer.layers.ship.data;
 
 import lombok.Getter;
-import lombok.Setter;
+import lombok.extern.log4j.Log4j2;
 import oth.shipeditor.components.datafiles.entities.*;
 import oth.shipeditor.components.viewer.entities.engine.EngineDataOverride;
 import oth.shipeditor.components.viewer.entities.weapon.WeaponSlotOverride;
@@ -23,6 +23,7 @@ import java.util.*;
  * @since 31.07.2023
  */
 @SuppressWarnings("ClassWithTooManyFields")
+@Log4j2
 @Getter
 public final class ShipSkin {
 
@@ -97,35 +98,42 @@ public final class ShipSkin {
 
     private List<ShipTypeHints> addHints = new ArrayList<>();
 
-    private List<String> removeWeaponSlots = new ArrayList<>();
+    private List<String> removeWeaponSlots;
 
-    private List<Integer> removeEngineSlots = new ArrayList<>();
+    private List<Integer> removeEngineSlots;
 
-    private List<HullmodCSVEntry> removeBuiltInMods = new ArrayList<>();
+    private List<HullmodCSVEntry> removeBuiltInMods;
 
-    private List<String> removeBuiltInWeapons = new ArrayList<>();
+    private List<String> removeBuiltInWeapons;
 
-    private List<HullmodCSVEntry> builtInMods = new ArrayList<>();
+    private List<HullmodCSVEntry> builtInMods;
 
-    @Setter
-    private Map<String, WeaponCSVEntry> builtInWeapons = new LinkedHashMap<>();
+    private Map<String, WeaponCSVEntry> builtInWeapons;
 
 
     /**
      * For runtime usage in viewer.
      */
-    private Map<String, InstalledFeature> initializedBuiltIns = new LinkedHashMap<>();
+    private Map<String, InstalledFeature> initializedBuiltIns;
 
-    private Map<String, WeaponSlotOverride> weaponSlotChanges = new LinkedHashMap<>();
+    private Map<String, WeaponSlotOverride> weaponSlotChanges;
 
-    private Map<Integer, EngineDataOverride> engineSlotChanges = new LinkedHashMap<>();
+    private Map<Integer, EngineDataOverride> engineSlotChanges;
 
     /**
      * Needs to be called after every change in CSV-type built-ins map.
      * For example, if built-in entry is added or removed, initialized list needs to be invalidated for refresh.
      */
     public void invalidateBuiltIns() {
+        log.info("Invalidating built-ins of {}: cleaning up features.",
+                "#" + this.hashCode() + " [" + this + "]");
+        initializedBuiltIns.forEach((s, feature) -> feature.cleanupForRemoval());
         initializedBuiltIns = null;
+    }
+
+    public void setBuiltInWeapons(Map<String, WeaponCSVEntry> entryMap) {
+        this.builtInWeapons = entryMap;
+        this.invalidateBuiltIns();
     }
 
     public Map<String, InstalledFeature> getInitializedBuiltIns() {
@@ -331,7 +339,10 @@ public final class ShipSkin {
         }
 
         public Builder withRemoveHints(List<ShipTypeHints> removeHints) {
-            if (removeHints == null) return this;
+            if (removeHints == null) {
+                skin.removeHints = new ArrayList<>();
+                return this;
+            }
             skin.removeHints = removeHints;
             return this;
         }

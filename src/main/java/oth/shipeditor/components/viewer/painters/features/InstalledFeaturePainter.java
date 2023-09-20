@@ -58,7 +58,6 @@ public final class InstalledFeaturePainter {
 
         Map<String, InstalledFeature> toPrepare = new LinkedHashMap<>();
 
-
         // TODO: implement visibility for decoratives.
 
         var decoratives = painter.getBuiltInsWithSkin(true, false);
@@ -68,18 +67,18 @@ public final class InstalledFeaturePainter {
 
         var builtIns = painter.getBuiltInsWithSkin(false, true);
         if (checkVisibilityForBuiltIns(painter)) {
-            toPrepare.putAll(builtIns);
+            builtIns.forEach(toPrepare::putIfAbsent);
         }
 
         ShipVariant shipVariant = painter.getActiveVariant();
         if (shipVariant != null && !shipVariant.isEmpty()) {
             var modules = shipVariant.getFittedModules();
             if (modules != null) {
-                toPrepare.putAll(modules);
+                modules.forEach(toPrepare::putIfAbsent);
             }
             var allWeapons = shipVariant.getAllFittedWeapons();
             if (allWeapons != null) {
-                toPrepare.putAll(allWeapons);
+                allWeapons.forEach(toPrepare::putIfAbsent);
             }
         }
 

@@ -47,6 +47,10 @@ public final class InstalledFeature implements InstallableEntry {
         featurePainter.setShouldDrawPainter(false);
     }
 
+    public void cleanupForRemoval() {
+        featurePainter.cleanupForRemoval();
+    }
+
     public static InstalledFeature of(String slot, String id, LayerPainter painter, CSVEntry entry) {
         if (entry instanceof InstallableEntry) {
             return new InstalledFeature(slot, id, painter, entry);

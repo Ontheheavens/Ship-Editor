@@ -283,10 +283,14 @@ public final class EditDispatch {
     }
 
     public static<T extends InstallableEntry> void postFeatureUninstalled(Map<String, T> collection,
-                                                                          String slotID, T feature) {
-        Edit uninstallEdit = new FeatureUninstallEdit<>(collection, slotID, feature);
+                                                                          String slotID, T feature,
+                                                                          Runnable invalidator) {
+        Edit uninstallEdit = new FeatureUninstallEdit<>(collection, slotID, feature, invalidator);
         UndoOverseer.post(uninstallEdit);
         collection.remove(slotID, feature);
+        if (invalidator != null) {
+            invalidator.run();
+        }
         var repainter = StaticController.getRepainter();
         repainter.queueViewerRepaint();
         repainter.queueBuiltInsRepaint();

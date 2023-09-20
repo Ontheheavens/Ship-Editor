@@ -391,6 +391,9 @@ public class ShipPainter extends LayerPainter {
             }
         });
 
+        // TODO: add indications in the UI whether the base hull entry is overridden
+        //  by skin with or without removal entry.
+
         if (activeSkin != null && !activeSkin.isBase()) {
             var removedBuiltIns = activeSkin.getRemoveBuiltInWeapons();
             if (removedBuiltIns != null) {
