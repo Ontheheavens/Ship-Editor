@@ -4,6 +4,7 @@ import lombok.Getter;
 import oth.shipeditor.communication.BusEventListener;
 import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.viewer.control.FeatureInstallQueued;
+import oth.shipeditor.components.datafiles.entities.InstallableEntry;
 import oth.shipeditor.components.datafiles.entities.WeaponCSVEntry;
 import oth.shipeditor.components.instrument.ship.EditorInstrument;
 import oth.shipeditor.components.viewer.entities.weapon.SlotData;
@@ -49,7 +50,7 @@ public class FeaturesOverseer {
         weaponForInstall = entry;
         var mode = StaticController.getEditorMode();
         var repainter = StaticController.getRepainter();
-        if (mode == EditorInstrument.BUILT_IN_WEAPONS) {
+        if (mode == EditorInstrument.BUILT_IN_WEAPONS || mode == EditorInstrument.DECORATIVES) {
             repainter.queueBuiltInsRepaint();
         }
     }
@@ -212,12 +213,14 @@ public class FeaturesOverseer {
                 var mode = StaticController.getEditorMode();
                 switch (mode) {
                     case BUILT_IN_WEAPONS -> {
-                        if (selected.getWeaponType() == WeaponType.BUILT_IN) {
+                        if (selected.isBuiltIn()) {
                             installBuiltIn(selected);
                         }
                     }
                     case DECORATIVES -> {
-                        // TODO: implement decoratives installation!
+                        if (selected.isDecorative()) {
+                            installBuiltIn(selected);
+                        }
                     }
                     case VARIANT -> {
 
@@ -236,18 +239,24 @@ public class FeaturesOverseer {
         WeaponCSVEntry forInstall = weaponForInstall;
         if (activeSkin != null && !activeSkin.isBase()) {
             var skinBuiltIns = activeSkin.getBuiltInWeapons();
-            skinBuiltIns.put(slotID, forInstall);
-            activeSkin.invalidateBuiltIns();
+            FeaturesOverseer.commenceFeatureInstall(slotID, forInstall, skinBuiltIns,
+                    activeSkin::invalidateBuiltIns);
         } else {
             var baseBuiltIns = shipPainter.getBuiltInWeapons();
             WeaponSpecFile specFile = forInstall.getSpecFile();
             WeaponPainter weaponPainter = forInstall.createPainterFromEntry(null, specFile);
-            baseBuiltIns.put(slotID, InstalledFeature.of(slotID, forInstall.getWeaponID(),
-                    weaponPainter, forInstall));
+            InstalledFeature feature = InstalledFeature.of(slotID, forInstall.getWeaponID(),
+                    weaponPainter, forInstall);
+
+            FeaturesOverseer.commenceFeatureInstall(slotID, feature, baseBuiltIns, null);
         }
-        var repainter = StaticController.getRepainter();
-        repainter.queueViewerRepaint();
-        repainter.queueBuiltInsRepaint();
+
+    }
+
+    private static <T extends InstallableEntry> void commenceFeatureInstall(String slotID, T entry,
+                                                                            Map<String, T> collection,
+                                                                            Runnable invalidator) {
+        EditDispatch.postFeatureInstalled(collection, slotID, entry, invalidator);
     }
 
 }

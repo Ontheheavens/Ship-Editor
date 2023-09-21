@@ -37,13 +37,19 @@ public abstract class AbstractBuiltInsPanel extends JPanel {
         JPanel hintPanel = AbstractBuiltInsPanel.createHintPanel(getHintText(), hintIcon);
         this.add(hintPanel, BorderLayout.PAGE_START);
 
-        contentPane = new ScrollableHeightContainer();
+        contentPane = createContentPane();
         contentPane.setLayout(new BoxLayout(contentPane, BoxLayout.PAGE_AXIS));
 
         JScrollPane scrollContainer = new JScrollPane(contentPane);
+        JScrollBar verticalScrollBar = scrollContainer.getVerticalScrollBar();
+        verticalScrollBar.setUnitIncrement(12);
         this.add(scrollContainer, BorderLayout.CENTER);
 
         this.initLayerListeners();
+    }
+
+    protected JPanel createContentPane() {
+        return new ScrollableHeightContainer();
     }
 
     protected String getHintText() {
@@ -76,7 +82,7 @@ public abstract class AbstractBuiltInsPanel extends JPanel {
 
     protected static JPanel createPlaceholderLabel(String text) {
         var emptyContainer = new JPanel();
-        emptyContainer.setBorder(new EmptyBorder(6, 2, 6, 2));
+        emptyContainer.setBorder(new EmptyBorder(8, 2, 6, 2));
         emptyContainer.setLayout(new BoxLayout(emptyContainer, BoxLayout.LINE_AXIS));
         JLabel label = new JLabel(text, SwingConstants.CENTER);
         emptyContainer.add(Box.createHorizontalGlue());

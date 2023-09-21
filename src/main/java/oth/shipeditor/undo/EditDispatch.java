@@ -20,6 +20,7 @@ import oth.shipeditor.representation.weapon.WeaponMount;
 import oth.shipeditor.representation.weapon.WeaponSize;
 import oth.shipeditor.representation.weapon.WeaponType;
 import oth.shipeditor.undo.edits.*;
+import oth.shipeditor.undo.edits.features.FeatureInstallEdit;
 import oth.shipeditor.undo.edits.features.FeatureSortEdit;
 import oth.shipeditor.undo.edits.features.FeatureUninstallEdit;
 import oth.shipeditor.undo.edits.points.*;
@@ -29,6 +30,7 @@ import oth.shipeditor.utility.Size2D;
 import oth.shipeditor.utility.StaticController;
 
 import java.awt.geom.Point2D;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
@@ -282,12 +284,32 @@ public final class EditDispatch {
         index.remove(wing);
     }
 
+    public static<T extends InstallableEntry> void postFeatureInstalled(Map<String, T> collection,
+                                                                          String slotID, T feature,
+                                                                          Runnable invalidator) {
+        // Theoretically should not need order preservation since added is always last.
+        Edit installEdit = new FeatureInstallEdit<>(collection, slotID, feature, invalidator);
+        UndoOverseer.post(installEdit);
+        collection.put(slotID, feature);
+        if (invalidator != null) {
+            invalidator.run();
+        }
+        var repainter = StaticController.getRepainter();
+        repainter.queueViewerRepaint();
+        repainter.queueBuiltInsRepaint();
+    }
+
     public static<T extends InstallableEntry> void postFeatureUninstalled(Map<String, T> collection,
                                                                           String slotID, T feature,
                                                                           Runnable invalidator) {
-        Edit uninstallEdit = new FeatureUninstallEdit<>(collection, slotID, feature, invalidator);
-        UndoOverseer.post(uninstallEdit);
+        // Note: this technique of manipulating collection state instead of explicit removal/re-adding assumes
+        // that order of operations is strictly preserved in edit stack.
+        // Should the sequence be broken, this will backfire.
+        Map<String, T> before = new LinkedHashMap<>(collection);
         collection.remove(slotID, feature);
+        Map<String, T> after = new LinkedHashMap<>(collection);
+        Edit uninstallEdit = new FeatureUninstallEdit<>(before, after, collection, invalidator);
+        UndoOverseer.post(uninstallEdit);
         if (invalidator != null) {
             invalidator.run();
         }

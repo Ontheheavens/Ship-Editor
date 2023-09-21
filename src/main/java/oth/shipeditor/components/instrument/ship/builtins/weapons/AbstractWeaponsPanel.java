@@ -17,6 +17,7 @@ import oth.shipeditor.utility.components.ComponentUtilities;
 import oth.shipeditor.utility.text.StringValues;
 
 import javax.swing.*;
+import javax.swing.border.LineBorder;
 import java.awt.*;
 import java.util.Collection;
 import java.util.Map;
@@ -45,10 +46,15 @@ public abstract class AbstractWeaponsPanel extends AbstractBuiltInsPanel {
     }
 
     @Override
+    protected JPanel createContentPane() {
+        return new JPanel();
+    }
+
+    @Override
     protected void refreshPanel(ShipLayer layer) {
         JPanel contentPane = getContentPane();
         contentPane.removeAll();
-        contentPane.setLayout(new BoxLayout(contentPane, BoxLayout.PAGE_AXIS));
+        contentPane.setLayout(new GridBagLayout());
         var gameData = SettingsManager.getGameData();
         if (!gameData.isWeaponsDataLoaded()) {
             this.installPlaceholderLabel("Weapon data not loaded");
@@ -63,8 +69,6 @@ public abstract class AbstractWeaponsPanel extends AbstractBuiltInsPanel {
         if (activeSkin != null && !activeSkin.isBase()) {
             this.handleSkinBuiltInsChanges(layer);
         }
-
-        contentPane.add(Box.createVerticalGlue());
 
         if (weaponPickPanel != null) {
             this.remove(weaponPickPanel);
@@ -101,7 +105,15 @@ public abstract class AbstractWeaponsPanel extends AbstractBuiltInsPanel {
         ShipPainter shipPainter = selected.getPainter();
         if (builtInWeapons == null || builtInWeapons.isEmpty()) {
             JPanel placeholderLabel = AbstractBuiltInsPanel.createPlaceholderLabel(getPlaceholderText());
-            contentPane.add(placeholderLabel);
+
+            GridBagConstraints constraints = new GridBagConstraints();
+            constraints.fill = GridBagConstraints.HORIZONTAL;
+            constraints.gridx = 0;
+            constraints.gridy = 0;
+            constraints.weighty = 0.01;
+            constraints.anchor = GridBagConstraints.PAGE_START;
+
+            contentPane.add(placeholderLabel, constraints);
         } else {
             Collection<InstalledFeature> values = builtInWeapons.values();
 
@@ -117,9 +129,20 @@ public abstract class AbstractWeaponsPanel extends AbstractBuiltInsPanel {
 
             var listContainer = new InstalledFeatureList(listModel, slotPainter,
                     removeAction, getBaseHullSortAction(featuresOverseer));
-            JScrollPane scrollableContainer = new JScrollPane(listContainer);
+            listContainer.setBorder(new LineBorder(Color.LIGHT_GRAY));
+            listContainer.setBelongsToBaseHullBuiltIns(true);
 
-            contentPane.add(scrollableContainer);
+            GridBagConstraints constraints = new GridBagConstraints();
+            constraints.fill = GridBagConstraints.HORIZONTAL;
+            constraints.anchor = GridBagConstraints.PAGE_START;
+            constraints.gridx = 0;
+            constraints.gridy = 0;
+            constraints.weightx = 1;
+            constraints.weighty = 0.01;
+            constraints.gridwidth = GridBagConstraints.REMAINDER;
+            constraints.insets = new Insets(0, 0, 3, 0);
+
+            contentPane.add(listContainer, constraints);
         }
     }
 
@@ -133,6 +156,9 @@ public abstract class AbstractWeaponsPanel extends AbstractBuiltInsPanel {
 
         JPanel contentPane = this.getContentPane();
         if (added != null && !added.isEmpty()) {
+            JPanel container = new JPanel();
+            container.setLayout(new BorderLayout());
+
             DefaultListModel<InstalledFeature> listModel = new DefaultListModel<>();
             listModel.addAll(added.values());
 
@@ -147,19 +173,29 @@ public abstract class AbstractWeaponsPanel extends AbstractBuiltInsPanel {
                         toRemove, activeSkin::invalidateBuiltIns);
             };
 
-            contentPane.add(Box.createVerticalStrut(2));
             JPanel title = ComponentUtilities.createTitledSeparatorPanel(StringValues.ADDED_BY_SKIN);
-            title.setMaximumSize(new Dimension(Integer.MAX_VALUE, 4));
+            title.setMaximumSize(new Dimension(Integer.MAX_VALUE, 2));
             title.setAlignmentY(0);
-            contentPane.add(title);
+            container.add(title, BorderLayout.PAGE_START);
 
             var slotPainter = painter.getWeaponSlotPainter();
 
             var listContainer = new InstalledFeatureList(listModel, slotPainter, removeAction,
                     getSkinSortAction(featuresOverseer));
-            JScrollPane scrollableContainer = new JScrollPane(listContainer);
+            listContainer.setBorder(new LineBorder(Color.LIGHT_GRAY));
 
-            contentPane.add(scrollableContainer);
+            GridBagConstraints constraints = new GridBagConstraints();
+            constraints.fill = GridBagConstraints.HORIZONTAL;
+            constraints.anchor = GridBagConstraints.PAGE_START;
+            constraints.gridx = 0;
+            constraints.gridy = 1;
+
+            constraints.gridwidth = GridBagConstraints.REMAINDER;
+            constraints.weightx = 1;
+            constraints.weighty = 1;
+
+            container.add(listContainer);
+            contentPane.add(container, constraints);
         }
     }
 

@@ -1,6 +1,7 @@
 package oth.shipeditor.components.instrument.ship.shared;
 
 import lombok.Getter;
+import lombok.Setter;
 import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.components.SelectWeaponDataEntry;
 import oth.shipeditor.communication.events.viewer.points.PointSelectQueued;
@@ -30,6 +31,9 @@ import java.util.function.Consumer;
 public class InstalledFeatureList extends SortableList<InstalledFeature> {
 
     private boolean propagationBlock;
+
+    @Getter @Setter
+    private boolean belongsToBaseHullBuiltIns;
 
     @Getter
     private final WeaponSlotPainter slotPainter;

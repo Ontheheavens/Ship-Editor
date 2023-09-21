@@ -219,7 +219,14 @@ public class WeaponSlotPoint extends AngledPoint implements SlotPoint {
 
     public boolean isFittable() {
         WeaponType type = this.getWeaponType();
-        return type != WeaponType.BUILT_IN && type != WeaponType.DECORATIVE && type != WeaponType.SYSTEM;
+        switch (type) {
+            case BALLISTIC, ENERGY, MISSILE, COMPOSITE, HYBRID, SYNERGY, UNIVERSAL, STATION_MODULE -> {
+                return true;
+            }
+            default -> {
+                return false;
+            }
+        }
     }
 
     @SuppressWarnings("BooleanMethodIsAlwaysInverted")
