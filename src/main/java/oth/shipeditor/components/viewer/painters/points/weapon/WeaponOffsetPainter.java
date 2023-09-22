@@ -1,4 +1,4 @@
-package oth.shipeditor.components.viewer.painters.points;
+package oth.shipeditor.components.viewer.painters.points.weapon;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -7,6 +7,7 @@ import oth.shipeditor.components.instrument.ship.EditorInstrument;
 import oth.shipeditor.components.viewer.entities.BaseWorldPoint;
 import oth.shipeditor.components.viewer.entities.weapon.OffsetPoint;
 import oth.shipeditor.components.viewer.layers.weapon.WeaponPainter;
+import oth.shipeditor.components.viewer.painters.points.AngledPointPainter;
 import oth.shipeditor.representation.weapon.WeaponMount;
 import oth.shipeditor.utility.Utility;
 

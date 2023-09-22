@@ -33,9 +33,7 @@ public abstract class AbstractBuiltInsPanel extends JPanel {
     protected AbstractBuiltInsPanel() {
         this.setLayout(new BorderLayout());
 
-        FontIcon hintIcon = FontIcon.of(FluentUiRegularAL.INFO_28, 28);
-        JPanel hintPanel = AbstractBuiltInsPanel.createHintPanel(getHintText(), hintIcon);
-        this.add(hintPanel, BorderLayout.PAGE_START);
+        this.addHintPanel();
 
         contentPane = createContentPane();
         contentPane.setLayout(new BoxLayout(contentPane, BoxLayout.PAGE_AXIS));
@@ -46,6 +44,12 @@ public abstract class AbstractBuiltInsPanel extends JPanel {
         this.add(scrollContainer, BorderLayout.CENTER);
 
         this.initLayerListeners();
+    }
+
+    protected void addHintPanel() {
+        FontIcon hintIcon = FontIcon.of(FluentUiRegularAL.INFO_28, 28);
+        JPanel hintPanel = AbstractBuiltInsPanel.createHintPanel(getHintText(), hintIcon);
+        this.add(hintPanel, BorderLayout.PAGE_START);
     }
 
     protected JPanel createContentPane() {
@@ -93,7 +97,7 @@ public abstract class AbstractBuiltInsPanel extends JPanel {
 
     protected abstract void refreshPanel(ShipLayer layer);
 
-    static JPanel createHintPanel(String text, FontIcon icon) {
+    protected static JPanel createHintPanel(String text, FontIcon icon) {
         JPanel hintPanel = new JPanel();
         hintPanel.setLayout(new BoxLayout(hintPanel, BoxLayout.LINE_AXIS));
 

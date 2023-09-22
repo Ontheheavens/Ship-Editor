@@ -21,7 +21,7 @@ import oth.shipeditor.components.viewer.layers.weapon.WeaponLayer;
 import oth.shipeditor.representation.HullSpecFile;
 import oth.shipeditor.representation.ShipData;
 import oth.shipeditor.representation.SkinSpecFile;
-import oth.shipeditor.utility.StaticController;
+import oth.shipeditor.utility.overseers.StaticController;
 import oth.shipeditor.utility.graphics.Sprite;
 
 import javax.swing.*;

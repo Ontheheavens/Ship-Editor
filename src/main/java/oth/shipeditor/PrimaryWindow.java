@@ -10,7 +10,7 @@ import oth.shipeditor.components.viewer.LayerViewer;
 import oth.shipeditor.components.viewer.control.ControlPredicates;
 import oth.shipeditor.menubar.PrimaryMenuBar;
 import oth.shipeditor.persistence.Initializations;
-import oth.shipeditor.utility.StaticController;
+import oth.shipeditor.utility.overseers.StaticController;
 
 import javax.swing.*;
 import java.awt.*;

@@ -4,7 +4,7 @@ import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.files.HullStylesLoaded;
 import oth.shipeditor.menubar.FileUtilities;
 import oth.shipeditor.representation.HullStyle;
-import oth.shipeditor.utility.Pair;
+import oth.shipeditor.utility.objects.Pair;
 import oth.shipeditor.utility.components.ComponentUtilities;
 
 import javax.swing.*;

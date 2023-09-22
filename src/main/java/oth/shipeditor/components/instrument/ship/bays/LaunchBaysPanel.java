@@ -14,7 +14,7 @@ import oth.shipeditor.components.viewer.layers.ViewerLayer;
 import oth.shipeditor.components.viewer.layers.ship.ShipLayer;
 import oth.shipeditor.components.viewer.layers.ship.ShipPainter;
 import oth.shipeditor.components.viewer.painters.PainterVisibility;
-import oth.shipeditor.components.viewer.painters.points.LaunchBayPainter;
+import oth.shipeditor.components.viewer.painters.points.ship.LaunchBayPainter;
 import oth.shipeditor.utility.components.ComponentUtilities;
 
 import javax.swing.*;

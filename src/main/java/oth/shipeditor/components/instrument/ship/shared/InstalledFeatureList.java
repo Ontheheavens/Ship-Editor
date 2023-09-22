@@ -10,9 +10,9 @@ import oth.shipeditor.components.datafiles.entities.CSVEntry;
 import oth.shipeditor.components.datafiles.entities.WeaponCSVEntry;
 import oth.shipeditor.components.viewer.entities.weapon.WeaponSlotPoint;
 import oth.shipeditor.components.viewer.layers.ship.ShipLayer;
-import oth.shipeditor.components.viewer.painters.features.InstalledFeature;
-import oth.shipeditor.components.viewer.painters.points.WeaponSlotPainter;
-import oth.shipeditor.utility.StaticController;
+import oth.shipeditor.components.viewer.painters.points.ship.features.InstalledFeature;
+import oth.shipeditor.components.viewer.painters.points.ship.WeaponSlotPainter;
+import oth.shipeditor.utility.overseers.StaticController;
 import oth.shipeditor.utility.components.containers.SortableList;
 import oth.shipeditor.utility.components.rendering.InstalledFeatureCellRenderer;
 

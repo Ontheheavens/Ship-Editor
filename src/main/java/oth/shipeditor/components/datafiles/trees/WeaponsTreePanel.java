@@ -47,6 +47,8 @@ public class WeaponsTreePanel extends CSVDataTreePanel<WeaponCSVEntry>{
 
     private boolean filtersOpened;
 
+    private boolean autoExpandNodes;
+
     public WeaponsTreePanel() {
         super("Weapon files");
     }
@@ -129,7 +131,9 @@ public class WeaponsTreePanel extends CSVDataTreePanel<WeaponCSVEntry>{
 
         JTree tree = getTree();
 
-        this.expandAllNodes();
+        if (autoExpandNodes) {
+            this.expandAllNodes();
+        }
 
         tree.repaint();
     }
@@ -208,6 +212,11 @@ public class WeaponsTreePanel extends CSVDataTreePanel<WeaponCSVEntry>{
         });
 
         topPanel.add(filtersButton);
+
+        JCheckBox expandNodes = new JCheckBox("Auto-expand nodes");
+        expandNodes.addActionListener(e -> this.autoExpandNodes = expandNodes.isSelected());
+
+        topPanel.add(expandNodes);
 
         return topPanel;
     }

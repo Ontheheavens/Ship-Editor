@@ -1,7 +1,9 @@
 package oth.shipeditor.components.instrument.ship.builtins.weapons;
 
 import oth.shipeditor.components.viewer.layers.ship.FeaturesOverseer;
-import oth.shipeditor.components.viewer.painters.features.InstalledFeature;
+import oth.shipeditor.components.viewer.painters.PainterVisibility;
+import oth.shipeditor.components.viewer.painters.points.ship.features.InstalledFeature;
+import oth.shipeditor.components.viewer.painters.points.ship.features.InstalledFeaturePainter;
 
 import java.util.Map;
 import java.util.function.Consumer;
@@ -11,6 +13,16 @@ import java.util.function.Consumer;
  * @since 14.09.2023
  */
 public class DecorativesPanel extends AbstractWeaponsPanel {
+
+    @Override
+    protected PainterVisibility getVisibilityOfBuiltInKind(InstalledFeaturePainter painter) {
+        return painter.getDecorativesVisibility();
+    }
+
+    @Override
+    protected void setVisibilityOfBuiltInKind(InstalledFeaturePainter painter, PainterVisibility visibility) {
+        painter.setDecorativesVisibility(visibility);
+    }
 
     @Override
     protected String getPlaceholderText() {

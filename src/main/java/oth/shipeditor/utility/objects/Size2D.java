@@ -1,4 +1,4 @@
-package oth.shipeditor.utility;
+package oth.shipeditor.utility.objects;
 
 import java.awt.geom.Dimension2D;
 

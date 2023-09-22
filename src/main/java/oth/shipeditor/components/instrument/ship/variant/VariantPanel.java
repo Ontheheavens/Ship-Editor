@@ -11,7 +11,7 @@ import oth.shipeditor.components.viewer.layers.ship.data.Variant;
 import oth.shipeditor.representation.GameDataRepository;
 import oth.shipeditor.representation.ShipData;
 import oth.shipeditor.representation.VariantFile;
-import oth.shipeditor.utility.StaticController;
+import oth.shipeditor.utility.overseers.StaticController;
 import oth.shipeditor.utility.text.StringValues;
 
 import javax.swing.*;

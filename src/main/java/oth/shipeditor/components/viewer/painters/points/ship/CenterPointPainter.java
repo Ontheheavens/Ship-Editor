@@ -1,4 +1,4 @@
-package oth.shipeditor.components.viewer.painters.points;
+package oth.shipeditor.components.viewer.painters.points.ship;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -18,7 +18,7 @@ import oth.shipeditor.components.viewer.painters.TextPainter;
 import oth.shipeditor.representation.HullSpecFile;
 import oth.shipeditor.representation.weapon.WeaponType;
 import oth.shipeditor.undo.EditDispatch;
-import oth.shipeditor.utility.StaticController;
+import oth.shipeditor.utility.overseers.StaticController;
 import oth.shipeditor.utility.Utility;
 import oth.shipeditor.utility.graphics.DrawUtilities;
 import oth.shipeditor.utility.text.StringValues;

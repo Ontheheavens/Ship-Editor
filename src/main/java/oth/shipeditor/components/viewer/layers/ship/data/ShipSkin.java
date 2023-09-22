@@ -6,7 +6,7 @@ import oth.shipeditor.components.datafiles.entities.*;
 import oth.shipeditor.components.viewer.entities.engine.EngineDataOverride;
 import oth.shipeditor.components.viewer.entities.weapon.WeaponSlotOverride;
 import oth.shipeditor.components.viewer.layers.weapon.WeaponPainter;
-import oth.shipeditor.components.viewer.painters.features.InstalledFeature;
+import oth.shipeditor.components.viewer.painters.points.ship.features.InstalledFeature;
 import oth.shipeditor.persistence.SettingsManager;
 import oth.shipeditor.representation.*;
 import oth.shipeditor.representation.weapon.*;

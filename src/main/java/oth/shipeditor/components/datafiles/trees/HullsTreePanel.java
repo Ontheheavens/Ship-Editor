@@ -11,7 +11,7 @@ import oth.shipeditor.menubar.FileUtilities;
 import oth.shipeditor.representation.HullSize;
 import oth.shipeditor.representation.HullSpecFile;
 import oth.shipeditor.representation.SkinSpecFile;
-import oth.shipeditor.utility.Pair;
+import oth.shipeditor.utility.objects.Pair;
 import oth.shipeditor.utility.components.ComponentUtilities;
 import oth.shipeditor.utility.text.StringValues;
 

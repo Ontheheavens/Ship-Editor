@@ -14,7 +14,7 @@ import oth.shipeditor.persistence.SettingsManager;
 import oth.shipeditor.representation.GameDataRepository;
 import oth.shipeditor.representation.VariantFile;
 import oth.shipeditor.undo.EditDispatch;
-import oth.shipeditor.utility.StaticController;
+import oth.shipeditor.utility.overseers.StaticController;
 import oth.shipeditor.utility.Utility;
 import oth.shipeditor.utility.components.ComponentUtilities;
 import oth.shipeditor.utility.graphics.Sprite;

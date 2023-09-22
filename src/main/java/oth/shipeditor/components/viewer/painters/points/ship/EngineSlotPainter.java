@@ -1,4 +1,4 @@
-package oth.shipeditor.components.viewer.painters.points;
+package oth.shipeditor.components.viewer.painters.points.ship;
 
 import com.jhlabs.image.HSBAdjustFilter;
 import lombok.Getter;
@@ -15,10 +15,11 @@ import oth.shipeditor.components.viewer.entities.engine.EngineDataOverride;
 import oth.shipeditor.components.viewer.entities.engine.EnginePoint;
 import oth.shipeditor.components.viewer.layers.ship.ShipPainter;
 import oth.shipeditor.components.viewer.layers.ship.data.ShipSkin;
+import oth.shipeditor.components.viewer.painters.points.AngledPointPainter;
 import oth.shipeditor.representation.EngineStyle;
 import oth.shipeditor.undo.EditDispatch;
-import oth.shipeditor.utility.Size2D;
-import oth.shipeditor.utility.StaticController;
+import oth.shipeditor.utility.objects.Size2D;
+import oth.shipeditor.utility.overseers.StaticController;
 import oth.shipeditor.utility.Utility;
 
 import java.awt.*;

@@ -18,7 +18,7 @@ import oth.shipeditor.representation.SkinSpecFile;
 import oth.shipeditor.representation.VariantFile;
 import oth.shipeditor.representation.weapon.ProjectileSpecFile;
 import oth.shipeditor.representation.weapon.WeaponSpecFile;
-import oth.shipeditor.utility.ImageCache;
+import oth.shipeditor.utility.overseers.ImageCache;
 import oth.shipeditor.utility.graphics.Sprite;
 import oth.shipeditor.utility.text.StringConstants;
 import oth.shipeditor.utility.text.StringValues;

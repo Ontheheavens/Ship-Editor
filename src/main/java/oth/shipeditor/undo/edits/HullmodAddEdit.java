@@ -5,7 +5,7 @@ import oth.shipeditor.communication.events.viewer.layers.ActiveLayerUpdated;
 import oth.shipeditor.components.datafiles.entities.HullmodCSVEntry;
 import oth.shipeditor.components.viewer.layers.ship.ShipLayer;
 import oth.shipeditor.undo.AbstractEdit;
-import oth.shipeditor.utility.StaticController;
+import oth.shipeditor.utility.overseers.StaticController;
 
 import java.util.List;
 

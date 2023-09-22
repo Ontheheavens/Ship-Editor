@@ -1,8 +1,11 @@
 package oth.shipeditor.components.instrument.ship.builtins.weapons;
 
+import org.kordamp.ikonli.fluentui.FluentUiRegularAL;
+import org.kordamp.ikonli.swing.FontIcon;
 import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.BusEvent;
 import oth.shipeditor.communication.events.components.BuiltInsPanelsRepaintQueued;
+import oth.shipeditor.communication.events.viewer.ViewerRepaintQueued;
 import oth.shipeditor.components.datafiles.entities.WeaponCSVEntry;
 import oth.shipeditor.components.instrument.ship.builtins.AbstractBuiltInsPanel;
 import oth.shipeditor.components.instrument.ship.shared.InstalledFeatureList;
@@ -10,7 +13,9 @@ import oth.shipeditor.components.viewer.layers.ship.FeaturesOverseer;
 import oth.shipeditor.components.viewer.layers.ship.ShipLayer;
 import oth.shipeditor.components.viewer.layers.ship.ShipPainter;
 import oth.shipeditor.components.viewer.layers.ship.data.ShipSkin;
-import oth.shipeditor.components.viewer.painters.features.InstalledFeature;
+import oth.shipeditor.components.viewer.painters.PainterVisibility;
+import oth.shipeditor.components.viewer.painters.points.ship.features.InstalledFeature;
+import oth.shipeditor.components.viewer.painters.points.ship.features.InstalledFeaturePainter;
 import oth.shipeditor.persistence.SettingsManager;
 import oth.shipeditor.undo.EditDispatch;
 import oth.shipeditor.utility.components.ComponentUtilities;
@@ -19,6 +24,7 @@ import oth.shipeditor.utility.text.StringValues;
 import javax.swing.*;
 import javax.swing.border.LineBorder;
 import java.awt.*;
+import java.awt.event.ActionListener;
 import java.util.Collection;
 import java.util.Map;
 import java.util.function.Consumer;
@@ -31,6 +37,8 @@ public abstract class AbstractWeaponsPanel extends AbstractBuiltInsPanel {
 
     private JPanel weaponPickPanel;
 
+    private JPanel northContainer;
+
     @Override
     protected void initLayerListeners() {
         super.initLayerListeners();
@@ -39,6 +47,45 @@ public abstract class AbstractWeaponsPanel extends AbstractBuiltInsPanel {
                 this.refreshPanel(getCachedLayer());
             }
         });
+    }
+
+    protected abstract PainterVisibility getVisibilityOfBuiltInKind(InstalledFeaturePainter painter);
+
+    protected abstract void setVisibilityOfBuiltInKind(InstalledFeaturePainter painter, PainterVisibility visibility);
+
+    protected void addHintPanel() {
+        northContainer = new JPanel();
+        northContainer.setLayout(new BorderLayout());
+
+        JComboBox<PainterVisibility> visibilityList = new JComboBox<>(PainterVisibility.values());
+        ActionListener selectionAction = e -> {
+            if (!(e.getSource() instanceof ShipPainter checked)) return;
+            InstalledFeaturePainter installablesPainter = checked.getInstallablesPainter();
+            PainterVisibility valueOfLayer = this.getVisibilityOfBuiltInKind(installablesPainter);
+            visibilityList.setSelectedItem(valueOfLayer);
+        };
+
+        ActionListener chooserAction = e -> {
+            PainterVisibility changedValue = (PainterVisibility) visibilityList.getSelectedItem();
+
+            ShipLayer cached = this.getCachedLayer();
+            if (cached == null) return;
+            ShipPainter painter = cached.getPainter();
+            if (painter == null || painter.isUninitialized() || !painter.isLayerActive()) return;
+
+            InstalledFeaturePainter installablesPainter = painter.getInstallablesPainter();
+
+            setVisibilityOfBuiltInKind(installablesPainter, changedValue);
+
+            EventBus.publish(new ViewerRepaintQueued());
+        };
+
+        JPanel visibilityWidget = ComponentUtilities.createVisibilityWidgetRaw(visibilityList,
+                chooserAction, selectionAction, "");
+
+        northContainer.add(visibilityWidget, BorderLayout.PAGE_START);
+
+        this.add(northContainer, BorderLayout.PAGE_START);
     }
 
     private static boolean isRepaintEvent(BusEvent event) {
@@ -71,14 +118,17 @@ public abstract class AbstractWeaponsPanel extends AbstractBuiltInsPanel {
         }
 
         if (weaponPickPanel != null) {
-            this.remove(weaponPickPanel);
+            northContainer.remove(weaponPickPanel);
         }
 
         WeaponCSVEntry pickedForInstall = FeaturesOverseer.getWeaponForInstall();
         if (pickedForInstall != null) {
             weaponPickPanel = pickedForInstall.createPickedWeaponPanel();
-            this.add(weaponPickPanel, BorderLayout.PAGE_END);
+        } else {
+            FontIcon hintIcon = FontIcon.of(FluentUiRegularAL.INFO_28, 28);
+            weaponPickPanel = AbstractBuiltInsPanel.createHintPanel(getHintText(), hintIcon);
         }
+        northContainer.add(weaponPickPanel, BorderLayout.CENTER);
 
         this.revalidate();
         this.repaint();

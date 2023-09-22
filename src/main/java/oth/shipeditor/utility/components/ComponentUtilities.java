@@ -11,7 +11,7 @@ import oth.shipeditor.components.viewer.painters.PainterVisibility;
 import oth.shipeditor.components.viewer.painters.points.AbstractPointPainter;
 import oth.shipeditor.menubar.FileUtilities;
 import oth.shipeditor.parsing.loading.FileLoading;
-import oth.shipeditor.utility.Pair;
+import oth.shipeditor.utility.objects.Pair;
 import oth.shipeditor.utility.Utility;
 import oth.shipeditor.utility.components.containers.SortableList;
 import oth.shipeditor.utility.components.containers.TextScrollPanel;
@@ -265,12 +265,19 @@ public final class ComponentUtilities {
     public static JPanel createVisibilityWidget(JComboBox<PainterVisibility> visibilityList,
                                                 Class<? extends AbstractPointPainter> painterClass,
                                                 ActionListener selectionAction, String labelName) {
+        ActionListener chooseAction = PainterVisibility.createActionListener(visibilityList, painterClass);
+        return ComponentUtilities.createVisibilityWidgetRaw(visibilityList, chooseAction, selectionAction, labelName);
+    }
+
+    public static JPanel createVisibilityWidgetRaw(JComboBox<PainterVisibility> visibilityList,
+                                                ActionListener chooseAction,
+                                                ActionListener selectionAction, String labelName) {
         String widgetLabel = labelName;
         JPanel widgetPanel = new JPanel();
         widgetPanel.setLayout(new GridBagLayout());
 
         visibilityList.setRenderer(PainterVisibility.createCellRenderer());
-        visibilityList.addActionListener(PainterVisibility.createActionListener(visibilityList, painterClass));
+        visibilityList.addActionListener(chooseAction);
         EventBus.subscribe(PainterVisibility.createBusEventListener(visibilityList, selectionAction));
 
         visibilityList.setMaximumSize(visibilityList.getPreferredSize());

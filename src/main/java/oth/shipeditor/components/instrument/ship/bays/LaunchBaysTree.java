@@ -10,7 +10,7 @@ import oth.shipeditor.communication.events.viewer.points.PointSelectedConfirmed;
 import oth.shipeditor.components.viewer.entities.bays.LaunchBay;
 import oth.shipeditor.components.viewer.entities.bays.LaunchPortPoint;
 import oth.shipeditor.components.viewer.entities.weapon.SlotPoint;
-import oth.shipeditor.components.viewer.painters.points.LaunchBayPainter;
+import oth.shipeditor.components.viewer.painters.points.ship.LaunchBayPainter;
 
 import javax.swing.*;
 import javax.swing.tree.*;

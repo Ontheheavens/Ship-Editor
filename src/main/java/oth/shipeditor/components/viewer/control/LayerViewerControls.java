@@ -9,10 +9,10 @@ import oth.shipeditor.communication.events.viewer.points.*;
 import oth.shipeditor.components.viewer.PrimaryViewer;
 import oth.shipeditor.components.viewer.layers.LayerPainter;
 import oth.shipeditor.components.viewer.layers.ship.ShipPainter;
-import oth.shipeditor.components.viewer.painters.points.BoundPointsPainter;
-import oth.shipeditor.components.viewer.painters.points.EngineSlotPainter;
-import oth.shipeditor.components.viewer.painters.points.WeaponSlotPainter;
-import oth.shipeditor.utility.StaticController;
+import oth.shipeditor.components.viewer.painters.points.ship.BoundPointsPainter;
+import oth.shipeditor.components.viewer.painters.points.ship.EngineSlotPainter;
+import oth.shipeditor.components.viewer.painters.points.ship.WeaponSlotPainter;
+import oth.shipeditor.utility.overseers.StaticController;
 import oth.shipeditor.utility.Utility;
 
 import javax.swing.*;

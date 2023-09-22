@@ -1,4 +1,4 @@
-package oth.shipeditor.components.viewer.painters.points;
+package oth.shipeditor.components.viewer.painters.points.ship;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -18,11 +18,12 @@ import oth.shipeditor.components.viewer.entities.weapon.WeaponSlotOverride;
 import oth.shipeditor.components.viewer.entities.weapon.WeaponSlotPoint;
 import oth.shipeditor.components.viewer.layers.ship.ShipPainter;
 import oth.shipeditor.components.viewer.layers.ship.data.ShipSkin;
+import oth.shipeditor.components.viewer.painters.points.AngledPointPainter;
 import oth.shipeditor.representation.weapon.WeaponMount;
 import oth.shipeditor.representation.weapon.WeaponSize;
 import oth.shipeditor.representation.weapon.WeaponType;
 import oth.shipeditor.undo.EditDispatch;
-import oth.shipeditor.utility.StaticController;
+import oth.shipeditor.utility.overseers.StaticController;
 import oth.shipeditor.utility.Utility;
 
 import java.awt.*;
@@ -327,7 +328,7 @@ public class WeaponSlotPainter extends AngledPointPainter {
     }
 
     @Override
-    void paintDelegates(Graphics2D g, AffineTransform worldToScreen, double w, double h) {
+    protected void paintDelegates(Graphics2D g, AffineTransform worldToScreen, double w, double h) {
         List<WeaponSlotPoint> pointsIndex = this.getEligibleForSelection();
         pointsIndex.forEach(slotPoint -> {
             paintDelegate(g, worldToScreen, w, h, slotPoint);

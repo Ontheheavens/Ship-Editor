@@ -11,7 +11,7 @@ import oth.shipeditor.components.viewer.entities.BaseWorldPoint;
 import oth.shipeditor.components.viewer.entities.WorldPoint;
 import oth.shipeditor.components.viewer.layers.LayerPainter;
 import oth.shipeditor.components.viewer.painters.PainterVisibility;
-import oth.shipeditor.utility.StaticController;
+import oth.shipeditor.utility.overseers.StaticController;
 import oth.shipeditor.utility.Utility;
 
 import java.awt.*;
@@ -29,13 +29,13 @@ public abstract class MirrorablePointPainter extends AbstractPointPainter {
     @Getter
     private final LayerPainter parentLayer;
 
-    MirrorablePointPainter(LayerPainter parent) {
+    protected MirrorablePointPainter(LayerPainter parent) {
         this.parentLayer = parent;
         initModeListener();
         this.setInteractionEnabled(StaticController.getEditorMode() == getInstrumentType());
     }
 
-    void initInteractionListeners() {
+    protected void initInteractionListeners() {
         List<BusEventListener> listeners = getListeners();
         BusEventListener slotCreationListener = event -> {
             if (event instanceof PointCreationQueued checked) {
@@ -107,9 +107,9 @@ public abstract class MirrorablePointPainter extends AbstractPointPainter {
     }
 
     @SuppressWarnings("NoopMethodInAbstractClass")
-    void paintPainterContent(Graphics2D g, AffineTransform worldToScreen, double w, double h) {}
+    protected void paintPainterContent(Graphics2D g, AffineTransform worldToScreen, double w, double h) {}
 
-    void handleSelectionHighlight() {
+    protected void handleSelectionHighlight() {
         WorldPoint selection = this.getSelected();
         if (selection != null && isInteractionEnabled()) {
             MirrorablePointPainter.enlargePoint(selection);
@@ -118,7 +118,7 @@ public abstract class MirrorablePointPainter extends AbstractPointPainter {
     }
 
     @SuppressWarnings("unchecked")
-    <T extends WorldPoint> void actOnCounterpart(Consumer<T> action, T point) {
+    protected <T extends WorldPoint> void actOnCounterpart(Consumer<T> action, T point) {
         boolean mirrorMode = ControlPredicates.isMirrorModeEnabled();
         BaseWorldPoint mirroredCounterpart = getMirroredCounterpart(point);
         Class<? extends WorldPoint> pointClass = point.getClass();
@@ -133,7 +133,7 @@ public abstract class MirrorablePointPainter extends AbstractPointPainter {
     }
 
     @Override
-    void paintDelegates(Graphics2D g, AffineTransform worldToScreen, double w, double h) {
+    protected void paintDelegates(Graphics2D g, AffineTransform worldToScreen, double w, double h) {
         super.paintDelegates(g, worldToScreen, w, h);
         for (BaseWorldPoint point : getPointsIndex()) {
             point.setPaintSizeMultiplier(1);

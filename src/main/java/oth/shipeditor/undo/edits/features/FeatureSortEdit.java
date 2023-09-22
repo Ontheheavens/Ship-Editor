@@ -2,7 +2,7 @@ package oth.shipeditor.undo.edits.features;
 
 import oth.shipeditor.components.datafiles.entities.InstallableEntry;
 import oth.shipeditor.undo.AbstractEdit;
-import oth.shipeditor.utility.StaticController;
+import oth.shipeditor.utility.overseers.StaticController;
 
 import java.util.Map;
 import java.util.function.Consumer;

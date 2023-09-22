@@ -1,4 +1,4 @@
-package oth.shipeditor.utility;
+package oth.shipeditor.utility.overseers;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -17,6 +17,7 @@ import oth.shipeditor.components.viewer.layers.LayerManager;
 import oth.shipeditor.components.viewer.layers.LayerPainter;
 import oth.shipeditor.components.viewer.layers.ViewerLayer;
 import oth.shipeditor.menubar.FileUtilities;
+import oth.shipeditor.utility.Utility;
 
 import java.awt.*;
 import java.awt.geom.AffineTransform;

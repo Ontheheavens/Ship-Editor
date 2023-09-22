@@ -35,7 +35,10 @@
     exports oth.shipeditor.communication;
     exports oth.shipeditor.communication.events;
     exports oth.shipeditor.communication.events.viewer.points;
-    exports oth.shipeditor.components.viewer.painters.features;
+    exports oth.shipeditor.components.viewer.painters.points;
+    exports oth.shipeditor.components.viewer.painters.points.weapon;
+    exports oth.shipeditor.components.viewer.painters.points.ship;
+    exports oth.shipeditor.components.viewer.painters.points.ship.features;
 
     opens oth.shipeditor.components;
     exports oth.shipeditor.components.viewer.control;
@@ -57,7 +60,6 @@
     exports oth.shipeditor.components.datafiles.entities;
     exports oth.shipeditor.utility;
     exports oth.shipeditor.utility.graphics;
-    exports oth.shipeditor.components.viewer.painters.points;
     exports oth.shipeditor.representation.weapon;
     opens oth.shipeditor.representation.weapon;
     exports oth.shipeditor.utility.text;
@@ -82,5 +84,7 @@
     opens oth.shipeditor.components.instrument.ship.builtins.weapons;
     exports oth.shipeditor.components.instrument.ship.shared;
     opens oth.shipeditor.components.instrument.ship.shared;
+    exports oth.shipeditor.utility.objects;
+    exports oth.shipeditor.utility.overseers;
 
 }

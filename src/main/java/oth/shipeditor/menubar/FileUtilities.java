@@ -15,7 +15,7 @@ import oth.shipeditor.parsing.loading.*;
 import oth.shipeditor.persistence.Settings;
 import oth.shipeditor.persistence.SettingsManager;
 import oth.shipeditor.representation.HullSpecFile;
-import oth.shipeditor.utility.StaticController;
+import oth.shipeditor.utility.overseers.StaticController;
 import oth.shipeditor.utility.graphics.Sprite;
 
 import javax.swing.*;

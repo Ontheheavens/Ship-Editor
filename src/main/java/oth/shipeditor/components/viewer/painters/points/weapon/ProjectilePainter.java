@@ -1,9 +1,9 @@
-package oth.shipeditor.components.viewer.painters.features;
+package oth.shipeditor.components.viewer.painters.points.weapon;
 
 import de.javagl.viewer.Painter;
 import lombok.Getter;
 import lombok.Setter;
-import oth.shipeditor.utility.Size2D;
+import oth.shipeditor.utility.objects.Size2D;
 import oth.shipeditor.utility.graphics.Sprite;
 
 import java.awt.*;

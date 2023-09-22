@@ -21,7 +21,7 @@ public abstract class AngledPointPainter extends MirrorablePointPainter {
 
     private KeyEventDispatcher hotkeyDispatcher;
 
-    AngledPointPainter(LayerPainter parent) {
+    protected AngledPointPainter(LayerPainter parent) {
         super(parent);
         this.initHotkeys();
     }
@@ -70,7 +70,7 @@ public abstract class AngledPointPainter extends MirrorablePointPainter {
         KeyboardFocusManager.getCurrentKeyboardFocusManager().addKeyEventDispatcher(hotkeyDispatcher);
     }
 
-    void changePointAngleByTarget(Point2D worldTarget) {
+    protected void changePointAngleByTarget(Point2D worldTarget) {
         WorldPoint selected = getSelected();
         if (selected == null) return;
         if (selected instanceof AngledPoint checked) {
@@ -82,7 +82,7 @@ public abstract class AngledPointPainter extends MirrorablePointPainter {
         }
     }
 
-    static double getTargetRotation(WorldPoint selected, Point2D worldTarget) {
+    protected static double getTargetRotation(WorldPoint selected, Point2D worldTarget) {
         Point2D pointPosition = selected.getPosition();
         double deltaX = worldTarget.getX() - pointPosition.getX();
         double deltaY = worldTarget.getY() - pointPosition.getY();

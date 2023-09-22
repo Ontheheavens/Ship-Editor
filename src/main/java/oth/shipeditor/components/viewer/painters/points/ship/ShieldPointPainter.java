@@ -1,4 +1,4 @@
-package oth.shipeditor.components.viewer.painters.points;
+package oth.shipeditor.components.viewer.painters.points.ship;
 
 import lombok.Getter;
 import oth.shipeditor.communication.BusEventListener;
@@ -16,7 +16,7 @@ import oth.shipeditor.representation.GameDataRepository;
 import oth.shipeditor.representation.HullSpecFile;
 import oth.shipeditor.representation.HullStyle;
 import oth.shipeditor.undo.EditDispatch;
-import oth.shipeditor.utility.StaticController;
+import oth.shipeditor.utility.overseers.StaticController;
 import oth.shipeditor.utility.graphics.ColorUtilities;
 
 import java.awt.*;

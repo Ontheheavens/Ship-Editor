@@ -1,4 +1,4 @@
-package oth.shipeditor.utility;
+package oth.shipeditor.utility.overseers;
 
 import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.components.*;

@@ -5,7 +5,7 @@ import lombok.extern.log4j.Log4j2;
 import oth.shipeditor.components.instrument.ship.EditorInstrument;
 import oth.shipeditor.components.viewer.layers.LayerPainter;
 import oth.shipeditor.components.viewer.layers.ViewerLayer;
-import oth.shipeditor.utility.StaticController;
+import oth.shipeditor.utility.overseers.StaticController;
 import oth.shipeditor.utility.graphics.DrawUtilities;
 
 import java.awt.*;
@@ -100,6 +100,10 @@ public class HotkeyHelpPainter implements Painter {
             }
             case BUILT_IN_WEAPONS -> {
                 String installHint = "Install weapon: CTRL+LMB";
+                hints.add(installHint);
+            }
+            case DECORATIVES -> {
+                String installHint = "Install decorative: CTRL+LMB";
                 hints.add(installHint);
             }
             default -> {

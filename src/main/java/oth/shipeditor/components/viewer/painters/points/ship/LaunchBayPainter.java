@@ -1,4 +1,4 @@
-package oth.shipeditor.components.viewer.painters.points;
+package oth.shipeditor.components.viewer.painters.points.ship;
 
 import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
@@ -13,8 +13,9 @@ import oth.shipeditor.components.viewer.entities.WorldPoint;
 import oth.shipeditor.components.viewer.entities.bays.LaunchBay;
 import oth.shipeditor.components.viewer.entities.bays.LaunchPortPoint;
 import oth.shipeditor.components.viewer.layers.ship.ShipPainter;
+import oth.shipeditor.components.viewer.painters.points.MirrorablePointPainter;
 import oth.shipeditor.undo.EditDispatch;
-import oth.shipeditor.utility.StaticController;
+import oth.shipeditor.utility.overseers.StaticController;
 import oth.shipeditor.utility.graphics.DrawUtilities;
 
 import java.awt.*;

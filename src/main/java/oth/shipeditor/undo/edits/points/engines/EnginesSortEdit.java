@@ -1,9 +1,9 @@
 package oth.shipeditor.undo.edits.points.engines;
 
 import oth.shipeditor.components.viewer.entities.engine.EnginePoint;
-import oth.shipeditor.components.viewer.painters.points.EngineSlotPainter;
+import oth.shipeditor.components.viewer.painters.points.ship.EngineSlotPainter;
 import oth.shipeditor.undo.AbstractEdit;
-import oth.shipeditor.utility.StaticController;
+import oth.shipeditor.utility.overseers.StaticController;
 
 import java.util.List;
 

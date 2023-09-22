@@ -4,7 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import oth.shipeditor.components.datafiles.entities.InstallableEntry;
 import oth.shipeditor.undo.AbstractEdit;
-import oth.shipeditor.utility.StaticController;
+import oth.shipeditor.utility.overseers.StaticController;
 
 import java.util.Map;
 

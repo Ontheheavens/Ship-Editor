@@ -1,4 +1,4 @@
-package oth.shipeditor.components.viewer.painters.features;
+package oth.shipeditor.components.viewer.painters.points.ship.features;
 
 /**
  * @author Ontheheavens

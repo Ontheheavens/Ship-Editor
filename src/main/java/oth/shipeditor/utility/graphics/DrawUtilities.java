@@ -1,7 +1,7 @@
 package oth.shipeditor.utility.graphics;
 
 import lombok.extern.log4j.Log4j2;
-import oth.shipeditor.utility.StaticController;
+import oth.shipeditor.utility.overseers.StaticController;
 import oth.shipeditor.utility.Utility;
 
 import java.awt.*;

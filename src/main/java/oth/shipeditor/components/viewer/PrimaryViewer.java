@@ -22,8 +22,8 @@ import oth.shipeditor.components.viewer.layers.weapon.WeaponPainter;
 import oth.shipeditor.components.viewer.layers.weapon.WeaponSprites;
 import oth.shipeditor.menubar.FileUtilities;
 import oth.shipeditor.undo.UndoOverseer;
-import oth.shipeditor.utility.StaticController;
 import oth.shipeditor.utility.graphics.Sprite;
+import oth.shipeditor.utility.overseers.StaticController;
 
 import javax.swing.*;
 import java.awt.*;

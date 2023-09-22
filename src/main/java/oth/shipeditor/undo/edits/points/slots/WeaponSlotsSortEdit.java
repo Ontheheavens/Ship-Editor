@@ -1,9 +1,9 @@
 package oth.shipeditor.undo.edits.points.slots;
 
 import oth.shipeditor.components.viewer.entities.weapon.WeaponSlotPoint;
-import oth.shipeditor.components.viewer.painters.points.WeaponSlotPainter;
+import oth.shipeditor.components.viewer.painters.points.ship.WeaponSlotPainter;
 import oth.shipeditor.undo.AbstractEdit;
-import oth.shipeditor.utility.StaticController;
+import oth.shipeditor.utility.overseers.StaticController;
 
 import java.util.List;
 

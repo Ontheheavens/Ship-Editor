@@ -1,6 +1,6 @@
 package oth.shipeditor.communication.events;
 
-import oth.shipeditor.utility.StaticController;
+import oth.shipeditor.utility.overseers.StaticController;
 
 /**
  * Convenience class for routine event bus declarations.

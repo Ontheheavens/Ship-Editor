@@ -1,4 +1,4 @@
-package oth.shipeditor.components.viewer.painters.features;
+package oth.shipeditor.components.viewer.painters.points.ship.features;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -10,8 +10,8 @@ import oth.shipeditor.components.viewer.layers.LayerPainter;
 import oth.shipeditor.components.viewer.layers.ship.ShipPainter;
 import oth.shipeditor.components.viewer.layers.ship.data.ShipVariant;
 import oth.shipeditor.components.viewer.painters.PainterVisibility;
-import oth.shipeditor.components.viewer.painters.points.WeaponSlotPainter;
-import oth.shipeditor.utility.StaticController;
+import oth.shipeditor.components.viewer.painters.points.ship.WeaponSlotPainter;
+import oth.shipeditor.utility.overseers.StaticController;
 
 import java.awt.*;
 import java.awt.geom.AffineTransform;
@@ -27,17 +27,24 @@ public final class InstalledFeaturePainter {
 
     private PainterVisibility builtInsVisibility;
 
+    private PainterVisibility decorativesVisibility;
+
     private WeaponSlotPoint cachedSelectCounterpart;
 
     public InstalledFeaturePainter() {
         this.builtInsVisibility = PainterVisibility.ALWAYS_SHOWN;
+        this.decorativesVisibility = PainterVisibility.ALWAYS_SHOWN;
     }
 
-    private boolean checkVisibilityForBuiltIns(ShipPainter painter) {
-        var visibility = this.getBuiltInsVisibility();
+    private static boolean checkVisibility(ShipPainter painter, PainterVisibility visibility,
+                                           EditorInstrument featureKind) {
         boolean layerActive = painter.isLayerActive();
         if (visibility == PainterVisibility.ALWAYS_HIDDEN) return false;
-        if (visibility == PainterVisibility.SHOWN_WHEN_EDITED && InstalledFeaturePainter.isInteractable(painter)) return true;
+
+        EditorInstrument editorMode = StaticController.getEditorMode();
+
+        boolean eligible = editorMode == featureKind && painter.isLayerActive();
+        if (visibility == PainterVisibility.SHOWN_WHEN_EDITED && eligible) return true;
         if (visibility == PainterVisibility.SHOWN_WHEN_SELECTED && layerActive) return true;
         return visibility == PainterVisibility.ALWAYS_SHOWN;
     }
@@ -50,7 +57,6 @@ public final class InstalledFeaturePainter {
         return eligibleMode && painter.isLayerActive();
     }
 
-    @SuppressWarnings("CollectionAddAllCanBeReplacedWithConstructor")
     private Map<Integer, Set<InstalledFeature>> getInstallablesToPaint(ShipPainter painter) {
         Map<Integer, Set<InstalledFeature>> result = new TreeMap<>();
 
@@ -58,15 +64,15 @@ public final class InstalledFeaturePainter {
 
         Map<String, InstalledFeature> toPrepare = new LinkedHashMap<>();
 
-        // TODO: implement visibility for decoratives.
-
         var decoratives = painter.getBuiltInsWithSkin(true, false);
-        if (true) {
+        if (InstalledFeaturePainter.checkVisibility(painter, this.decorativesVisibility,
+                EditorInstrument.DECORATIVES)) {
             toPrepare.putAll(decoratives);
         }
 
         var builtIns = painter.getBuiltInsWithSkin(false, true);
-        if (checkVisibilityForBuiltIns(painter)) {
+        if (InstalledFeaturePainter.checkVisibility(painter, this.builtInsVisibility,
+                EditorInstrument.BUILT_IN_WEAPONS)) {
             builtIns.forEach(toPrepare::putIfAbsent);
         }
 

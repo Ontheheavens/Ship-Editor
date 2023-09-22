@@ -15,8 +15,8 @@ import oth.shipeditor.components.viewer.layers.ViewerLayer;
 import oth.shipeditor.components.viewer.layers.ship.ShipLayer;
 import oth.shipeditor.components.viewer.layers.ship.ShipPainter;
 import oth.shipeditor.components.viewer.painters.PainterVisibility;
-import oth.shipeditor.components.viewer.painters.points.BoundPointsPainter;
-import oth.shipeditor.utility.Pair;
+import oth.shipeditor.components.viewer.painters.points.ship.BoundPointsPainter;
+import oth.shipeditor.utility.objects.Pair;
 import oth.shipeditor.utility.components.ComponentUtilities;
 import oth.shipeditor.utility.text.StringValues;
 
