@@ -11,6 +11,7 @@ import java.awt.*;
  * @author Ontheheavens
  * @since 27.08.2023
  */
+@Getter
 @SuppressWarnings("NonSerializableFieldInSerializableClass")
 public enum HullSize {
 
@@ -23,10 +24,8 @@ public enum HullSize {
     CRUISER(FontIcon.of(BoxiconsRegular.DICE_4, 16, Color.DARK_GRAY), "Cruiser"),
     CAPITAL_SHIP(FontIcon.of(BoxiconsRegular.DICE_5, 16, Color.DARK_GRAY), "Capital");
 
-    @Getter
     private final FontIcon icon;
 
-    @Getter
     private final String displayedName;
 
     HullSize(FontIcon fontIcon, String name) {

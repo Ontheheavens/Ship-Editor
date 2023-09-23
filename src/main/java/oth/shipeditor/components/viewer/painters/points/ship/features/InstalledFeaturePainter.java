@@ -16,6 +16,7 @@ import oth.shipeditor.utility.overseers.StaticController;
 import java.awt.*;
 import java.awt.geom.AffineTransform;
 import java.util.*;
+import java.util.function.Predicate;
 
 /**
  * @author Ontheheavens
@@ -30,6 +31,12 @@ public final class InstalledFeaturePainter {
     private PainterVisibility decorativesVisibility;
 
     private WeaponSlotPoint cachedSelectCounterpart;
+
+    /**
+     * Has magic numbers: Integer.MIN_VALUE is for modules with UNDER_PARENT tag,
+     * same number + 1 is for normal modules.
+     */
+    private Map<Integer, Set<InstalledFeature>> orderedRenderQueue;
 
     public InstalledFeaturePainter() {
         this.builtInsVisibility = PainterVisibility.ALWAYS_SHOWN;
@@ -57,7 +64,7 @@ public final class InstalledFeaturePainter {
         return eligibleMode && painter.isLayerActive();
     }
 
-    private Map<Integer, Set<InstalledFeature>> getInstallablesToPaint(ShipPainter painter) {
+    public void updateRenderQueue(ShipPainter painter) {
         Map<Integer, Set<InstalledFeature>> result = new TreeMap<>();
 
         var slotPainter = painter.getWeaponSlotPainter();
@@ -102,7 +109,7 @@ public final class InstalledFeaturePainter {
             cachedSelectCounterpart = null;
         }
 
-        return result;
+        this.orderedRenderQueue = result;
     }
 
     private void prepareFeature(Map<Integer, Set<InstalledFeature>> collection,
@@ -141,13 +148,25 @@ public final class InstalledFeaturePainter {
         return renderOrder;
     }
 
-    public void paint(Graphics2D g, AffineTransform worldToScreen, double w, double h, ShipPainter painter) {
-        var allFeatures = this.getInstallablesToPaint(painter);
+    public void paintUnderParent(Graphics2D g, AffineTransform worldToScreen, double w, double h) {
+        this.paintFeatures(g, worldToScreen, w, h, integer -> integer == Integer.MIN_VALUE);
+    }
+
+    public void paintNormal(Graphics2D g, AffineTransform worldToScreen, double w, double h) {
+        this.paintFeatures(g, worldToScreen, w, h, integer -> integer != Integer.MIN_VALUE);
+    }
+
+    private void paintFeatures(Graphics2D g, AffineTransform worldToScreen, double w, double h,
+                               Predicate<Integer> filter) {
+        var allFeatures = this.orderedRenderQueue;
 
         for (Map.Entry<Integer, Set<InstalledFeature>> entry : allFeatures.entrySet()) {
+            if (!filter.test(entry.getKey())) continue;
             Set<InstalledFeature> featuresRenderLayer = entry.getValue();
             featuresRenderLayer.forEach(feature -> feature.paint(g, worldToScreen, w, h));
         }
     }
+
+
 
 }

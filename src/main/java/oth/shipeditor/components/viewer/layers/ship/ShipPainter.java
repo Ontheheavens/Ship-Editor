@@ -41,48 +41,42 @@ import java.util.stream.Collectors;
  * @author Ontheheavens
  * @since 29.05.2023
  */
+@Getter
 @SuppressWarnings({"OverlyCoupledClass", "ClassWithTooManyFields", "ClassWithTooManyMethods", "OverlyComplexClass"})
 @Log4j2
 public class ShipPainter extends LayerPainter {
 
     private static final char SPACE = ' ';
 
-    @Getter
     private BoundPointsPainter boundsPainter;
-    @Getter
     private CenterPointPainter centerPointPainter;
 
-    @Getter
     private ShieldPointPainter shieldPointPainter;
 
-    @Getter
     private WeaponSlotPainter weaponSlotPainter;
 
-    @Getter
     private LaunchBayPainter bayPainter;
 
-    @Getter
     private EngineSlotPainter enginePainter;
 
-    @Getter @Setter
+    @Setter
     private Map<String, InstalledFeature> builtInWeapons;
 
-    @Getter
     private InstalledFeaturePainter installablesPainter;
 
     /**
      * Backup for when sprite is switched to skin version.
      */
-    @Getter @Setter
+    @Setter
     private Sprite baseHullSprite;
 
-    @Getter @Setter
+    @Setter
     private ShipSkin activeSkin;
 
-    @Getter @Setter
+    @Setter
     private ShipVariant activeVariant;
 
-    @Getter @Setter
+    @Setter
     private String baseHullId;
 
     public ShipPainter(ShipLayer layer) {
@@ -392,9 +386,6 @@ public class ShipPainter extends LayerPainter {
             }
         });
 
-        // TODO: add indications in the UI whether the base hull entry is overridden
-        //  by skin with or without removal entry.
-
         if (activeSkin != null && !activeSkin.isBase()) {
             var removedBuiltIns = activeSkin.getRemoveBuiltInWeapons();
             if (removedBuiltIns != null) {
@@ -450,11 +441,16 @@ public class ShipPainter extends LayerPainter {
     @Override
     public void paint(Graphics2D g, AffineTransform worldToScreen, double w, double h) {
         if (!isShouldDrawPainter()) return;
-        super.paint(g, worldToScreen, w, h);
+        if (this.isUninitialized()) {
+            super.paint(g, worldToScreen, w, h);
+        } else {
+            var installedFeaturePainter = this.getInstallablesPainter();
+            installedFeaturePainter.updateRenderQueue(this);
+            installedFeaturePainter.paintUnderParent(g, worldToScreen, w, h);
+            super.paint(g, worldToScreen, w, h);
+            installedFeaturePainter.paintNormal(g, worldToScreen, w, h);
+        }
 
-        if (this.isUninitialized()) return;
-        var installedFeaturePainter = this.getInstallablesPainter();
-        installedFeaturePainter.paint(g, worldToScreen, w, h, this);
     }
 
 }

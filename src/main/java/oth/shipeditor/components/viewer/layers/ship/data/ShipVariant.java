@@ -27,6 +27,11 @@ import java.util.Map;
 public class ShipVariant implements Variant {
 
     public static final String EMPTY_VARIANT = "Empty variant";
+
+    /**
+     * Signifies that the instance is a placeholder variant, not a variant without anything installed;
+     * Variants that don't have weapons yet but can install them are normal variants.
+     */
     private boolean empty;
 
     private Path variantFilePath;

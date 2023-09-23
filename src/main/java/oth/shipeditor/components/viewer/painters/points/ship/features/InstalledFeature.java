@@ -20,6 +20,7 @@ import java.awt.*;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Point2D;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author Ontheheavens
@@ -71,7 +72,9 @@ public final class InstalledFeature implements InstallableEntry {
         return false;
     }
 
+    @SuppressWarnings("ChainOfInstanceofChecks")
     int computeRenderOrder(WeaponSlotPoint slotPoint) {
+        int result = Integer.MIN_VALUE;
         if (featurePainter instanceof WeaponPainter weaponPainter) {
             double slotOffset = slotPoint.getOffsetRelativeToAxis();
             double rawResult;
@@ -100,8 +103,16 @@ public final class InstalledFeature implements InstallableEntry {
                     rawResult += slotOffset + slotPoint.getRenderOrderMod();
                 }
             }
-            return (int) Math.ceil(rawResult);
-        } else return Integer.MIN_VALUE;
+            result = (int) Math.ceil(rawResult);
+        } else if (featurePainter instanceof ShipPainter shipPainter) {
+            CSVEntry entry = this.getDataEntry();
+            Map<String, String> rowData = entry.getRowData();
+            String hints = rowData.get(StringConstants.HINTS);
+            if (!hints.contains("UNDER_PARENT")) {
+                result = Integer.MIN_VALUE + 1;
+            }
+        }
+        return result;
     }
 
     @SuppressWarnings("ChainOfInstanceofChecks")

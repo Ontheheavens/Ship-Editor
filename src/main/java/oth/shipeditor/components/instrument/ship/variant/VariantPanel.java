@@ -28,30 +28,86 @@ public class VariantPanel extends JPanel {
 
     private final JPanel chooserContainer;
 
+    private final JPanel contentPanel;
+
     public VariantPanel() {
         this.setLayout(new BorderLayout());
+
         chooserContainer = new JPanel();
         chooserContainer.setLayout(new BoxLayout(chooserContainer, BoxLayout.PAGE_AXIS));
-        this.add(chooserContainer, BorderLayout.CENTER);
+        this.add(chooserContainer, BorderLayout.PAGE_START);
+
+        contentPanel = new JPanel();
+        contentPanel.setLayout(new BorderLayout());
+        this.add(contentPanel, BorderLayout.CENTER);
+
         this.initLayerListeners();
-        this.recreateVariantChooser();
+
+        ViewerLayer layer = StaticController.getActiveLayer();
+        this.refreshPanel(layer);
     }
 
-    private void recreateVariantChooser() {
-        chooserContainer.removeAll();
+    private void installPlaceholders() {
+        chooserContainer.add(VariantPanel.createDisabledChooser());
 
-        ViewerLayer selected = StaticController.getActiveLayer();
+        this.installContentPlaceholder();
+    }
+
+    private void installContentPlaceholder() {
+        JPanel container = new JPanel();
+        container.setLayout(new BoxLayout(container, BoxLayout.LINE_AXIS));
+
+        JLabel placeholder = new JLabel("Variant not initialized");
+        container.add(Box.createHorizontalGlue());
+        container.add(placeholder);
+        container.add(Box.createHorizontalGlue());
+
+        contentPanel.add(container, BorderLayout.CENTER);
+    }
+
+    private void refreshPanel(ViewerLayer selected) {
+        chooserContainer.removeAll();
+        contentPanel.removeAll();
+
         if (!(selected instanceof ShipLayer checkedLayer)) {
-            chooserContainer.add(VariantPanel.createDisabledChooser());
+            this.installPlaceholders();
             return;
         }
 
         ShipData shipData = checkedLayer.getShipData();
         if (shipData == null) {
-            chooserContainer.add(VariantPanel.createDisabledChooser());
+            this.installPlaceholders();
             return;
         }
 
+        ShipVariant variant = this.recreateVariantChooser(checkedLayer);
+        this.populateVariantContent(variant);
+    }
+
+    private void populateVariantContent(ShipVariant variant) {
+        if (variant == null || variant.isEmpty()) {
+            this.installContentPlaceholder();
+            return;
+        }
+
+        JPanel weaponsPlaceholder = new JPanel();
+        weaponsPlaceholder.setLayout(new BoxLayout(weaponsPlaceholder, BoxLayout.PAGE_AXIS));
+
+        var allWeapons = variant.getAllFittedWeapons();
+
+        if (allWeapons.isEmpty()) {
+            weaponsPlaceholder.add(new JLabel("No installed weapons"));
+        } else {
+            allWeapons.forEach((slotID, installedFeature) -> {
+                JLabel weaponEntry = new JLabel(slotID + ": " + installedFeature.getFeatureID());
+                weaponsPlaceholder.add(weaponEntry);
+            });
+        }
+
+        contentPanel.add(weaponsPlaceholder, BorderLayout.CENTER);
+    }
+
+    private ShipVariant recreateVariantChooser(ShipLayer checkedLayer) {
         Map<String, Variant> variantFiles = new LinkedHashMap<>();
         Variant empty = VariantFile.empty();
         variantFiles.put(StringValues.EMPTY, empty);
@@ -66,6 +122,14 @@ public class VariantPanel extends JPanel {
             }
         });
 
+        return this.getVariantChooser(checkedLayer, variantFiles, empty);
+    }
+
+    private ShipVariant getVariantChooser(ShipLayer checkedLayer,
+                                                        Map<String, Variant> variantFiles,
+                                                        Variant empty) {
+        ShipVariant result = null;
+
         ShipPainter painter = checkedLayer.getPainter();
 
         Vector<Variant> model = new Vector<>(variantFiles.values());
@@ -74,10 +138,11 @@ public class VariantPanel extends JPanel {
         ShipVariant activeVariant = painter.getActiveVariant();
         if (activeVariant != null) {
             variantChooser.setSelectedItem(activeVariant);
+            result = activeVariant;
         } else {
             variantChooser.setSelectedItem(empty);
         }
-        variantChooser.addActionListener(e -> {
+        variantChooser.addActionListener(action -> {
             Variant chosen = (Variant) variantChooser.getSelectedItem();
             if (chosen != null) {
                 painter.selectVariant(chosen);
@@ -87,6 +152,8 @@ public class VariantPanel extends JPanel {
 
         chooserContainer.add(variantChooser);
         chooserContainer.add(Box.createVerticalGlue());
+
+        return result;
     }
 
     private static JComboBox<ShipVariant> createDisabledChooser() {
@@ -100,10 +167,10 @@ public class VariantPanel extends JPanel {
     @SuppressWarnings("ChainOfInstanceofChecks")
     private void initLayerListeners() {
         EventBus.subscribe(event -> {
-            if (event instanceof LayerWasSelected) {
-                this.recreateVariantChooser();
-            } else if (event instanceof ActiveLayerUpdated) {
-                this.recreateVariantChooser();
+            if (event instanceof LayerWasSelected(_, var selected)) {
+                this.refreshPanel(selected);
+            } else if (event instanceof ActiveLayerUpdated(var updated)) {
+                this.refreshPanel(updated);
             }
         });
     }
