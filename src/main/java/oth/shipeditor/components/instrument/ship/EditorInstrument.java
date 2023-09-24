@@ -7,6 +7,7 @@ import oth.shipeditor.utility.text.StringValues;
  * @author Ontheheavens
  * @since 11.06.2023
  */
+@Getter
 public enum EditorInstrument {
 
     LAYER(StringValues.LAYER),
@@ -23,7 +24,6 @@ public enum EditorInstrument {
     SKIN("Skin"),
     VARIANT("Variant");
 
-    @Getter
     private final String title;
 
     EditorInstrument(String name) {

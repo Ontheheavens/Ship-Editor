@@ -4,7 +4,6 @@ import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
 import oth.shipeditor.parsing.loading.FileLoading;
 import oth.shipeditor.representation.HullSize;
-import oth.shipeditor.representation.HullSpecFile;
 import oth.shipeditor.utility.text.StringConstants;
 import oth.shipeditor.utility.text.StringValues;
 
@@ -54,12 +53,10 @@ public class HullmodCSVEntry implements CSVEntry {
         return displayedName;
     }
 
-    public int getOrdnanceCostForHull(HullSpecFile specFile) {
-        String hullSize = specFile.getHullSize();
+    public int getOrdnanceCostForHull(HullSize size) {
         var csvData = this.getRowData();
         String stringValue;
-        HullSize enumValue = HullSize.valueOf(hullSize);
-        switch (enumValue) {
+        switch (size) {
             case FRIGATE -> stringValue = csvData.get("cost_frigate");
             case DESTROYER -> stringValue = csvData.get("cost_dest");
             case CRUISER -> stringValue = csvData.get("cost_cruiser");

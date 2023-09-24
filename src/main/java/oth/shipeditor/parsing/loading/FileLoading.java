@@ -18,7 +18,7 @@ import oth.shipeditor.representation.SkinSpecFile;
 import oth.shipeditor.representation.VariantFile;
 import oth.shipeditor.representation.weapon.ProjectileSpecFile;
 import oth.shipeditor.representation.weapon.WeaponSpecFile;
-import oth.shipeditor.utility.ImageCache;
+import oth.shipeditor.utility.overseers.ImageCache;
 import oth.shipeditor.utility.graphics.Sprite;
 import oth.shipeditor.utility.text.StringConstants;
 import oth.shipeditor.utility.text.StringValues;
@@ -57,6 +57,7 @@ public final class FileLoading {
         mapper.configure(JsonParser.Feature.ALLOW_YAML_COMMENTS, true);
         mapper.configure(JsonReadFeature.ALLOW_TRAILING_COMMA.mappedFeature(), true);
         mapper.configure(JsonReadFeature.ALLOW_LEADING_DECIMAL_POINT_FOR_NUMBERS.mappedFeature(), true);
+        mapper.configure(JsonReadFeature.ALLOW_UNESCAPED_CONTROL_CHARS.mappedFeature(), true);
     }
 
     static File lastDirectory;
@@ -108,6 +109,9 @@ public final class FileLoading {
     }
 
     public static BufferedImage loadSpriteAsImage(File file) {
+        if (file == null) {
+
+        }
         return ImageCache.loadImage(file);
     }
 

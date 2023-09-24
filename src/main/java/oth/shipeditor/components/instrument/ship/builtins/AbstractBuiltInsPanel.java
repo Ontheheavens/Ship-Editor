@@ -22,7 +22,7 @@ import java.awt.*;
  */
 public abstract class AbstractBuiltInsPanel extends JPanel {
 
-    protected static final String REMOVED_BY_SKIN = "Removed by skin";
+    static final String REMOVED_BY_SKIN = "Removed by skin";
 
     @Getter @Setter
     private ShipLayer cachedLayer;
@@ -30,25 +30,38 @@ public abstract class AbstractBuiltInsPanel extends JPanel {
     @Getter
     private final JPanel contentPane;
 
-    public AbstractBuiltInsPanel() {
+    protected AbstractBuiltInsPanel() {
         this.setLayout(new BorderLayout());
 
-        String hintText = "Use right-click context menu of " +
-                "game data widget to add entries.";
-        FontIcon hintIcon = FontIcon.of(FluentUiRegularAL.INFO_28, 28);
-        JPanel hintPanel = AbstractBuiltInsPanel.createHintPanel(hintText, hintIcon);
-        this.add(hintPanel, BorderLayout.PAGE_START);
+        this.addHintPanel();
 
-        contentPane = new ScrollableHeightContainer();
+        contentPane = createContentPane();
         contentPane.setLayout(new BoxLayout(contentPane, BoxLayout.PAGE_AXIS));
 
         JScrollPane scrollContainer = new JScrollPane(contentPane);
+        JScrollBar verticalScrollBar = scrollContainer.getVerticalScrollBar();
+        verticalScrollBar.setUnitIncrement(12);
         this.add(scrollContainer, BorderLayout.CENTER);
 
         this.initLayerListeners();
     }
 
-    private void initLayerListeners() {
+    protected void addHintPanel() {
+        FontIcon hintIcon = FontIcon.of(FluentUiRegularAL.INFO_28, 28);
+        JPanel hintPanel = AbstractBuiltInsPanel.createHintPanel(getHintText(), hintIcon);
+        this.add(hintPanel, BorderLayout.PAGE_START);
+    }
+
+    protected JPanel createContentPane() {
+        return new ScrollableHeightContainer();
+    }
+
+    protected String getHintText() {
+        return "Use right-click context menu of " +
+                "game data widget to add entries.";
+    }
+
+    protected void initLayerListeners() {
         EventBus.subscribe(event -> {
             if (event instanceof LayerWasSelected checked) {
                 contentPane.removeAll();
@@ -73,7 +86,7 @@ public abstract class AbstractBuiltInsPanel extends JPanel {
 
     protected static JPanel createPlaceholderLabel(String text) {
         var emptyContainer = new JPanel();
-        emptyContainer.setBorder(new EmptyBorder(6, 2, 6, 2));
+        emptyContainer.setBorder(new EmptyBorder(8, 2, 6, 2));
         emptyContainer.setLayout(new BoxLayout(emptyContainer, BoxLayout.LINE_AXIS));
         JLabel label = new JLabel(text, SwingConstants.CENTER);
         emptyContainer.add(Box.createHorizontalGlue());
@@ -84,7 +97,7 @@ public abstract class AbstractBuiltInsPanel extends JPanel {
 
     protected abstract void refreshPanel(ShipLayer layer);
 
-    static JPanel createHintPanel(String text, FontIcon icon) {
+    protected static JPanel createHintPanel(String text, FontIcon icon) {
         JPanel hintPanel = new JPanel();
         hintPanel.setLayout(new BoxLayout(hintPanel, BoxLayout.LINE_AXIS));
 

@@ -11,7 +11,7 @@ import oth.shipeditor.persistence.SettingsManager;
 import oth.shipeditor.representation.EngineStyle;
 import oth.shipeditor.representation.GameDataRepository;
 import oth.shipeditor.undo.EditDispatch;
-import oth.shipeditor.utility.Size2D;
+import oth.shipeditor.utility.objects.Size2D;
 import oth.shipeditor.utility.Utility;
 import oth.shipeditor.utility.graphics.DrawUtilities;
 import oth.shipeditor.utility.graphics.GraphicsAction;

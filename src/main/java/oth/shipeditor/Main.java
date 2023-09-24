@@ -19,7 +19,7 @@ import oth.shipeditor.persistence.SettingsManager;
 import oth.shipeditor.representation.HullSpecFile;
 import oth.shipeditor.representation.SkinSpecFile;
 import oth.shipeditor.undo.UndoOverseer;
-import oth.shipeditor.utility.StaticController;
+import oth.shipeditor.utility.overseers.StaticController;
 import oth.shipeditor.utility.graphics.Sprite;
 
 import javax.swing.*;
@@ -40,6 +40,8 @@ import java.util.function.Function;
  */
 @Log4j2
 public final class Main {
+
+    public static final String TREE_PAINT_LINES = "Tree.paintLines";
 
     private Main() {}
 
@@ -73,7 +75,7 @@ public final class Main {
         UIManager.put("TitlePane.background", Color.LIGHT_GRAY);
         UIManager.put("TitlePane.useWindowDecorations", true);
 
-        UIManager.put("Tree.paintLines", true);
+        UIManager.put(TREE_PAINT_LINES, true);
         UIManager.put("Tree.showDefaultIcons", true);
         UIManager.put("TitlePane.showIcon", true);
         UIManager.put("TitlePane.showIconInDialogs", true);

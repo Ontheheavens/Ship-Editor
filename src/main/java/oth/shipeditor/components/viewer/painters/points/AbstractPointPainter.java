@@ -17,7 +17,7 @@ import oth.shipeditor.components.viewer.entities.BaseWorldPoint;
 import oth.shipeditor.components.viewer.entities.WorldPoint;
 import oth.shipeditor.components.viewer.painters.PainterVisibility;
 import oth.shipeditor.undo.EditDispatch;
-import oth.shipeditor.utility.StaticController;
+import oth.shipeditor.utility.overseers.StaticController;
 import oth.shipeditor.utility.Utility;
 
 import java.awt.*;
@@ -55,7 +55,7 @@ public abstract class AbstractPointPainter implements Painter {
     @Getter
     private final List<BusEventListener> listeners;
 
-    AbstractPointPainter() {
+    protected AbstractPointPainter() {
         this.delegateWorldToScreen = new AffineTransform();
         this.listeners = new ArrayList<>();
         this.initPointListeners();
@@ -67,7 +67,7 @@ public abstract class AbstractPointPainter implements Painter {
         return interactionEnabled && isParentLayerActive();
     }
 
-    void setPaintOpacity(float opacity) {
+    protected void setPaintOpacity(float opacity) {
         if (opacity < 0.0f) {
             this.paintOpacity = 0.0f;
         } else this.paintOpacity = Math.min(opacity, 1.0f);
@@ -75,7 +75,7 @@ public abstract class AbstractPointPainter implements Painter {
 
     protected abstract boolean isMirrorable();
 
-    void cleanupListeners() {
+    protected void cleanupListeners() {
         listeners.forEach(EventBus::unsubscribe);
     }
 
@@ -209,7 +209,7 @@ public abstract class AbstractPointPainter implements Painter {
         }
     }
 
-    void selectPointConditionally() {
+    protected void selectPointConditionally() {
         PointSelectionMode current = ControlPredicates.getSelectionMode();
         if (current == PointSelectionMode.STRICT) {
             this.selectPointStrictly();
@@ -241,7 +241,7 @@ public abstract class AbstractPointPainter implements Painter {
         return this.getPointsIndex();
     }
 
-    void selectPointClosest() {
+    protected void selectPointClosest() {
         Point2D cursor = StaticController.getCorrectedCursor();
         BaseWorldPoint toSelect = findClosestPoint(cursor);
 
@@ -331,7 +331,7 @@ public abstract class AbstractPointPainter implements Painter {
         return pointDoesExist;
     }
 
-    void paintDelegates(Graphics2D g, AffineTransform worldToScreen, double w, double h) {
+    protected void paintDelegates(Graphics2D g, AffineTransform worldToScreen, double w, double h) {
         List<? extends BaseWorldPoint> pointsIndex = this.getPointsIndex();
         pointsIndex.forEach(painter -> paintDelegate(g, worldToScreen, w, h, painter));
     }
@@ -357,7 +357,7 @@ public abstract class AbstractPointPainter implements Painter {
     }
 
     @SuppressWarnings("BooleanMethodIsAlwaysInverted")
-    boolean checkVisibility() {
+    protected boolean checkVisibility() {
         PainterVisibility visibility = getVisibilityMode();
         if (visibility == PainterVisibility.ALWAYS_HIDDEN) return false;
         if (visibility == PainterVisibility.SHOWN_WHEN_EDITED && this.isInteractionEnabled()) return true;

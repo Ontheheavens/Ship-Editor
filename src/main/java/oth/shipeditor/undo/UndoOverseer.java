@@ -17,6 +17,9 @@ import java.util.Collection;
 import java.util.Deque;
 
 /**
+ * It is assumed by EditDispatch and general logic of implementation that this class enforces strict order of operations,
+ * and undo/redo actions are served according to the LIFO order of the edit stack.
+ * As such, exposing edit stack to the user for selective undo is strictly forbidden.
  * @author Ontheheavens
  * @since 15.06.2023
  */

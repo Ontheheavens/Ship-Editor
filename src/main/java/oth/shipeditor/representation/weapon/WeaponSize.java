@@ -16,11 +16,11 @@ public enum WeaponSize {
     // TODO: dynamic getter of icons to account for selection color and size change.
 
     SMALL("SMALL", "Small",
-            FontIcon.of(BoxiconsRegular.DICE_1, 18, Color.DARK_GRAY), 1),
+            FontIcon.of(BoxiconsRegular.DICE_1, 19, Color.DARK_GRAY), 1),
     MEDIUM("MEDIUM", "Medium",
-            FontIcon.of(BoxiconsRegular.DICE_2, 18, Color.DARK_GRAY), 2),
+            FontIcon.of(BoxiconsRegular.DICE_2, 19, Color.DARK_GRAY), 2),
     LARGE("LARGE", "Large",
-            FontIcon.of(BoxiconsRegular.DICE_3, 18, Color.DARK_GRAY), 3);
+            FontIcon.of(BoxiconsRegular.DICE_3, 19, Color.DARK_GRAY), 3);
 
     @Getter
     private final String id;

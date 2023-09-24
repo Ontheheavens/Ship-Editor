@@ -8,6 +8,8 @@ import oth.shipeditor.components.viewer.layers.ViewerLayer;
 import oth.shipeditor.components.viewer.layers.ship.ShipPainter;
 import oth.shipeditor.parsing.loading.FileLoading;
 import oth.shipeditor.utility.graphics.Sprite;
+import oth.shipeditor.utility.overseers.StaticController;
+import oth.shipeditor.utility.text.StringValues;
 
 import javax.swing.*;
 import java.awt.*;
@@ -16,6 +18,7 @@ import java.awt.geom.AffineTransform;
 import java.awt.geom.Point2D;
 import java.awt.image.BufferedImage;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.nio.file.Path;
@@ -200,6 +203,17 @@ public final class Utility {
         if (pathInPackage != null && !pathInPackage.isEmpty()) {
             Path filePath = Path.of(pathInPackage);
             File spriteFile = FileLoading.fetchDataFile(filePath, packageFolderPath);
+
+            if (spriteFile == null) {
+                String report = "Image file not found: " + filePath;
+                JOptionPane.showMessageDialog(null,
+                        report,
+                        StringValues.FILE_LOADING_ERROR,
+                        JOptionPane.ERROR_MESSAGE);
+                FileNotFoundException notFoundException = new FileNotFoundException(report);
+                notFoundException.printStackTrace();
+                return;
+            }
 
             Sprite newSprite = FileLoading.loadSprite(spriteFile);
             setter.accept(newSprite);

@@ -7,8 +7,8 @@ import oth.shipeditor.communication.events.viewer.layers.LayerOpacityChangeQueue
 import oth.shipeditor.communication.events.viewer.layers.LayerWasSelected;
 import oth.shipeditor.components.viewer.layers.LayerPainter;
 import oth.shipeditor.components.viewer.layers.ViewerLayer;
-import oth.shipeditor.utility.Pair;
-import oth.shipeditor.utility.StaticController;
+import oth.shipeditor.utility.objects.Pair;
+import oth.shipeditor.utility.overseers.StaticController;
 import oth.shipeditor.utility.Utility;
 import oth.shipeditor.utility.components.ComponentUtilities;
 import oth.shipeditor.utility.components.MouseoverLabelListener;

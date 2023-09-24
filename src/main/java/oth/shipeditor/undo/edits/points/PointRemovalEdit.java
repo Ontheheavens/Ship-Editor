@@ -7,7 +7,7 @@ import oth.shipeditor.components.viewer.entities.BaseWorldPoint;
 import oth.shipeditor.components.viewer.entities.WorldPoint;
 import oth.shipeditor.components.viewer.layers.LayerPainter;
 import oth.shipeditor.components.viewer.painters.points.AbstractPointPainter;
-import oth.shipeditor.components.viewer.painters.points.LaunchBayPainter;
+import oth.shipeditor.components.viewer.painters.points.ship.LaunchBayPainter;
 import oth.shipeditor.components.viewer.painters.points.MirrorablePointPainter;
 import oth.shipeditor.undo.AbstractEdit;
 import oth.shipeditor.undo.Edit;
@@ -32,7 +32,7 @@ public class PointRemovalEdit extends AbstractEdit implements PointEdit {
         } else {
             painter.addPoint(removed);
         }
-        Events.repaintView();
+        Events.repaintShipView();
     }
 
     @Override
@@ -48,7 +48,7 @@ public class PointRemovalEdit extends AbstractEdit implements PointEdit {
     @Override
     public void redo() {
         painter.removePoint(removed);
-        Events.repaintView();
+        Events.repaintShipView();
     }
 
     @Override

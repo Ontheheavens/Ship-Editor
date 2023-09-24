@@ -1,11 +1,12 @@
 package oth.shipeditor.components.viewer.layers.ship.data;
 
 import lombok.Getter;
+import lombok.extern.log4j.Log4j2;
 import oth.shipeditor.components.datafiles.entities.*;
 import oth.shipeditor.components.viewer.entities.engine.EngineDataOverride;
 import oth.shipeditor.components.viewer.entities.weapon.WeaponSlotOverride;
 import oth.shipeditor.components.viewer.layers.weapon.WeaponPainter;
-import oth.shipeditor.components.viewer.painters.features.InstalledFeature;
+import oth.shipeditor.components.viewer.painters.points.ship.features.InstalledFeature;
 import oth.shipeditor.persistence.SettingsManager;
 import oth.shipeditor.representation.*;
 import oth.shipeditor.representation.weapon.*;
@@ -22,6 +23,7 @@ import java.util.*;
  * @since 31.07.2023
  */
 @SuppressWarnings("ClassWithTooManyFields")
+@Log4j2
 @Getter
 public final class ShipSkin {
 
@@ -80,11 +82,11 @@ public final class ShipSkin {
 
     private Color coversColor;
 
-    private List<String> tags;
+    private List<String> tags = new ArrayList<>();
 
     private String tech;
 
-    private List<WingCSVEntry> builtInWings;
+    private List<WingCSVEntry> builtInWings = new ArrayList<>();
 
     private int fighterBays;
 
@@ -92,9 +94,9 @@ public final class ShipSkin {
 
     private double baseValueMult;
 
-    private List<ShipTypeHints> removeHints;
+    private List<ShipTypeHints> removeHints = new ArrayList<>();
 
-    private List<ShipTypeHints> addHints;
+    private List<ShipTypeHints> addHints = new ArrayList<>();
 
     private List<String> removeWeaponSlots;
 
@@ -123,7 +125,15 @@ public final class ShipSkin {
      * For example, if built-in entry is added or removed, initialized list needs to be invalidated for refresh.
      */
     public void invalidateBuiltIns() {
+        log.info("Invalidating built-ins of {}: cleaning up features.",
+                "#" + this.hashCode() + " [" + this + "]");
+        initializedBuiltIns.forEach((s, feature) -> feature.cleanupForRemoval());
         initializedBuiltIns = null;
+    }
+
+    public void setBuiltInWeapons(Map<String, WeaponCSVEntry> entryMap) {
+        this.builtInWeapons = entryMap;
+        this.invalidateBuiltIns();
     }
 
     public Map<String, InstalledFeature> getInitializedBuiltIns() {
@@ -138,6 +148,16 @@ public final class ShipSkin {
             });
         }
         return initializedBuiltIns;
+    }
+
+    @SuppressWarnings("StaticMethodOnlyUsedInOneClass")
+    public static Map<String, WeaponCSVEntry> reconstructAsEntries(Map<String, InstalledFeature> initialized) {
+        Map<String, WeaponCSVEntry> result = new LinkedHashMap<>();
+        initialized.forEach((slotID, feature) -> {
+            WeaponCSVEntry entry = (WeaponCSVEntry) feature.getDataEntry();
+            result.put(slotID, entry);
+        });
+        return result;
     }
 
     public List<ShipTypeHints> getHintsModifiedBySkin() {
@@ -319,7 +339,10 @@ public final class ShipSkin {
         }
 
         public Builder withRemoveHints(List<ShipTypeHints> removeHints) {
-            if (removeHints == null) return this;
+            if (removeHints == null) {
+                skin.removeHints = new ArrayList<>();
+                return this;
+            }
             skin.removeHints = removeHints;
             return this;
         }
@@ -384,7 +407,10 @@ public final class ShipSkin {
          * @param builtInWeapons map where keys are slot IDs and values are weapon IDs.
          */
         public Builder withBuiltInWeapons(Map<String, String> builtInWeapons) {
-            if (builtInWeapons == null) return this;
+            if (builtInWeapons == null) {
+                skin.builtInWeapons = new LinkedHashMap<>();
+                return this;
+            }
             GameDataRepository gameData = SettingsManager.getGameData();
             Map<String, WeaponCSVEntry> allWeapons = gameData.getAllWeaponEntries();
             Map<String, WeaponCSVEntry> weapons = new LinkedHashMap<>(builtInWeapons.size());

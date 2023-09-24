@@ -18,9 +18,10 @@ import oth.shipeditor.components.viewer.entities.weapon.WeaponSlotPoint;
 import oth.shipeditor.components.viewer.layers.LayerPainter;
 import oth.shipeditor.components.viewer.layers.ViewerLayer;
 import oth.shipeditor.components.viewer.layers.ship.data.*;
-import oth.shipeditor.components.viewer.painters.features.InstalledFeature;
-import oth.shipeditor.components.viewer.painters.features.InstalledFeaturePainter;
-import oth.shipeditor.components.viewer.painters.points.*;
+import oth.shipeditor.components.viewer.painters.points.AbstractPointPainter;
+import oth.shipeditor.components.viewer.painters.points.ship.features.InstalledFeature;
+import oth.shipeditor.components.viewer.painters.points.ship.features.InstalledFeaturePainter;
+import oth.shipeditor.components.viewer.painters.points.ship.*;
 import oth.shipeditor.representation.*;
 import oth.shipeditor.utility.graphics.Sprite;
 import oth.shipeditor.utility.text.StringValues;
@@ -40,48 +41,42 @@ import java.util.stream.Collectors;
  * @author Ontheheavens
  * @since 29.05.2023
  */
+@Getter
 @SuppressWarnings({"OverlyCoupledClass", "ClassWithTooManyFields", "ClassWithTooManyMethods", "OverlyComplexClass"})
 @Log4j2
 public class ShipPainter extends LayerPainter {
 
     private static final char SPACE = ' ';
 
-    @Getter
     private BoundPointsPainter boundsPainter;
-    @Getter
     private CenterPointPainter centerPointPainter;
 
-    @Getter
     private ShieldPointPainter shieldPointPainter;
 
-    @Getter
     private WeaponSlotPainter weaponSlotPainter;
 
-    @Getter
     private LaunchBayPainter bayPainter;
 
-    @Getter
     private EngineSlotPainter enginePainter;
 
-    @Getter
+    @Setter
     private Map<String, InstalledFeature> builtInWeapons;
 
-    @Getter
     private InstalledFeaturePainter installablesPainter;
 
     /**
      * Backup for when sprite is switched to skin version.
      */
-    @Getter @Setter
+    @Setter
     private Sprite baseHullSprite;
 
-    @Getter @Setter
+    @Setter
     private ShipSkin activeSkin;
 
-    @Getter @Setter
+    @Setter
     private ShipVariant activeVariant;
 
-    @Getter @Setter
+    @Setter
     private String baseHullId;
 
     public ShipPainter(ShipLayer layer) {
@@ -125,6 +120,10 @@ public class ShipPainter extends LayerPainter {
             var painter = installedFeature.getFeaturePainter();
             painter.cleanupForRemoval();
         });
+
+        var parentLayer = getParentLayer();
+        var featuresOverseer = parentLayer.getFeaturesOverseer();
+        featuresOverseer.cleanupListeners();
     }
 
     private void activateEmptySkin() {
@@ -189,7 +188,7 @@ public class ShipPainter extends LayerPainter {
     private void notifyLayerUpdate() {
         EventBus.publish(new ActiveLayerUpdated(this.getParentLayer()));
         EventBus.publish(new SkinPanelRepaintQueued());
-        Events.repaintView();
+        Events.repaintShipView();
     }
 
     @Override
@@ -372,8 +371,8 @@ public class ShipPainter extends LayerPainter {
     }
 
     @SuppressWarnings({"BooleanParameter", "OverlyComplexMethod"})
-    public Map<String, InstalledFeature> getBuiltInWeaponsWithSkin(boolean includeDecorative,
-                                                                   boolean includeNonDecorative) {
+    public Map<String, InstalledFeature> getBuiltInsWithSkin(boolean includeDecorative,
+                                                             boolean includeNonDecorative) {
         Map<String, InstalledFeature> builtIns = this.getBuiltInWeapons();
 
         Map<String, InstalledFeature> result = new LinkedHashMap<>();
@@ -389,7 +388,9 @@ public class ShipPainter extends LayerPainter {
 
         if (activeSkin != null && !activeSkin.isBase()) {
             var removedBuiltIns = activeSkin.getRemoveBuiltInWeapons();
-            removedBuiltIns.forEach(result::remove);
+            if (removedBuiltIns != null) {
+                removedBuiltIns.forEach(result::remove);
+            }
 
             var addedBuiltIns = activeSkin.getInitializedBuiltIns();
             if (!addedBuiltIns.isEmpty()) {
@@ -408,7 +409,7 @@ public class ShipPainter extends LayerPainter {
     }
 
     private Map<String, InstalledFeature> getAllLoadedInstallables() {
-        var builtIns = this.getBuiltInWeaponsWithSkin(true, true);
+        var builtIns = this.getBuiltInsWithSkin(true, true);
         Map<String, InstalledFeature> allFeatures = new LinkedHashMap<>(builtIns);
 
         ShipVariant shipVariant = this.getActiveVariant();
@@ -440,11 +441,16 @@ public class ShipPainter extends LayerPainter {
     @Override
     public void paint(Graphics2D g, AffineTransform worldToScreen, double w, double h) {
         if (!isShouldDrawPainter()) return;
-        super.paint(g, worldToScreen, w, h);
+        if (this.isUninitialized()) {
+            super.paint(g, worldToScreen, w, h);
+        } else {
+            var installedFeaturePainter = this.getInstallablesPainter();
+            installedFeaturePainter.updateRenderQueue(this);
+            installedFeaturePainter.paintUnderParent(g, worldToScreen, w, h);
+            super.paint(g, worldToScreen, w, h);
+            installedFeaturePainter.paintNormal(g, worldToScreen, w, h);
+        }
 
-        if (this.isUninitialized()) return;
-        var installedFeaturePainter = this.getInstallablesPainter();
-        installedFeaturePainter.paint(g, worldToScreen, w, h, this);
     }
 
 }

@@ -8,7 +8,7 @@ import oth.shipeditor.components.datafiles.entities.ShipCSVEntry;
 import oth.shipeditor.menubar.FileUtilities;
 import oth.shipeditor.persistence.SettingsManager;
 import oth.shipeditor.representation.*;
-import oth.shipeditor.utility.Pair;
+import oth.shipeditor.utility.objects.Pair;
 import oth.shipeditor.utility.text.StringConstants;
 
 import javax.swing.*;

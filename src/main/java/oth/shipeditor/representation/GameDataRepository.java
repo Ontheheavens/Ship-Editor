@@ -6,11 +6,13 @@ import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.files.HullmodDataSet;
 import oth.shipeditor.communication.events.files.WingDataSet;
 import oth.shipeditor.components.datafiles.entities.*;
+import oth.shipeditor.components.datafiles.trees.WeaponFilterPanel;
 import oth.shipeditor.persistence.SettingsManager;
 import oth.shipeditor.representation.weapon.ProjectileSpecFile;
 
 import java.nio.file.Path;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -52,7 +54,6 @@ public class GameDataRepository {
 
     private final Map<String, WeaponCSVEntry> allWeaponEntries;
 
-    @Setter
     private Map<Path, List<WeaponCSVEntry>> weaponEntriesByPackage;
 
     /**
@@ -99,6 +100,13 @@ public class GameDataRepository {
         this.allShipsystemEntries = new HashMap<>();
         this.allWingEntries = new HashMap<>();
         this.allWeaponEntries = new HashMap<>();
+    }
+
+    public void setWeaponEntriesByPackage(Map<Path, List<WeaponCSVEntry>> pathListMap) {
+        this.weaponEntriesByPackage = pathListMap;
+        Map<Path, Boolean> filterEntries = new LinkedHashMap<>();
+        pathListMap.forEach((path, weaponCSVEntries) -> filterEntries.put(path, true));
+        WeaponFilterPanel.setPackageFilters(filterEntries);
     }
 
     public static ShipCSVEntry retrieveShipCSVEntryByID(String baseHullID) {

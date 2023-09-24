@@ -1,12 +1,18 @@
 package oth.shipeditor.components.instrument.ship.shared;
 
+import lombok.Getter;
+import lombok.Setter;
 import oth.shipeditor.communication.EventBus;
+import oth.shipeditor.communication.events.components.SelectWeaponDataEntry;
 import oth.shipeditor.communication.events.viewer.points.PointSelectQueued;
 import oth.shipeditor.communication.events.viewer.points.PointSelectedConfirmed;
+import oth.shipeditor.components.datafiles.entities.CSVEntry;
+import oth.shipeditor.components.datafiles.entities.WeaponCSVEntry;
 import oth.shipeditor.components.viewer.entities.weapon.WeaponSlotPoint;
 import oth.shipeditor.components.viewer.layers.ship.ShipLayer;
-import oth.shipeditor.components.viewer.painters.features.InstalledFeature;
-import oth.shipeditor.utility.StaticController;
+import oth.shipeditor.components.viewer.painters.points.ship.features.InstalledFeature;
+import oth.shipeditor.components.viewer.painters.points.ship.WeaponSlotPainter;
+import oth.shipeditor.utility.overseers.StaticController;
 import oth.shipeditor.utility.components.containers.SortableList;
 import oth.shipeditor.utility.components.rendering.InstalledFeatureCellRenderer;
 
@@ -14,6 +20,8 @@ import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.function.Consumer;
 
 /**
@@ -24,11 +32,23 @@ public class InstalledFeatureList extends SortableList<InstalledFeature> {
 
     private boolean propagationBlock;
 
-    private final Consumer<InstalledFeature> uninstall;
+    @Getter @Setter
+    private boolean belongsToBaseHullBuiltIns;
 
-    public InstalledFeatureList(ListModel<InstalledFeature> dataModel, Consumer<InstalledFeature> removeAction) {
+    @Getter
+    private final WeaponSlotPainter slotPainter;
+
+    private final Consumer<InstalledFeature> uninstaller;
+
+    private final Consumer<Map<String, InstalledFeature>> sorter;
+
+    public InstalledFeatureList(ListModel<InstalledFeature> dataModel, WeaponSlotPainter painter,
+                                Consumer<InstalledFeature> removeAction,
+                                Consumer<Map<String, InstalledFeature>> sortAction) {
         super(dataModel);
-        this.uninstall = removeAction;
+        this.slotPainter = painter;
+        this.uninstaller = removeAction;
+        this.sorter = sortAction;
         this.addListSelectionListener(e -> {
             this.actOnSelectedEntry(feature -> {
 
@@ -44,6 +64,8 @@ public class InstalledFeatureList extends SortableList<InstalledFeature> {
         int margin = 3;
         this.setBorder(new EmptyBorder(margin, margin, margin, margin));
         this.initListeners();
+
+        this.setDragEnabled(true);
     }
 
     private static ListCellRenderer<InstalledFeature> createCellRenderer() {
@@ -69,6 +91,10 @@ public class InstalledFeatureList extends SortableList<InstalledFeature> {
     }
 
     private void initListeners() {
+        // TODO: this one is currently not cleaned up from event bus. As it's a UI class, should not be super spammy...
+        //  However, keep in mind for future refactors. Difficulty here is, you can't easily get a hold of time
+        //  when old feature list is discarded - it's done in Swing internals. Possible solutions are:
+        //  Either move listener to outer panel classes or employ WeakHashMap (entails huge refactor).
         EventBus.subscribe(event -> {
             if (event instanceof PointSelectedConfirmed checked) {
                 DefaultListModel<InstalledFeature> model = (DefaultListModel<InstalledFeature>) this.getModel();
@@ -84,7 +110,6 @@ public class InstalledFeatureList extends SortableList<InstalledFeature> {
                         target = feature;
                     }
                 }
-                if (target == null) return;
 
                 propagationBlock = true;
                 this.setSelectedValue(target, true);
@@ -101,10 +126,15 @@ public class InstalledFeatureList extends SortableList<InstalledFeature> {
         }
     }
 
-    @SuppressWarnings("NoopMethodInAbstractClass")
     @Override
     protected void sortListModel() {
-
+        ListModel<InstalledFeature> model = this.getModel();
+        Map<String, InstalledFeature> rearranged = new LinkedHashMap<>(model.getSize());
+        for (int i = 0; i < model.getSize(); i++) {
+            InstalledFeature feature = model.getElementAt(i);
+            rearranged.put(feature.getSlotID(), feature);
+        }
+        this.sorter.accept(rearranged);
     }
 
     private class FeatureContextMenuListener extends MouseAdapter {
@@ -112,9 +142,22 @@ public class InstalledFeatureList extends SortableList<InstalledFeature> {
         private JPopupMenu getContextMenu() {
             JPopupMenu menu = new JPopupMenu();
             JMenuItem removePoint = new JMenuItem("Uninstall feature");
-            removePoint.addActionListener(event -> actOnSelectedEntry(feature -> uninstall.accept(feature)
-            ));
+            removePoint.addActionListener(event -> actOnSelectedEntry(uninstaller));
             menu.add(removePoint);
+
+            JMenuItem selectEntry = new JMenuItem("Select weapon entry");
+            selectEntry.addActionListener(event -> actOnSelectedEntry(feature -> {
+                CSVEntry dataEntry = feature.getDataEntry();
+                if (dataEntry instanceof WeaponCSVEntry weaponEntry) {
+                    EventBus.publish(new SelectWeaponDataEntry(weaponEntry));
+                }
+            }));
+            InstalledFeature selected = getSelectedValue();
+            if (!(selected.getDataEntry() instanceof WeaponCSVEntry)) {
+                selectEntry.setEnabled(false);
+            }
+            menu.add(selectEntry);
+
             return menu;
         }
 

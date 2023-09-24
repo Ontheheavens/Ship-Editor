@@ -14,6 +14,8 @@ import java.util.Map;
 @Getter @Setter
 public class ShipData {
 
+    // TODO: this class does not belong in Ship Layer, as that's a runtime entity. Use ShipHull and ShipSkin.
+
     private HullSpecFile hullSpecFile;
 
     /**

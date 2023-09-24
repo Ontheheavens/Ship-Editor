@@ -2,7 +2,7 @@ package oth.shipeditor.undo.edits.points;
 
 import oth.shipeditor.communication.events.Events;
 import oth.shipeditor.components.viewer.entities.BoundPoint;
-import oth.shipeditor.components.viewer.painters.points.BoundPointsPainter;
+import oth.shipeditor.components.viewer.painters.points.ship.BoundPointsPainter;
 import oth.shipeditor.undo.AbstractEdit;
 
 import java.util.List;
@@ -28,13 +28,13 @@ public class BoundsSortEdit extends AbstractEdit {
     @Override
     public void undo() {
         pointPainter.setBoundPoints(oldList);
-        Events.repaintView();
+        Events.repaintShipView();
     }
 
     @Override
     public void redo() {
         pointPainter.setBoundPoints(newList);
-        Events.repaintView();
+        Events.repaintShipView();
     }
 
     @Override

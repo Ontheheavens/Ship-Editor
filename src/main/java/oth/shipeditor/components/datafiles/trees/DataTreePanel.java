@@ -6,7 +6,7 @@ import oth.shipeditor.components.datafiles.OpenDataTarget;
 import oth.shipeditor.components.viewer.layers.ship.ShipLayer;
 import oth.shipeditor.components.viewer.layers.ship.ShipPainter;
 import oth.shipeditor.representation.VariantFile;
-import oth.shipeditor.utility.StaticController;
+import oth.shipeditor.utility.overseers.StaticController;
 import oth.shipeditor.utility.components.ComponentUtilities;
 import oth.shipeditor.utility.components.MouseoverLabelListener;
 import oth.shipeditor.utility.text.StringValues;
@@ -106,6 +106,12 @@ public abstract class DataTreePanel extends JPanel {
     }
 
     protected abstract JPanel createTopPanel();
+
+    void expandAllNodes() {
+        for (int i = 0; i < tree.getRowCount(); i++) {
+            tree.expandRow(i);
+        }
+    }
 
     void resetInfoPanel() {
         rightPanel.removeAll();

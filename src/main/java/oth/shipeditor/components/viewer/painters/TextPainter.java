@@ -2,7 +2,7 @@ package oth.shipeditor.components.viewer.painters;
 
 import lombok.Getter;
 import lombok.Setter;
-import oth.shipeditor.utility.StaticController;
+import oth.shipeditor.utility.overseers.StaticController;
 import oth.shipeditor.utility.Utility;
 import oth.shipeditor.utility.graphics.DrawUtilities;
 

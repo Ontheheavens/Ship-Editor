@@ -10,12 +10,11 @@ import java.awt.*;
  * @author Ontheheavens
  * @since 17.09.2023
  */
-public class BoxPanelCellRenderer<E> extends PanelCellRenderer<E> {
+@Getter
+public class BoxPanelCellRenderer<E> extends PanelListCellRenderer<E> {
 
-    @Getter
     private final JPanel leftContainer;
 
-    @Getter
     private final JPanel rightContainer;
 
     @SuppressWarnings("ThisEscapedInObjectConstruction")

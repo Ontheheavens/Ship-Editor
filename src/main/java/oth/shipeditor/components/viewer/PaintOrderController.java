@@ -9,7 +9,7 @@ import oth.shipeditor.components.viewer.layers.ViewerLayer;
 import oth.shipeditor.components.viewer.painters.GuidesPainters;
 import oth.shipeditor.components.viewer.painters.HotkeyHelpPainter;
 import oth.shipeditor.components.viewer.painters.points.AbstractPointPainter;
-import oth.shipeditor.components.viewer.painters.points.MarkPointsPainter;
+import oth.shipeditor.components.viewer.painters.points.ship.MarkPointsPainter;
 
 import javax.swing.*;
 import java.awt.*;

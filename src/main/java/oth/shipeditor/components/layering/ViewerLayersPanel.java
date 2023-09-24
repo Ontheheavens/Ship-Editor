@@ -16,6 +16,7 @@ import oth.shipeditor.components.viewer.layers.LayerPainter;
 import oth.shipeditor.components.viewer.layers.ViewerLayer;
 import oth.shipeditor.components.viewer.layers.ship.ShipLayer;
 import oth.shipeditor.components.viewer.layers.ship.ShipPainter;
+import oth.shipeditor.components.viewer.layers.ship.data.ShipHull;
 import oth.shipeditor.components.viewer.layers.ship.data.ShipSkin;
 import oth.shipeditor.components.viewer.layers.weapon.WeaponLayer;
 import oth.shipeditor.components.viewer.layers.weapon.WeaponPainter;
@@ -143,13 +144,23 @@ public final class ViewerLayersPanel extends SortableTabbedPane {
             tab.setSpriteFileName(layer.getSpriteFileName());
             this.setToolTipTextAt(indexOfComponent(tab), tab.getTabTooltip());
         }
-        ShipData shipData = layer.getShipData();
-        if (shipData == null) return;
-        HullSpecFile hullSpecFile = shipData.getHullSpecFile();
-        if (hullSpecFile == null) return;
+
+        String hullName;
+
+        ShipHull shipHull = layer.getHull();
+
+        if (shipHull != null) {
+            hullName = shipHull.getHullName();
+        } else {
+            ShipData shipData = layer.getShipData();
+            if (shipData == null) return;
+            HullSpecFile hullSpecFile = shipData.getHullSpecFile();
+            if (hullSpecFile == null) return;
+            hullName = hullSpecFile.getHullName();
+        }
 
         tab.setHullFileName(layer.getHullFileName());
-        this.setTitleAt(indexOfComponent(tab), hullSpecFile.getHullName());
+        this.setTitleAt(indexOfComponent(tab), hullName);
 
         ShipPainter layerPainter = layer.getPainter();
         if (layerPainter == null) return;
@@ -158,7 +169,7 @@ public final class ViewerLayersPanel extends SortableTabbedPane {
         ShipSkin activeSkin = layerPainter.getActiveSkin();
         if (activeSkin == null || activeSkin.isBase()) {
             tab.setActiveSkinFileName("");
-            this.setTitleAt(indexOfComponent(tab), hullSpecFile.getHullName());
+            this.setTitleAt(indexOfComponent(tab), hullName);
         } else {
             String skinFileName = activeSkin.getFileName();
             tab.setActiveSkinFileName(skinFileName);

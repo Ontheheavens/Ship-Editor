@@ -5,7 +5,6 @@ import oth.shipeditor.communication.events.Events;
 import oth.shipeditor.components.viewer.layers.LayerPainter;
 import oth.shipeditor.undo.AbstractEdit;
 import oth.shipeditor.undo.Edit;
-import oth.shipeditor.undo.edits.points.PointRemovalEdit;
 
 import java.util.Deque;
 
@@ -33,14 +32,14 @@ public class LayerRotationEdit extends AbstractEdit implements LayerEdit {
     public void undo() {
         undoSubEdits();
         layerPainter.setRotationRadians(oldRotation);
-        Events.repaintView();
+        Events.repaintShipView();
     }
 
     @Override
     public void redo() {
         layerPainter.setRotationRadians(updatedRotation);
         redoSubEdits();
-        Events.repaintView();
+        Events.repaintShipView();
     }
 
     @Override

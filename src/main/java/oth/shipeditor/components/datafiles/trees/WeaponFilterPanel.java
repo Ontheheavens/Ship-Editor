@@ -4,7 +4,9 @@ import lombok.Getter;
 import lombok.Setter;
 import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.files.WeaponTreeReloadQueued;
+import oth.shipeditor.components.datafiles.entities.CSVEntry;
 import oth.shipeditor.components.datafiles.entities.WeaponCSVEntry;
+import oth.shipeditor.components.viewer.entities.weapon.WeaponSlotPoint;
 import oth.shipeditor.persistence.SettingsManager;
 import oth.shipeditor.representation.GameDataRepository;
 import oth.shipeditor.representation.weapon.WeaponSize;
@@ -22,7 +24,7 @@ import java.util.*;
  * @author Ontheheavens
  * @since 08.09.2023
  */
-class WeaponFilterPanel extends JPanel {
+public class WeaponFilterPanel extends JPanel {
 
     @Getter
     @Setter
@@ -36,6 +38,18 @@ class WeaponFilterPanel extends JPanel {
     @Getter
     private static final Map<WeaponSize, Boolean> SIZE_FILTERS = new EnumMap<>(WeaponSize.class);
 
+    @SuppressWarnings("StaticCollection")
+    @Getter @Setter
+    private static Map<Path, Boolean> packageFilters;
+
+    @Getter
+    private static WeaponSlotPoint lastSelectedSlot;
+
+    private static boolean filterBySelectedSlot;
+
+    @SuppressWarnings("StaticCollection")
+    private static Set<JCheckBox> allFilterBoxes;
+
     static {
         for (WeaponType type : WeaponType.values()) {
             TYPE_FILTERS.put(type, true);
@@ -48,20 +62,76 @@ class WeaponFilterPanel extends JPanel {
     WeaponFilterPanel() {
         this.setLayout(new BorderLayout());
 
+        JCheckBox filterBySlot = new JCheckBox();
+        filterBySlot.setText("Filter by last selected slot");
+        filterBySlot.setToolTipText("Applied last, does not override other filters");
+        filterBySlot.setSelected(filterBySelectedSlot);
+        filterBySlot.setBorder(new EmptyBorder(6, 9, 6, 0));
+        filterBySlot.addActionListener(e -> {
+            filterBySelectedSlot = filterBySlot.isSelected();
+            EventBus.publish(new WeaponTreeReloadQueued());
+        });
+
+        this.add(filterBySlot, BorderLayout.PAGE_START);
+
         JPanel filtersPane = new JPanel();
         filtersPane.setLayout(new BoxLayout(filtersPane, BoxLayout.PAGE_AXIS));
         filtersPane.setAlignmentY(0);
-        filtersPane.add(Box.createRigidArea(new Dimension(10, 4)));
+
+        allFilterBoxes = new HashSet<>();
+
+        JButton selectAll = new JButton();
+        selectAll.setText("Select all");
+        selectAll.addActionListener(e -> WeaponFilterPanel.toggleAll(true));
+
+        JButton deselectAll = new JButton();
+        deselectAll.setText("Deselect all");
+        deselectAll.addActionListener(e -> WeaponFilterPanel.toggleAll(false));
+
+        JPanel buttonContainer = new JPanel();
+        buttonContainer.setLayout(new BoxLayout(buttonContainer, BoxLayout.LINE_AXIS));
+        buttonContainer.setBorder(new EmptyBorder(6, 6, 2, 0));
+        buttonContainer.add(selectAll);
+        buttonContainer.add(deselectAll);
+
+        filtersPane.add(buttonContainer);
+
+        Dimension padding = new Dimension(10, 4);
+        if (packageFilters != null) {
+            filtersPane.add(Box.createRigidArea(padding));
+            filtersPane.add(WeaponFilterPanel.createPackageFilters());
+        }
+
+        filtersPane.add(Box.createRigidArea(padding));
         filtersPane.add(WeaponFilterPanel.createWeaponTypeFilters());
-        filtersPane.add(Box.createRigidArea(new Dimension(10, 4)));
+        filtersPane.add(Box.createRigidArea(padding));
         filtersPane.add(WeaponFilterPanel.createWeaponSizeFilters());
-        filtersPane.add(Box.createRigidArea(new Dimension(10, 4)));
+        filtersPane.add(Box.createRigidArea(padding));
 
         filtersPane.add(Box.createVerticalGlue());
 
         JScrollPane scrollContainer = new JScrollPane(filtersPane);
+        JScrollBar verticalScrollBar = scrollContainer.getVerticalScrollBar();
+        verticalScrollBar.setUnitIncrement(12);
 
         this.add(scrollContainer, BorderLayout.CENTER);
+    }
+
+    private static void toggleAll(boolean enable) {
+        if (packageFilters != null) {
+            packageFilters.forEach((key, aBoolean) -> packageFilters.put(key, enable));
+        }
+        TYPE_FILTERS.forEach((key, aBoolean) -> TYPE_FILTERS.put(key, enable));
+        SIZE_FILTERS.forEach((key, aBoolean) -> SIZE_FILTERS.put(key, enable));
+        allFilterBoxes.forEach(checkBox -> checkBox.setSelected(enable));
+        EventBus.publish(new WeaponTreeReloadQueued());
+    }
+
+    public static void setLastSelectedSlot(WeaponSlotPoint slotPoint) {
+        WeaponFilterPanel.lastSelectedSlot = slotPoint;
+        if (filterBySelectedSlot) {
+            EventBus.publish(new WeaponTreeReloadQueued());
+        }
     }
 
     static Map<String, List<WeaponCSVEntry>> getFilteredEntries() {
@@ -74,9 +144,11 @@ class WeaponFilterPanel extends JPanel {
         for (Map.Entry<Path, List<WeaponCSVEntry>> entryPackage : weaponEntriesByPackage.entrySet()) {
             List<WeaponCSVEntry> entryList = entryPackage.getValue();
             List<WeaponCSVEntry> filteredList = entryList.stream()
+                    .filter(WeaponFilterPanel::shouldDisplayByPackage)
                     .filter(WeaponFilterPanel::shouldDisplayByType)
                     .filter(WeaponFilterPanel::shouldDisplayBySize)
                     .filter(WeaponFilterPanel::shouldDisplayByHandle)
+                    .filter(WeaponFilterPanel::shouldDisplayBySlot)
                     .toList();
             if (!filteredList.isEmpty()) {
                 Path entryPackageKey = entryPackage.getKey();
@@ -84,6 +156,13 @@ class WeaponFilterPanel extends JPanel {
             }
         }
         return filteredResult;
+    }
+
+    private static boolean shouldDisplayBySlot(WeaponCSVEntry entry) {
+        if (lastSelectedSlot != null && filterBySelectedSlot) {
+            return WeaponType.isWeaponFitting(lastSelectedSlot, entry);
+        }
+        return true;
     }
 
     private static boolean shouldDisplayBySize(WeaponCSVEntry entry) {
@@ -97,6 +176,11 @@ class WeaponFilterPanel extends JPanel {
         return TYPE_FILTERS.get(weaponType);
     }
 
+    private static boolean shouldDisplayByPackage(CSVEntry entry) {
+        Path folderPath = entry.getPackageFolderPath();
+        return packageFilters.get(folderPath);
+    }
+
     private static boolean shouldDisplayByHandle(WeaponCSVEntry entry) {
         if (currentTextFilter == null || currentTextFilter.isEmpty()) return true;
         String currentInput = currentTextFilter.toLowerCase(Locale.ROOT);
@@ -106,6 +190,44 @@ class WeaponFilterPanel extends JPanel {
         }
         String id = entry.getWeaponID();
         return id.toLowerCase(Locale.ROOT).contains(currentInput);
+    }
+
+    private static JPanel createPackageFilters() {
+        JPanel container = new JPanel();
+        container.setLayout(new BoxLayout(container, BoxLayout.PAGE_AXIS));
+        container.setAlignmentX(0.5f);
+        container.setAlignmentY(0);
+
+        ComponentUtilities.outfitPanelWithTitle(container,
+                new Insets(1, 0, 0, 0), "Package");
+
+        for (Map.Entry<Path, Boolean> entry : packageFilters.entrySet()) {
+            Path path = entry.getKey();
+            JPanel buttonContainer = new JPanel();
+
+            buttonContainer.setLayout(new BoxLayout(buttonContainer, BoxLayout.LINE_AXIS));
+            buttonContainer.setBorder(new EmptyBorder(4, 0, 0, 0));
+
+            JCheckBox checkBox = new JCheckBox();
+            checkBox.setText(path.getFileName().toString());
+            checkBox.setSelected(entry.getValue());
+            checkBox.addActionListener(e -> {
+                if (checkBox.isSelected()) {
+                    packageFilters.put(path, Boolean.TRUE);
+                } else {
+                    packageFilters.put(path, Boolean.FALSE);
+                }
+                EventBus.publish(new WeaponTreeReloadQueued());
+            });
+            buttonContainer.add(checkBox);
+            buttonContainer.add(Box.createHorizontalGlue());
+
+            allFilterBoxes.add(checkBox);
+
+            container.add(buttonContainer);
+        }
+        container.add(Box.createRigidArea(new Dimension(10, 4)));
+        return container;
     }
 
     private static JPanel createWeaponTypeFilters() {
@@ -144,6 +266,8 @@ class WeaponFilterPanel extends JPanel {
             buttonContainer.add(checkBox);
             buttonContainer.add(Box.createHorizontalGlue());
 
+            allFilterBoxes.add(checkBox);
+
             container.add(buttonContainer);
         }
         container.add(Box.createRigidArea(new Dimension(10, 4)));
@@ -180,6 +304,8 @@ class WeaponFilterPanel extends JPanel {
             });
             buttonContainer.add(checkBox);
             buttonContainer.add(Box.createHorizontalGlue());
+
+            allFilterBoxes.add(checkBox);
 
             container.add(buttonContainer);
         }

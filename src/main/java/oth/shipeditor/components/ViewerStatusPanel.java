@@ -15,7 +15,7 @@ import oth.shipeditor.components.viewer.control.ControlPredicates;
 import oth.shipeditor.components.viewer.layers.LayerPainter;
 import oth.shipeditor.components.viewer.layers.ViewerLayer;
 import oth.shipeditor.components.viewer.layers.ship.ShipPainter;
-import oth.shipeditor.utility.StaticController;
+import oth.shipeditor.utility.overseers.StaticController;
 import oth.shipeditor.utility.Utility;
 import oth.shipeditor.utility.components.ComponentUtilities;
 import oth.shipeditor.utility.components.MouseoverLabelListener;
@@ -194,7 +194,7 @@ final class ViewerStatusPanel extends JPanel {
         JMenuItem resetRotation = new JMenuItem(StringValues.RESET_ROTATION);
         resetRotation.addActionListener(e -> {
             EventBus.publish(new ViewerRotationSet(0));
-            Events.repaintView();
+            Events.repaintShipView();
         });
         rotationMenu.add(resetRotation);
 
@@ -254,7 +254,7 @@ final class ViewerStatusPanel extends JPanel {
             menuItem.setSelected(true);
             this.updateCursorCoordsLabel();
             EventBus.publish(new CoordsModeChanged(displayMode));
-            Events.repaintView();
+            Events.repaintShipView();
         });
         group.add(menuItem);
         return menuItem;

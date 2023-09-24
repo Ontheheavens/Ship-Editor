@@ -1,6 +1,6 @@
 package oth.shipeditor.communication.events;
 
-import oth.shipeditor.utility.StaticController;
+import oth.shipeditor.utility.overseers.StaticController;
 
 /**
  * Convenience class for routine event bus declarations.
@@ -12,11 +12,12 @@ public final class Events {
     private Events() {
     }
 
-    public static void repaintView() {
+    public static void repaintShipView() {
         var repainter = StaticController.getRepainter();
         repainter.queueViewerRepaint();
         repainter.queueBoundsPanelRepaint();
         repainter.queueCenterPanelsRepaint();
+        repainter.queueBuiltInsRepaint();
     }
 
 }

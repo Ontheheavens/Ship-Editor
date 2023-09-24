@@ -9,18 +9,20 @@ import oth.shipeditor.components.viewer.layers.weapon.WeaponLayer;
 import oth.shipeditor.components.viewer.layers.weapon.WeaponPainter;
 import oth.shipeditor.components.viewer.layers.weapon.WeaponRenderOrdering;
 import oth.shipeditor.components.viewer.layers.weapon.WeaponSprites;
-import oth.shipeditor.components.viewer.painters.features.ProjectilePainter;
+import oth.shipeditor.components.viewer.painters.points.weapon.ProjectilePainter;
 import oth.shipeditor.parsing.loading.FileLoading;
 import oth.shipeditor.representation.GameDataRepository;
 import oth.shipeditor.representation.weapon.*;
-import oth.shipeditor.utility.Size2D;
-import oth.shipeditor.utility.StaticController;
+import oth.shipeditor.utility.objects.Size2D;
+import oth.shipeditor.utility.overseers.StaticController;
 import oth.shipeditor.utility.Utility;
+import oth.shipeditor.utility.components.ComponentUtilities;
 import oth.shipeditor.utility.graphics.Sprite;
 import oth.shipeditor.utility.text.StringConstants;
 import oth.shipeditor.utility.text.StringValues;
 
 import javax.swing.*;
+import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.awt.geom.Point2D;
 import java.awt.image.BufferedImage;
@@ -79,13 +81,8 @@ public class WeaponCSVEntry implements CSVEntry, InstallableEntry {
     }
 
     public int getDrawOrder() {
-        int result = 0;
-        switch (specFile.getSize()) {
-            case SMALL -> result = 1;
-            case MEDIUM -> result = 2;
-            case LARGE -> result = 3;
-        }
-        return result;
+        WeaponSize specFileSize = getSize();
+        return specFileSize.getNumericSize();
     }
 
     public WeaponSize getSize() {
@@ -284,11 +281,36 @@ public class WeaponCSVEntry implements CSVEntry, InstallableEntry {
         Utility.setSpriteFromPath(pathInPackage, setter, this.packageFolderPath);
     }
 
+    public JPanel createPickedWeaponPanel() {
+        JPanel weaponPickPanel = new JPanel();
+        weaponPickPanel.setLayout(new BoxLayout(weaponPickPanel, BoxLayout.LINE_AXIS));
+        weaponPickPanel.setBorder(new EmptyBorder(4, 4, 4, 4));
+
+        WeaponSize weaponSize = this.getSize();
+        JLabel sizeLabel = new JLabel(weaponSize.getIcon());
+        sizeLabel.setToolTipText(weaponSize.getDisplayName());
+        weaponPickPanel.add(sizeLabel);
+
+        WeaponType weaponType = this.getType();
+        JLabel typeLabel = ComponentUtilities.createColorIconLabel(weaponType.getColor());
+        typeLabel.setToolTipText(weaponType.getDisplayName());
+        weaponPickPanel.add(typeLabel);
+
+        JLabel text = new JLabel(this.toString());
+        text.setBorder(new EmptyBorder(0, 4, 0, 0));
+        weaponPickPanel.add(text);
+
+        Insets insets = new Insets(1, 0, 0, 0);
+        ComponentUtilities.outfitPanelWithTitle(weaponPickPanel, insets, "Picked weapon");
+
+        return weaponPickPanel;
+    }
+
     @Override
     public String toString() {
         String displayedName = rowData.get(StringConstants.NAME);
         if (displayedName.isEmpty()) {
-            displayedName = StringValues.UNTITLED;
+            displayedName = this.getWeaponID();
         }
         return displayedName;
     }

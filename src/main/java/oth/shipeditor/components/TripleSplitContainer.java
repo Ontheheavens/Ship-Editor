@@ -5,6 +5,7 @@ import lombok.extern.log4j.Log4j2;
 import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.components.GameDataPanelResized;
 import oth.shipeditor.communication.events.components.InstrumentSplitterResized;
+import oth.shipeditor.communication.events.components.SelectWeaponDataEntry;
 import oth.shipeditor.communication.events.components.WindowGUIShowConfirmed;
 import oth.shipeditor.communication.events.viewer.layers.LayerWasSelected;
 import oth.shipeditor.components.datafiles.GameDataPanel;
@@ -145,7 +146,7 @@ final class TripleSplitContainer extends JSplitPane {
         TripleSplitContainer.addListenerToSplitter(this, primaryDividerHandler);
     }
 
-    @SuppressWarnings("OverlyComplexMethod")
+    @SuppressWarnings({"OverlyComplexMethod", "OverlyCoupledMethod"})
     private void initEventListeners() {
         EventBus.subscribe(event -> {
             if (event instanceof InstrumentSplitterResized checked) {
@@ -174,6 +175,11 @@ final class TripleSplitContainer extends JSplitPane {
         EventBus.subscribe(event -> {
             if (event instanceof WindowGUIShowConfirmed ) {
                 this.minimizer.minimize();
+            }
+        });
+        EventBus.subscribe(event -> {
+            if (event instanceof SelectWeaponDataEntry) {
+                this.minimizer.maximize();
             }
         });
         EventBus.subscribe(event -> {

@@ -27,14 +27,14 @@ public class ShieldRadiusEdit extends AbstractEdit {
     public void undo() {
         undoSubEdits();
         parentPoint.setShieldRadius(oldRadius);
-        Events.repaintView();
+        Events.repaintShipView();
     }
 
     @Override
     public void redo() {
         redoSubEdits();
         parentPoint.setShieldRadius(newRadius);
-        Events.repaintView();
+        Events.repaintShipView();
     }
 
     @Override

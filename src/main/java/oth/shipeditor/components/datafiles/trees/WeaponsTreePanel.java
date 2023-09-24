@@ -2,13 +2,16 @@ package oth.shipeditor.components.datafiles.trees;
 
 import lombok.extern.log4j.Log4j2;
 import oth.shipeditor.communication.EventBus;
+import oth.shipeditor.communication.events.components.SelectWeaponDataEntry;
 import oth.shipeditor.communication.events.files.WeaponTreeReloadQueued;
 import oth.shipeditor.components.datafiles.entities.WeaponCSVEntry;
+import oth.shipeditor.components.viewer.layers.ship.FeaturesOverseer;
 import oth.shipeditor.components.viewer.layers.weapon.WeaponSprites;
 import oth.shipeditor.menubar.FileUtilities;
 import oth.shipeditor.persistence.SettingsManager;
 import oth.shipeditor.representation.GameDataRepository;
 import oth.shipeditor.representation.weapon.ProjectileSpecFile;
+import oth.shipeditor.representation.weapon.WeaponSize;
 import oth.shipeditor.representation.weapon.WeaponSpecFile;
 import oth.shipeditor.representation.weapon.WeaponType;
 import oth.shipeditor.utility.Utility;
@@ -25,6 +28,7 @@ import javax.swing.text.Document;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.tree.MutableTreeNode;
+import javax.swing.tree.TreePath;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.nio.file.Path;
@@ -42,6 +46,8 @@ public class WeaponsTreePanel extends CSVDataTreePanel<WeaponCSVEntry>{
     private WeaponCSVEntry cachedEntry;
 
     private boolean filtersOpened;
+
+    private boolean autoExpandNodes;
 
     public WeaponsTreePanel() {
         super("Weapon files");
@@ -104,6 +110,18 @@ public class WeaponsTreePanel extends CSVDataTreePanel<WeaponCSVEntry>{
                 this.reload();
             }
         });
+        EventBus.subscribe(event -> {
+            if (event instanceof SelectWeaponDataEntry checked) {
+                WeaponCSVEntry entry = checked.entry();
+                DefaultMutableTreeNode node = getNodeOfEntry(entry);
+                if (node != null) {
+                    JTree tree = this.getTree();
+                    TreePath path = new TreePath(node.getPath());
+                    tree.setSelectionPath(path);
+                    tree.scrollPathToVisible(path);
+                }
+            }
+        });
     }
 
     @SuppressWarnings("WeakerAccess")
@@ -112,6 +130,11 @@ public class WeaponsTreePanel extends CSVDataTreePanel<WeaponCSVEntry>{
         populateEntries(weaponPackageList);
 
         JTree tree = getTree();
+
+        if (autoExpandNodes) {
+            this.expandAllNodes();
+        }
+
         tree.repaint();
     }
 
@@ -121,11 +144,13 @@ public class WeaponsTreePanel extends CSVDataTreePanel<WeaponCSVEntry>{
         super.resetInfoPanel();
     }
 
-    @SuppressWarnings("WeakerAccess")
     protected JPanel createSearchContainer() {
         JPanel searchContainer = new JPanel(new GridBagLayout());
         searchContainer.setBorder(new EmptyBorder(0, 0, 0, 0));
+
         JTextField searchField = new JTextField();
+        searchField.setToolTipText("Input is checked against displayed name and weapon ID as a substring.");
+
         Document document = searchField.getDocument();
         document.addDocumentListener(new DocumentListener() {
             @Override
@@ -187,6 +212,11 @@ public class WeaponsTreePanel extends CSVDataTreePanel<WeaponCSVEntry>{
         });
 
         topPanel.add(filtersButton);
+
+        JCheckBox expandNodes = new JCheckBox("Auto-expand nodes");
+        expandNodes.addActionListener(e -> this.autoExpandNodes = expandNodes.isSelected());
+
+        topPanel.add(expandNodes);
 
         return topPanel;
     }
@@ -268,6 +298,8 @@ public class WeaponsTreePanel extends CSVDataTreePanel<WeaponCSVEntry>{
         createRightPanelDataTable(data);
 
         cachedEntry = selected;
+
+        FeaturesOverseer.setWeaponForInstall(selected);
     }
 
     private static void populateSpriteFileLabels(JPanel labelContainer, WeaponSprites sprites) {
@@ -355,9 +387,12 @@ public class WeaponsTreePanel extends CSVDataTreePanel<WeaponCSVEntry>{
     @Override
     protected String getTooltipForEntry(Object entry) {
         if(entry instanceof WeaponCSVEntry checked) {
-            return "<html>" +
-                    "<p>" + "Weapon ID: " + checked.getWeaponID() + "</p>" +
-                    "</html>";
+            String weaponID = "Weapon ID: " + checked.getWeaponID();
+            WeaponType weaponType = checked.getType();
+            String type =  "Weapon type: " + weaponType.getDisplayName();
+            WeaponSize weaponSize = checked.getSize();
+            String size =  "Weapon size: " + weaponSize.getDisplayName();
+            return Utility.getWithLinebreaks(weaponID, type, size);
         }
         return null;
     }

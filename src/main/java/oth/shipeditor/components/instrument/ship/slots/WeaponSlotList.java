@@ -2,6 +2,7 @@ package oth.shipeditor.components.instrument.ship.slots;
 
 import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.viewer.points.SlotPointsSorted;
+import oth.shipeditor.components.datafiles.trees.WeaponFilterPanel;
 import oth.shipeditor.components.instrument.ship.PointList;
 import oth.shipeditor.components.viewer.entities.weapon.WeaponSlotPoint;
 import oth.shipeditor.utility.components.rendering.WeaponSlotCellRenderer;
@@ -34,6 +35,9 @@ public class WeaponSlotList extends PointList<WeaponSlotPoint> {
 
     void refreshSlotControlPane() {
         WeaponSlotPoint selected = this.getSelectedValue();
+
+        WeaponFilterPanel.setLastSelectedSlot(selected);
+
         infoPanel.removeAll();
 
         slotControlPane = new SlotDataControlPane(selected, this);

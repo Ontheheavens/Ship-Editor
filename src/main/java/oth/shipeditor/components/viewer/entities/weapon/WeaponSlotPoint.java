@@ -2,21 +2,20 @@ package oth.shipeditor.components.viewer.entities.weapon;
 
 import lombok.Getter;
 import lombok.Setter;
-import oth.shipeditor.communication.EventBus;
-import oth.shipeditor.communication.events.components.SlotControlRepaintQueued;
-import oth.shipeditor.communication.events.viewer.ViewerRepaintQueued;
 import oth.shipeditor.components.CoordsDisplayMode;
 import oth.shipeditor.components.datafiles.entities.CSVEntry;
 import oth.shipeditor.components.instrument.ship.EditorInstrument;
 import oth.shipeditor.components.viewer.entities.AngledPoint;
 import oth.shipeditor.components.viewer.layers.ship.ShipPainter;
-import oth.shipeditor.components.viewer.painters.features.InstalledFeature;
-import oth.shipeditor.components.viewer.painters.points.WeaponSlotPainter;
+import oth.shipeditor.components.viewer.painters.points.ship.features.InstalledFeature;
+import oth.shipeditor.components.viewer.painters.points.ship.WeaponSlotPainter;
 import oth.shipeditor.representation.ShipTypeHints;
 import oth.shipeditor.representation.weapon.WeaponMount;
 import oth.shipeditor.representation.weapon.WeaponSize;
 import oth.shipeditor.representation.weapon.WeaponType;
 import oth.shipeditor.undo.EditDispatch;
+import oth.shipeditor.utility.overseers.ComponentRepaint;
+import oth.shipeditor.utility.overseers.StaticController;
 import oth.shipeditor.utility.Utility;
 import oth.shipeditor.utility.graphics.ColorUtilities;
 
@@ -128,15 +127,19 @@ public class WeaponSlotPoint extends AngledPoint implements SlotPoint {
     public void changeSlotID(String newId) {
         ShipPainter parent = this.getParent();
         if (!parent.isGeneratedIDUnassigned(newId)) {
-            EventBus.publish(new ViewerRepaintQueued());
-            EventBus.publish(new SlotControlRepaintQueued());
+            ComponentRepaint repainter = StaticController.getRepainter();
+            repainter.queueViewerRepaint();
+            repainter.queueSlotControlRepaint();
+            repainter.queueBuiltInsRepaint();
             return;
         }
 
         this.setId(newId);
         WeaponSlotPainter.setSlotOverrideFromSkin(this, parent.getActiveSkin());
-        EventBus.publish(new ViewerRepaintQueued());
-        EventBus.publish(new SlotControlRepaintQueued());
+        ComponentRepaint repainter = StaticController.getRepainter();
+        repainter.queueViewerRepaint();
+        repainter.queueSlotControlRepaint();
+        repainter.queueBuiltInsRepaint();
     }
 
     public void changeSlotType(WeaponType newType) {
@@ -216,9 +219,17 @@ public class WeaponSlotPoint extends AngledPoint implements SlotPoint {
 
     public boolean isFittable() {
         WeaponType type = this.getWeaponType();
-        return type != WeaponType.BUILT_IN && type != WeaponType.DECORATIVE && type != WeaponType.SYSTEM;
+        switch (type) {
+            case BALLISTIC, ENERGY, MISSILE, COMPOSITE, HYBRID, SYNERGY, UNIVERSAL, STATION_MODULE -> {
+                return true;
+            }
+            default -> {
+                return false;
+            }
+        }
     }
 
+    @SuppressWarnings("BooleanMethodIsAlwaysInverted")
     public boolean canFit(InstalledFeature feature) {
         CSVEntry dataEntry = feature.getDataEntry();
         if (dataEntry == null) return false;

@@ -2,7 +2,7 @@ package oth.shipeditor.components.viewer.entities.bays;
 
 import lombok.Getter;
 import lombok.Setter;
-import oth.shipeditor.components.viewer.painters.points.LaunchBayPainter;
+import oth.shipeditor.components.viewer.painters.points.ship.LaunchBayPainter;
 import oth.shipeditor.representation.weapon.WeaponMount;
 import oth.shipeditor.representation.weapon.WeaponSize;
 import oth.shipeditor.representation.weapon.WeaponType;

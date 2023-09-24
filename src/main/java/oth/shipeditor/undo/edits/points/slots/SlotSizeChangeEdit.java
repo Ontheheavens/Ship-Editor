@@ -3,7 +3,7 @@ package oth.shipeditor.undo.edits.points.slots;
 import oth.shipeditor.components.viewer.entities.weapon.SlotData;
 import oth.shipeditor.representation.weapon.WeaponSize;
 import oth.shipeditor.undo.AbstractEdit;
-import oth.shipeditor.utility.StaticController;
+import oth.shipeditor.utility.overseers.StaticController;
 
 /**
  * @author Ontheheavens
@@ -30,6 +30,8 @@ public class SlotSizeChangeEdit extends AbstractEdit {
         repainter.queueViewerRepaint();
         repainter.queueSlotControlRepaint();
         repainter.queueBaysPanelRepaint();
+        repainter.queueBuiltInsRepaint();
+        repainter.queueBaysPanelRepaint();
     }
 
     @Override
@@ -38,6 +40,8 @@ public class SlotSizeChangeEdit extends AbstractEdit {
         var repainter = StaticController.getRepainter();
         repainter.queueViewerRepaint();
         repainter.queueSlotControlRepaint();
+        repainter.queueBaysPanelRepaint();
+        repainter.queueBuiltInsRepaint();
         repainter.queueBaysPanelRepaint();
     }
 

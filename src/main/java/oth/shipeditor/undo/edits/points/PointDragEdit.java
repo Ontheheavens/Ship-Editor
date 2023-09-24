@@ -6,7 +6,7 @@ import oth.shipeditor.components.viewer.entities.WorldPoint;
 import oth.shipeditor.components.viewer.layers.LayerPainter;
 import oth.shipeditor.undo.AbstractEdit;
 import oth.shipeditor.undo.Edit;
-import oth.shipeditor.utility.StaticController;
+import oth.shipeditor.utility.overseers.StaticController;
 
 import java.awt.geom.Point2D;
 import java.util.Deque;
@@ -71,6 +71,7 @@ public final class PointDragEdit extends AbstractEdit implements PointEdit {
             case COLLISION, SHIELD -> repainter.queueCenterPanelsRepaint();
             case WEAPON_SLOTS -> repainter.queueSlotControlRepaint();
             case ENGINES -> repainter.queueEnginesPanelRepaint();
+            case LAUNCH_BAYS -> repainter.queueBaysPanelRepaint();
         }
     }
 

@@ -7,6 +7,7 @@ import oth.shipeditor.components.datafiles.entities.HullmodCSVEntry;
 import oth.shipeditor.components.datafiles.entities.WingCSVEntry;
 import oth.shipeditor.persistence.SettingsManager;
 import oth.shipeditor.representation.GameDataRepository;
+import oth.shipeditor.representation.HullSize;
 import oth.shipeditor.representation.HullSpecFile;
 import oth.shipeditor.representation.HullStyle;
 
@@ -25,7 +26,11 @@ public class ShipHull {
 
     private String hullID;
 
+    private String hullName;
+
     private HullStyle hullStyle;
+
+    private HullSize hullSize;
 
     private List<HullmodCSVEntry> builtInMods;
 
@@ -35,7 +40,9 @@ public class ShipHull {
 
     public void initialize(HullSpecFile specFile) {
         this.associatedSpecFile = specFile;
+        this.hullName = specFile.getHullName();
         this.hullID = specFile.getHullId();
+        this.hullSize = HullSize.valueOf(specFile.getHullSize());
         this.loadHullStyle();
 
         var dataRepository = SettingsManager.getGameData();

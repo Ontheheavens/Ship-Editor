@@ -51,6 +51,7 @@ public enum WeaponType {
     /**
      * @param entry only relevant for ship and weapon entries.
      */
+    @SuppressWarnings("StaticMethodOnlyUsedInOneClass")
     public static boolean isValidForSlot(SlotData slotPoint, CSVEntry entry) {
         if (entry instanceof WeaponCSVEntry weaponEntry) {
             return WeaponType.isWeaponFitting(slotPoint, weaponEntry);
@@ -64,7 +65,7 @@ public enum WeaponType {
      * Yeah, this sucks, but... weapon type rules suck in the first place, sorry Alex!
      */
     @SuppressWarnings({"OverlyComplexBooleanExpression", "RedundantLabeledSwitchRuleCodeBlock", "OverlyComplexMethod"})
-    static boolean isWeaponFitting(SlotData slotPoint, WeaponCSVEntry weaponEntry) {
+    public static boolean isWeaponFitting(SlotData slotPoint, WeaponCSVEntry weaponEntry) {
         WeaponType slotType = slotPoint.getWeaponType();
         WeaponType weaponType = weaponEntry.getType();
 

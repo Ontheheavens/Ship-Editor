@@ -6,9 +6,9 @@ import oth.shipeditor.components.datafiles.entities.ShipCSVEntry;
 import oth.shipeditor.components.datafiles.entities.WeaponCSVEntry;
 import oth.shipeditor.components.viewer.layers.ship.ShipPainter;
 import oth.shipeditor.components.viewer.layers.weapon.WeaponPainter;
-import oth.shipeditor.components.viewer.painters.features.FireMode;
-import oth.shipeditor.components.viewer.painters.features.FittedWeaponGroup;
-import oth.shipeditor.components.viewer.painters.features.InstalledFeature;
+import oth.shipeditor.components.viewer.painters.points.ship.features.FireMode;
+import oth.shipeditor.components.viewer.painters.points.ship.features.FittedWeaponGroup;
+import oth.shipeditor.components.viewer.painters.points.ship.features.InstalledFeature;
 import oth.shipeditor.representation.*;
 import oth.shipeditor.representation.weapon.WeaponSpecFile;
 import oth.shipeditor.utility.text.StringValues;
@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
+ * Heavy-footprint runtime variant class; stores full-fledged painters and point indexes for display in viewer.
  * @author Ontheheavens
  * @since 28.08.2023
  */
@@ -27,10 +28,14 @@ import java.util.Map;
 public class ShipVariant implements Variant {
 
     public static final String EMPTY_VARIANT = "Empty variant";
+
+    /**
+     * Signifies that the instance is a placeholder variant, not a variant without anything installed;
+     * Variants that don't have weapons yet but can install them are normal variants.
+     */
     private boolean empty;
 
     private Path variantFilePath;
-
 
     private Path containingPackage;
 

@@ -9,16 +9,11 @@ import oth.shipeditor.components.viewer.layers.ViewerLayer;
 import oth.shipeditor.components.viewer.layers.ship.data.ShipHull;
 import oth.shipeditor.components.viewer.layers.ship.data.ShipSkin;
 import oth.shipeditor.components.viewer.layers.ship.data.ShipVariant;
-import oth.shipeditor.components.viewer.painters.features.InstalledFeature;
-import oth.shipeditor.components.viewer.painters.points.WeaponSlotPainter;
 import oth.shipeditor.representation.HullSpecFile;
 import oth.shipeditor.representation.ShipData;
 import oth.shipeditor.representation.SkinSpecFile;
 
 import java.util.*;
-import java.util.function.BiFunction;
-import java.util.function.Supplier;
-import java.util.stream.Stream;
 
 /**
  * Runtime representation of ship, including sprite and data.
@@ -49,7 +44,12 @@ public class ShipLayer extends ViewerLayer {
     @Getter
     private final Map<String, ShipVariant> loadedVariants;
 
+    @Getter
+    private final FeaturesOverseer featuresOverseer;
+
+    @SuppressWarnings("ThisEscapedInObjectConstruction")
     public ShipLayer() {
+        featuresOverseer = new FeaturesOverseer(this);
         loadedVariants = new HashMap<>();
         skins = new HashSet<>();
         // Adding default, signifies base hull.
@@ -110,111 +110,6 @@ public class ShipLayer extends ViewerLayer {
         shipSkins.forEach(skin -> {
             if (skin.isBase()) return;
             result.add(skin.getFileName());
-        });
-        return result;
-    }
-
-    // This getter business is not good at all.
-    // However, given the constraints, best to let it be and move on to finish the project.
-
-    public Map<String, InstalledFeature> getBuiltInsFromBaseHull() {
-        var painter = this.getPainter();
-        Supplier<Map<String, InstalledFeature>> getter = painter::getBuiltInWeapons;
-        return getFilteredInstallables(getter, (slotPainter, featureEntry) -> {
-            String slotID = featureEntry.getKey();
-            return slotPainter.getSlotByID(slotID) != null && !slotPainter.isSlotDecorative(slotID);
-        });
-    }
-
-    public Map<String, InstalledFeature> getDecorativesFromBaseHull() {
-        var painter = this.getPainter();
-        Supplier<Map<String, InstalledFeature>> getter = painter::getBuiltInWeapons;
-        return getFilteredInstallables(getter, (slotPainter, featureEntry) -> {
-            String slotID = featureEntry.getKey();
-            return slotPainter.isSlotDecorative(slotID);
-        });
-    }
-
-    public List<String> getBuiltInsRemovedBySkin() {
-        return getFilteredRemovables((slotPainter, slotID) ->
-                slotPainter.getSlotByID(slotID) != null
-                        && !slotPainter.isSlotDecorative(slotID));
-    }
-
-    public List<String> getDecorativesRemovedBySkin() {
-        return getFilteredRemovables(WeaponSlotPainter::isSlotDecorative);
-    }
-
-    public Map<String, InstalledFeature> getBuiltInsFromSkin() {
-        var painter = this.getPainter();
-        ShipSkin activeSkin = painter.getActiveSkin();
-
-        if (activeSkin != null && !activeSkin.isBase()) {
-            Supplier<Map<String, InstalledFeature>> getter = activeSkin::getInitializedBuiltIns;
-            return getFilteredInstallables(getter, (slotPainter, featureEntry) -> {
-                String slotID = featureEntry.getKey();
-                return slotPainter.getSlotByID(slotID) != null && !slotPainter.isSlotDecorative(slotID);
-            });
-        }
-        return null;
-    }
-
-    public Map<String, InstalledFeature> getDecorativesFromSkin() {
-        var painter = this.getPainter();
-        ShipSkin activeSkin = painter.getActiveSkin();
-
-        if (activeSkin != null && !activeSkin.isBase()) {
-            Supplier<Map<String, InstalledFeature>> getter = activeSkin::getInitializedBuiltIns;
-            return getFilteredInstallables(getter, (slotPainter, featureEntry) -> {
-                String slotID = featureEntry.getKey();
-                return slotPainter.isSlotDecorative(slotID);
-            });
-        }
-        return null;
-    }
-
-    private List<String> getFilteredRemovables(BiFunction<WeaponSlotPainter, String, Boolean> filter) {
-        ShipPainter painter = this.getPainter();
-        if (painter == null) return null;
-        ShipSkin activeSkin = painter.getActiveSkin();
-
-        if (activeSkin != null && !activeSkin.isBase()) {
-            var removed = activeSkin.getRemoveBuiltInWeapons();
-            if (removed == null || removed.isEmpty()) return null;
-
-            var slotPainter = painter.getWeaponSlotPainter();
-            List<String> result = new ArrayList<>(removed.size());
-            removed.forEach(slotID -> {
-                if (filter.apply(slotPainter, slotID)) {
-                    result.add(slotID);
-                }
-            });
-            return result;
-        }
-        return null;
-    }
-
-    /**
-     * Should be used only for UI view purposes, not intended for add/remove - use original collection for that.
-     * @return a new Map with filtered entries from original getter.
-     */
-    private Map<String, InstalledFeature> getFilteredInstallables(
-            Supplier<Map<String, InstalledFeature>> getter,
-            BiFunction<WeaponSlotPainter, Map.Entry<String, InstalledFeature>, Boolean> filter) {
-        var painter = this.getPainter();
-        if (painter == null) return null;
-        var installedFeatureMap = getter.get();
-        if (installedFeatureMap == null || installedFeatureMap.isEmpty()) return null;
-        var slotPainter = painter.getWeaponSlotPainter();
-        if (slotPainter == null) return null;
-
-        Map<String, InstalledFeature> result = new LinkedHashMap<>();
-        Set<Map.Entry<String, InstalledFeature>> entries = installedFeatureMap.entrySet();
-        Stream<Map.Entry<String, InstalledFeature>> stream = entries.stream();
-        stream.forEach(featureEntry -> {
-            if (filter.apply(slotPainter, featureEntry)) {
-                result.put(featureEntry.getKey(), featureEntry.getValue());
-            }
         });
         return result;
     }

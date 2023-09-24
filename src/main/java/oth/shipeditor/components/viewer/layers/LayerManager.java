@@ -21,7 +21,7 @@ import oth.shipeditor.components.viewer.layers.weapon.WeaponLayer;
 import oth.shipeditor.representation.HullSpecFile;
 import oth.shipeditor.representation.ShipData;
 import oth.shipeditor.representation.SkinSpecFile;
-import oth.shipeditor.utility.StaticController;
+import oth.shipeditor.utility.overseers.StaticController;
 import oth.shipeditor.utility.graphics.Sprite;
 
 import javax.swing.*;
@@ -35,14 +35,14 @@ import java.util.function.Consumer;
  * @author Ontheheavens
  * @since 27.05.2023
  */
+@Getter
 @SuppressWarnings("OverlyCoupledClass")
 @Log4j2
 public class LayerManager {
 
-    @Getter @Setter
+    @Setter
     private List<ViewerLayer> layers = new ArrayList<>();
 
-    @Getter
     private ViewerLayer activeLayer;
 
     public void initListeners() {

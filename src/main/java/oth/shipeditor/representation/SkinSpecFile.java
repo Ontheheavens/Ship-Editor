@@ -1,5 +1,6 @@
 package oth.shipeditor.representation;
 
+import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -23,7 +24,7 @@ import java.util.Map;
  * @since 29.06.2023
  */
 @Getter @Setter
-@SuppressWarnings({"TransientFieldInNonSerializableClass", "ClassWithTooManyFields", "ClassWithTooManyMethods"})
+@SuppressWarnings({"TransientFieldInNonSerializableClass", "ClassWithTooManyFields", "ClassWithTooManyMethods", "OverlyComplexClass"})
 public class SkinSpecFile implements ShipSpecFile {
 
     @JsonIgnore
@@ -74,6 +75,9 @@ public class SkinSpecFile implements ShipSpecFile {
     @JsonProperty("hullStyle")
     private String hullStyle;
 
+    @JsonProperty("manufacturer")
+    private String manufacturer;
+
     @JsonProperty(StringConstants.RESTORE_TO_BASE_HULL)
     private boolean restoreToBaseHull;
 
@@ -88,6 +92,9 @@ public class SkinSpecFile implements ShipSpecFile {
 
     @JsonProperty(StringConstants.BASE_VALUE)
     private int baseValue;
+
+    @JsonProperty("fpMod")
+    private int fpMod;
 
     @JsonProperty(StringConstants.SUPPLIES_PER_MONTH)
     private double suppliesPerMonth;
@@ -123,10 +130,14 @@ public class SkinSpecFile implements ShipSpecFile {
     @JsonProperty(StringConstants.BASE_VALUE_MULT)
     private double baseValueMult;
 
+    @JsonProperty("rarity")
+    private double rarity;
+
     @JsonDeserialize(using = ShipTypeHintsDeserializer.class)
     @JsonProperty(StringConstants.REMOVE_HINTS)
     private List<ShipTypeHints> removeHints;
 
+    @JsonAlias(StringConstants.HINTS)
     @JsonDeserialize(using = ShipTypeHintsDeserializer.class)
     @JsonProperty(StringConstants.ADD_HINTS)
     private List<ShipTypeHints> addHints;
@@ -140,7 +151,8 @@ public class SkinSpecFile implements ShipSpecFile {
     @JsonProperty(StringConstants.REMOVE_BUILT_IN_MODS)
     private List<String> removeBuiltInMods;
 
-    // TODO: add removeBuiltInWings field and all related functionality.
+    @JsonProperty("removeBuiltInWings")
+    private List<String> removeBuiltInWings;
 
     @JsonProperty(StringConstants.REMOVE_BUILT_IN_WEAPONS)
     private List<String> removeBuiltInWeapons;

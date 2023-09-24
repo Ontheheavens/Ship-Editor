@@ -27,14 +27,14 @@ public final class CollisionRadiusEdit extends AbstractEdit {
     public void undo() {
         undoSubEdits();
         parentPoint.setCollisionRadius(oldRadius);
-        Events.repaintView();
+        Events.repaintShipView();
     }
 
     @Override
     public void redo() {
         redoSubEdits();
         parentPoint.setCollisionRadius(newRadius);
-        Events.repaintView();
+        Events.repaintShipView();
     }
 
     @Override

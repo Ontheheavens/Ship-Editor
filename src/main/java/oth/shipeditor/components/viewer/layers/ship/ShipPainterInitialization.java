@@ -8,16 +8,18 @@ import oth.shipeditor.components.viewer.entities.bays.LaunchPortPoint;
 import oth.shipeditor.components.viewer.entities.engine.EnginePoint;
 import oth.shipeditor.components.viewer.entities.weapon.WeaponSlotPoint;
 import oth.shipeditor.components.viewer.layers.weapon.WeaponPainter;
-import oth.shipeditor.components.viewer.painters.features.InstalledFeature;
-import oth.shipeditor.components.viewer.painters.points.*;
+import oth.shipeditor.components.viewer.painters.points.ship.*;
+import oth.shipeditor.components.viewer.painters.points.ship.features.InstalledFeature;
 import oth.shipeditor.representation.EngineSlot;
 import oth.shipeditor.representation.GameDataRepository;
 import oth.shipeditor.representation.HullSpecFile;
 import oth.shipeditor.representation.weapon.*;
+import oth.shipeditor.utility.Errors;
 import oth.shipeditor.utility.text.StringConstants;
 
 import java.awt.geom.Point2D;
 import java.util.Arrays;
+import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.stream.Stream;
 
@@ -36,6 +38,8 @@ public final class ShipPainterInitialization {
         Point2D anchor = shipPainter.getCenterAnchor();
         Point2D hullCenter = hullSpecFile.getCenter();
 
+        shipPainter.setBaseHullId(hullSpecFile.getHullId());
+
         Point2D translatedCenter = ShipPainterInitialization.rotateCenter(hullCenter, anchor);
 
         ShipPainterInitialization.initCentroids(shipPainter, hullSpecFile, translatedCenter);
@@ -47,8 +51,6 @@ public final class ShipPainterInitialization {
         ShipPainterInitialization.initEngines(shipPainter, hullSpecFile, translatedCenter);
 
         ShipPainterInitialization.initBuiltIns(shipPainter, hullSpecFile);
-
-        shipPainter.setBaseHullId(hullSpecFile.getHullId());
 
         shipPainter.finishInitialization();
     }
@@ -176,9 +178,15 @@ public final class ShipPainterInitialization {
 
         specBuiltIns.forEach((slotID, weaponID) -> {
             WeaponCSVEntry weaponEntry = GameDataRepository.getWeaponByID(weaponID);
-            WeaponSpecFile specFile = weaponEntry.getSpecFile();
-            WeaponPainter weaponPainter = weaponEntry.createPainterFromEntry(null, specFile);
-            runtimeBuiltIns.put(slotID, InstalledFeature.of(slotID, weaponID, weaponPainter, weaponEntry));
+            if (weaponEntry != null) {
+                WeaponSpecFile specFile = weaponEntry.getSpecFile();
+                WeaponPainter weaponPainter = weaponEntry.createPainterFromEntry(null, specFile);
+                runtimeBuiltIns.put(slotID, InstalledFeature.of(slotID, weaponID, weaponPainter, weaponEntry));
+            } else {
+                String message = "Weapon entry for initialized ship (" + shipPainter.getBaseHullId() + ") not found: " + weaponID;
+                Errors.showFileError(message, new NoSuchElementException(message));
+            }
+
         });
     }
 

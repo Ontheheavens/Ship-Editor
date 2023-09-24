@@ -24,6 +24,7 @@ public class SlotIDChangeEdit extends AbstractEdit {
     @Override
     public void undo() {
         slot.changeSlotID(old);
+
     }
 
     @Override

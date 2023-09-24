@@ -6,27 +6,40 @@ import oth.shipeditor.communication.events.BusEvent;
 import oth.shipeditor.communication.events.Events;
 import oth.shipeditor.communication.events.viewer.control.ViewerMouseReleased;
 import oth.shipeditor.components.datafiles.entities.HullmodCSVEntry;
+import oth.shipeditor.components.datafiles.entities.InstallableEntry;
 import oth.shipeditor.components.datafiles.entities.WingCSVEntry;
 import oth.shipeditor.components.viewer.entities.*;
+import oth.shipeditor.components.viewer.entities.bays.LaunchBay;
+import oth.shipeditor.components.viewer.entities.bays.LaunchPortPoint;
 import oth.shipeditor.components.viewer.entities.engine.EnginePoint;
 import oth.shipeditor.components.viewer.entities.weapon.SlotData;
 import oth.shipeditor.components.viewer.entities.weapon.WeaponSlotPoint;
 import oth.shipeditor.components.viewer.layers.LayerPainter;
 import oth.shipeditor.components.viewer.layers.ship.ShipLayer;
-import oth.shipeditor.components.viewer.painters.points.*;
+import oth.shipeditor.components.viewer.painters.points.AbstractPointPainter;
+import oth.shipeditor.components.viewer.painters.points.MirrorablePointPainter;
+import oth.shipeditor.components.viewer.painters.points.ship.BoundPointsPainter;
+import oth.shipeditor.components.viewer.painters.points.ship.EngineSlotPainter;
+import oth.shipeditor.components.viewer.painters.points.ship.WeaponSlotPainter;
 import oth.shipeditor.representation.EngineStyle;
 import oth.shipeditor.representation.weapon.WeaponMount;
 import oth.shipeditor.representation.weapon.WeaponSize;
 import oth.shipeditor.representation.weapon.WeaponType;
 import oth.shipeditor.undo.edits.*;
+import oth.shipeditor.undo.edits.features.FeatureInstallEdit;
+import oth.shipeditor.undo.edits.features.FeatureSortEdit;
+import oth.shipeditor.undo.edits.features.FeatureUninstallEdit;
 import oth.shipeditor.undo.edits.points.*;
 import oth.shipeditor.undo.edits.points.engines.*;
 import oth.shipeditor.undo.edits.points.slots.*;
-import oth.shipeditor.utility.Size2D;
-import oth.shipeditor.utility.StaticController;
+import oth.shipeditor.utility.objects.Size2D;
+import oth.shipeditor.utility.overseers.StaticController;
 
 import java.awt.geom.Point2D;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.function.Consumer;
 
 /**
  * Convenience class meant to free viewer classes from burden of also implementing all the edit dispatch methods.
@@ -63,7 +76,7 @@ public final class EditDispatch {
         Edit addEdit = new PointAdditionEdit(pointPainter, point, index);
         UndoOverseer.post(addEdit);
         pointPainter.insertPoint(point, index);
-        Events.repaintView();
+        Events.repaintShipView();
     }
 
     public static void postBoundsRearranged(BoundPointsPainter pointPainter,
@@ -72,7 +85,7 @@ public final class EditDispatch {
         Edit rearrangeEdit = new BoundsSortEdit(pointPainter, old, changed);
         UndoOverseer.post(rearrangeEdit);
         pointPainter.setBoundPoints(changed);
-        Events.repaintView();
+        Events.repaintShipView();
     }
 
     public static void postSlotsRearranged(WeaponSlotPainter pointPainter,
@@ -99,7 +112,7 @@ public final class EditDispatch {
         Edit addEdit = new PointAdditionEdit(pointPainter, point);
         UndoOverseer.post(addEdit);
         pointPainter.addPoint(point);
-        Events.repaintView();
+        Events.repaintShipView();
     }
 
     public static void postPointRemoved(AbstractPointPainter pointPainter, BaseWorldPoint point) {
@@ -108,7 +121,7 @@ public final class EditDispatch {
         Edit removeEdit = new PointRemovalEdit(pointPainter, point, index);
         UndoOverseer.post(removeEdit);
         pointPainter.removePoint(point);
-        Events.repaintView();
+        Events.repaintShipView();
     }
 
     public static void postAnchorOffsetChanged(LayerPainter layerPainter, Point2D updated) {
@@ -116,7 +129,7 @@ public final class EditDispatch {
         Edit offsetChangeEdit = new AnchorOffsetEdit(layerPainter, oldOffset, updated);
         EditDispatch.handleContinuousEdit(offsetChangeEdit);
         layerPainter.setAnchor(updated);
-        Events.repaintView();
+        Events.repaintShipView();
     }
 
     public static void postSlotAngleSet(SlotData slotPoint, double old, double updated ) {
@@ -182,7 +195,7 @@ public final class EditDispatch {
         Edit rotationEdit = new LayerRotationEdit(painter, old, updated);
         EditDispatch.handleContinuousEdit(rotationEdit);
         painter.setRotationRadians(updated);
-        Events.repaintView();
+        Events.repaintShipView();
     }
 
     public static void postPointDragged(WorldPoint selected, Point2D changedPosition) {
@@ -200,7 +213,7 @@ public final class EditDispatch {
         Edit radiusEdit = new CollisionRadiusEdit(point, oldRadius, radius);
         EditDispatch.handleContinuousEdit(radiusEdit);
         point.setCollisionRadius(radius);
-        Events.repaintView();
+        Events.repaintShipView();
     }
 
     public static void postShieldRadiusChanged(ShieldCenterPoint point, float radius) {
@@ -208,7 +221,7 @@ public final class EditDispatch {
         Edit radiusEdit = new ShieldRadiusEdit(point, oldRadius, radius);
         EditDispatch.handleContinuousEdit(radiusEdit);
         point.setShieldRadius(radius);
-        Events.repaintView();
+        Events.repaintShipView();
     }
 
     public static void postSlotIDChanged(SlotData point, String newID) {
@@ -218,6 +231,7 @@ public final class EditDispatch {
         point.changeSlotID(newID);
         var repainter = StaticController.getRepainter();
         repainter.queueSlotControlRepaint();
+        repainter.queueBuiltInsRepaint();
     }
 
     public static void postSlotTypeChanged(SlotData point, WeaponType newType) {
@@ -228,6 +242,7 @@ public final class EditDispatch {
         var repainter = StaticController.getRepainter();
         repainter.queueViewerRepaint();
         repainter.queueSlotControlRepaint();
+        repainter.queueBuiltInsRepaint();
     }
 
     public static void postSlotMountChanged(SlotData point, WeaponMount newMount) {
@@ -248,6 +263,21 @@ public final class EditDispatch {
         var repainter = StaticController.getRepainter();
         repainter.queueViewerRepaint();
         repainter.queueSlotControlRepaint();
+        repainter.queueBuiltInsRepaint();
+        repainter.queueBaysPanelRepaint();
+    }
+
+    public static void postLaunchPortsRearranged(LaunchPortPoint portPoint, LaunchBay targetBay, int targetIndex) {
+        LaunchBay oldParent = portPoint.getParentBay();
+
+        var oldParentPorts = oldParent.getPortPoints();
+        int oldIndex = oldParentPorts.indexOf(portPoint);
+
+        LaunchPortsSortEdit portsSortEdit = new LaunchPortsSortEdit(portPoint, targetBay, oldParent,
+                targetIndex, oldIndex);
+        UndoOverseer.post(portsSortEdit);
+
+        portsSortEdit.transferPort(oldParent, targetBay, portPoint, targetIndex);
     }
 
     public static void postHullmodAdded(List<HullmodCSVEntry> index, ShipLayer shipLayer, HullmodCSVEntry hullmod) {
@@ -272,6 +302,51 @@ public final class EditDispatch {
         Edit wingRemoveEdit = new WingRemoveEdit(index, shipLayer, wing);
         UndoOverseer.post(wingRemoveEdit);
         index.remove(wing);
+    }
+
+    public static<T extends InstallableEntry> void postFeatureInstalled(Map<String, T> collection,
+                                                                          String slotID, T feature,
+                                                                          Runnable invalidator) {
+        // Theoretically should not need order preservation since added is always last.
+        Edit installEdit = new FeatureInstallEdit<>(collection, slotID, feature, invalidator);
+        UndoOverseer.post(installEdit);
+        collection.put(slotID, feature);
+        if (invalidator != null) {
+            invalidator.run();
+        }
+        var repainter = StaticController.getRepainter();
+        repainter.queueViewerRepaint();
+        repainter.queueBuiltInsRepaint();
+    }
+
+    public static<T extends InstallableEntry> void postFeatureUninstalled(Map<String, T> collection,
+                                                                          String slotID, T feature,
+                                                                          Runnable invalidator) {
+        // Note: this technique of manipulating collection state instead of explicit removal/re-adding
+        // assumes that order of operations is strictly preserved in edit stack.
+        // Should the sequence be broken, this will backfire.
+        Map<String, T> before = new LinkedHashMap<>(collection);
+        collection.remove(slotID, feature);
+        Map<String, T> after = new LinkedHashMap<>(collection);
+        Edit uninstallEdit = new FeatureUninstallEdit<>(before, after, collection, invalidator);
+        UndoOverseer.post(uninstallEdit);
+        if (invalidator != null) {
+            invalidator.run();
+        }
+        var repainter = StaticController.getRepainter();
+        repainter.queueViewerRepaint();
+        repainter.queueBuiltInsRepaint();
+    }
+
+    public static<T extends InstallableEntry> void postFeaturesSorted(Consumer<Map<String, T>> consumer,
+                                                                      Map<String, T>  oldMap,
+                                                                      Map<String, T> newMap) {
+        Edit sortEdit = new FeatureSortEdit<>(consumer, oldMap, newMap);
+        UndoOverseer.post(sortEdit);
+        consumer.accept(newMap);
+        var repainter = StaticController.getRepainter();
+        repainter.queueViewerRepaint();
+        repainter.queueBuiltInsRepaint();
     }
 
 }
