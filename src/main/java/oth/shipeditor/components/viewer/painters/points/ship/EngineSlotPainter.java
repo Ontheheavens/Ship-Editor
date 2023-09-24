@@ -55,7 +55,6 @@ public class EngineSlotPainter extends AngledPointPainter {
     public EngineSlotPainter(ShipPainter parent) {
         super(parent);
         this.enginePoints = new ArrayList<>();
-        this.initInteractionListeners();
     }
 
     @Override

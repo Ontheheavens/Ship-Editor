@@ -194,7 +194,7 @@ final class ViewerStatusPanel extends JPanel {
         JMenuItem resetRotation = new JMenuItem(StringValues.RESET_ROTATION);
         resetRotation.addActionListener(e -> {
             EventBus.publish(new ViewerRotationSet(0));
-            Events.repaintView();
+            Events.repaintShipView();
         });
         rotationMenu.add(resetRotation);
 
@@ -254,7 +254,7 @@ final class ViewerStatusPanel extends JPanel {
             menuItem.setSelected(true);
             this.updateCursorCoordsLabel();
             EventBus.publish(new CoordsModeChanged(displayMode));
-            Events.repaintView();
+            Events.repaintShipView();
         });
         group.add(menuItem);
         return menuItem;

@@ -35,14 +35,14 @@ import java.util.function.Consumer;
  * @author Ontheheavens
  * @since 27.05.2023
  */
+@Getter
 @SuppressWarnings("OverlyCoupledClass")
 @Log4j2
 public class LayerManager {
 
-    @Getter @Setter
+    @Setter
     private List<ViewerLayer> layers = new ArrayList<>();
 
-    @Getter
     private ViewerLayer activeLayer;
 
     public void initListeners() {

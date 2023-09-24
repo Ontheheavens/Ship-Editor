@@ -24,15 +24,16 @@ import java.util.function.Consumer;
  * @author Ontheheavens
  * @since 25.07.2023
  */
+@Getter
 public abstract class MirrorablePointPainter extends AbstractPointPainter {
 
-    @Getter
     private final LayerPainter parentLayer;
 
     protected MirrorablePointPainter(LayerPainter parent) {
         this.parentLayer = parent;
         initModeListener();
         this.setInteractionEnabled(StaticController.getEditorMode() == getInstrumentType());
+        this.initInteractionListeners();
     }
 
     protected void initInteractionListeners() {

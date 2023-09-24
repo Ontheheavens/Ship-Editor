@@ -61,7 +61,6 @@ public class WeaponSlotPainter extends AngledPointPainter {
     public WeaponSlotPainter(ShipPainter parent) {
         super(parent);
         this.slotPoints = new ArrayList<>();
-        this.initInteractionListeners();
     }
 
     @Override

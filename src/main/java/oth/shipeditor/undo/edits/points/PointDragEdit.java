@@ -71,6 +71,7 @@ public final class PointDragEdit extends AbstractEdit implements PointEdit {
             case COLLISION, SHIELD -> repainter.queueCenterPanelsRepaint();
             case WEAPON_SLOTS -> repainter.queueSlotControlRepaint();
             case ENGINES -> repainter.queueEnginesPanelRepaint();
+            case LAUNCH_BAYS -> repainter.queueBaysPanelRepaint();
         }
     }
 

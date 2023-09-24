@@ -31,6 +31,7 @@ public class SlotSizeChangeEdit extends AbstractEdit {
         repainter.queueSlotControlRepaint();
         repainter.queueBaysPanelRepaint();
         repainter.queueBuiltInsRepaint();
+        repainter.queueBaysPanelRepaint();
     }
 
     @Override
@@ -41,6 +42,7 @@ public class SlotSizeChangeEdit extends AbstractEdit {
         repainter.queueSlotControlRepaint();
         repainter.queueBaysPanelRepaint();
         repainter.queueBuiltInsRepaint();
+        repainter.queueBaysPanelRepaint();
     }
 
     @Override

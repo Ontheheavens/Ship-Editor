@@ -32,7 +32,7 @@ public class PointRemovalEdit extends AbstractEdit implements PointEdit {
         } else {
             painter.addPoint(removed);
         }
-        Events.repaintView();
+        Events.repaintShipView();
     }
 
     @Override
@@ -48,7 +48,7 @@ public class PointRemovalEdit extends AbstractEdit implements PointEdit {
     @Override
     public void redo() {
         painter.removePoint(removed);
-        Events.repaintView();
+        Events.repaintShipView();
     }
 
     @Override

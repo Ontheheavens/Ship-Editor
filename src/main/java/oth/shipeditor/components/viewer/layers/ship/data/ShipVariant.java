@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
+ * Heavy-footprint runtime variant class; stores full-fledged painters and point indexes for display in viewer.
  * @author Ontheheavens
  * @since 28.08.2023
  */
@@ -35,7 +36,6 @@ public class ShipVariant implements Variant {
     private boolean empty;
 
     private Path variantFilePath;
-
 
     private Path containingPackage;
 

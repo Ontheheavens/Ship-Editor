@@ -16,12 +16,15 @@ import oth.shipeditor.components.viewer.layers.ship.ShipPainter;
 import oth.shipeditor.components.viewer.painters.PainterVisibility;
 import oth.shipeditor.components.viewer.painters.points.ship.LaunchBayPainter;
 import oth.shipeditor.utility.components.ComponentUtilities;
+import oth.shipeditor.utility.components.containers.trees.DynamicWidthTreeUI;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.tree.DefaultMutableTreeNode;
 import java.awt.*;
 import java.awt.event.ActionListener;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
 
 /**
  * @author Ontheheavens
@@ -62,6 +65,15 @@ public class LaunchBaysPanel extends JPanel {
         this.add(scrollableContainer, BorderLayout.CENTER);
         this.initPointListener();
         this.initLayerListeners();
+
+        baysTree.setUI(new DynamicWidthTreeUI());
+        baysTree.addComponentListener(new ComponentAdapter() {
+            @Override
+            public void componentResized(ComponentEvent e) {
+                Component component = e.getComponent();
+                baysTree.setCachedComponentWidth(component.getWidth());
+            }
+        });
 
         this.refreshBayControlPane(null);
     }

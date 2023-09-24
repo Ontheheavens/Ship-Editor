@@ -67,6 +67,16 @@ public final class StaticController {
         return viewer.getLayerManager();
     }
 
+    /**
+     * Is used as a shortcut to refresh UI for respective ship editing panels.
+     */
+    public static void reselectCurrentLayer() {
+        LayerManager manager = viewer.getLayerManager();
+        var current = manager.getActiveLayer();
+        manager.setActiveLayer(current);
+    }
+
+
     public static AffineTransform getScreenToWorld() {
         if (activeLayer != null) {
             LayerPainter painter = activeLayer.getPainter();

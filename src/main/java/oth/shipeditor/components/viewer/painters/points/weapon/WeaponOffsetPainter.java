@@ -20,12 +20,12 @@ import java.util.List;
  * @author Ontheheavens
  * @since 02.09.2023
  */
+@Getter
 public class WeaponOffsetPainter extends AngledPointPainter {
 
-    @Getter @Setter
+    @Setter
     private List<OffsetPoint> offsetPoints;
 
-    @Getter
     private final WeaponMount designatedType;
 
     public WeaponOffsetPainter(WeaponPainter parent, WeaponMount mount) {

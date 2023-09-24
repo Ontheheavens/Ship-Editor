@@ -1,6 +1,7 @@
 package oth.shipeditor.components.viewer.entities.bays;
 
 import lombok.Getter;
+import lombok.Setter;
 import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.components.BaysPanelRepaintQueued;
 import oth.shipeditor.communication.events.viewer.ViewerRepaintQueued;
@@ -28,8 +29,8 @@ import java.util.List;
  */
 public class LaunchPortPoint extends BaseWorldPoint implements SlotPoint {
 
-    @Getter
-    private final LaunchBay parentBay;
+    @Getter @Setter
+    private LaunchBay parentBay;
 
     private SlotDrawingHelper drawingHelper;
 

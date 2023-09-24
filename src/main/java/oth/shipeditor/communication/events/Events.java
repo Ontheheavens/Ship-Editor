@@ -12,7 +12,7 @@ public final class Events {
     private Events() {
     }
 
-    public static void repaintView() {
+    public static void repaintShipView() {
         var repainter = StaticController.getRepainter();
         repainter.queueViewerRepaint();
         repainter.queueBoundsPanelRepaint();

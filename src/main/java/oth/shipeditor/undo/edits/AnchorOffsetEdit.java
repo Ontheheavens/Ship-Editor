@@ -5,7 +5,6 @@ import oth.shipeditor.communication.events.Events;
 import oth.shipeditor.components.viewer.layers.LayerPainter;
 import oth.shipeditor.undo.AbstractEdit;
 import oth.shipeditor.undo.Edit;
-import oth.shipeditor.undo.edits.points.PointRemovalEdit;
 
 import java.awt.geom.Point2D;
 import java.util.Deque;
@@ -34,14 +33,14 @@ public class AnchorOffsetEdit extends AbstractEdit implements LayerEdit {
     public void undo() {
         undoSubEdits();
         layerPainter.setAnchor(oldOffset);
-        Events.repaintView();
+        Events.repaintShipView();
     }
 
     @Override
     public void redo() {
         layerPainter.setAnchor(updatedOffset);
         redoSubEdits();
-        Events.repaintView();
+        Events.repaintShipView();
     }
 
     @Override

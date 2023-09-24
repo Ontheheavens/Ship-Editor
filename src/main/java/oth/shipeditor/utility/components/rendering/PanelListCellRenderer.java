@@ -9,11 +9,11 @@ import java.awt.*;
  * @author Ontheheavens
  * @since 17.09.2023
  */
-public class PanelCellRenderer<E> extends JPanel implements ListCellRenderer<E> {
+public class PanelListCellRenderer<E> extends JPanel implements ListCellRenderer<E> {
 
     private static final Border DEFAULT_NO_FOCUS_BORDER = new EmptyBorder(1, 1, 1, 1);
 
-    PanelCellRenderer() {
+    PanelListCellRenderer() {
         setOpaque(false);
         setBorder(DEFAULT_NO_FOCUS_BORDER);
     }

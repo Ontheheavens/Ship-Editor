@@ -41,7 +41,7 @@ public class PointAdditionEdit extends AbstractEdit implements PointEdit {
     @Override
     public void undo() {
         pointPainter.removePoint(point);
-        Events.repaintView();
+        Events.repaintShipView();
     }
 
     @SuppressWarnings("ChainOfInstanceofChecks")
@@ -52,7 +52,7 @@ public class PointAdditionEdit extends AbstractEdit implements PointEdit {
         } else if (pointPainter instanceof MirrorablePointPainter checked) {
             checked.insertPoint(point, insertionIndex);
         }
-        Events.repaintView();
+        Events.repaintShipView();
     }
 
     @Override

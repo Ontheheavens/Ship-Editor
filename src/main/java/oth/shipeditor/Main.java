@@ -41,6 +41,8 @@ import java.util.function.Function;
 @Log4j2
 public final class Main {
 
+    public static final String TREE_PAINT_LINES = "Tree.paintLines";
+
     private Main() {}
 
     public static void main(String[] args) {
@@ -73,7 +75,7 @@ public final class Main {
         UIManager.put("TitlePane.background", Color.LIGHT_GRAY);
         UIManager.put("TitlePane.useWindowDecorations", true);
 
-        UIManager.put("Tree.paintLines", true);
+        UIManager.put(TREE_PAINT_LINES, true);
         UIManager.put("Tree.showDefaultIcons", true);
         UIManager.put("TitlePane.showIcon", true);
         UIManager.put("TitlePane.showIconInDialogs", true);

@@ -31,7 +31,7 @@ public final class DialogUtilities {
         if (option == JOptionPane.OK_OPTION) {
             Point2D newPosition = dialog.getUpdatedPosition();
             EditDispatch.postPointDragged(point, newPosition);
-            Events.repaintView();
+            Events.repaintShipView();
         }
     }
 
@@ -43,7 +43,7 @@ public final class DialogUtilities {
         if (option == JOptionPane.OK_OPTION) {
             Point2D newPosition = dialog.getUpdatedPosition();
             EditDispatch.postAnchorOffsetChanged(layerPainter, newPosition);
-            Events.repaintView();
+            Events.repaintShipView();
         }
     }
 
@@ -55,7 +55,7 @@ public final class DialogUtilities {
         if (option == JOptionPane.OK_OPTION) {
             double newRadius = dialog.getUpdatedValue();
             EditDispatch.postShieldRadiusChanged(point, (float) newRadius);
-            Events.repaintView();
+            Events.repaintShipView();
         }
     }
 
@@ -67,7 +67,7 @@ public final class DialogUtilities {
         if (option == JOptionPane.OK_OPTION) {
             double newRadius = dialog.getUpdatedValue();
             EditDispatch.postCollisionRadiusChanged(point, (float) newRadius);
-            Events.repaintView();
+            Events.repaintShipView();
         }
     }
 
@@ -95,7 +95,7 @@ public final class DialogUtilities {
         if (option == JOptionPane.OK_OPTION) {
             double newZoom = dialog.getUpdatedValue() * 0.01;
             EventBus.publish(new ViewerZoomSet(newZoom));
-            Events.repaintView();
+            Events.repaintShipView();
         }
     }
 
@@ -107,7 +107,7 @@ public final class DialogUtilities {
         if (option == JOptionPane.OK_OPTION) {
             double newRotation = dialog.getUpdatedValue();
             EventBus.publish(new ViewerRotationSet(newRotation));
-            Events.repaintView();
+            Events.repaintShipView();
         }
     }
 
@@ -120,7 +120,7 @@ public final class DialogUtilities {
             double newRotation = dialog.getUpdatedValue();
             double reversed = (360 - newRotation) % 360;
             layerPainter.rotateLayer(reversed);
-            Events.repaintView();
+            Events.repaintShipView();
         }
     }
 

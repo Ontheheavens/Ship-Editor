@@ -28,13 +28,13 @@ public class BoundsSortEdit extends AbstractEdit {
     @Override
     public void undo() {
         pointPainter.setBoundPoints(oldList);
-        Events.repaintView();
+        Events.repaintShipView();
     }
 
     @Override
     public void redo() {
         pointPainter.setBoundPoints(newList);
-        Events.repaintView();
+        Events.repaintShipView();
     }
 
     @Override
