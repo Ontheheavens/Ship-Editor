@@ -56,7 +56,6 @@ public class LaunchBaysTree extends DynamicWidthTree {
             Object nodeObject = node.getUserObject();
             if (nodeObject instanceof LaunchBay checked) {
                 List<LaunchPortPoint> portPoints = checked.getPortPoints();
-                // FIXME: add sorting support.
                 LaunchPortPoint firstChild = portPoints.get(0);
                 EventBus.publish(new PointSelectQueued(firstChild));
                 EventBus.publish(new ViewerRepaintQueued());
@@ -81,6 +80,13 @@ public class LaunchBaysTree extends DynamicWidthTree {
     void addBay(LaunchBay bay) {
         MutableTreeNode newChild = new DefaultMutableTreeNode(bay);
         model.insertNodeInto(newChild, baysRoot, baysRoot.getChildCount());
+        model.reload();
+        this.expandTree();
+    }
+
+    void insertBay(LaunchBay bay, int index) {
+        MutableTreeNode newChild = new DefaultMutableTreeNode(bay);
+        model.insertNodeInto(newChild, baysRoot, index);
         model.reload();
         this.expandTree();
     }
@@ -199,8 +205,8 @@ public class LaunchBaysTree extends DynamicWidthTree {
             leftContainer.add(getTextLabel());
 
             var rightContainer = this.getRightContainer();
+            rightContainer.setLayout(new FlowLayout(FlowLayout.TRAILING, 0, 0));
             this.positionLabel = new JLabel();
-            rightContainer.add(Box.createHorizontalGlue());
             rightContainer.add(positionLabel);
         }
 

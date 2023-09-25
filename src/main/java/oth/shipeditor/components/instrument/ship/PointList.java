@@ -8,11 +8,11 @@ import oth.shipeditor.communication.events.viewer.points.PointSelectedConfirmed;
 import oth.shipeditor.components.viewer.entities.BaseWorldPoint;
 import oth.shipeditor.utility.components.containers.SortableList;
 import oth.shipeditor.utility.components.dialog.DialogUtilities;
+import oth.shipeditor.utility.components.rendering.PointCellRenderer;
 import oth.shipeditor.utility.text.StringValues;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
-import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
@@ -92,18 +92,6 @@ public abstract class PointList<T extends BaseWorldPoint> extends SortableList<T
                 this.setSelectedValue(point, true);
             }
         });
-    }
-
-    private static class PointCellRenderer extends DefaultListCellRenderer{
-        @Override
-        public Component getListCellRendererComponent(JList<?> list, Object value, int index,
-                                                      boolean isSelected, boolean cellHasFocus) {
-            super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
-            BaseWorldPoint checked = (BaseWorldPoint) value;
-            String displayText = checked.getNameForLabel() + " #" + index + ": " + checked.getPositionText();
-            setText(displayText);
-            return this;
-        }
     }
 
     private class PointContextMenuListener extends MouseAdapter {

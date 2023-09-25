@@ -90,7 +90,7 @@ public class LaunchBayPainter extends MirrorablePointPainter {
         }
     }
 
-    private String generateUniqueBayID() {
+    public String generateUniqueBayID() {
         ShipPainter parentLayer = (ShipPainter) getParentLayer();
         return parentLayer.generateUniqueSlotID("LB");
     }
@@ -138,10 +138,15 @@ public class LaunchBayPainter extends MirrorablePointPainter {
 
     public void addBay(LaunchBay bay) {
         baysList.add(bay);
-        EventBus.publish(new LaunchBayAddConfirmed(bay));
+        EventBus.publish(new LaunchBayAddConfirmed(bay, -1));
     }
 
-    private void removeBay(LaunchBay bay) {
+    public void insertBay(LaunchBay bay, int index) {
+        baysList.add(index, bay);
+        EventBus.publish(new LaunchBayAddConfirmed(bay, index));
+    }
+
+    public void removeBay(LaunchBay bay) {
         baysList.remove(bay);
         EventBus.publish(new LaunchBayRemoveConfirmed(bay));
     }

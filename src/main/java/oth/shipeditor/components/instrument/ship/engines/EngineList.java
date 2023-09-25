@@ -3,8 +3,10 @@ package oth.shipeditor.components.instrument.ship.engines;
 import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.viewer.points.EnginePointsSorted;
 import oth.shipeditor.components.instrument.ship.PointList;
+import oth.shipeditor.components.viewer.entities.BaseWorldPoint;
 import oth.shipeditor.components.viewer.entities.engine.EnginePoint;
 import oth.shipeditor.representation.EngineStyle;
+import oth.shipeditor.utility.components.rendering.PointCellRenderer;
 
 import javax.swing.*;
 import java.awt.*;
@@ -45,21 +47,28 @@ public class EngineList extends PointList<EnginePoint> {
         EventBus.publish(new EnginePointsSorted(rearrangedPoints));
     }
 
-    private static class EngineCellRenderer extends DefaultListCellRenderer{
+    private static class EngineCellRenderer extends PointCellRenderer {
+
         @Override
-        public Component getListCellRendererComponent(JList<?> list, Object value, int index,
+        public Component getListCellRendererComponent(JList<? extends BaseWorldPoint> list,
+                                                      BaseWorldPoint value, int index,
                                                       boolean isSelected, boolean cellHasFocus) {
             super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+
             EnginePoint checked = (EnginePoint) value;
             EngineStyle engineStyle = checked.getStyle();
             String styleOrID = checked.getStyleID();
             if (engineStyle != null) {
                 styleOrID = engineStyle.getEngineStyleID();
             }
-            String displayText = styleOrID + " #" + index + ": " + checked.getPositionText();
-            setText(displayText);
+            String displayText = styleOrID + " #" + index + ":";
+
+            JLabel textLabel = getTextLabel();
+            textLabel.setText(displayText);
+
             return this;
         }
+
     }
 
 }

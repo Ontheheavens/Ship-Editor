@@ -8,6 +8,7 @@ import oth.shipeditor.communication.events.viewer.points.LaunchBayAddConfirmed;
 import oth.shipeditor.communication.events.viewer.points.LaunchBayRemoveConfirmed;
 import oth.shipeditor.communication.events.viewer.points.PointAddConfirmed;
 import oth.shipeditor.communication.events.viewer.points.PointRemovedConfirmed;
+import oth.shipeditor.components.viewer.entities.bays.LaunchBay;
 import oth.shipeditor.components.viewer.entities.bays.LaunchPortPoint;
 import oth.shipeditor.components.viewer.entities.weapon.SlotPoint;
 import oth.shipeditor.components.viewer.layers.ViewerLayer;
@@ -23,8 +24,6 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.tree.DefaultMutableTreeNode;
 import java.awt.*;
 import java.awt.event.ActionListener;
-import java.awt.event.ComponentAdapter;
-import java.awt.event.ComponentEvent;
 
 /**
  * @author Ontheheavens
@@ -66,14 +65,8 @@ public class LaunchBaysPanel extends JPanel {
         this.initPointListener();
         this.initLayerListeners();
 
-        baysTree.setUI(new DynamicWidthTreeUI());
-        baysTree.addComponentListener(new ComponentAdapter() {
-            @Override
-            public void componentResized(ComponentEvent e) {
-                Component component = e.getComponent();
-                baysTree.setCachedComponentWidth(component.getWidth());
-            }
-        });
+        DynamicWidthTreeUI treeUI = new DynamicWidthTreeUI();
+        baysTree.setUI(treeUI);
 
         this.refreshBayControlPane(null);
     }
@@ -99,8 +92,12 @@ public class LaunchBaysPanel extends JPanel {
             }
         });
         EventBus.subscribe(event -> {
-            if (event instanceof LaunchBayAddConfirmed checked) {
-                baysTree.addBay(checked.added());
+            if (event instanceof LaunchBayAddConfirmed(LaunchBay added, int index)) {
+                if (index == -1) {
+                    baysTree.addBay(added);
+                } else {
+                    baysTree.insertBay(added, index);
+                }
             }
         });
         EventBus.subscribe(event -> {

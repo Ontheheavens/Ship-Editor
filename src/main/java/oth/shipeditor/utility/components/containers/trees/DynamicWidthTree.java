@@ -1,8 +1,5 @@
 package oth.shipeditor.utility.components.containers.trees;
 
-import lombok.Getter;
-import lombok.Setter;
-
 import javax.swing.plaf.TreeUI;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.TreePath;
@@ -12,10 +9,8 @@ import java.awt.*;
  * @author Ontheheavens
  * @since 24.09.2023
  */
+@SuppressWarnings("AbstractClassWithOnlyOneDirectInheritor")
 public abstract class DynamicWidthTree extends SortableTree {
-
-    @Getter @Setter
-    private int cachedComponentWidth;
 
     protected DynamicWidthTree(DefaultMutableTreeNode root) {
         super(root);

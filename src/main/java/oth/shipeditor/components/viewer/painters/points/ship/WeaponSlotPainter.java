@@ -197,7 +197,7 @@ public class WeaponSlotPainter extends AngledPointPainter {
         }
     }
 
-    private String generateUniqueSlotID() {
+    public String generateUniqueSlotID() {
         ShipPainter parentLayer = getParentLayer();
         return parentLayer.generateUniqueSlotID("WS");
     }
