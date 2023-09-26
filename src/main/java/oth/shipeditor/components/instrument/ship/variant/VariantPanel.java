@@ -167,7 +167,7 @@ public class VariantPanel extends JPanel {
     @SuppressWarnings("ChainOfInstanceofChecks")
     private void initLayerListeners() {
         EventBus.subscribe(event -> {
-            if (event instanceof LayerWasSelected(_, var selected)) {
+            if (event instanceof LayerWasSelected(var old, var selected)) {
                 this.refreshPanel(selected);
             } else if (event instanceof ActiveLayerUpdated(var updated)) {
                 this.refreshPanel(updated);

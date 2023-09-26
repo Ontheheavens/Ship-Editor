@@ -219,7 +219,6 @@ public class LaunchBaysTree extends DynamicWidthTree {
             JLabel iconLabel = getIconLabel();
             JLabel textLabel = getTextLabel();
             sizeLabel.setIcon(null);
-            textLabel.setText("");
             positionLabel.setText("");
             if (object instanceof LaunchBay checked) {
                 WeaponSize baySize = checked.getWeaponSize();
@@ -234,6 +233,8 @@ public class LaunchBaysTree extends DynamicWidthTree {
                 String position = checked.getPositionText();
                 textLabel.setText(index);
                 positionLabel.setText(position);
+            } else {
+                textLabel.setText(" " + value);
             }
 
             return this;
