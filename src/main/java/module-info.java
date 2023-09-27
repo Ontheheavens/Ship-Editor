@@ -12,10 +12,11 @@
     requires com.fasterxml.jackson.databind;
     requires com.fasterxml.jackson.dataformat.csv;
 
-    // These packages are tightly intertwined with the app and are important, but can be removed with some work.
+    // These packages are tightly intertwined with the app and/or are important, but can be removed with some work.
     requires lombok;
     requires com.formdev.flatlaf;
     requires org.apache.logging.log4j;
+    requires org.apache.commons.collections4;
 
     // These packages are mostly cosmetic.
     requires org.kordamp.ikonli.core;

@@ -60,7 +60,7 @@ public final class InstalledFeaturePainter {
         EditorInstrument editorMode = StaticController.getEditorMode();
         boolean eligibleMode = editorMode == EditorInstrument.BUILT_IN_WEAPONS
                 || editorMode == EditorInstrument.DECORATIVES
-                || editorMode == EditorInstrument.VARIANT;
+                || editorMode == EditorInstrument.VARIANT_DATA;
         return eligibleMode && painter.isLayerActive();
     }
 

@@ -222,7 +222,7 @@ public class FeaturesOverseer {
                             installBuiltIn(selected);
                         }
                     }
-                    case VARIANT -> {
+                    case VARIANT_DATA -> {
 
                     }
                 }

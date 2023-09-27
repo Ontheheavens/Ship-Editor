@@ -2,8 +2,10 @@ package oth.shipeditor.components.viewer.painters.points.ship.features;
 
 import lombok.Getter;
 import lombok.Setter;
+import org.apache.commons.collections4.map.ListOrderedMap;
+import oth.shipeditor.components.viewer.layers.ship.data.ShipVariant;
 
-import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -21,11 +23,19 @@ public class FittedWeaponGroup {
 
     private final Map<String, InstalledFeature> weapons;
 
+    private final ShipVariant parent;
+
     @SuppressWarnings("BooleanParameter")
-    public FittedWeaponGroup(boolean autofireInput, FireMode modeInput) {
+    public FittedWeaponGroup(ShipVariant variant, boolean autofireInput, FireMode modeInput) {
+        this.parent = variant;
         this.autofire = autofireInput;
         this.mode = modeInput;
-        this.weapons = new LinkedHashMap<>();
+        this.weapons = new ListOrderedMap<>();
+    }
+
+    public String getIndexToDisplay() {
+        List<FittedWeaponGroup> weaponGroups = parent.getWeaponGroups();
+        return "#" + weaponGroups.indexOf(this);
     }
 
 }

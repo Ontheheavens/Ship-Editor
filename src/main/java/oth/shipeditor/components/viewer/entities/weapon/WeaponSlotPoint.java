@@ -217,10 +217,14 @@ public class WeaponSlotPoint extends AngledPoint implements SlotPoint {
         return this.getWeaponType() == WeaponType.BUILT_IN;
     }
 
+    public boolean isModule() {
+        return this.getWeaponType() == WeaponType.STATION_MODULE;
+    }
+
     public boolean isFittable() {
         WeaponType type = this.getWeaponType();
         switch (type) {
-            case BALLISTIC, ENERGY, MISSILE, COMPOSITE, HYBRID, SYNERGY, UNIVERSAL, STATION_MODULE -> {
+            case BALLISTIC, ENERGY, MISSILE, COMPOSITE, HYBRID, SYNERGY, UNIVERSAL -> {
                 return true;
             }
             default -> {

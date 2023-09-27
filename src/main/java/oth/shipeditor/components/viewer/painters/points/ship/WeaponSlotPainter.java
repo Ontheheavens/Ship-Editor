@@ -429,8 +429,10 @@ public class WeaponSlotPainter extends AngledPointPainter {
                     result = eligibleForSelection.stream().filter(WeaponSlotPoint::isBuiltIn).toList();
             case DECORATIVES ->
                     result = eligibleForSelection.stream().filter(WeaponSlotPoint::isDecorative).toList();
-            case VARIANT ->
+            case VARIANT_WEAPONS ->
                     result = eligibleForSelection.stream().filter(WeaponSlotPoint::isFittable).toList();
+            case VARIANT_MODULES ->
+                    result = eligibleForSelection.stream().filter(WeaponSlotPoint::isModule).toList();
             default -> result = eligibleForSelection;
         }
         return result;
@@ -465,9 +467,14 @@ public class WeaponSlotPainter extends AngledPointPainter {
 
         private static boolean isRelatedEditorModeActive() {
             EditorInstrument editorMode = StaticController.getEditorMode();
-            return editorMode == EditorInstrument.BUILT_IN_WEAPONS
-                    || editorMode == EditorInstrument.DECORATIVES
-                    || editorMode == EditorInstrument.VARIANT;
+            switch (editorMode) {
+                case BUILT_IN_WEAPONS, DECORATIVES, VARIANT_WEAPONS, VARIANT_MODULES -> {
+                    return true;
+                }
+                default -> {
+                    return false;
+                }
+            }
         }
     }
 

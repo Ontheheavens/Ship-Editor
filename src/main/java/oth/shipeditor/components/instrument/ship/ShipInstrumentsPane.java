@@ -1,7 +1,5 @@
 package oth.shipeditor.components.instrument.ship;
 
-import com.formdev.flatlaf.FlatClientProperties;
-import com.formdev.flatlaf.ui.FlatBorder;
 import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
 import oth.shipeditor.communication.EventBus;
@@ -18,11 +16,10 @@ import oth.shipeditor.components.instrument.ship.centers.ShieldPanel;
 import oth.shipeditor.components.instrument.ship.engines.EnginesPanel;
 import oth.shipeditor.components.instrument.ship.skins.SkinPanel;
 import oth.shipeditor.components.instrument.ship.slots.WeaponSlotsPanel;
-import oth.shipeditor.components.instrument.ship.variant.VariantPanel;
+import oth.shipeditor.components.instrument.ship.variant.VariantDataPanel;
+import oth.shipeditor.components.instrument.ship.variant.VariantWeaponsPanel;
 
 import javax.swing.*;
-import javax.swing.border.EmptyBorder;
-import java.awt.*;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -47,8 +44,6 @@ public final class ShipInstrumentsPane extends AbstractInstrumentsPane {
 
     @SuppressWarnings("OverlyCoupledMethod")
     private void createTabs() {
-        this.putClientProperty("JTabbedPane.tabInsets", new Insets(0, 0, 0, 0));
-
         this.createTab(new ShipLayerPropertiesPanel(), EditorInstrument.LAYER);
         this.createTab(new CollisionPanel(), EditorInstrument.COLLISION);
         this.createTab(new ShieldPanel(), EditorInstrument.SHIELD);
@@ -60,38 +55,11 @@ public final class ShipInstrumentsPane extends AbstractInstrumentsPane {
         this.createTab(new BuiltInWingsPanel(), EditorInstrument.BUILT_IN_WINGS);
         this.createTab(new BuiltInWeaponsPanel(), EditorInstrument.BUILT_IN_WEAPONS);
         this.createTab(new DecorativesPanel(), EditorInstrument.DECORATIVES);
-        this.createTab(new SkinPanel(), EditorInstrument.SKIN);
-        this.createTab(new VariantPanel(), EditorInstrument.VARIANT);
-
-        JPanel variantTab = new JPanel();
-        variantTab.setLayout(new BoxLayout(variantTab, BoxLayout.PAGE_AXIS));
-        variantTab.setBorder(new FlatBorder());
-//        variantTab.setPreferredSize(new Dimension(110, 80));
-//        variantTab.setOpaque(false);
-
-        JLabel variantTitle = new JLabel("Variant");
-        variantTitle.setAlignmentX(0.5f);
-        JPanel titleContainer = new JPanel();
-        titleContainer.setBorder(new EmptyBorder(2, 0, 2, 0));
-        titleContainer.setLayout(new BoxLayout(titleContainer, BoxLayout.LINE_AXIS));
-        titleContainer.add(Box.createHorizontalGlue());
-        titleContainer.add(variantTitle);
-        titleContainer.add(Box.createHorizontalGlue());
-        variantTab.add(titleContainer);
-
-        JButton variantData = new JButton("Data");
-        variantData.putClientProperty(FlatClientProperties.BUTTON_TYPE, FlatClientProperties.BUTTON_TYPE_BORDERLESS);
-        variantTab.add(variantData);
-
-        JButton variantWeapons = new JButton("Weapons");
-        variantWeapons.putClientProperty(FlatClientProperties.BUTTON_TYPE, FlatClientProperties.BUTTON_TYPE_BORDERLESS);
-        variantTab.add(variantWeapons);
-
-        JButton variantModules = new JButton("Modules");
-        variantModules.putClientProperty(FlatClientProperties.BUTTON_TYPE, FlatClientProperties.BUTTON_TYPE_BORDERLESS);
-        variantTab.add(variantModules);
-
-        this.setTabComponentAt(12, variantTab);
+        this.createTab(new SkinPanel(), EditorInstrument.SKIN_DATA);
+        this.createTab(new JPanel(), EditorInstrument.SKIN_SLOTS);
+        this.createTab(new VariantDataPanel(), EditorInstrument.VARIANT_DATA);
+        this.createTab(new VariantWeaponsPanel(), EditorInstrument.VARIANT_WEAPONS);
+        this.createTab(new JPanel(), EditorInstrument.VARIANT_MODULES);
         updateTooltipText();
     }
 

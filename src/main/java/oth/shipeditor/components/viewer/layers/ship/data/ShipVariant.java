@@ -89,7 +89,7 @@ public class ShipVariant implements Variant {
         specWeaponGroups.forEach(weaponGroup -> {
             String weaponGroupMode = weaponGroup.getMode();
             FireMode mode = FireMode.valueOf(weaponGroupMode);
-            FittedWeaponGroup initialized = new FittedWeaponGroup(weaponGroup.isAutofire(), mode);
+            FittedWeaponGroup initialized = new FittedWeaponGroup(this, weaponGroup.isAutofire(), mode);
             var fitted = initialized.getWeapons();
             Map<String, String> specGroupWeapons = weaponGroup.getWeapons();
             specGroupWeapons.forEach((slotID, weaponID) -> {

@@ -48,19 +48,12 @@ public class LaunchBaysTree extends DynamicWidthTree {
         this.initListeners();
     }
 
-    @SuppressWarnings("ChainOfInstanceofChecks")
     private void initListeners() {
         this.addTreeSelectionListener(e -> {
             DefaultMutableTreeNode node = (DefaultMutableTreeNode) this.getLastSelectedPathComponent();
             if (node == null) return;
             Object nodeObject = node.getUserObject();
-            if (nodeObject instanceof LaunchBay checked) {
-                List<LaunchPortPoint> portPoints = checked.getPortPoints();
-                LaunchPortPoint firstChild = portPoints.get(0);
-                EventBus.publish(new PointSelectQueued(firstChild));
-                EventBus.publish(new ViewerRepaintQueued());
-                infoPanelRefresh.accept(firstChild);
-            } else if (nodeObject instanceof LaunchPortPoint checked) {
+            if (nodeObject instanceof LaunchPortPoint checked) {
                 EventBus.publish(new PointSelectQueued(checked));
                 EventBus.publish(new ViewerRepaintQueued());
                 infoPanelRefresh.accept(checked);
