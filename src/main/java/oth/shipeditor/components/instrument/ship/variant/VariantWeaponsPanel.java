@@ -5,6 +5,7 @@ import oth.shipeditor.components.viewer.layers.ship.ShipLayer;
 import oth.shipeditor.components.viewer.layers.ship.ShipPainter;
 import oth.shipeditor.components.viewer.layers.ship.data.ShipVariant;
 import oth.shipeditor.representation.ShipData;
+import oth.shipeditor.utility.components.rendering.CustomTreeNode;
 import oth.shipeditor.utility.overseers.StaticController;
 
 import javax.swing.*;
@@ -15,8 +16,6 @@ import java.awt.*;
  * @since 26.09.2023
  */
 public class VariantWeaponsPanel extends AbstractVariantPanel {
-
-
 
     private final JPanel contentPanel;
 
@@ -55,7 +54,11 @@ public class VariantWeaponsPanel extends AbstractVariantPanel {
 
         ShipVariant activeVariant = painter.getActiveVariant();
         if (activeVariant != null && !activeVariant.isEmpty()) {
-            this.populateVariantWeapons(activeVariant);
+            CustomTreeNode weaponGroups = new CustomTreeNode("Weapon Groups");
+            VariantWeaponsTree weaponsTree = new VariantWeaponsTree(weaponGroups, painter.getWeaponSlotPainter());
+            ToolTipManager.sharedInstance().registerComponent(weaponsTree);
+            contentPanel.add(weaponsTree, BorderLayout.CENTER);
+            weaponsTree.repopulateTree(activeVariant, checkedLayer);
         } else {
             this.installPlaceholders();
         }

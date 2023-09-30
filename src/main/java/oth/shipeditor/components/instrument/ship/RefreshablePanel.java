@@ -1,5 +1,6 @@
 package oth.shipeditor.components.instrument.ship;
 
+import lombok.Getter;
 import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.viewer.layers.ActiveLayerUpdated;
 import oth.shipeditor.communication.events.viewer.layers.LayerWasSelected;
@@ -11,6 +12,7 @@ import javax.swing.*;
  * @author Ontheheavens
  * @since 27.09.2023
  */
+@Getter
 @SuppressWarnings("AbstractClassWithOnlyOneDirectInheritor")
 public abstract class RefreshablePanel extends JPanel {
 

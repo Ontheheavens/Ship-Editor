@@ -6,7 +6,6 @@ import org.apache.commons.collections4.map.ListOrderedMap;
 import oth.shipeditor.components.viewer.layers.ship.data.ShipVariant;
 
 import java.util.List;
-import java.util.Map;
 
 /**
  * @author Ontheheavens
@@ -21,7 +20,7 @@ public class FittedWeaponGroup {
     @Setter
     private FireMode mode;
 
-    private final Map<String, InstalledFeature> weapons;
+    private final ListOrderedMap<String, InstalledFeature> weapons;
 
     private final ShipVariant parent;
 
@@ -35,7 +34,7 @@ public class FittedWeaponGroup {
 
     public String getIndexToDisplay() {
         List<FittedWeaponGroup> weaponGroups = parent.getWeaponGroups();
-        return "#" + weaponGroups.indexOf(this);
+        return "#" + (weaponGroups.indexOf(this) + 1);
     }
 
 }

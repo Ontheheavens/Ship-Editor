@@ -10,12 +10,14 @@ import oth.shipeditor.communication.events.viewer.points.PointSelectedConfirmed;
 import oth.shipeditor.components.viewer.entities.bays.LaunchBay;
 import oth.shipeditor.components.viewer.entities.bays.LaunchPortPoint;
 import oth.shipeditor.components.viewer.entities.weapon.SlotPoint;
+import oth.shipeditor.components.viewer.layers.ship.ShipLayer;
 import oth.shipeditor.components.viewer.painters.points.ship.LaunchBayPainter;
 import oth.shipeditor.representation.weapon.WeaponSize;
 import oth.shipeditor.undo.EditDispatch;
 import oth.shipeditor.utility.components.containers.trees.DynamicWidthTree;
 import oth.shipeditor.utility.components.containers.trees.SortableTree;
 import oth.shipeditor.utility.components.rendering.SortableTreeCellRenderer;
+import oth.shipeditor.utility.overseers.StaticController;
 
 import javax.swing.*;
 import javax.swing.tree.*;
@@ -146,12 +148,6 @@ public class LaunchBaysTree extends DynamicWidthTree {
         this.repaint();
     }
 
-    private void expandTree() {
-        for (int i = 0; i < this.getRowCount(); i++) {
-            this.expandRow(i);
-        }
-    }
-
     void repopulateTree(LaunchBayPainter bayPainter) {
         final List<LaunchBay> bays = bayPainter.getBaysList();
         for (LaunchBay bay : bays) {
@@ -162,6 +158,22 @@ public class LaunchBaysTree extends DynamicWidthTree {
             }
         }
         this.expandTree();
+    }
+
+    @Override
+    public MutableTreeNode handleAdditionToRoot(MutableTreeNode dragged) {
+        if (dragged instanceof DefaultMutableTreeNode treeNode &&
+                treeNode.getUserObject() instanceof LaunchPortPoint port) {
+            ShipLayer layer = (ShipLayer) StaticController.getActiveLayer();
+            var shipPainter = layer.getPainter();
+            var bayPainter = shipPainter.getBayPainter();
+            LaunchBay newBay = bayPainter.transferPointToNewBay(port);
+
+            MutableTreeNode bayNode = new DefaultMutableTreeNode(newBay);
+            model.insertNodeInto(bayNode, baysRoot, baysRoot.getChildCount());
+            return bayNode;
+        }
+        return null;
     }
 
     @SuppressWarnings("ChainOfInstanceofChecks")

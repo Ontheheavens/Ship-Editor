@@ -151,6 +151,15 @@ public class LaunchBayPainter extends MirrorablePointPainter {
         EventBus.publish(new LaunchBayRemoveConfirmed(bay));
     }
 
+    /**
+     * Assumes that all UI-side preparations are already made and firing events is not necessary.
+     */
+    public LaunchBay transferPointToNewBay(LaunchPortPoint portPoint) {
+        LaunchBay newBay = new LaunchBay(this.generateUniqueBayID(), this);
+        baysList.add(newBay);
+        return newBay;
+    }
+
     @Override
     protected void addPointToIndex(BaseWorldPoint point) {
         if (point instanceof LaunchPortPoint checked) {

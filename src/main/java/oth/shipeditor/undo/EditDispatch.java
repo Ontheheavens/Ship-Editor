@@ -277,7 +277,7 @@ public final class EditDispatch {
                 targetIndex, oldIndex);
         UndoOverseer.post(portsSortEdit);
 
-        portsSortEdit.transferPort(oldParent, targetBay, portPoint, targetIndex);
+        portsSortEdit.transferPort(oldParent, targetBay, targetIndex);
     }
 
     public static void postHullmodAdded(List<HullmodCSVEntry> index, ShipLayer shipLayer, HullmodCSVEntry hullmod) {

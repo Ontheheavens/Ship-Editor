@@ -17,7 +17,6 @@ import oth.shipeditor.components.viewer.layers.ship.ShipPainter;
 import oth.shipeditor.components.viewer.painters.PainterVisibility;
 import oth.shipeditor.components.viewer.painters.points.ship.LaunchBayPainter;
 import oth.shipeditor.utility.components.ComponentUtilities;
-import oth.shipeditor.utility.components.containers.trees.DynamicWidthTreeUI;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -64,9 +63,6 @@ public class LaunchBaysPanel extends JPanel {
         this.add(scrollableContainer, BorderLayout.CENTER);
         this.initPointListener();
         this.initLayerListeners();
-
-        DynamicWidthTreeUI treeUI = new DynamicWidthTreeUI();
-        baysTree.setUI(treeUI);
 
         this.refreshBayControlPane(null);
     }

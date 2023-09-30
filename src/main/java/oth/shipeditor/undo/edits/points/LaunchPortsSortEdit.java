@@ -30,15 +30,15 @@ public class LaunchPortsSortEdit extends AbstractEdit {
 
     @Override
     public void undo() {
-        this.transferPort(targetBay, oldParentBay, portPoint, oldIndex);
+        this.transferPort(targetBay, oldParentBay, oldIndex);
     }
 
     @Override
     public void redo() {
-        this.transferPort(oldParentBay, targetBay, portPoint, targetIndex);
+        this.transferPort(oldParentBay, targetBay, targetIndex);
     }
 
-    public void transferPort(LaunchBay supplier, LaunchBay recipient, LaunchPortPoint port, int index) {
+    public void transferPort(LaunchBay supplier, LaunchBay recipient, int index) {
         var oldBayPoints = supplier.getPortPoints();
         oldBayPoints.remove(portPoint);
 
@@ -51,13 +51,15 @@ public class LaunchPortsSortEdit extends AbstractEdit {
 
         portPoint.setParentBay(recipient);
         var portPoints = recipient.getPortPoints();
-        portPoints.add(index, portPoint);
+        if (index != -1) {
+            portPoints.add(index, portPoint);
 
-        var recipientPainter = recipient.getBayPainter();
-        List<LaunchBay> baysList = recipientPainter.getBaysList();
-        if (!baysList.contains(recipient)) {
-            recipientPainter.insertBay(recipient, cachedBayIndex);
-        }
+            var recipientPainter = recipient.getBayPainter();
+            List<LaunchBay> baysList = recipientPainter.getBaysList();
+            if (!baysList.contains(recipient)) {
+                recipientPainter.insertBay(recipient, cachedBayIndex);
+            }
+        };
 
         if (StaticController.getEditorMode() == EditorInstrument.LAUNCH_BAYS) {
             // This is not optimal from performance standpoint, since the reselection triggers a very broad response;

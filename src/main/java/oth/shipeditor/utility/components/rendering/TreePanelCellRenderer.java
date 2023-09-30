@@ -145,6 +145,20 @@ public class TreePanelCellRenderer extends JPanel implements TreeCellRenderer {
         setName("Tree.cellRenderer");
     }
 
+    @Override
+    public void setForeground(Color fg) {
+        super.setForeground(fg);
+        if (leftContainer != null) {
+            leftContainer.setForeground(fg);
+        }
+        if (rightContainer != null) {
+            rightContainer.setForeground(fg);
+        }
+        if (textLabel != null) {
+            textLabel.setForeground(fg);
+        }
+    }
+
     @SuppressWarnings("ParameterHidesMemberVariable")
     public Component getTreeCellRendererComponent(JTree tree, Object value,
                                                   boolean selected,
@@ -175,10 +189,6 @@ public class TreePanelCellRenderer extends JPanel implements TreeCellRenderer {
         }
 
         setForeground(fg);
-        leftContainer.setForeground(fg);
-        rightContainer.setForeground(fg);
-
-        textLabel.setForeground(fg);
 
         Icon icon;
         if (leaf) {
