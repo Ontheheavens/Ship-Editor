@@ -3,6 +3,7 @@ package oth.shipeditor.utility.components.rendering;
 import com.formdev.flatlaf.ui.FlatLineBorder;
 import org.kordamp.ikonli.boxicons.BoxiconsRegular;
 import org.kordamp.ikonli.swing.FontIcon;
+import oth.shipeditor.components.datafiles.entities.CSVEntry;
 import oth.shipeditor.components.instrument.ship.shared.InstalledFeatureList;
 import oth.shipeditor.components.viewer.entities.weapon.SlotData;
 import oth.shipeditor.components.viewer.layers.ship.ShipLayer;
@@ -11,6 +12,7 @@ import oth.shipeditor.components.viewer.painters.points.ship.WeaponSlotPainter;
 import oth.shipeditor.representation.weapon.WeaponSize;
 import oth.shipeditor.representation.weapon.WeaponType;
 import oth.shipeditor.utility.components.ComponentUtilities;
+import oth.shipeditor.utility.text.StringValues;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -83,7 +85,7 @@ public class InstalledFeatureCellRenderer extends BoxPanelCellRenderer<Installed
 
             if (!slotPoint.canFit(value)) {
                 foreground = Color.RED;
-                setToolTipText("Invalidated: weapon unfit for slot");
+                setToolTipText(StringValues.INVALIDATED_WEAPON_UNFIT_FOR_SLOT);
             } else if (featureList.isBelongsToBaseHullBuiltIns()) {
                 // This is not a good way to solve the issue conceptually, but I don't see a better solution at the moment.
                 // Ideally, cell renderer shouldn't care about what list of what features it displays;
@@ -95,7 +97,7 @@ public class InstalledFeatureCellRenderer extends BoxPanelCellRenderer<Installed
             this.setWarningIcon(errorColor);
 
             foreground = errorColor;
-            setToolTipText("Invalidated: slot not found");
+            setToolTipText(StringValues.INVALIDATED_SLOT_NOT_FOUND);
 
             slotIDText.setBorder(new EmptyBorder(0, 1, 0, 0));
         }
@@ -104,7 +106,9 @@ public class InstalledFeatureCellRenderer extends BoxPanelCellRenderer<Installed
         featureIDText.setForeground(foreground);
 
         slotIDText.setText(slotID +":");
-        featureIDText.setText(value.getFeatureID());
+
+        CSVEntry dataEntry = value.getDataEntry();
+        featureIDText.setText(dataEntry.toString());
 
         return this;
     }

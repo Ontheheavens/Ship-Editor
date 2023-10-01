@@ -1,8 +1,5 @@
 package oth.shipeditor.components.instrument.ship.variant;
 
-import oth.shipeditor.communication.EventBus;
-import oth.shipeditor.communication.events.viewer.layers.ActiveLayerUpdated;
-import oth.shipeditor.communication.events.viewer.layers.LayerWasSelected;
 import oth.shipeditor.components.viewer.layers.ViewerLayer;
 import oth.shipeditor.components.viewer.layers.ship.ShipLayer;
 import oth.shipeditor.components.viewer.layers.ship.ShipPainter;
@@ -24,13 +21,13 @@ import java.util.Vector;
  * @author Ontheheavens
  * @since 29.08.2023
  */
-public class VariantPanel extends JPanel {
+public class VariantDataPanel extends AbstractVariantPanel {
 
     private final JPanel chooserContainer;
 
     private final JPanel contentPanel;
 
-    public VariantPanel() {
+    public VariantDataPanel() {
         this.setLayout(new BorderLayout());
 
         chooserContainer = new JPanel();
@@ -41,31 +38,19 @@ public class VariantPanel extends JPanel {
         contentPanel.setLayout(new BorderLayout());
         this.add(contentPanel, BorderLayout.CENTER);
 
-        this.initLayerListeners();
-
         ViewerLayer layer = StaticController.getActiveLayer();
         this.refreshPanel(layer);
     }
 
     private void installPlaceholders() {
-        chooserContainer.add(VariantPanel.createDisabledChooser());
+        chooserContainer.add(VariantDataPanel.createDisabledChooser());
 
-        this.installContentPlaceholder();
+        JPanel placeholder = this.createContentPlaceholder();
+        contentPanel.add(placeholder, BorderLayout.CENTER);
     }
 
-    private void installContentPlaceholder() {
-        JPanel container = new JPanel();
-        container.setLayout(new BoxLayout(container, BoxLayout.LINE_AXIS));
-
-        JLabel placeholder = new JLabel("Variant not initialized");
-        container.add(Box.createHorizontalGlue());
-        container.add(placeholder);
-        container.add(Box.createHorizontalGlue());
-
-        contentPanel.add(container, BorderLayout.CENTER);
-    }
-
-    private void refreshPanel(ViewerLayer selected) {
+    @Override
+    public void refreshPanel(ViewerLayer selected) {
         chooserContainer.removeAll();
         contentPanel.removeAll();
 
@@ -81,30 +66,10 @@ public class VariantPanel extends JPanel {
         }
 
         ShipVariant variant = this.recreateVariantChooser(checkedLayer);
-        this.populateVariantContent(variant);
-    }
-
-    private void populateVariantContent(ShipVariant variant) {
         if (variant == null || variant.isEmpty()) {
-            this.installContentPlaceholder();
-            return;
+            JPanel placeholder = this.createContentPlaceholder();
+            contentPanel.add(placeholder, BorderLayout.CENTER);
         }
-
-        JPanel weaponsPlaceholder = new JPanel();
-        weaponsPlaceholder.setLayout(new BoxLayout(weaponsPlaceholder, BoxLayout.PAGE_AXIS));
-
-        var allWeapons = variant.getAllFittedWeapons();
-
-        if (allWeapons.isEmpty()) {
-            weaponsPlaceholder.add(new JLabel("No installed weapons"));
-        } else {
-            allWeapons.forEach((slotID, installedFeature) -> {
-                JLabel weaponEntry = new JLabel(slotID + ": " + installedFeature.getFeatureID());
-                weaponsPlaceholder.add(weaponEntry);
-            });
-        }
-
-        contentPanel.add(weaponsPlaceholder, BorderLayout.CENTER);
     }
 
     private ShipVariant recreateVariantChooser(ShipLayer checkedLayer) {
@@ -162,17 +127,6 @@ public class VariantPanel extends JPanel {
         skinChooser.setSelectedItem(skinSpecFileArray[0]);
         skinChooser.setEnabled(false);
         return skinChooser;
-    }
-
-    @SuppressWarnings("ChainOfInstanceofChecks")
-    private void initLayerListeners() {
-        EventBus.subscribe(event -> {
-            if (event instanceof LayerWasSelected(_, var selected)) {
-                this.refreshPanel(selected);
-            } else if (event instanceof ActiveLayerUpdated(var updated)) {
-                this.refreshPanel(updated);
-            }
-        });
     }
 
 }

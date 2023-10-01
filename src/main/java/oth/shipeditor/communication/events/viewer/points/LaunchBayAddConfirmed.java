@@ -6,6 +6,6 @@ import oth.shipeditor.components.viewer.entities.bays.LaunchBay;
  * @author Ontheheavens
  * @since 13.08.2023
  */
-public record LaunchBayAddConfirmed(LaunchBay added) implements PointEvent {
+public record LaunchBayAddConfirmed(LaunchBay added, int index) implements PointEvent {
 
 }

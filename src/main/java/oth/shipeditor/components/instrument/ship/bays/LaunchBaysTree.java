@@ -10,12 +10,14 @@ import oth.shipeditor.communication.events.viewer.points.PointSelectedConfirmed;
 import oth.shipeditor.components.viewer.entities.bays.LaunchBay;
 import oth.shipeditor.components.viewer.entities.bays.LaunchPortPoint;
 import oth.shipeditor.components.viewer.entities.weapon.SlotPoint;
+import oth.shipeditor.components.viewer.layers.ship.ShipLayer;
 import oth.shipeditor.components.viewer.painters.points.ship.LaunchBayPainter;
 import oth.shipeditor.representation.weapon.WeaponSize;
 import oth.shipeditor.undo.EditDispatch;
 import oth.shipeditor.utility.components.containers.trees.DynamicWidthTree;
 import oth.shipeditor.utility.components.containers.trees.SortableTree;
 import oth.shipeditor.utility.components.rendering.SortableTreeCellRenderer;
+import oth.shipeditor.utility.overseers.StaticController;
 
 import javax.swing.*;
 import javax.swing.tree.*;
@@ -48,20 +50,12 @@ public class LaunchBaysTree extends DynamicWidthTree {
         this.initListeners();
     }
 
-    @SuppressWarnings("ChainOfInstanceofChecks")
     private void initListeners() {
         this.addTreeSelectionListener(e -> {
             DefaultMutableTreeNode node = (DefaultMutableTreeNode) this.getLastSelectedPathComponent();
             if (node == null) return;
             Object nodeObject = node.getUserObject();
-            if (nodeObject instanceof LaunchBay checked) {
-                List<LaunchPortPoint> portPoints = checked.getPortPoints();
-                // FIXME: add sorting support.
-                LaunchPortPoint firstChild = portPoints.get(0);
-                EventBus.publish(new PointSelectQueued(firstChild));
-                EventBus.publish(new ViewerRepaintQueued());
-                infoPanelRefresh.accept(firstChild);
-            } else if (nodeObject instanceof LaunchPortPoint checked) {
+            if (nodeObject instanceof LaunchPortPoint checked) {
                 EventBus.publish(new PointSelectQueued(checked));
                 EventBus.publish(new ViewerRepaintQueued());
                 infoPanelRefresh.accept(checked);
@@ -81,6 +75,13 @@ public class LaunchBaysTree extends DynamicWidthTree {
     void addBay(LaunchBay bay) {
         MutableTreeNode newChild = new DefaultMutableTreeNode(bay);
         model.insertNodeInto(newChild, baysRoot, baysRoot.getChildCount());
+        model.reload();
+        this.expandTree();
+    }
+
+    void insertBay(LaunchBay bay, int index) {
+        MutableTreeNode newChild = new DefaultMutableTreeNode(bay);
+        model.insertNodeInto(newChild, baysRoot, index);
         model.reload();
         this.expandTree();
     }
@@ -147,12 +148,6 @@ public class LaunchBaysTree extends DynamicWidthTree {
         this.repaint();
     }
 
-    private void expandTree() {
-        for (int i = 0; i < this.getRowCount(); i++) {
-            this.expandRow(i);
-        }
-    }
-
     void repopulateTree(LaunchBayPainter bayPainter) {
         final List<LaunchBay> bays = bayPainter.getBaysList();
         for (LaunchBay bay : bays) {
@@ -163,6 +158,22 @@ public class LaunchBaysTree extends DynamicWidthTree {
             }
         }
         this.expandTree();
+    }
+
+    @Override
+    public MutableTreeNode handleAdditionToRoot(MutableTreeNode dragged) {
+        if (dragged instanceof DefaultMutableTreeNode treeNode &&
+                treeNode.getUserObject() instanceof LaunchPortPoint port) {
+            ShipLayer layer = (ShipLayer) StaticController.getActiveLayer();
+            var shipPainter = layer.getPainter();
+            var bayPainter = shipPainter.getBayPainter();
+            LaunchBay newBay = bayPainter.transferPointToNewBay(port);
+
+            MutableTreeNode bayNode = new DefaultMutableTreeNode(newBay);
+            model.insertNodeInto(bayNode, baysRoot, baysRoot.getChildCount());
+            return bayNode;
+        }
+        return null;
     }
 
     @SuppressWarnings("ChainOfInstanceofChecks")
@@ -199,8 +210,8 @@ public class LaunchBaysTree extends DynamicWidthTree {
             leftContainer.add(getTextLabel());
 
             var rightContainer = this.getRightContainer();
+            rightContainer.setLayout(new FlowLayout(FlowLayout.TRAILING, 0, 0));
             this.positionLabel = new JLabel();
-            rightContainer.add(Box.createHorizontalGlue());
             rightContainer.add(positionLabel);
         }
 
@@ -213,7 +224,6 @@ public class LaunchBaysTree extends DynamicWidthTree {
             JLabel iconLabel = getIconLabel();
             JLabel textLabel = getTextLabel();
             sizeLabel.setIcon(null);
-            textLabel.setText("");
             positionLabel.setText("");
             if (object instanceof LaunchBay checked) {
                 WeaponSize baySize = checked.getWeaponSize();
@@ -228,6 +238,8 @@ public class LaunchBaysTree extends DynamicWidthTree {
                 String position = checked.getPositionText();
                 textLabel.setText(index);
                 positionLabel.setText(position);
+            } else {
+                textLabel.setText(" " + value);
             }
 
             return this;

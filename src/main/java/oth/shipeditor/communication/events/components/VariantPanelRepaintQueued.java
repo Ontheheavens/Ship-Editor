@@ -2,8 +2,8 @@ package oth.shipeditor.communication.events.components;
 
 /**
  * @author Ontheheavens
- * @since 30.07.2023
+ * @since 01.10.2023
  */
-public record SlotsPanelRepaintQueued() implements ComponentEvent {
+public record VariantPanelRepaintQueued() implements ComponentEvent {
 
 }

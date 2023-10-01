@@ -40,6 +40,15 @@ public final class InstalledFeature implements InstallableEntry {
     @Setter
     private boolean invalidated;
 
+    @Setter
+    private boolean containedInBuiltIns;
+
+    /**
+     * Can be null, only relevant for variant interaction.
+     */
+    @Setter
+    private FittedWeaponGroup parentGroup;
+
     private InstalledFeature(String slot, String id, LayerPainter painter, CSVEntry entry) {
         this.slotID = slot;
         this.featureID = id;

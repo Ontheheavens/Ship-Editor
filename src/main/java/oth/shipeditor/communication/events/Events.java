@@ -18,6 +18,7 @@ public final class Events {
         repainter.queueBoundsPanelRepaint();
         repainter.queueCenterPanelsRepaint();
         repainter.queueBuiltInsRepaint();
+        repainter.queueVariantsRepaint();
     }
 
 }

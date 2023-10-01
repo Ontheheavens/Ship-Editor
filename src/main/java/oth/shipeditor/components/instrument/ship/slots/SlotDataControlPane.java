@@ -38,6 +38,12 @@ public class SlotDataControlPane extends AbstractSlotValuesPanel {
     }
 
     @Override
+    protected String getNextUniqueID(ShipPainter shipPainter) {
+        var slotPainter = shipPainter.getWeaponSlotPainter();
+        return slotPainter.generateUniqueSlotID();
+    }
+
+    @Override
     protected ActionListener getTypeSelectorListener(JComboBox<WeaponType> typeSelector) {
         return e -> this.actOnSelectedValues((weaponSlotPainter, weaponSlotPoints) -> {
             WeaponType selectedType = (WeaponType) typeSelector.getSelectedItem();

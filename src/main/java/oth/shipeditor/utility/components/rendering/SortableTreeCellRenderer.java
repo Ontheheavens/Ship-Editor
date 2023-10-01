@@ -3,6 +3,7 @@ package oth.shipeditor.utility.components.rendering;
 import oth.shipeditor.utility.components.containers.trees.SortableTree;
 
 import javax.swing.*;
+import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.TreeNode;
 import java.awt.*;
 
@@ -16,6 +17,8 @@ public class SortableTreeCellRenderer extends TreePanelCellRenderer {
     private boolean isTargetNode;
     private boolean isTargetNodeLeaf;
 
+    private boolean isTargetNodeRootChildLeaf;
+
     public SortableTreeCellRenderer(SortableTree tree) {
         this.sortableTree = tree;
     }
@@ -25,9 +28,10 @@ public class SortableTreeCellRenderer extends TreePanelCellRenderer {
     public Component getTreeCellRendererComponent(JTree tree, Object value, boolean selected,
                                                   boolean expanded, boolean leaf,
                                                   int row, boolean hasFocus) {
-        if (value instanceof TreeNode) {
+        if (value instanceof TreeNode treeNode) {
+            DefaultMutableTreeNode parent = (DefaultMutableTreeNode) treeNode.getParent();
             isTargetNode = value.equals(sortableTree.getDropTargetNode());
-            isTargetNodeLeaf = isTargetNode && ((TreeNode) value).isLeaf();
+            isTargetNodeLeaf = isTargetNode && treeNode.isLeaf() && !parent.isRoot();
         }
         return super.getTreeCellRendererComponent(
                 tree, value, selected, expanded, leaf, row, hasFocus);
@@ -40,8 +44,7 @@ public class SortableTreeCellRenderer extends TreePanelCellRenderer {
             g.setColor(Color.BLACK);
             if (isTargetNodeLeaf) {
                 g.drawLine(0, 0, getSize().width, 0);
-            }
-            else {
+            } else {
                 g.drawRect(0, 0, getSize().width - 1, getSize().height - 1);
             }
         }

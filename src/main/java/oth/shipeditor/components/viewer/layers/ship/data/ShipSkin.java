@@ -143,8 +143,10 @@ public final class ShipSkin {
             builtInWeapons.forEach((slotID, weaponEntry) -> {
                 WeaponSpecFile specFile = weaponEntry.getSpecFile();
                 WeaponPainter weaponPainter = weaponEntry.createPainterFromEntry(null, specFile);
-                initializedBuiltIns.put(slotID, InstalledFeature.of(slotID, weaponEntry.getWeaponID(),
-                        weaponPainter, weaponEntry));
+                InstalledFeature feature = InstalledFeature.of(slotID, weaponEntry.getWeaponID(),
+                        weaponPainter, weaponEntry);
+                feature.setContainedInBuiltIns(true);
+                initializedBuiltIns.put(slotID, feature);
             });
         }
         return initializedBuiltIns;

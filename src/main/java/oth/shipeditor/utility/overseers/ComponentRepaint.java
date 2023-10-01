@@ -30,6 +30,8 @@ public class ComponentRepaint {
 
     private boolean builtInsPanelRepaintQueued;
 
+    private boolean variantsPanelRepaintQueued;
+
     ComponentRepaint() {
         Timer repaintTimer = new Timer(2, e -> {
             if (viewerRepaintQueued) {
@@ -67,6 +69,10 @@ public class ComponentRepaint {
             if (builtInsPanelRepaintQueued) {
                 EventBus.publish(new BuiltInsPanelsRepaintQueued());
                 builtInsPanelRepaintQueued = false;
+            }
+            if (variantsPanelRepaintQueued) {
+                EventBus.publish(new VariantPanelRepaintQueued());
+                variantsPanelRepaintQueued = false;
             }
         });
         repaintTimer.setRepeats(true);
@@ -109,6 +115,10 @@ public class ComponentRepaint {
 
     public void queueBuiltInsRepaint() {
         this.builtInsPanelRepaintQueued = true;
+    }
+
+    public void queueVariantsRepaint() {
+        this.variantsPanelRepaintQueued = true;
     }
 
 }

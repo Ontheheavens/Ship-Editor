@@ -5,14 +5,17 @@ import oth.shipeditor.communication.BusEventListener;
 import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.viewer.control.FeatureInstallQueued;
 import oth.shipeditor.components.datafiles.entities.InstallableEntry;
+import oth.shipeditor.components.datafiles.entities.ShipCSVEntry;
 import oth.shipeditor.components.datafiles.entities.WeaponCSVEntry;
 import oth.shipeditor.components.instrument.ship.EditorInstrument;
 import oth.shipeditor.components.viewer.entities.weapon.SlotData;
 import oth.shipeditor.components.viewer.entities.weapon.WeaponSlotPoint;
 import oth.shipeditor.components.viewer.layers.ship.data.ShipSkin;
 import oth.shipeditor.components.viewer.layers.weapon.WeaponPainter;
-import oth.shipeditor.components.viewer.painters.points.ship.features.InstalledFeature;
 import oth.shipeditor.components.viewer.painters.points.ship.WeaponSlotPainter;
+import oth.shipeditor.components.viewer.painters.points.ship.features.FireMode;
+import oth.shipeditor.components.viewer.painters.points.ship.features.FittedWeaponGroup;
+import oth.shipeditor.components.viewer.painters.points.ship.features.InstalledFeature;
 import oth.shipeditor.representation.weapon.WeaponSpecFile;
 import oth.shipeditor.representation.weapon.WeaponType;
 import oth.shipeditor.undo.EditDispatch;
@@ -29,12 +32,16 @@ import java.util.stream.Stream;
  * @author Ontheheavens
  * @since 19.09.2023
  */
-@SuppressWarnings("WeakerAccess")
+@SuppressWarnings({"WeakerAccess", "OverlyCoupledClass"})
 public class FeaturesOverseer {
 
     @SuppressWarnings("StaticNonFinalField")
     @Getter
     public static WeaponCSVEntry weaponForInstall;
+
+    @SuppressWarnings("StaticNonFinalField")
+    @Getter
+    public static ShipCSVEntry moduleForInstall;
     private final ShipLayer parent;
 
     @Getter
@@ -147,8 +154,10 @@ public class FeaturesOverseer {
         combined.putAll(decoratives);
         ShipPainter shipPainter = parent.getPainter();
 
+        combined.forEach((slotID, feature) -> feature.setContainedInBuiltIns(true));
+
         var oldCollection = shipPainter.getBuiltInWeapons();
-        EditDispatch.postFeaturesSorted(shipPainter::setBuiltInWeapons, oldCollection, combined);
+        EditDispatch.postBuiltInFeaturesSorted(shipPainter::setBuiltInWeapons, oldCollection, combined);
     }
 
     public void setSkinBuiltInsWithNewNormal(Map<String, InstalledFeature> rearrangedNormal) {
@@ -162,7 +171,7 @@ public class FeaturesOverseer {
         var reconstructed = ShipSkin.reconstructAsEntries(combined);
 
         var oldCollection = activeSkin.getBuiltInWeapons();
-        EditDispatch.postFeaturesSorted(activeSkin::setBuiltInWeapons, oldCollection, reconstructed);
+        EditDispatch.postBuiltInFeaturesSorted(activeSkin::setBuiltInWeapons, oldCollection, reconstructed);
     }
 
     public void setBaseBuiltInsWithNewDecos(Map<String, InstalledFeature> rearrangedDecos) {
@@ -172,7 +181,7 @@ public class FeaturesOverseer {
         ShipPainter shipPainter = parent.getPainter();
 
         var oldCollection = shipPainter.getBuiltInWeapons();
-        EditDispatch.postFeaturesSorted(shipPainter::setBuiltInWeapons, oldCollection, combined);
+        EditDispatch.postBuiltInFeaturesSorted(shipPainter::setBuiltInWeapons, oldCollection, combined);
     }
 
     public void setSkinBuiltInsWithNewDecos(Map<String, InstalledFeature> rearrangedDecos) {
@@ -186,7 +195,7 @@ public class FeaturesOverseer {
         var reconstructed = ShipSkin.reconstructAsEntries(combined);
 
         var oldCollection = activeSkin.getBuiltInWeapons();
-        EditDispatch.postFeaturesSorted(activeSkin::setBuiltInWeapons, oldCollection, reconstructed);
+        EditDispatch.postBuiltInFeaturesSorted(activeSkin::setBuiltInWeapons, oldCollection, reconstructed);
     }
 
     public void cleanupListeners() {
@@ -199,7 +208,7 @@ public class FeaturesOverseer {
     private void initInstallListeners() {
         BusEventListener installListener = event -> {
             if (event instanceof FeatureInstallQueued) {
-                if (StaticController.getActiveLayer() != parent || weaponForInstall == null) return;
+                if (StaticController.getActiveLayer() != parent) return;
                 var shipPainter = parent.getPainter();
                 if (shipPainter == null || shipPainter.isUninitialized()) return;
                 var slotPainter = shipPainter.getWeaponSlotPainter();
@@ -208,9 +217,19 @@ public class FeaturesOverseer {
                 var eligibleSlots = slotPainter.getEligibleForSelection();
 
                 if (selected == null || !eligibleSlots.contains(selected)) return;
+                var mode = StaticController.getEditorMode();
+
+                if (mode == EditorInstrument.VARIANT_MODULES && moduleForInstall != null) {
+                    if (selected.isModule()) {
+                        installModule(selected);
+                    } else {
+                        return;
+                    }
+                }
+
+                if (weaponForInstall == null) return;
                 if (!WeaponType.isWeaponFitting(selected, weaponForInstall)) return;
 
-                var mode = StaticController.getEditorMode();
                 switch (mode) {
                     case BUILT_IN_WEAPONS -> {
                         if (selected.isBuiltIn()) {
@@ -222,14 +241,55 @@ public class FeaturesOverseer {
                             installBuiltIn(selected);
                         }
                     }
-                    case VARIANT -> {
-
+                    case VARIANT_WEAPONS -> {
+                        if (selected.isFittable()) {
+                            fitToVariant(selected);
+                        }
                     }
                 }
             }
         };
         listeners.add(installListener);
         EventBus.subscribe(installListener);
+    }
+
+    private void fitToVariant(SlotData selected) {
+        var shipPainter = parent.getPainter();
+        var activeVariant = shipPainter.getActiveVariant();
+        if (activeVariant == null || activeVariant.isEmpty()) return;
+
+        String slotID = selected.getId();
+        WeaponCSVEntry forInstall = weaponForInstall;
+
+        List<FittedWeaponGroup> weaponGroups = activeVariant.getWeaponGroups();
+
+        WeaponSpecFile specFile = forInstall.getSpecFile();
+        WeaponPainter weaponPainter = forInstall.createPainterFromEntry(null, specFile);
+        InstalledFeature feature = InstalledFeature.of(slotID, forInstall.getWeaponID(),
+                weaponPainter, forInstall);
+
+        FittedWeaponGroup targetGroup = activeVariant.getGroupWithExistingMapping(slotID);
+        Map<String, InstalledFeature> groupWeapons;
+        if (targetGroup != null) {
+            groupWeapons = targetGroup.getWeapons();
+            InstalledFeature existing = groupWeapons.get(slotID);
+            EditDispatch.postFeatureUninstalled(groupWeapons, slotID, existing, null);
+        } else {
+            targetGroup = weaponGroups.get(0);
+        }
+
+        if (targetGroup == null) {
+            targetGroup = new FittedWeaponGroup(activeVariant,
+                    false, FireMode.LINKED);
+            weaponGroups.add(targetGroup);
+        }
+        groupWeapons = targetGroup.getWeapons();
+        feature.setParentGroup(targetGroup);
+        FeaturesOverseer.commenceInstall(slotID, feature, groupWeapons, null);
+    }
+
+    private void installModule(SlotData selected) {
+
     }
 
     private void installBuiltIn(SlotData selected) {
@@ -239,7 +299,7 @@ public class FeaturesOverseer {
         WeaponCSVEntry forInstall = weaponForInstall;
         if (activeSkin != null && !activeSkin.isBase()) {
             var skinBuiltIns = activeSkin.getBuiltInWeapons();
-            FeaturesOverseer.commenceFeatureInstall(slotID, forInstall, skinBuiltIns,
+            FeaturesOverseer.commenceInstall(slotID, forInstall, skinBuiltIns,
                     activeSkin::invalidateBuiltIns);
         } else {
             var baseBuiltIns = shipPainter.getBuiltInWeapons();
@@ -247,15 +307,16 @@ public class FeaturesOverseer {
             WeaponPainter weaponPainter = forInstall.createPainterFromEntry(null, specFile);
             InstalledFeature feature = InstalledFeature.of(slotID, forInstall.getWeaponID(),
                     weaponPainter, forInstall);
+            feature.setContainedInBuiltIns(true);
 
-            FeaturesOverseer.commenceFeatureInstall(slotID, feature, baseBuiltIns, null);
+            FeaturesOverseer.commenceInstall(slotID, feature, baseBuiltIns, null);
         }
 
     }
 
-    private static <T extends InstallableEntry> void commenceFeatureInstall(String slotID, T entry,
-                                                                            Map<String, T> collection,
-                                                                            Runnable invalidator) {
+    private static <T extends InstallableEntry> void commenceInstall(String slotID, T entry,
+                                                                     Map<String, T> collection,
+                                                                     Runnable invalidator) {
         EditDispatch.postFeatureInstalled(collection, slotID, entry, invalidator);
     }
 

@@ -16,7 +16,8 @@ import oth.shipeditor.components.instrument.ship.centers.ShieldPanel;
 import oth.shipeditor.components.instrument.ship.engines.EnginesPanel;
 import oth.shipeditor.components.instrument.ship.skins.SkinPanel;
 import oth.shipeditor.components.instrument.ship.slots.WeaponSlotsPanel;
-import oth.shipeditor.components.instrument.ship.variant.VariantPanel;
+import oth.shipeditor.components.instrument.ship.variant.VariantDataPanel;
+import oth.shipeditor.components.instrument.ship.variant.VariantWeaponsPanel;
 
 import javax.swing.*;
 import java.util.HashMap;
@@ -39,6 +40,7 @@ public final class ShipInstrumentsPane extends AbstractInstrumentsPane {
         panelMode = new HashMap<>();
         this.createTabs();
         this.dispatchModeChange((JPanel) getSelectedComponent());
+        this.setTabLayoutPolicy(JTabbedPane.SCROLL_TAB_LAYOUT);
     }
 
     @SuppressWarnings("OverlyCoupledMethod")
@@ -54,8 +56,11 @@ public final class ShipInstrumentsPane extends AbstractInstrumentsPane {
         this.createTab(new BuiltInWingsPanel(), EditorInstrument.BUILT_IN_WINGS);
         this.createTab(new BuiltInWeaponsPanel(), EditorInstrument.BUILT_IN_WEAPONS);
         this.createTab(new DecorativesPanel(), EditorInstrument.DECORATIVES);
-        this.createTab(new SkinPanel(), EditorInstrument.SKIN);
-        this.createTab(new VariantPanel(), EditorInstrument.VARIANT);
+        this.createTab(new SkinPanel(), EditorInstrument.SKIN_DATA);
+        this.createTab(new JPanel(), EditorInstrument.SKIN_SLOTS);
+        this.createTab(new VariantDataPanel(), EditorInstrument.VARIANT_DATA);
+        this.createTab(new VariantWeaponsPanel(), EditorInstrument.VARIANT_WEAPONS);
+        this.createTab(new JPanel(), EditorInstrument.VARIANT_MODULES);
         updateTooltipText();
     }
 
@@ -75,7 +80,7 @@ public final class ShipInstrumentsPane extends AbstractInstrumentsPane {
     @Override
     protected void updateTooltipText() {
         String minimizePrompt = getMinimizePrompt();
-        int size = this.getComponentCount();
+        int size = this.getTabCount();
         for (int i = 0; i < size - 1; i++) {
             this.setToolTipTextAt(i, minimizePrompt);
         }

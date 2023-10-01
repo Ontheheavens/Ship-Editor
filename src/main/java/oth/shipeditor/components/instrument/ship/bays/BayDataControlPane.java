@@ -3,6 +3,7 @@ package oth.shipeditor.components.instrument.ship.bays;
 import oth.shipeditor.components.instrument.ship.AbstractSlotValuesPanel;
 import oth.shipeditor.components.viewer.entities.weapon.SlotData;
 import oth.shipeditor.components.viewer.entities.weapon.SlotPoint;
+import oth.shipeditor.components.viewer.layers.ship.ShipPainter;
 import oth.shipeditor.representation.weapon.WeaponMount;
 import oth.shipeditor.representation.weapon.WeaponSize;
 import oth.shipeditor.representation.weapon.WeaponType;
@@ -38,6 +39,12 @@ public class BayDataControlPane extends AbstractSlotValuesPanel {
 
         super.addAngleController();
         super.addArcController();
+    }
+
+    @Override
+    protected String getNextUniqueID(ShipPainter shipPainter) {
+        var bayPainter = shipPainter.getBayPainter();
+        return bayPainter.generateUniqueBayID();
     }
 
     @Override

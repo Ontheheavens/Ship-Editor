@@ -4,18 +4,23 @@ import lombok.Getter;
 import oth.shipeditor.components.viewer.entities.weapon.SlotData;
 import oth.shipeditor.components.viewer.entities.weapon.SlotPoint;
 import oth.shipeditor.components.viewer.entities.weapon.WeaponSlotOverride;
+import oth.shipeditor.components.viewer.layers.ship.ShipLayer;
+import oth.shipeditor.components.viewer.layers.ship.ShipPainter;
 import oth.shipeditor.representation.weapon.WeaponMount;
 import oth.shipeditor.representation.weapon.WeaponSize;
 import oth.shipeditor.representation.weapon.WeaponType;
 import oth.shipeditor.undo.EditDispatch;
 import oth.shipeditor.utility.Utility;
 import oth.shipeditor.utility.components.ComponentUtilities;
+import oth.shipeditor.utility.overseers.StaticController;
 import oth.shipeditor.utility.text.StringValues;
 
 import javax.swing.*;
 import javax.swing.event.ChangeListener;
 import java.awt.*;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.awt.event.MouseWheelEvent;
 
 /**
@@ -53,6 +58,8 @@ public abstract class AbstractSlotValuesPanel extends JPanel {
         this.addArcController();
     }
 
+    protected abstract String getNextUniqueID(ShipPainter shipPainter);
+
     protected abstract ActionListener getTypeSelectorListener(JComboBox<WeaponType> typeSelector);
 
     protected abstract ActionListener getMountSelectorListener(JComboBox<WeaponMount> mountSelector);
@@ -86,9 +93,35 @@ public abstract class AbstractSlotValuesPanel extends JPanel {
                 EditDispatch.postSlotIDChanged(selected, currentText);
             });
             right = editor;
+
+            JPopupMenu contextMenu = getIDMenu(editor);
+            editor.setToolTipText("Right-click to generate");
+            editor.addMouseListener(new MouseAdapter() {
+                @Override
+                public void mouseClicked(MouseEvent e) {
+                    if (SwingUtilities.isRightMouseButton(e)) {
+                        contextMenu.show(editor, e.getX(), e.getY());
+                    }
+                }
+            });
         }
 
         ComponentUtilities.addLabelAndComponent(this, label, right, 0);
+    }
+
+    private JPopupMenu getIDMenu(JTextField editor) {
+        JPopupMenu contextMenu = new JPopupMenu();
+        JMenuItem createNextUniqueId = new JMenuItem("Create next unique ID");
+        createNextUniqueId.addActionListener(e -> {
+            var layer = StaticController.getActiveLayer();
+            if (!(layer instanceof ShipLayer shipLayer)) return;
+            var shipPainter = shipLayer.getPainter();
+            if (shipPainter == null || shipPainter.isUninitialized()) return;
+
+            editor.setText(getNextUniqueID(shipPainter));
+        });
+        contextMenu.add(createNextUniqueId);
+        return contextMenu;
     }
 
     private void addTypeSelector() {

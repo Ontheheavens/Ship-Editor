@@ -181,7 +181,9 @@ public final class ShipPainterInitialization {
             if (weaponEntry != null) {
                 WeaponSpecFile specFile = weaponEntry.getSpecFile();
                 WeaponPainter weaponPainter = weaponEntry.createPainterFromEntry(null, specFile);
-                runtimeBuiltIns.put(slotID, InstalledFeature.of(slotID, weaponID, weaponPainter, weaponEntry));
+                InstalledFeature feature = InstalledFeature.of(slotID, weaponID, weaponPainter, weaponEntry);
+                feature.setContainedInBuiltIns(true);
+                runtimeBuiltIns.put(slotID, feature);
             } else {
                 String message = "Weapon entry for initialized ship (" + shipPainter.getBaseHullId() + ") not found: " + weaponID;
                 Errors.showFileError(message, new NoSuchElementException(message));

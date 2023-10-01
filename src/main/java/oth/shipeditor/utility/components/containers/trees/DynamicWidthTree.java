@@ -1,8 +1,5 @@
 package oth.shipeditor.utility.components.containers.trees;
 
-import lombok.Getter;
-import lombok.Setter;
-
 import javax.swing.plaf.TreeUI;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.TreePath;
@@ -14,11 +11,10 @@ import java.awt.*;
  */
 public abstract class DynamicWidthTree extends SortableTree {
 
-    @Getter @Setter
-    private int cachedComponentWidth;
-
     protected DynamicWidthTree(DefaultMutableTreeNode root) {
         super(root);
+        DynamicWidthTreeUI treeUI = new DynamicWidthTreeUI();
+        this.setUI(treeUI);
     }
 
     @Override
@@ -32,6 +28,12 @@ public abstract class DynamicWidthTree extends SortableTree {
             }
         }
         return null;
+    }
+
+    protected void expandTree() {
+        for (int i = 0; i < this.getRowCount(); i++) {
+            this.expandRow(i);
+        }
     }
 
     private static boolean checkPathBounds(int x, int y, Rectangle pathBounds) {

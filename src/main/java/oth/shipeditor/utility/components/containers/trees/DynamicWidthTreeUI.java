@@ -33,6 +33,11 @@ public class DynamicWidthTreeUI extends FlatTreeUI {
         Container parent = tree.getParent();
     }
 
+    @Override
+    public void updateSize() {
+        super.updateSize();
+    }
+
     @SuppressWarnings("ParameterHidesMemberVariable")
     @Override
     public Rectangle getPathBounds(JTree tree, TreePath path) {
@@ -67,15 +72,13 @@ public class DynamicWidthTreeUI extends FlatTreeUI {
         return bounds;
     }
 
+    @SuppressWarnings("OverlyComplexMethod")
     @Override
     public void paint( Graphics g, JComponent c ) {
         if (treeState == null) return;
 
-        // TODO: clean this up!
-
         boolean paintLines = UIManager.getBoolean(Main.TREE_PAINT_LINES);
 
-        // use clip bounds to limit painting to needed rows
         Rectangle clipBounds = g.getClipBounds();
         TreePath firstPath = getClosestPathForLocation( tree, 0, clipBounds.y );
         Enumeration<TreePath> visiblePaths = treeState.getVisiblePathsFrom( firstPath );
@@ -87,7 +90,6 @@ public class DynamicWidthTreeUI extends FlatTreeUI {
             List<Runnable> paintLinesLater = paintLines ? new ArrayList<>() : null;
             List<Runnable> paintExpandControlsLater = paintLines ? new ArrayList<>() : null;
 
-            // add parents for later painting of vertical lines
             if( paintLines ) {
                 for( TreePath path = firstPath.getParentPath(); path != null; path = path.getParentPath() )
                     verticalLinePaths.add( path );
@@ -95,27 +97,23 @@ public class DynamicWidthTreeUI extends FlatTreeUI {
 
             Rectangle boundsBuffer = new Rectangle();
             boolean rootVisible = isRootVisible();
-            int row = treeState.getRowForPath( firstPath );
-            int treeWidth = tree.getBounds().width;
+            int row = treeState.getRowForPath(firstPath);
+            int treeWidth = tree.getWidth();
 
-            if (tree instanceof DynamicWidthTree dynamicWidthTree) {
-                treeWidth = dynamicWidthTree.getCachedComponentWidth();
-            }
-
-            // iterate over visible rows and paint rows, expand control and lines
-            while( visiblePaths.hasMoreElements() ) {
+            // Iterate over visible rows and paint rows, expand control and lines.
+            while ( visiblePaths.hasMoreElements()) {
                 TreePath path = visiblePaths.nextElement();
                 if (path == null) break;
-                Rectangle bounds = treeState.getBounds( path, boundsBuffer );
+                Rectangle bounds = treeState.getBounds(path, boundsBuffer);
                 if (bounds == null) break;
 
-                if ( leftToRight ) {
+                if (leftToRight) {
                     bounds.x += insets.left;
                 } else {
                     bounds.x = treeWidth - insets.right - (bounds.x + bounds.width);
                 }
                 bounds.y += insets.top;
-                bounds.width = treeWidth - bounds.x;
+                bounds.width = treeWidth - bounds.x - 2;
 
                 boolean isLeaf = treeModel.isLeaf(path.getLastPathComponent());
                 boolean isExpanded = !isLeaf && treeState.getExpandedState(path);
@@ -123,42 +121,39 @@ public class DynamicWidthTreeUI extends FlatTreeUI {
 
                 paintRow(g, clipBounds, insets, bounds, path, row, isExpanded, hasBeenExpanded, isLeaf);
 
-                if( paintLines ) {
+                if (paintLines) {
                     TreePath parentPath = path.getParentPath();
 
                     if (parentPath != null) {
-                        verticalLinePaths.add( parentPath );
+                        verticalLinePaths.add(parentPath);
                     }
 
-                    // paint horizontal line later (for using rendering hints)
-                    if( parentPath != null || (rootVisible && row == 0) ) {
-                        Rectangle bounds2 = new Rectangle( bounds );
+                    if (parentPath != null || (rootVisible && row == 0)) {
+                        Rectangle bounds2 = new Rectangle(bounds);
                         int row2 = row;
-                        paintLinesLater.add( () -> {
-                            paintHorizontalPartOfLeg( g, clipBounds, insets, bounds2, path, row2, isExpanded, hasBeenExpanded, isLeaf );
-                        } );
+                        paintLinesLater.add(() -> paintHorizontalPartOfLeg(g, clipBounds, insets, bounds2,
+                                path, row2, isExpanded, hasBeenExpanded, isLeaf));
                     }
                 }
                 
-                if( shouldPaintExpandControl( path, row, isExpanded, hasBeenExpanded, isLeaf ) ) {
-                    if( paintLines ) {
+                if (shouldPaintExpandControl(path, row, isExpanded, hasBeenExpanded, isLeaf)) {
+                    if (paintLines) {
                         // need to paint after painting lines
-                        Rectangle bounds2 = new Rectangle( bounds );
+                        Rectangle bounds2 = new Rectangle(bounds);
                         int row2 = row;
-                        paintExpandControlsLater.add( () -> {
-                            paintExpandControl( g, clipBounds, insets, bounds2, path, row2, isExpanded, hasBeenExpanded, isLeaf );
-                        } );
+                        paintExpandControlsLater.add(() -> paintExpandControl( g, clipBounds, insets, bounds2,
+                                path, row2, isExpanded, hasBeenExpanded, isLeaf ));
                     } else
-                        paintExpandControl( g, clipBounds, insets, bounds, path, row, isExpanded, hasBeenExpanded, isLeaf );
+                        paintExpandControl(g, clipBounds, insets, bounds, path,
+                                row, isExpanded, hasBeenExpanded, isLeaf);
                 }
 
-                if( bounds.y + bounds.height >= clipBounds.y + clipBounds.height )
-                    break;
+                if (bounds.y + bounds.height >= clipBounds.y + clipBounds.height) break;
 
                 row++;
             }
 
-            if(paintLines) {
+            if (paintLines) {
                 Object[] oldRenderingHints = FlatUIUtils.setRenderingHints(g);
 
                 for (Runnable runnable : paintLinesLater) {

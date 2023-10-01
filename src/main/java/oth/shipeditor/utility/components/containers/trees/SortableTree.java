@@ -33,9 +33,10 @@ public abstract class SortableTree extends JTree {
     @SuppressWarnings("TransientFieldNotInitialized")
     private final transient DragSourceListener listener = new NodeDragSourceListener();
 
-    protected SortableTree(DefaultMutableTreeNode root) {}
+    SortableTree(DefaultMutableTreeNode root) {}
 
-    @Override public void updateUI() {
+    @Override
+    public void updateUI() {
         setCellRenderer(null);
         super.updateUI();
         setCellRenderer(new SortableTreeCellRenderer(this));
@@ -51,6 +52,11 @@ public abstract class SortableTree extends JTree {
      * @param target assumed to be a branch node and a children of root.
      */
     public abstract void sortTreeModel(DefaultMutableTreeNode dragged, DefaultMutableTreeNode target, int targetIndex);
+
+    /**
+     * @return newly created parent for dragged node if the drag is valid, or null if not.
+     */
+    public abstract MutableTreeNode handleAdditionToRoot(MutableTreeNode dragged);
 
     private final class NodeDragGestureListener implements DragGestureListener {
         @Override public void dragGestureRecognized(DragGestureEvent dge) {
@@ -133,10 +139,6 @@ public abstract class SortableTree extends JTree {
                     .map(TreePath::getLastPathComponent).orElse(null);
             DefaultMutableTreeNode targetNode = (DefaultMutableTreeNode) path.getLastPathComponent();
             DefaultMutableTreeNode parent = (DefaultMutableTreeNode) targetNode.getParent();
-            if (targetNode.isRoot()) {
-                rejectDrag(dtde);
-                return;
-            }
             if (parent instanceof DefaultMutableTreeNode ancestor && draggingNode instanceof TreeNode) {
                 List<TreeNode> treeNodes = Arrays.asList(ancestor.getPath());
                 if (treeNodes.contains(draggingNode)) {
@@ -149,7 +151,9 @@ public abstract class SortableTree extends JTree {
             repaint();
         }
 
-        @Override public void drop(DropTargetDropEvent dtde) {
+        @SuppressWarnings({"IfStatementWithTooManyBranches", "MethodWithMultipleReturnPoints"})
+        @Override
+        public void drop(DropTargetDropEvent dtde) {
             Object draggingObject = Optional.ofNullable(getSelectionPath())
                     .map(TreePath::getLastPathComponent).orElse(null);
             Point pt = dtde.getLocation();
@@ -158,7 +162,7 @@ public abstract class SortableTree extends JTree {
                 dtde.dropComplete(false);
                 return;
             }
-            MutableTreeNode targetNode = (MutableTreeNode) path.getLastPathComponent();
+            DefaultMutableTreeNode targetNode = (DefaultMutableTreeNode) path.getLastPathComponent();
             if (targetNode.equals(draggingNode)) {
                 // Cannot move the node to the node itself.
                 dtde.dropComplete(false);
@@ -171,7 +175,20 @@ public abstract class SortableTree extends JTree {
 
             TreeNode parent = targetNode.getParent();
             int targetIndex;
-            if (parent instanceof MutableTreeNode && targetNode.isLeaf()) {
+            if (targetNode.isRoot()) {
+                targetIndex = 0;
+                MutableTreeNode newParent = handleAdditionToRoot(draggingNode);
+                if (newParent != null) {
+                    dropTargetNode = (DefaultMutableTreeNode) newParent;
+                    model.insertNodeInto(draggingNode, newParent, targetIndex);
+                } else {
+                    dtde.dropComplete(false);
+                    return;
+                }
+            } else if (parent instanceof DefaultMutableTreeNode mutableNode && mutableNode.isRoot() && targetNode.isLeaf()) {
+                targetIndex = 0;
+                model.insertNodeInto(draggingNode, targetNode, targetIndex);
+            } else if (parent instanceof MutableTreeNode mutableNode && targetNode.isLeaf()) {
                 targetIndex = parent.getIndex(targetNode);
                 model.insertNodeInto(draggingNode, (MutableTreeNode) parent, targetIndex);
             } else {
