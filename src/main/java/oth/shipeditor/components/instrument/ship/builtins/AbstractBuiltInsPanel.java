@@ -20,14 +20,14 @@ import java.awt.*;
  * @author Ontheheavens
  * @since 27.08.2023
  */
+@Getter
 public abstract class AbstractBuiltInsPanel extends JPanel {
 
     static final String REMOVED_BY_SKIN = "Removed by skin";
 
-    @Getter @Setter
+    @Setter
     private ShipLayer cachedLayer;
 
-    @Getter
     private final JPanel contentPane;
 
     protected AbstractBuiltInsPanel() {

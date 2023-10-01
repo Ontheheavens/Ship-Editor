@@ -14,10 +14,7 @@ import oth.shipeditor.representation.weapon.WeaponSpecFile;
 import oth.shipeditor.utility.text.StringValues;
 
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Heavy-footprint runtime variant class; stores full-fledged painters and point indexes for display in viewer.
@@ -69,15 +66,23 @@ public class ShipVariant implements Variant {
     public void ensureBuiltInsAreFitted(ShipPainter painter) {
         var builtIns = painter.getBuiltInsWithSkin(false, true);
         builtIns.forEach((slotID, feature) -> {
-            if (!this.isBuiltInFitted(feature)) {
+            FittedWeaponGroup groupWithFit = this.getGroupWithExistingMapping(feature.getSlotID());
+            if (groupWithFit != null) {
+                var groupWeapons = groupWithFit.getWeapons();
+                int index = groupWeapons.indexOf(slotID);
+                feature.setParentGroup(groupWithFit);
+                groupWeapons.put(index, slotID, feature);
+            } else {
                 FittedWeaponGroup firstGroup = weaponGroups.get(0);
                 if (firstGroup != null) {
                     var groupWeapons = firstGroup.getWeapons();
+                    feature.setParentGroup(firstGroup);
                     groupWeapons.put(slotID, feature);
                 } else {
                     FittedWeaponGroup newGroup = new FittedWeaponGroup(this,
                             false, FireMode.LINKED);
                     this.weaponGroups.add(newGroup);
+                    feature.setParentGroup(newGroup);
                     var groupWeapons = newGroup.getWeapons();
                     groupWeapons.put(slotID, feature);
                 }
@@ -85,14 +90,14 @@ public class ShipVariant implements Variant {
         });
     }
 
-    private boolean isBuiltInFitted(InstalledFeature builtIn) {
-        boolean result = false;
+    public FittedWeaponGroup getGroupWithExistingMapping(String inputSlotID) {
+        FittedWeaponGroup result = null;
         for (FittedWeaponGroup group : weaponGroups) {
             var groupWeapons = group.getWeapons();
-            var weaponList = groupWeapons.valueList();
-            for (InstalledFeature weapon : weaponList) {
-                if (weapon == builtIn) {
-                    result = true;
+            var slotIDs = groupWeapons.keyList();
+            for (String checkedSlotID : slotIDs) {
+                if (Objects.equals(checkedSlotID, inputSlotID)) {
+                    result = group;
                     break;
                 }
             }
@@ -130,7 +135,9 @@ public class ShipVariant implements Variant {
                 WeaponCSVEntry weaponEntry = GameDataRepository.getWeaponByID(weaponID);
                 WeaponSpecFile specFile = weaponEntry.getSpecFile();
                 WeaponPainter weaponPainter = weaponEntry.createPainterFromEntry(null, specFile);
-                fitted.put(slotID, InstalledFeature.of(slotID, weaponID, weaponPainter, weaponEntry));
+                InstalledFeature feature = InstalledFeature.of(slotID, weaponID, weaponPainter, weaponEntry);
+                feature.setParentGroup(initialized);
+                fitted.put(slotID, feature);
             });
             weaponGroups.add(initialized);
         });

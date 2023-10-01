@@ -1,5 +1,8 @@
 package oth.shipeditor.components.instrument.ship.variant;
 
+import oth.shipeditor.communication.EventBus;
+import oth.shipeditor.communication.events.components.VariantPanelRepaintQueued;
+import oth.shipeditor.communication.events.viewer.points.PointSelectedConfirmed;
 import oth.shipeditor.components.viewer.layers.ViewerLayer;
 import oth.shipeditor.components.viewer.layers.ship.ShipLayer;
 import oth.shipeditor.components.viewer.layers.ship.ShipPainter;
@@ -19,6 +22,8 @@ public class VariantWeaponsPanel extends AbstractVariantPanel {
 
     private final JPanel contentPanel;
 
+    private VariantWeaponsTree weaponsTree;
+
     public VariantWeaponsPanel() {
         this.setLayout(new BorderLayout());
 
@@ -36,8 +41,26 @@ public class VariantWeaponsPanel extends AbstractVariantPanel {
     }
 
     @Override
+    protected void initLayerListeners() {
+        super.initLayerListeners();
+        EventBus.subscribe(event -> {
+            if (event instanceof PointSelectedConfirmed checked) {
+                if (weaponsTree != null) {
+                    weaponsTree.selectNode(checked.point());
+                }
+            }
+        });
+        EventBus.subscribe(event -> {
+            if (event instanceof VariantPanelRepaintQueued) {
+                this.refreshPanel(StaticController.getActiveLayer());
+            }
+        });
+    }
+
+    @Override
     public void refreshPanel(ViewerLayer selected) {
         contentPanel.removeAll();
+        weaponsTree = null;
 
         if (!(selected instanceof ShipLayer checkedLayer)) {
             this.installPlaceholders();
@@ -55,7 +78,7 @@ public class VariantWeaponsPanel extends AbstractVariantPanel {
         ShipVariant activeVariant = painter.getActiveVariant();
         if (activeVariant != null && !activeVariant.isEmpty()) {
             CustomTreeNode weaponGroups = new CustomTreeNode("Weapon Groups");
-            VariantWeaponsTree weaponsTree = new VariantWeaponsTree(weaponGroups, painter.getWeaponSlotPainter());
+            weaponsTree = new VariantWeaponsTree(weaponGroups, painter.getWeaponSlotPainter());
             ToolTipManager.sharedInstance().registerComponent(weaponsTree);
             contentPanel.add(weaponsTree, BorderLayout.CENTER);
             weaponsTree.repopulateTree(activeVariant, checkedLayer);

@@ -25,28 +25,30 @@ public class FeatureInstallEdit<T extends InstallableEntry> extends AbstractEdit
     /**
      * Can be null, needed for skin built-ins reloading.
      */
-    private final Runnable invalidator;
+    private final Runnable afterAction;
 
     @Override
     public void undo() {
         collection.remove(slotID, feature);
-        if (invalidator != null) {
-            invalidator.run();
+        if (afterAction != null) {
+            afterAction.run();
         }
         var repainter = StaticController.getRepainter();
         repainter.queueViewerRepaint();
         repainter.queueBuiltInsRepaint();
+        repainter.queueVariantsRepaint();
     }
 
     @Override
     public void redo() {
         collection.put(slotID, feature);
-        if (invalidator != null) {
-            invalidator.run();
+        if (afterAction != null) {
+            afterAction.run();
         }
         var repainter = StaticController.getRepainter();
         repainter.queueViewerRepaint();
         repainter.queueBuiltInsRepaint();
+        repainter.queueVariantsRepaint();
     }
     @Override
 

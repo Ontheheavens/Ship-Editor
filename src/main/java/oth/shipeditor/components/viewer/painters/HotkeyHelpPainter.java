@@ -98,7 +98,7 @@ public class HotkeyHelpPainter implements Painter {
                 hints.add(sizeHint);
                 hints.add(addHint);
             }
-            case BUILT_IN_WEAPONS -> {
+            case BUILT_IN_WEAPONS, VARIANT_WEAPONS -> {
                 String installHint = "Install weapon: CTRL+LMB";
                 hints.add(installHint);
             }

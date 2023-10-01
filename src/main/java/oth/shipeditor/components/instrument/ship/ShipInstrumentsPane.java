@@ -40,6 +40,7 @@ public final class ShipInstrumentsPane extends AbstractInstrumentsPane {
         panelMode = new HashMap<>();
         this.createTabs();
         this.dispatchModeChange((JPanel) getSelectedComponent());
+        this.setTabLayoutPolicy(JTabbedPane.SCROLL_TAB_LAYOUT);
     }
 
     @SuppressWarnings("OverlyCoupledMethod")
@@ -79,7 +80,7 @@ public final class ShipInstrumentsPane extends AbstractInstrumentsPane {
     @Override
     protected void updateTooltipText() {
         String minimizePrompt = getMinimizePrompt();
-        int size = this.getComponentCount();
+        int size = this.getTabCount();
         for (int i = 0; i < size - 1; i++) {
             this.setToolTipTextAt(i, minimizePrompt);
         }

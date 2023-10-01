@@ -3,6 +3,7 @@ package oth.shipeditor.utility.components.rendering;
 import com.formdev.flatlaf.ui.FlatLineBorder;
 import org.kordamp.ikonli.boxicons.BoxiconsRegular;
 import org.kordamp.ikonli.swing.FontIcon;
+import oth.shipeditor.components.datafiles.entities.CSVEntry;
 import oth.shipeditor.components.instrument.ship.shared.InstalledFeatureList;
 import oth.shipeditor.components.viewer.entities.weapon.SlotData;
 import oth.shipeditor.components.viewer.layers.ship.ShipLayer;
@@ -105,7 +106,9 @@ public class InstalledFeatureCellRenderer extends BoxPanelCellRenderer<Installed
         featureIDText.setForeground(foreground);
 
         slotIDText.setText(slotID +":");
-        featureIDText.setText(value.getFeatureID());
+
+        CSVEntry dataEntry = value.getDataEntry();
+        featureIDText.setText(dataEntry.toString());
 
         return this;
     }

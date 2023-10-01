@@ -21,6 +21,8 @@ import oth.shipeditor.components.viewer.painters.points.MirrorablePointPainter;
 import oth.shipeditor.components.viewer.painters.points.ship.BoundPointsPainter;
 import oth.shipeditor.components.viewer.painters.points.ship.EngineSlotPainter;
 import oth.shipeditor.components.viewer.painters.points.ship.WeaponSlotPainter;
+import oth.shipeditor.components.viewer.painters.points.ship.features.FittedWeaponGroup;
+import oth.shipeditor.components.viewer.painters.points.ship.features.InstalledFeature;
 import oth.shipeditor.representation.EngineStyle;
 import oth.shipeditor.representation.weapon.WeaponMount;
 import oth.shipeditor.representation.weapon.WeaponSize;
@@ -29,6 +31,7 @@ import oth.shipeditor.undo.edits.*;
 import oth.shipeditor.undo.edits.features.FeatureInstallEdit;
 import oth.shipeditor.undo.edits.features.FeatureSortEdit;
 import oth.shipeditor.undo.edits.features.FeatureUninstallEdit;
+import oth.shipeditor.undo.edits.features.WeaponGroupsSortEdit;
 import oth.shipeditor.undo.edits.points.*;
 import oth.shipeditor.undo.edits.points.engines.*;
 import oth.shipeditor.undo.edits.points.slots.*;
@@ -306,17 +309,18 @@ public final class EditDispatch {
 
     public static<T extends InstallableEntry> void postFeatureInstalled(Map<String, T> collection,
                                                                           String slotID, T feature,
-                                                                          Runnable invalidator) {
+                                                                          Runnable afterAction) {
         // Theoretically should not need order preservation since added is always last.
-        Edit installEdit = new FeatureInstallEdit<>(collection, slotID, feature, invalidator);
+        Edit installEdit = new FeatureInstallEdit<>(collection, slotID, feature, afterAction);
         UndoOverseer.post(installEdit);
         collection.put(slotID, feature);
-        if (invalidator != null) {
-            invalidator.run();
+        if (afterAction != null) {
+            afterAction.run();
         }
         var repainter = StaticController.getRepainter();
         repainter.queueViewerRepaint();
         repainter.queueBuiltInsRepaint();
+        repainter.queueVariantsRepaint();
     }
 
     public static<T extends InstallableEntry> void postFeatureUninstalled(Map<String, T> collection,
@@ -336,17 +340,32 @@ public final class EditDispatch {
         var repainter = StaticController.getRepainter();
         repainter.queueViewerRepaint();
         repainter.queueBuiltInsRepaint();
+        repainter.queueVariantsRepaint();
     }
 
-    public static<T extends InstallableEntry> void postFeaturesSorted(Consumer<Map<String, T>> consumer,
-                                                                      Map<String, T>  oldMap,
-                                                                      Map<String, T> newMap) {
+    public static<T extends InstallableEntry> void postBuiltInFeaturesSorted(Consumer<Map<String, T>> consumer,
+                                                                             Map<String, T>  oldMap,
+                                                                             Map<String, T> newMap) {
         Edit sortEdit = new FeatureSortEdit<>(consumer, oldMap, newMap);
         UndoOverseer.post(sortEdit);
         consumer.accept(newMap);
         var repainter = StaticController.getRepainter();
         repainter.queueViewerRepaint();
         repainter.queueBuiltInsRepaint();
+    }
+
+    public static void postWeaponGroupsRearranged(InstalledFeature feature, FittedWeaponGroup targetGroup,
+                                                  int targetIndex) {
+        FittedWeaponGroup oldParent = feature.getParentGroup();
+
+        var oldParentWeapons = oldParent.getWeapons();
+        int oldIndex = oldParentWeapons.indexOf(feature.getSlotID());
+
+        Edit groupsSortEdit = new WeaponGroupsSortEdit(feature, targetGroup, oldParent,
+                targetIndex, oldIndex);
+        UndoOverseer.post(groupsSortEdit);
+
+        groupsSortEdit.redo();
     }
 
 }
