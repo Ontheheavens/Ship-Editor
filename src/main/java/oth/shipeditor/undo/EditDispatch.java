@@ -132,7 +132,11 @@ public final class EditDispatch {
         Edit offsetChangeEdit = new AnchorOffsetEdit(layerPainter, oldOffset, updated);
         EditDispatch.handleContinuousEdit(offsetChangeEdit);
         layerPainter.setAnchor(updated);
-        Events.repaintShipView();
+        var repainter = StaticController.getRepainter();
+        repainter.queueViewerRepaint();
+        repainter.queueBoundsPanelRepaint();
+        repainter.queueCenterPanelsRepaint();
+        repainter.queueBuiltInsRepaint();
     }
 
     public static void postSlotAngleSet(SlotData slotPoint, double old, double updated ) {
@@ -198,7 +202,11 @@ public final class EditDispatch {
         Edit rotationEdit = new LayerRotationEdit(painter, old, updated);
         EditDispatch.handleContinuousEdit(rotationEdit);
         painter.setRotationRadians(updated);
-        Events.repaintShipView();
+        var repainter = StaticController.getRepainter();
+        repainter.queueViewerRepaint();
+        repainter.queueBoundsPanelRepaint();
+        repainter.queueCenterPanelsRepaint();
+        repainter.queueBuiltInsRepaint();
     }
 
     public static void postPointDragged(WorldPoint selected, Point2D changedPosition) {

@@ -3,6 +3,7 @@ package oth.shipeditor.components.viewer.layers.ship;
 import lombok.Getter;
 import oth.shipeditor.communication.BusEventListener;
 import oth.shipeditor.communication.EventBus;
+import oth.shipeditor.communication.events.components.DeleteButtonPressed;
 import oth.shipeditor.communication.events.viewer.control.FeatureInstallQueued;
 import oth.shipeditor.components.datafiles.entities.InstallableEntry;
 import oth.shipeditor.components.datafiles.entities.ShipCSVEntry;
@@ -251,6 +252,69 @@ public class FeaturesOverseer {
         };
         listeners.add(installListener);
         EventBus.subscribe(installListener);
+
+        BusEventListener uninstallListener = event -> {
+            if (event instanceof DeleteButtonPressed) {
+                if (StaticController.getActiveLayer() != parent) return;
+                var shipPainter = parent.getPainter();
+                if (shipPainter == null || shipPainter.isUninitialized()) return;
+                var slotPainter = shipPainter.getWeaponSlotPainter();
+
+                var mode = StaticController.getEditorMode();
+                WeaponSlotPoint selected = slotPainter.getSelected();
+                var eligibleSlots = slotPainter.getEligibleForSelection();
+
+                if (selected == null || !eligibleSlots.contains(selected)) return;
+
+                FeaturesOverseer.handleFeatureRemoval(selected, mode, shipPainter);
+            }
+        };
+        listeners.add(uninstallListener);
+        EventBus.subscribe(uninstallListener);
+    }
+
+    @SuppressWarnings({"MethodWithMultipleReturnPoints", "OverlyComplexMethod"})
+    private static void handleFeatureRemoval(SlotData selected, EditorInstrument mode,
+                                             ShipPainter shipPainter) {
+        String slotID = selected.getId();
+        switch (mode) {
+            case BUILT_IN_WEAPONS, DECORATIVES -> {
+                ShipSkin activeSkin = shipPainter.getActiveSkin();
+                if (activeSkin != null && !activeSkin.isBase()) {
+                    var addedBySkin = activeSkin.getBuiltInWeapons();
+                    WeaponCSVEntry toRemove = addedBySkin.get(slotID);
+                    if (toRemove == null) return;
+                    EditDispatch.postFeatureUninstalled(addedBySkin, slotID,
+                            toRemove, activeSkin::invalidateBuiltIns);
+                } else {
+                    var weapons = shipPainter.getBuiltInWeapons();
+                    InstalledFeature toRemove = weapons.get(slotID);
+                    if (toRemove == null) return;
+                    EditDispatch.postFeatureUninstalled(weapons, slotID,
+                            toRemove, null);
+                }
+            }
+            case VARIANT_WEAPONS -> {
+                var variant = shipPainter.getActiveVariant();
+                if (variant == null || variant.isEmpty()) return;
+                FittedWeaponGroup targetGroup = variant.getGroupWithExistingMapping(slotID);
+                Map<String, InstalledFeature> groupWeapons;
+                if (targetGroup != null) {
+                    groupWeapons = targetGroup.getWeapons();
+                    InstalledFeature existing = groupWeapons.get(slotID);
+                    EditDispatch.postFeatureUninstalled(groupWeapons, slotID, existing, null);
+                }
+            }
+            case VARIANT_MODULES -> {
+                var variant = shipPainter.getActiveVariant();
+                if (variant == null || variant.isEmpty()) return;
+                var modules = variant.getFittedModules();
+                InstalledFeature toRemove = modules.get(slotID);
+                if (toRemove == null) return;
+                EditDispatch.postFeatureUninstalled(modules, slotID,
+                        toRemove, null);
+            }
+        }
     }
 
     private void fitToVariant(SlotData selected) {
@@ -275,7 +339,14 @@ public class FeaturesOverseer {
             InstalledFeature existing = groupWeapons.get(slotID);
             EditDispatch.postFeatureUninstalled(groupWeapons, slotID, existing, null);
         } else {
-            targetGroup = weaponGroups.get(0);
+            if (weaponGroups.isEmpty()) {
+                FittedWeaponGroup newGroup = new FittedWeaponGroup(activeVariant,
+                        false, FireMode.ALTERNATING);
+                weaponGroups.add(newGroup);
+                targetGroup = newGroup;
+            } else {
+                targetGroup = weaponGroups.get(0);
+            }
         }
 
         if (targetGroup == null) {
