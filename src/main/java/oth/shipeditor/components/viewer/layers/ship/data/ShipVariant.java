@@ -2,6 +2,7 @@ package oth.shipeditor.components.viewer.layers.ship.data;
 
 import lombok.Getter;
 import lombok.Setter;
+import org.apache.commons.collections4.map.ListOrderedMap;
 import oth.shipeditor.components.datafiles.entities.ShipCSVEntry;
 import oth.shipeditor.components.datafiles.entities.WeaponCSVEntry;
 import oth.shipeditor.components.viewer.layers.ship.ShipPainter;
@@ -56,6 +57,7 @@ public class ShipVariant implements Variant {
     @SuppressWarnings("BooleanParameter")
     public ShipVariant(boolean isEmpty) {
         this.empty = isEmpty;
+        this.fittedModules = new ListOrderedMap<>();
     }
 
     public String getFileName() {

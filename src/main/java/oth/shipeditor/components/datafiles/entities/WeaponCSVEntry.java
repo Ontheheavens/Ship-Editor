@@ -80,6 +80,12 @@ public class WeaponCSVEntry implements CSVEntry, InstallableEntry {
         }
     }
 
+    public int getOPCost() {
+        var data = this.getRowData();
+        String costText = data.get("OPs");
+        return Integer.parseInt(costText);
+    }
+
     public int getDrawOrder() {
         WeaponSize specFileSize = getSize();
         return specFileSize.getNumericSize();

@@ -43,6 +43,7 @@ public final class StringValues {
     public static final String ADDED_BY_SKIN = "Added by skin";
     public static final String INVALIDATED_WEAPON_UNFIT_FOR_SLOT = "Invalidated: weapon unfit for slot";
     public static final String INVALIDATED_SLOT_NOT_FOUND = "Invalidated: slot not found";
+    public static final String WEAPON_ID = "Weapon ID: ";
 
     private StringValues() {
     }

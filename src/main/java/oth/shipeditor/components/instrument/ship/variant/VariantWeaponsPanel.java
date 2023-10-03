@@ -75,6 +75,8 @@ public class VariantWeaponsPanel extends AbstractVariantPanel {
 
         ShipPainter painter = checkedLayer.getPainter();
 
+        // TODO: rewrite so that tree is created only once per panel and not on every refresh.
+
         ShipVariant activeVariant = painter.getActiveVariant();
         if (activeVariant != null && !activeVariant.isEmpty()) {
             CustomTreeNode weaponGroups = new CustomTreeNode("Weapon Groups");

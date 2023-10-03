@@ -56,7 +56,7 @@ public class TreePanelCellRenderer extends JPanel implements TreeCellRenderer {
     @Getter
     private boolean isDropCell;
 
-    @Getter
+    @Getter @Setter
     private boolean fillBackground;
 
     private static final Border DEFAULT_NO_FOCUS_BORDER = new EmptyBorder(1, 1, 1, 1);

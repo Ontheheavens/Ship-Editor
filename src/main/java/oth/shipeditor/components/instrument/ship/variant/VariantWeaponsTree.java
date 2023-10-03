@@ -181,7 +181,9 @@ public class VariantWeaponsTree extends DynamicWidthTree {
         if (currentPath != null) {
             Object node = currentPath.getLastPathComponent();
             if (node instanceof CustomTreeNode customTreeNode) {
-                return customTreeNode.getTip();
+                String id = customTreeNode.getFirstLineTip();
+                String tip = customTreeNode.getSecondLineTip();
+                return Utility.getWithLinebreaks(id, tip);
             }
         }
         return null;
@@ -246,10 +248,24 @@ public class VariantWeaponsTree extends DynamicWidthTree {
 
         private final JLabel builtInIcon;
 
-        private final JLabel featureIDText;
+        private final JLabel upperRightLabel;
 
+        private final JLabel lowerLeftLabel;
+
+        private final JLabel lowerRightLabel;
+
+        @SuppressWarnings("ThisEscapedInObjectConstruction")
         private WeaponsTreeCellRenderer(SortableTree tree) {
             super(tree);
+            setLayout(new BoxLayout(this, BoxLayout.PAGE_AXIS));
+            removeAll();
+
+            setFillBackground(true);
+
+            JPanel upperContainer = new JPanel();
+            upperContainer.setOpaque(false);
+            upperContainer.setLayout(new BoxLayout(upperContainer, BoxLayout.LINE_AXIS));
+
             slotTypeIcon = new JLabel();
             slotTypeIcon.setOpaque(true);
             slotTypeIcon.setBorder(new FlatLineBorder(new Insets(2, 2, 2, 2), Color.GRAY));
@@ -260,7 +276,7 @@ public class VariantWeaponsTree extends DynamicWidthTree {
             JLabel textLabel = getTextLabel();
             textLabel.setBorder(new EmptyBorder(0, 4, 0, 0));
 
-            featureIDText = new JLabel();
+            upperRightLabel = new JLabel();
 
             JPanel leftContainer = getLeftContainer();
             leftContainer.removeAll();
@@ -270,14 +286,35 @@ public class VariantWeaponsTree extends DynamicWidthTree {
             leftContainer.add(textLabel);
 
             JPanel rightContainer = getRightContainer();
-            rightContainer.add(featureIDText);
+            rightContainer.add(upperRightLabel);
+
+            ComponentUtilities.layoutAsOpposites(upperContainer, leftContainer, rightContainer, 4);
+
+            this.add(upperContainer);
+
+            JPanel lowerContainer = new JPanel();
+            lowerContainer.setOpaque(false);
+            lowerContainer.setLayout(new BoxLayout(lowerContainer, BoxLayout.LINE_AXIS));
+
+            lowerLeftLabel = new JLabel();
+            lowerRightLabel = new JLabel();
+
+            ComponentUtilities.layoutAsOpposites(lowerContainer, lowerLeftLabel, lowerRightLabel, 4);
+
+            this.add(lowerContainer);
         }
 
         @Override
         public void setForeground(Color fg) {
             super.setForeground(fg);
-            if (featureIDText != null) {
-                featureIDText.setForeground(fg);
+            if (upperRightLabel != null) {
+                upperRightLabel.setForeground(fg);
+            }
+            if (lowerLeftLabel != null) {
+                lowerLeftLabel.setForeground(fg);
+            }
+            if (lowerRightLabel != null) {
+                lowerRightLabel.setForeground(fg);
             }
         }
 
@@ -303,19 +340,28 @@ public class VariantWeaponsTree extends DynamicWidthTree {
             builtInIcon.setIcon(null);
             builtInIcon.setVisible(false);
 
-            featureIDText.setText("");
+            upperRightLabel.setText("");
+            lowerLeftLabel.setText("");
+            lowerRightLabel.setText("");
 
-            treeNode.setTip(null);
+            setBackgroundNonSelectionColor(Color.WHITE);
+
+            treeNode.setSecondLineTip(null);
+            treeNode.setFirstLineTip(null);
             textLabel.setBorder(new EmptyBorder(0, 4, 0, 0));
             if (object instanceof FittedWeaponGroup checked) {
                 iconLabel.setIcon(FontIcon.of(BoxiconsRegular.CROSSHAIR, 16, Color.DARK_GRAY));
                 iconLabel.setBorder(new EmptyBorder(0, 0, 0, 2));
                 textLabel.setText("Weapon Group " + checked.getIndexToDisplay());
 
+                setBackgroundNonSelectionColor(Color.LIGHT_GRAY);
+
                 if (checked.isAutofire()) {
                     slotTypeIcon.setIcon(FontIcon.of(FluentUiRegularAL.DEVELOPER_BOARD_24,
                             18, Color.DARK_GRAY));
                     slotTypeIcon.setVisible(true);
+
+                    treeNode.setFirstLineTip("Autofire: ON");
 
                     slotTypeIcon.setOpaque(false);
                     slotTypeIcon.setBackground(null);
@@ -324,8 +370,10 @@ public class VariantWeaponsTree extends DynamicWidthTree {
                 Icon mode;
                 if (checked.getMode() == FireMode.ALTERNATING) {
                     mode = FontIcon.of(BoxiconsRegular.SLIDER, 18, Color.DARK_GRAY);
+                    treeNode.setSecondLineTip("Firing mode: ALTERNATING");
                 } else {
                     mode = FontIcon.of(BoxiconsRegular.POLL, 18, Color.DARK_GRAY);
+                    treeNode.setSecondLineTip("Firing mode: LINKED");
                 }
                 builtInIcon.setIcon(mode);
                 builtInIcon.setVisible(true);
@@ -333,12 +381,16 @@ public class VariantWeaponsTree extends DynamicWidthTree {
                 textLabel.setBorder(new EmptyBorder(0, 0, 0, 0));
             } else if (object instanceof InstalledFeature checked && leaf) {
                 var slot = getSlotPoint(checked);
+                CSVEntry dataEntry = checked.getDataEntry();
+
+                lowerRightLabel.setText(dataEntry.toString());
+                treeNode.setFirstLineTip(StringValues.WEAPON_ID + checked.getFeatureID());
 
                 if (checked.isContainedInBuiltIns()) {
                     builtInIcon.setIcon(FontIcon.of(BoxiconsSolid.LOCK_ALT, 16, Color.GRAY));
                     builtInIcon.setVisible(true);
 
-                    treeNode.setTip("Built-in: locked in variant");
+                    treeNode.setSecondLineTip("Built-in: locked in variant");
                     textLabel.setBorder(new EmptyBorder(0, 1, 0, 0));
                 }
 
@@ -350,7 +402,7 @@ public class VariantWeaponsTree extends DynamicWidthTree {
 
                     textLabel.setBorder(new EmptyBorder(0, 0, 0, 0));
 
-                    treeNode.setTip(StringValues.INVALIDATED_SLOT_NOT_FOUND);
+                    treeNode.setSecondLineTip(StringValues.INVALIDATED_SLOT_NOT_FOUND);
                 } else {
                     slotTypeIcon.setVisible(true);
                     WeaponType weaponType = slot.getWeaponType();
@@ -367,12 +419,11 @@ public class VariantWeaponsTree extends DynamicWidthTree {
                             weaponUnfitForSlot = Utility.getWithLinebreaks(weaponUnfitForSlot,
                                     "Built-in: will appear in game");
                         }
-                        treeNode.setTip(weaponUnfitForSlot);
+                        treeNode.setSecondLineTip(weaponUnfitForSlot);
                     }
                 }
                 textLabel.setText(checked.getSlotID());
-                CSVEntry dataEntry = checked.getDataEntry();
-                featureIDText.setText(dataEntry.toString());
+                upperRightLabel.setText("OP: " + checked.getOPCost());
             } else {
                 textLabel.setText(" " + value);
             }

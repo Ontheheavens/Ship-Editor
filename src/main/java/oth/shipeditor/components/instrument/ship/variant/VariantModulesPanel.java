@@ -91,9 +91,9 @@ public class VariantModulesPanel extends AbstractVariantPanel{
         DefaultListModel<InstalledFeature> listModel = new DefaultListModel<>();
         listModel.addAll(modules);
 
-        Consumer<InstalledFeature> removeAction = entry -> {
-            EditDispatch.postFeatureUninstalled(fittedModules, entry.getSlotID(), entry, null);
-        };
+        Consumer<InstalledFeature> removeAction = entry ->
+                EditDispatch.postFeatureUninstalled(fittedModules,
+                        entry.getSlotID(), entry, null);
 
         var slotPainter = painter.getWeaponSlotPainter();
 

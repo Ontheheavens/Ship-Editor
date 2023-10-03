@@ -148,6 +148,19 @@ public class WeaponsTreePanel extends CSVDataTreePanel<WeaponCSVEntry>{
         JPanel searchContainer = new JPanel(new GridBagLayout());
         searchContainer.setBorder(new EmptyBorder(0, 0, 0, 0));
 
+        JTextField searchField = WeaponsTreePanel.getTextField();
+        GridBagConstraints gridBagConstraints = new GridBagConstraints();
+        gridBagConstraints.fill = GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new Insets(0, 0, 0, 0);
+        searchContainer.add(searchField, gridBagConstraints);
+        JButton searchButton = new JButton(StringValues.SEARCH);
+        searchButton.addActionListener(e -> this.reload());
+        searchContainer.add(searchButton);
+        return searchContainer;
+    }
+
+    private static JTextField getTextField() {
         JTextField searchField = new JTextField();
         searchField.setToolTipText("Input is checked against displayed name and weapon ID as a substring.");
 
@@ -166,15 +179,7 @@ public class WeaponsTreePanel extends CSVDataTreePanel<WeaponCSVEntry>{
                 WeaponFilterPanel.setCurrentTextFilter(searchField.getText());
             }
         });
-        GridBagConstraints gridBagConstraints = new GridBagConstraints();
-        gridBagConstraints.fill = GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new Insets(0, 0, 0, 0);
-        searchContainer.add(searchField, gridBagConstraints);
-        JButton searchButton = new JButton(StringValues.SEARCH);
-        searchButton.addActionListener(e -> this.reload());
-        searchContainer.add(searchButton);
-        return searchContainer;
+        return searchField;
     }
 
     @Override
@@ -387,7 +392,7 @@ public class WeaponsTreePanel extends CSVDataTreePanel<WeaponCSVEntry>{
     @Override
     protected String getTooltipForEntry(Object entry) {
         if(entry instanceof WeaponCSVEntry checked) {
-            String weaponID = "Weapon ID: " + checked.getWeaponID();
+            String weaponID = StringValues.WEAPON_ID + checked.getWeaponID();
             WeaponType weaponType = checked.getType();
             String type =  "Weapon type: " + weaponType.getDisplayName();
             WeaponSize weaponSize = checked.getSize();
