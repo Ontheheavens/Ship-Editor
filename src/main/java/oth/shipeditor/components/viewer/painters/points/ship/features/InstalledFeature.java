@@ -69,6 +69,7 @@ public final class InstalledFeature implements InstallableEntry {
 
     public int getOPCost() {
         if (dataEntry instanceof WeaponCSVEntry weaponEntry) {
+            if (containedInBuiltIns) return 0;
             return weaponEntry.getOPCost();
         } else {
             return 0;

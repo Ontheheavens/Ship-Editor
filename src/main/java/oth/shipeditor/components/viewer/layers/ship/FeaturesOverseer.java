@@ -4,6 +4,7 @@ import lombok.Getter;
 import oth.shipeditor.communication.BusEventListener;
 import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.components.DeleteButtonPressed;
+import oth.shipeditor.communication.events.components.WeaponEntryPicked;
 import oth.shipeditor.communication.events.viewer.control.FeatureInstallQueued;
 import oth.shipeditor.components.datafiles.entities.InstallableEntry;
 import oth.shipeditor.components.datafiles.entities.ShipCSVEntry;
@@ -58,9 +59,7 @@ public class FeaturesOverseer {
         weaponForInstall = entry;
         var mode = StaticController.getEditorMode();
         var repainter = StaticController.getRepainter();
-        if (mode == EditorInstrument.BUILT_IN_WEAPONS || mode == EditorInstrument.DECORATIVES) {
-            repainter.queueBuiltInsRepaint();
-        }
+        EventBus.publish(new WeaponEntryPicked());
     }
 
     // This getter business is not good at all.

@@ -115,7 +115,7 @@ public class BuiltInWingsPanel extends CSVEntryBuiltInsPanel<WingCSVEntry> {
             text = "Capacity: " + capacity;
             icon = FontIcon.of(FluentUiRegularAL.INFO_28, 28);
         }
-        this.bayPanel = AbstractBuiltInsPanel.createHintPanel(text, icon);
+        this.bayPanel = ComponentUtilities.createHintPanel(text, icon);
         this.add(bayPanel, BorderLayout.PAGE_END);
     }
 

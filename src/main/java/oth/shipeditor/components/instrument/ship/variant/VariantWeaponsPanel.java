@@ -1,13 +1,20 @@
 package oth.shipeditor.components.instrument.ship.variant;
 
+import org.kordamp.ikonli.fluentui.FluentUiRegularAL;
+import org.kordamp.ikonli.swing.FontIcon;
 import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.components.VariantPanelRepaintQueued;
+import oth.shipeditor.communication.events.components.WeaponEntryPicked;
 import oth.shipeditor.communication.events.viewer.points.PointSelectedConfirmed;
+import oth.shipeditor.components.datafiles.entities.WeaponCSVEntry;
 import oth.shipeditor.components.viewer.layers.ViewerLayer;
+import oth.shipeditor.components.viewer.layers.ship.FeaturesOverseer;
 import oth.shipeditor.components.viewer.layers.ship.ShipLayer;
 import oth.shipeditor.components.viewer.layers.ship.ShipPainter;
 import oth.shipeditor.components.viewer.layers.ship.data.ShipVariant;
+import oth.shipeditor.components.viewer.painters.points.ship.features.InstalledFeature;
 import oth.shipeditor.representation.ShipData;
+import oth.shipeditor.utility.components.ComponentUtilities;
 import oth.shipeditor.utility.components.rendering.CustomTreeNode;
 import oth.shipeditor.utility.overseers.StaticController;
 
@@ -20,24 +27,35 @@ import java.awt.*;
  */
 public class VariantWeaponsPanel extends AbstractVariantPanel {
 
+    private final VariantWeaponsTree weaponsTree;
+
     private final JPanel contentPanel;
 
-    private VariantWeaponsTree weaponsTree;
+    private final JPanel northPanel;
+
+    private JPanel pickedWeaponPanel;
+
 
     public VariantWeaponsPanel() {
         this.setLayout(new BorderLayout());
+
+        northPanel = new JPanel();
+        northPanel.setLayout(new BorderLayout());
+        this.add(northPanel, BorderLayout.PAGE_START);
 
         contentPanel = new JPanel();
         contentPanel.setLayout(new BorderLayout());
         this.add(contentPanel, BorderLayout.CENTER);
 
+        CustomTreeNode weaponGroups = new CustomTreeNode("Weapon Groups");
+        weaponsTree = new VariantWeaponsTree(weaponGroups);
+        ToolTipManager.sharedInstance().registerComponent(weaponsTree);
+
+        JScrollPane scroller = new JScrollPane(weaponsTree);
+        contentPanel.add(scroller, BorderLayout.CENTER);
+
         ViewerLayer layer = StaticController.getActiveLayer();
         this.refreshPanel(layer);
-    }
-
-    private void installPlaceholders() {
-        JPanel placeholder = this.createContentPlaceholder();
-        contentPanel.add(placeholder, BorderLayout.CENTER);
     }
 
     @Override
@@ -53,60 +71,78 @@ public class VariantWeaponsPanel extends AbstractVariantPanel {
         EventBus.subscribe(event -> {
             if (event instanceof VariantPanelRepaintQueued) {
                 this.refreshPanel(StaticController.getActiveLayer());
+                this.refreshWeaponPicker();
+            }
+        });
+        EventBus.subscribe(event -> {
+            if (event instanceof WeaponEntryPicked) {
+                this.refreshWeaponPicker();
             }
         });
     }
 
+    private void refreshWeaponPicker() {
+        if (pickedWeaponPanel != null) {
+            contentPanel.remove(pickedWeaponPanel);
+        }
+
+        WeaponCSVEntry pickedForInstall = FeaturesOverseer.getWeaponForInstall();
+        if (pickedForInstall != null) {
+            pickedWeaponPanel = pickedForInstall.createPickedWeaponPanel();
+        } else {
+            FontIcon hintIcon = FontIcon.of(FluentUiRegularAL.INFO_28, 28);
+            String weaponHint = "Use right-click context menu of game data widget to add entries.";
+            pickedWeaponPanel = ComponentUtilities.createHintPanel(weaponHint, hintIcon);
+        }
+        contentPanel.add(pickedWeaponPanel, BorderLayout.PAGE_START);
+
+        this.revalidate();
+        this.repaint();
+    }
+
     @Override
     public void refreshPanel(ViewerLayer selected) {
-        contentPanel.removeAll();
-        weaponsTree = null;
+        weaponsTree.clearRoot();
+        northPanel.removeAll();
 
         if (!(selected instanceof ShipLayer checkedLayer)) {
-            this.installPlaceholders();
             return;
         }
 
         ShipData shipData = checkedLayer.getShipData();
         if (shipData == null) {
-            this.installPlaceholders();
             return;
         }
-
         ShipPainter painter = checkedLayer.getPainter();
-
-        // TODO: rewrite so that tree is created only once per panel and not on every refresh.
 
         ShipVariant activeVariant = painter.getActiveVariant();
         if (activeVariant != null && !activeVariant.isEmpty()) {
-            CustomTreeNode weaponGroups = new CustomTreeNode("Weapon Groups");
-            weaponsTree = new VariantWeaponsTree(weaponGroups, painter.getWeaponSlotPainter());
-            ToolTipManager.sharedInstance().registerComponent(weaponsTree);
-            contentPanel.add(weaponsTree, BorderLayout.CENTER);
+            weaponsTree.setSlotPainter(painter.getWeaponSlotPainter());
             weaponsTree.repopulateTree(activeVariant, checkedLayer);
-        } else {
-            this.installPlaceholders();
+
+            northPanel.add(VariantWeaponsPanel.createDataSummary(activeVariant), BorderLayout.CENTER);
         }
+        this.revalidate();
+        this.repaint();
     }
 
-    private void populateVariantWeapons(ShipVariant variant) {
-        JPanel weaponsPlaceholder = new JPanel();
-        weaponsPlaceholder.setLayout(new BoxLayout(weaponsPlaceholder, BoxLayout.PAGE_AXIS));
+    private static JPanel createDataSummary(ShipVariant activeVariant) {
+        JPanel container = new JPanel();
+        container.setLayout(new GridBagLayout());
 
-        var allWeapons = variant.getAllFittedWeapons();
+        var allWeapons = activeVariant.getAllFittedWeapons();
+        int totalOP = 0;
 
-        if (allWeapons.isEmpty()) {
-            weaponsPlaceholder.add(new JLabel("No installed weapons"));
-        } else {
-            allWeapons.forEach((slotID, installedFeature) -> {
-                JLabel weaponEntry = new JLabel(slotID + ": " + installedFeature.getFeatureID());
-                weaponsPlaceholder.add(weaponEntry);
-            });
+        for (InstalledFeature feature : allWeapons.values()) {
+            totalOP += feature.getOPCost();
         }
 
-        contentPanel.add(weaponsPlaceholder, BorderLayout.CENTER);
+        JLabel totalOPLabel = new JLabel("Total OP in weapons:");
+        JLabel value = new JLabel(String.valueOf(totalOP));
+
+        ComponentUtilities.addLabelAndComponent(container, totalOPLabel, value, 0);
+
+        return container;
     }
-
-
 
 }

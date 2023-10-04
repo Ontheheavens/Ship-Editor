@@ -2,15 +2,18 @@ package oth.shipeditor.components.instrument.ship.variant;
 
 import com.formdev.flatlaf.ui.FlatLineBorder;
 import lombok.Getter;
+import lombok.Setter;
 import org.apache.commons.collections4.map.ListOrderedMap;
 import org.kordamp.ikonli.boxicons.BoxiconsRegular;
 import org.kordamp.ikonli.boxicons.BoxiconsSolid;
 import org.kordamp.ikonli.fluentui.FluentUiRegularAL;
 import org.kordamp.ikonli.swing.FontIcon;
 import oth.shipeditor.communication.EventBus;
+import oth.shipeditor.communication.events.components.SelectWeaponDataEntry;
 import oth.shipeditor.communication.events.viewer.ViewerRepaintQueued;
 import oth.shipeditor.communication.events.viewer.points.PointSelectQueued;
 import oth.shipeditor.components.datafiles.entities.CSVEntry;
+import oth.shipeditor.components.datafiles.entities.WeaponCSVEntry;
 import oth.shipeditor.components.viewer.entities.WorldPoint;
 import oth.shipeditor.components.viewer.entities.weapon.SlotData;
 import oth.shipeditor.components.viewer.entities.weapon.WeaponSlotPoint;
@@ -37,6 +40,7 @@ import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.tree.*;
 import java.awt.*;
+import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.Enumeration;
 import java.util.List;
@@ -52,14 +56,16 @@ public class VariantWeaponsTree extends DynamicWidthTree {
     @Getter
     private final CustomTreeNode rootNode;
 
-    private final WeaponSlotPainter slotPainter;
+    private CustomTreeNode cachedSelectedNode;
+
+    @Getter @Setter
+    private WeaponSlotPainter slotPainter;
 
     private DefaultTreeModel model;
 
-    VariantWeaponsTree(CustomTreeNode root, WeaponSlotPainter weaponSlotPainter) {
+    VariantWeaponsTree(CustomTreeNode root) {
         super(root);
         this.rootNode = root;
-        this.slotPainter = weaponSlotPainter;
         this.model = new DefaultTreeModel(rootNode);
         this.setModel(model);
         this.setCellRenderer(new WeaponsTreeCellRenderer(this));
@@ -98,6 +104,7 @@ public class VariantWeaponsTree extends DynamicWidthTree {
                 }
             }
         });
+        this.addMouseListener(new ContextMenuListener());
     }
 
     void selectNode(WorldPoint point) {
@@ -105,7 +112,9 @@ public class VariantWeaponsTree extends DynamicWidthTree {
         if (point instanceof WeaponSlotPoint slotPoint) {
             actOnNodeByPoint(slotPoint, node -> {
                 this.expandTree();
-                this.setSelectionPath(new TreePath(node.getPath()));
+                TreePath path = new TreePath(node.getPath());
+                this.setSelectionPath(path);
+                this.scrollPathToVisible(path);
             });
         }
     }
@@ -113,15 +122,12 @@ public class VariantWeaponsTree extends DynamicWidthTree {
     private void addWeaponGroup(FittedWeaponGroup group) {
         MutableTreeNode newChild = new CustomTreeNode(group);
         model.insertNodeInto(newChild, rootNode, rootNode.getChildCount());
-        model.reload();
-        this.expandTree();
     }
 
     void insertWeaponGroup(FittedWeaponGroup group, int index) {
         MutableTreeNode newChild = new CustomTreeNode(group);
         model.insertNodeInto(newChild, rootNode, index);
         model.reload();
-        this.expandTree();
     }
 
     void removeWeaponGroup(FittedWeaponGroup group) {
@@ -134,7 +140,6 @@ public class VariantWeaponsTree extends DynamicWidthTree {
                 model.reload();
             }
         }
-        this.expandTree();
     }
 
     private void addWeaponInstall(InstalledFeature feature, FittedWeaponGroup target) {
@@ -149,7 +154,6 @@ public class VariantWeaponsTree extends DynamicWidthTree {
                 model.reload();
             }
         }
-        this.expandTree();
     }
 
     void removeWeaponInstall(SlotData point) {
@@ -211,9 +215,13 @@ public class VariantWeaponsTree extends DynamicWidthTree {
             ShipLayer layer = (ShipLayer) StaticController.getActiveLayer();
             var shipPainter = layer.getPainter();
             var variant = shipPainter.getActiveVariant();
+            List<FittedWeaponGroup> weaponGroups = variant.getWeaponGroups();
+            if (weaponGroups.size() >= 7) {
+                return null;
+            }
 
             FittedWeaponGroup weaponGroup = new FittedWeaponGroup(variant, false, FireMode.LINKED);
-            List<FittedWeaponGroup> weaponGroups = variant.getWeaponGroups();
+
             weaponGroups.add(weaponGroup);
 
             MutableTreeNode groupNode = new CustomTreeNode(weaponGroup);
@@ -221,6 +229,11 @@ public class VariantWeaponsTree extends DynamicWidthTree {
             return groupNode;
         }
         return null;
+    }
+
+    @Override
+    public boolean isNodeDragValid(DefaultMutableTreeNode dragged) {
+        return dragged.getUserObject() instanceof InstalledFeature;
     }
 
     @SuppressWarnings("ChainOfInstanceofChecks")
@@ -240,6 +253,94 @@ public class VariantWeaponsTree extends DynamicWidthTree {
         EditDispatch.postWeaponGroupsRearranged(feature, targetGroup, targetIndex);
 
         this.reloadModel();
+    }
+
+    private final class ContextMenuListener extends MouseAdapter {
+        @Override
+        public void mousePressed(MouseEvent e) {
+            if(e.getButton() == MouseEvent.BUTTON3){
+                Point point = e.getPoint();
+                TreePath pathForLocation = VariantWeaponsTree.this.getPathForLocation(point.x, point.y);
+                if(pathForLocation != null){
+                    cachedSelectedNode = (CustomTreeNode) pathForLocation.getLastPathComponent();
+                    showMenu(pathForLocation, e);
+                } else{
+                    cachedSelectedNode = null;
+                }
+            }
+            super.mousePressed(e);
+        }
+
+        private void showMenu(TreePath pathForLocation, MouseEvent e) {
+            CustomTreeNode selectedNode = VariantWeaponsTree.this.cachedSelectedNode;
+            Object nodeUserObject = selectedNode.getUserObject();
+            JPopupMenu contextMenu = createContextMenu(nodeUserObject);
+            if (contextMenu != null) {
+                VariantWeaponsTree.this.setSelectionPath(pathForLocation);
+                contextMenu.show(VariantWeaponsTree.this, e.getPoint().x, e.getPoint().y);
+            }
+        }
+
+        private JPopupMenu createContextMenu(Object nodeUserObject) {
+            JPopupMenu contextMenu = null;
+            switch (nodeUserObject) {
+                case FittedWeaponGroup weaponGroup -> {
+                    contextMenu = new JPopupMenu();
+
+                    JMenu modeSubmenu = new JMenu("Firing mode");
+
+                    JMenuItem linkedMode = new JRadioButtonMenuItem("Mode: Linked");
+                    linkedMode.setSelected(weaponGroup.getMode() == FireMode.LINKED);
+                    linkedMode.addActionListener(e -> {
+                        weaponGroup.setMode(FireMode.LINKED);
+                        VariantWeaponsTree.this.repaint();
+                    });
+                    modeSubmenu.add(linkedMode);
+
+                    JMenuItem alternatingMode = new JRadioButtonMenuItem("Mode: Alternating");
+                    alternatingMode.setSelected(weaponGroup.getMode() == FireMode.ALTERNATING);
+                    alternatingMode.addActionListener(e -> {
+                        weaponGroup.setMode(FireMode.ALTERNATING);
+                        VariantWeaponsTree.this.repaint();
+                    });
+                    modeSubmenu.add(alternatingMode);
+
+                    contextMenu.add(modeSubmenu);
+
+                    JCheckBoxMenuItem autofire = new JCheckBoxMenuItem("Toggle autofire");
+                    autofire.setSelected(weaponGroup.isAutofire());
+                    autofire.addActionListener(e -> {
+                        weaponGroup.setAutofire(autofire.isSelected());
+                        VariantWeaponsTree.this.repaint();
+                    });
+                    contextMenu.add(autofire);
+                }
+                case InstalledFeature feature -> {
+                    contextMenu = new JPopupMenu();
+
+                    JMenuItem uninstallFeature = new JMenuItem(StringValues.UNINSTALL_FEATURE);
+                    uninstallFeature.addActionListener(e -> {
+                        var group = feature.getParentGroup();
+                        EditDispatch.postFeatureUninstalled(group.getWeapons(), feature.getSlotID(),
+                                feature, null);
+                    });
+                    contextMenu.add(uninstallFeature);
+
+                    JMenuItem selectEntry = new JMenuItem(StringValues.SELECT_WEAPON_ENTRY);
+                    selectEntry.addActionListener(event ->  {
+                        CSVEntry dataEntry = feature.getDataEntry();
+                        if (dataEntry instanceof WeaponCSVEntry weaponEntry) {
+                            EventBus.publish(new SelectWeaponDataEntry(weaponEntry));
+                        }
+                    });
+                    contextMenu.add(selectEntry);
+                }
+                default -> {}
+            }
+
+            return contextMenu;
+        }
+
     }
 
     private final class WeaponsTreeCellRenderer extends SortableTreeCellRenderer {
@@ -318,6 +419,91 @@ public class VariantWeaponsTree extends DynamicWidthTree {
             }
         }
 
+        private void handleGroupAppearance(CustomTreeNode treeNode, FittedWeaponGroup weaponGroup) {
+            JLabel iconLabel = getIconLabel();
+            JLabel textLabel = getTextLabel();
+
+            iconLabel.setIcon(FontIcon.of(BoxiconsRegular.CROSSHAIR, 16, Color.DARK_GRAY));
+            iconLabel.setBorder(new EmptyBorder(0, 0, 0, 2));
+            textLabel.setText("Weapon Group " + weaponGroup.getIndexToDisplay());
+
+            setBackgroundNonSelectionColor(Color.LIGHT_GRAY);
+
+            if (weaponGroup.isAutofire()) {
+                slotTypeIcon.setIcon(FontIcon.of(FluentUiRegularAL.DEVELOPER_BOARD_24,
+                        18, Color.DARK_GRAY));
+                slotTypeIcon.setVisible(true);
+
+                treeNode.setFirstLineTip("Autofire: ON");
+
+                slotTypeIcon.setOpaque(false);
+                slotTypeIcon.setBackground(null);
+                slotTypeIcon.setBorder(new EmptyBorder(0, 0, 0, 0));
+            }
+            Icon mode;
+            if (weaponGroup.getMode() == FireMode.ALTERNATING) {
+                mode = FontIcon.of(BoxiconsRegular.SLIDER, 18, Color.DARK_GRAY);
+                treeNode.setSecondLineTip("Firing mode: ALTERNATING");
+            } else {
+                mode = FontIcon.of(BoxiconsRegular.POLL, 18, Color.DARK_GRAY);
+                treeNode.setSecondLineTip("Firing mode: LINKED");
+            }
+            builtInIcon.setIcon(mode);
+            builtInIcon.setVisible(true);
+
+            textLabel.setBorder(new EmptyBorder(0, 0, 0, 0));
+        }
+
+        private void handleFeatureAppearance(CustomTreeNode treeNode, InstalledFeature feature) {
+            JLabel iconLabel = getIconLabel();
+            JLabel textLabel = getTextLabel();
+
+            var slot = getSlotPoint(feature);
+            CSVEntry dataEntry = feature.getDataEntry();
+
+            lowerRightLabel.setText(dataEntry.toString());
+            treeNode.setFirstLineTip(StringValues.WEAPON_ID + feature.getFeatureID());
+
+            if (feature.isContainedInBuiltIns()) {
+                builtInIcon.setIcon(FontIcon.of(BoxiconsSolid.LOCK_ALT, 16, Color.GRAY));
+                builtInIcon.setVisible(true);
+
+                treeNode.setSecondLineTip("Built-in: locked in variant");
+                textLabel.setBorder(new EmptyBorder(0, 1, 0, 0));
+            }
+
+            if (slot == null) {
+                setForeground(Color.RED);
+                iconLabel.setIcon(FontIcon.of(BoxiconsRegular.ERROR, 18, Color.RED));
+                iconLabel.setOpaque(false);
+                iconLabel.setBorder(new EmptyBorder(1, 0, 0, 0));
+
+                textLabel.setBorder(new EmptyBorder(0, 0, 0, 0));
+
+                treeNode.setSecondLineTip(StringValues.INVALIDATED_SLOT_NOT_FOUND);
+            } else {
+                slotTypeIcon.setVisible(true);
+                WeaponType weaponType = slot.getWeaponType();
+                Icon color = ComponentUtilities.createIconFromColor(weaponType.getColor(), 10, 10);
+                slotTypeIcon.setIcon(color);
+
+                WeaponSize weaponSize = slot.getWeaponSize();
+                iconLabel.setIcon(weaponSize.getIcon());
+
+                if (!slot.canFit(feature)) {
+                    setForeground(Color.RED);
+                    String weaponUnfitForSlot = StringValues.INVALIDATED_WEAPON_UNFIT_FOR_SLOT;
+                    if (feature.isContainedInBuiltIns()) {
+                        weaponUnfitForSlot = Utility.getWithLinebreaks(weaponUnfitForSlot,
+                                "Built-in: will appear in game");
+                    }
+                    treeNode.setSecondLineTip(weaponUnfitForSlot);
+                }
+            }
+            textLabel.setText(feature.getSlotID());
+            upperRightLabel.setText("OP: " + feature.getOPCost());
+        }
+
         @SuppressWarnings({"ParameterHidesMemberVariable", "ChainOfInstanceofChecks"})
         @Override
         public Component getTreeCellRendererComponent(JTree tree, Object value, boolean selected,
@@ -350,80 +536,9 @@ public class VariantWeaponsTree extends DynamicWidthTree {
             treeNode.setFirstLineTip(null);
             textLabel.setBorder(new EmptyBorder(0, 4, 0, 0));
             if (object instanceof FittedWeaponGroup checked) {
-                iconLabel.setIcon(FontIcon.of(BoxiconsRegular.CROSSHAIR, 16, Color.DARK_GRAY));
-                iconLabel.setBorder(new EmptyBorder(0, 0, 0, 2));
-                textLabel.setText("Weapon Group " + checked.getIndexToDisplay());
-
-                setBackgroundNonSelectionColor(Color.LIGHT_GRAY);
-
-                if (checked.isAutofire()) {
-                    slotTypeIcon.setIcon(FontIcon.of(FluentUiRegularAL.DEVELOPER_BOARD_24,
-                            18, Color.DARK_GRAY));
-                    slotTypeIcon.setVisible(true);
-
-                    treeNode.setFirstLineTip("Autofire: ON");
-
-                    slotTypeIcon.setOpaque(false);
-                    slotTypeIcon.setBackground(null);
-                    slotTypeIcon.setBorder(new EmptyBorder(0, 0, 0, 0));
-                }
-                Icon mode;
-                if (checked.getMode() == FireMode.ALTERNATING) {
-                    mode = FontIcon.of(BoxiconsRegular.SLIDER, 18, Color.DARK_GRAY);
-                    treeNode.setSecondLineTip("Firing mode: ALTERNATING");
-                } else {
-                    mode = FontIcon.of(BoxiconsRegular.POLL, 18, Color.DARK_GRAY);
-                    treeNode.setSecondLineTip("Firing mode: LINKED");
-                }
-                builtInIcon.setIcon(mode);
-                builtInIcon.setVisible(true);
-
-                textLabel.setBorder(new EmptyBorder(0, 0, 0, 0));
+                this.handleGroupAppearance(treeNode, checked);
             } else if (object instanceof InstalledFeature checked && leaf) {
-                var slot = getSlotPoint(checked);
-                CSVEntry dataEntry = checked.getDataEntry();
-
-                lowerRightLabel.setText(dataEntry.toString());
-                treeNode.setFirstLineTip(StringValues.WEAPON_ID + checked.getFeatureID());
-
-                if (checked.isContainedInBuiltIns()) {
-                    builtInIcon.setIcon(FontIcon.of(BoxiconsSolid.LOCK_ALT, 16, Color.GRAY));
-                    builtInIcon.setVisible(true);
-
-                    treeNode.setSecondLineTip("Built-in: locked in variant");
-                    textLabel.setBorder(new EmptyBorder(0, 1, 0, 0));
-                }
-
-                if (slot == null) {
-                    setForeground(Color.RED);
-                    iconLabel.setIcon(FontIcon.of(BoxiconsRegular.ERROR, 18, Color.RED));
-                    iconLabel.setOpaque(false);
-                    iconLabel.setBorder(new EmptyBorder(1, 0, 0, 0));
-
-                    textLabel.setBorder(new EmptyBorder(0, 0, 0, 0));
-
-                    treeNode.setSecondLineTip(StringValues.INVALIDATED_SLOT_NOT_FOUND);
-                } else {
-                    slotTypeIcon.setVisible(true);
-                    WeaponType weaponType = slot.getWeaponType();
-                    Icon color = ComponentUtilities.createIconFromColor(weaponType.getColor(), 10, 10);
-                    slotTypeIcon.setIcon(color);
-
-                    WeaponSize weaponSize = slot.getWeaponSize();
-                    iconLabel.setIcon(weaponSize.getIcon());
-
-                    if (!slot.canFit(checked)) {
-                        setForeground(Color.RED);
-                        String weaponUnfitForSlot = StringValues.INVALIDATED_WEAPON_UNFIT_FOR_SLOT;
-                        if (checked.isContainedInBuiltIns()) {
-                            weaponUnfitForSlot = Utility.getWithLinebreaks(weaponUnfitForSlot,
-                                    "Built-in: will appear in game");
-                        }
-                        treeNode.setSecondLineTip(weaponUnfitForSlot);
-                    }
-                }
-                textLabel.setText(checked.getSlotID());
-                upperRightLabel.setText("OP: " + checked.getOPCost());
+                this.handleFeatureAppearance(treeNode, checked);
             } else {
                 textLabel.setText(" " + value);
             }

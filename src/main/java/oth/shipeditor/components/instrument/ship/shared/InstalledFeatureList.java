@@ -15,6 +15,7 @@ import oth.shipeditor.components.viewer.painters.points.ship.WeaponSlotPainter;
 import oth.shipeditor.utility.overseers.StaticController;
 import oth.shipeditor.utility.components.containers.SortableList;
 import oth.shipeditor.utility.components.rendering.InstalledFeatureCellRenderer;
+import oth.shipeditor.utility.text.StringValues;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -141,11 +142,11 @@ public class InstalledFeatureList extends SortableList<InstalledFeature> {
 
         private JPopupMenu getContextMenu() {
             JPopupMenu menu = new JPopupMenu();
-            JMenuItem removePoint = new JMenuItem("Uninstall feature");
+            JMenuItem removePoint = new JMenuItem(StringValues.UNINSTALL_FEATURE);
             removePoint.addActionListener(event -> actOnSelectedEntry(uninstaller));
             menu.add(removePoint);
 
-            JMenuItem selectEntry = new JMenuItem("Select weapon entry");
+            JMenuItem selectEntry = new JMenuItem(StringValues.SELECT_WEAPON_ENTRY);
             selectEntry.addActionListener(event -> actOnSelectedEntry(feature -> {
                 CSVEntry dataEntry = feature.getDataEntry();
                 if (dataEntry instanceof WeaponCSVEntry weaponEntry) {

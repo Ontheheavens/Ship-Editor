@@ -44,6 +44,8 @@ public final class StringValues {
     public static final String INVALIDATED_WEAPON_UNFIT_FOR_SLOT = "Invalidated: weapon unfit for slot";
     public static final String INVALIDATED_SLOT_NOT_FOUND = "Invalidated: slot not found";
     public static final String WEAPON_ID = "Weapon ID: ";
+    public static final String SELECT_WEAPON_ENTRY = "Select weapon entry";
+    public static final String UNINSTALL_FEATURE = "Uninstall feature";
 
     private StringValues() {
     }

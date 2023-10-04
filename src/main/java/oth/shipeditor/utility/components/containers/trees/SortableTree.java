@@ -53,6 +53,10 @@ public abstract class SortableTree extends JTree {
      */
     public abstract void sortTreeModel(DefaultMutableTreeNode dragged, DefaultMutableTreeNode target, int targetIndex);
 
+    public boolean isNodeDragValid(DefaultMutableTreeNode dragged) {
+        return true;
+    }
+
     /**
      * @return newly created parent for dragged node if the drag is valid, or null if not.
      */
@@ -127,6 +131,13 @@ public abstract class SortableTree extends JTree {
                 return;
             }
 
+            Object draggingObject = Optional.ofNullable(getSelectionPath())
+                    .map(TreePath::getLastPathComponent).orElse(null);
+            if (!isNodeDragValid((DefaultMutableTreeNode) draggingObject)) {
+                rejectDrag(dtde);
+                return;
+            }
+
             // Figure out which cell it's over, can't drag to self.
             Point pt = dtde.getLocation();
             TreePath path = getPathForLocation(pt.x, pt.y);
@@ -158,7 +169,7 @@ public abstract class SortableTree extends JTree {
                     .map(TreePath::getLastPathComponent).orElse(null);
             Point pt = dtde.getLocation();
             TreePath path = getPathForLocation(pt.x, pt.y);
-            if (Objects.isNull(path) || !(draggingObject instanceof MutableTreeNode draggingNode)) {
+            if (Objects.isNull(path) || !(draggingObject instanceof DefaultMutableTreeNode draggingNode)) {
                 dtde.dropComplete(false);
                 return;
             }
@@ -168,6 +179,7 @@ public abstract class SortableTree extends JTree {
                 dtde.dropComplete(false);
                 return;
             }
+
             dtde.acceptDrop(DnDConstants.ACTION_MOVE);
 
             DefaultTreeModel model = (DefaultTreeModel) getModel();

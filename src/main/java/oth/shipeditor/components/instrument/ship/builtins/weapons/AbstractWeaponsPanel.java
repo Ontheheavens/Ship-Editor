@@ -5,6 +5,7 @@ import org.kordamp.ikonli.swing.FontIcon;
 import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.BusEvent;
 import oth.shipeditor.communication.events.components.BuiltInsPanelsRepaintQueued;
+import oth.shipeditor.communication.events.components.WeaponEntryPicked;
 import oth.shipeditor.communication.events.viewer.ViewerRepaintQueued;
 import oth.shipeditor.components.datafiles.entities.WeaponCSVEntry;
 import oth.shipeditor.components.instrument.ship.builtins.AbstractBuiltInsPanel;
@@ -45,8 +46,30 @@ public abstract class AbstractWeaponsPanel extends AbstractBuiltInsPanel {
         EventBus.subscribe(event -> {
             if (AbstractWeaponsPanel.isRepaintEvent(event)) {
                 this.refreshPanel(getCachedLayer());
+                this.refreshWeaponPicker();
+            }
+            if (event instanceof WeaponEntryPicked) {
+                this.refreshWeaponPicker();
             }
         });
+    }
+
+    private void refreshWeaponPicker() {
+        if (weaponPickPanel != null) {
+            northContainer.remove(weaponPickPanel);
+        }
+
+        WeaponCSVEntry pickedForInstall = FeaturesOverseer.getWeaponForInstall();
+        if (pickedForInstall != null) {
+            weaponPickPanel = pickedForInstall.createPickedWeaponPanel();
+        } else {
+            FontIcon hintIcon = FontIcon.of(FluentUiRegularAL.INFO_28, 28);
+            weaponPickPanel = ComponentUtilities.createHintPanel(getHintText(), hintIcon);
+        }
+        northContainer.add(weaponPickPanel, BorderLayout.CENTER);
+
+        this.revalidate();
+        this.repaint();
     }
 
     protected abstract PainterVisibility getVisibilityOfBuiltInKind(InstalledFeaturePainter painter);
@@ -116,19 +139,6 @@ public abstract class AbstractWeaponsPanel extends AbstractBuiltInsPanel {
         if (activeSkin != null && !activeSkin.isBase()) {
             this.handleSkinBuiltInsChanges(layer);
         }
-
-        if (weaponPickPanel != null) {
-            northContainer.remove(weaponPickPanel);
-        }
-
-        WeaponCSVEntry pickedForInstall = FeaturesOverseer.getWeaponForInstall();
-        if (pickedForInstall != null) {
-            weaponPickPanel = pickedForInstall.createPickedWeaponPanel();
-        } else {
-            FontIcon hintIcon = FontIcon.of(FluentUiRegularAL.INFO_28, 28);
-            weaponPickPanel = AbstractBuiltInsPanel.createHintPanel(getHintText(), hintIcon);
-        }
-        northContainer.add(weaponPickPanel, BorderLayout.CENTER);
 
         this.revalidate();
         this.repaint();

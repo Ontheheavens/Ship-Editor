@@ -83,6 +83,7 @@ public class WeaponCSVEntry implements CSVEntry, InstallableEntry {
     public int getOPCost() {
         var data = this.getRowData();
         String costText = data.get("OPs");
+        if (costText == null|| costText.isEmpty()) return 0;
         return Integer.parseInt(costText);
     }
 
