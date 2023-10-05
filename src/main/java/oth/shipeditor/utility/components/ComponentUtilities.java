@@ -539,6 +539,8 @@ public final class ComponentUtilities {
         hintPanel.add(hintInfo);
 
         hintPanel.setMaximumSize(new Dimension(Integer.MAX_VALUE, 45));
+
+        Insets insets = new Insets(1, 0, 0, 0);
         return hintPanel;
     }
 

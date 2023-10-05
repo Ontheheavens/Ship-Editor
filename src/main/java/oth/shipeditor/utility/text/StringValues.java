@@ -46,6 +46,9 @@ public final class StringValues {
     public static final String WEAPON_ID = "Weapon ID: ";
     public static final String SELECT_WEAPON_ENTRY = "Select weapon entry";
     public static final String UNINSTALL_FEATURE = "Uninstall feature";
+    public static final String PICKED_WEAPON = "Picked weapon";
+    public static final String USE_RIGHT_CLICK_CONTEXT_MENU_OF_GAME_DATA_WIDGET_TO_ADD_ENTRIES = "Use right-click context menu of game data widget to add entries.";
+    public static final String PICKED_FOR_INSTALL = "Picked for install";
 
     private StringValues() {
     }

@@ -287,23 +287,7 @@ public class VariantWeaponsTree extends DynamicWidthTree {
                 case FittedWeaponGroup weaponGroup -> {
                     contextMenu = new JPopupMenu();
 
-                    JMenu modeSubmenu = new JMenu("Firing mode");
-
-                    JMenuItem linkedMode = new JRadioButtonMenuItem("Mode: Linked");
-                    linkedMode.setSelected(weaponGroup.getMode() == FireMode.LINKED);
-                    linkedMode.addActionListener(e -> {
-                        weaponGroup.setMode(FireMode.LINKED);
-                        VariantWeaponsTree.this.repaint();
-                    });
-                    modeSubmenu.add(linkedMode);
-
-                    JMenuItem alternatingMode = new JRadioButtonMenuItem("Mode: Alternating");
-                    alternatingMode.setSelected(weaponGroup.getMode() == FireMode.ALTERNATING);
-                    alternatingMode.addActionListener(e -> {
-                        weaponGroup.setMode(FireMode.ALTERNATING);
-                        VariantWeaponsTree.this.repaint();
-                    });
-                    modeSubmenu.add(alternatingMode);
+                    JMenu modeSubmenu = getModeSubmenu(weaponGroup);
 
                     contextMenu.add(modeSubmenu);
 
@@ -339,6 +323,27 @@ public class VariantWeaponsTree extends DynamicWidthTree {
             }
 
             return contextMenu;
+        }
+
+        private JMenu getModeSubmenu(FittedWeaponGroup weaponGroup) {
+            JMenu modeSubmenu = new JMenu("Firing mode");
+
+            JMenuItem linkedMode = new JRadioButtonMenuItem("Mode: Linked");
+            linkedMode.setSelected(weaponGroup.getMode() == FireMode.LINKED);
+            linkedMode.addActionListener(e -> {
+                weaponGroup.setMode(FireMode.LINKED);
+                VariantWeaponsTree.this.repaint();
+            });
+            modeSubmenu.add(linkedMode);
+
+            JMenuItem alternatingMode = new JRadioButtonMenuItem("Mode: Alternating");
+            alternatingMode.setSelected(weaponGroup.getMode() == FireMode.ALTERNATING);
+            alternatingMode.addActionListener(e -> {
+                weaponGroup.setMode(FireMode.ALTERNATING);
+                VariantWeaponsTree.this.repaint();
+            });
+            modeSubmenu.add(alternatingMode);
+            return modeSubmenu;
         }
 
     }

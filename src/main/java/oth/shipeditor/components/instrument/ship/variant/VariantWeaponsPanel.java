@@ -17,6 +17,7 @@ import oth.shipeditor.representation.ShipData;
 import oth.shipeditor.utility.components.ComponentUtilities;
 import oth.shipeditor.utility.components.rendering.CustomTreeNode;
 import oth.shipeditor.utility.overseers.StaticController;
+import oth.shipeditor.utility.text.StringValues;
 
 import javax.swing.*;
 import java.awt.*;
@@ -91,8 +92,10 @@ public class VariantWeaponsPanel extends AbstractVariantPanel {
             pickedWeaponPanel = pickedForInstall.createPickedWeaponPanel();
         } else {
             FontIcon hintIcon = FontIcon.of(FluentUiRegularAL.INFO_28, 28);
-            String weaponHint = "Use right-click context menu of game data widget to add entries.";
+            String weaponHint = StringValues.USE_RIGHT_CLICK_CONTEXT_MENU_OF_GAME_DATA_WIDGET_TO_ADD_ENTRIES;
             pickedWeaponPanel = ComponentUtilities.createHintPanel(weaponHint, hintIcon);
+            Insets insets = new Insets(1, 0, 0, 0);
+            ComponentUtilities.outfitPanelWithTitle(pickedWeaponPanel, insets, StringValues.PICKED_WEAPON);
         }
         contentPanel.add(pickedWeaponPanel, BorderLayout.PAGE_START);
 

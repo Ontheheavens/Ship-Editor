@@ -28,10 +28,7 @@ import oth.shipeditor.representation.weapon.WeaponMount;
 import oth.shipeditor.representation.weapon.WeaponSize;
 import oth.shipeditor.representation.weapon.WeaponType;
 import oth.shipeditor.undo.edits.*;
-import oth.shipeditor.undo.edits.features.FeatureInstallEdit;
-import oth.shipeditor.undo.edits.features.FeatureSortEdit;
-import oth.shipeditor.undo.edits.features.FeatureUninstallEdit;
-import oth.shipeditor.undo.edits.features.WeaponGroupsSortEdit;
+import oth.shipeditor.undo.edits.features.*;
 import oth.shipeditor.undo.edits.points.*;
 import oth.shipeditor.undo.edits.points.engines.*;
 import oth.shipeditor.undo.edits.points.slots.*;
@@ -352,7 +349,7 @@ public final class EditDispatch {
     }
 
     public static<T extends InstallableEntry> void postBuiltInFeaturesSorted(Consumer<Map<String, T>> consumer,
-                                                                             Map<String, T>  oldMap,
+                                                                             Map<String, T> oldMap,
                                                                              Map<String, T> newMap) {
         Edit sortEdit = new FeatureSortEdit<>(consumer, oldMap, newMap);
         UndoOverseer.post(sortEdit);
@@ -374,6 +371,17 @@ public final class EditDispatch {
         UndoOverseer.post(groupsSortEdit);
 
         groupsSortEdit.redo();
+    }
+
+    public static void postModulesSorted(Consumer<Map<String, InstalledFeature>> moduleSetter,
+                                                                             Map<String, InstalledFeature> oldMap,
+                                                                             Map<String, InstalledFeature> newMap) {
+        Edit sortEdit = new ModulesSortEdit(moduleSetter, oldMap, newMap);
+        UndoOverseer.post(sortEdit);
+        moduleSetter.accept(newMap);
+        var repainter = StaticController.getRepainter();
+        repainter.queueViewerRepaint();
+        repainter.queueModulesRepaint();
     }
 
 }

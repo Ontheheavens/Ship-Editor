@@ -65,6 +65,8 @@ public abstract class AbstractWeaponsPanel extends AbstractBuiltInsPanel {
         } else {
             FontIcon hintIcon = FontIcon.of(FluentUiRegularAL.INFO_28, 28);
             weaponPickPanel = ComponentUtilities.createHintPanel(getHintText(), hintIcon);
+            Insets insets = new Insets(1, 0, 0, 0);
+            ComponentUtilities.outfitPanelWithTitle(weaponPickPanel, insets, StringValues.PICKED_WEAPON);
         }
         northContainer.add(weaponPickPanel, BorderLayout.CENTER);
 

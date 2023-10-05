@@ -7,6 +7,7 @@ import oth.shipeditor.communication.events.files.HullTreeEntryCleared;
 import oth.shipeditor.communication.events.files.HullTreeReloadQueued;
 import oth.shipeditor.components.datafiles.OpenDataTarget;
 import oth.shipeditor.components.datafiles.entities.ShipCSVEntry;
+import oth.shipeditor.components.viewer.layers.ship.FeaturesOverseer;
 import oth.shipeditor.menubar.FileUtilities;
 import oth.shipeditor.representation.HullSize;
 import oth.shipeditor.representation.HullSpecFile;
@@ -156,6 +157,8 @@ class HullsTreePanel extends DataTreePanel {
         createRightPanelDataTable(data);
 
         cachedEntry = selected;
+        FeaturesOverseer.setModuleForInstall(selected);
+
         rightPanel.revalidate();
         rightPanel.repaint();
     }

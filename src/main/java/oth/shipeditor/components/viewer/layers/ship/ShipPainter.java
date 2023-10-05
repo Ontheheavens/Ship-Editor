@@ -122,8 +122,10 @@ public class ShipPainter extends LayerPainter {
         });
 
         var parentLayer = getParentLayer();
-        var featuresOverseer = parentLayer.getFeaturesOverseer();
-        featuresOverseer.cleanupListeners();
+        if (parentLayer != null) {
+            var featuresOverseer = parentLayer.getFeaturesOverseer();
+            featuresOverseer.cleanupListeners();
+        }
     }
 
     private void activateEmptySkin() {

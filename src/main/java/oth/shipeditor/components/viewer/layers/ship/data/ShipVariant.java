@@ -12,6 +12,7 @@ import oth.shipeditor.components.viewer.painters.points.ship.features.FittedWeap
 import oth.shipeditor.components.viewer.painters.points.ship.features.InstalledFeature;
 import oth.shipeditor.representation.*;
 import oth.shipeditor.representation.weapon.WeaponSpecFile;
+import oth.shipeditor.undo.EditDispatch;
 import oth.shipeditor.utility.text.StringValues;
 
 import java.nio.file.Path;
@@ -58,6 +59,11 @@ public class ShipVariant implements Variant {
     public ShipVariant(boolean isEmpty) {
         this.empty = isEmpty;
         this.fittedModules = new ListOrderedMap<>();
+    }
+
+    public void sortModules(Map<String, InstalledFeature> rearranged) {
+        var old = this.getFittedModules();
+        EditDispatch.postModulesSorted(this::setFittedModules, old, rearranged);
     }
 
     public String getFileName() {

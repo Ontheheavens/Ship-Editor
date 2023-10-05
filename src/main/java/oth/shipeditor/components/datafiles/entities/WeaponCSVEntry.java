@@ -308,7 +308,7 @@ public class WeaponCSVEntry implements CSVEntry, InstallableEntry {
         weaponPickPanel.add(text);
 
         Insets insets = new Insets(1, 0, 0, 0);
-        ComponentUtilities.outfitPanelWithTitle(weaponPickPanel, insets, "Picked weapon");
+        ComponentUtilities.outfitPanelWithTitle(weaponPickPanel, insets, StringValues.PICKED_FOR_INSTALL);
 
         return weaponPickPanel;
     }
