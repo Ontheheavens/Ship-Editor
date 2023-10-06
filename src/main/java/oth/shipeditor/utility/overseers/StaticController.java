@@ -76,6 +76,10 @@ public final class StaticController {
         manager.setActiveLayer(current);
     }
 
+    public static void selectLayer(ViewerLayer layer) {
+        LayerManager manager = viewer.getLayerManager();
+        manager.setActiveLayer(layer);
+    }
 
     public static AffineTransform getScreenToWorld() {
         if (activeLayer != null) {

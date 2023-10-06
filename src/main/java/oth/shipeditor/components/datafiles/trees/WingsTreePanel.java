@@ -100,8 +100,7 @@ public class WingsTreePanel extends CSVDataTreePanel<WingCSVEntry>{
         variantWrapper.setLayout(new BoxLayout(variantWrapper, BoxLayout.PAGE_AXIS));
 
         List<VariantFile> memberVariantFile = Collections.singletonList(selected.retrieveMemberVariant());
-        JPanel variantPanel = DataTreePanel.createVariantsPanel(memberVariantFile,
-                new Dimension(0, 2));
+        JPanel variantPanel = DataTreePanel.createVariantsPanel(memberVariantFile, false);
         variantWrapper.add(variantPanel);
 
         constraints.gridy = 1;

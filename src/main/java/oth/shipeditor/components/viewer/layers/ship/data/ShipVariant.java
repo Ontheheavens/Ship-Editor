@@ -3,14 +3,15 @@ package oth.shipeditor.components.viewer.layers.ship.data;
 import lombok.Getter;
 import lombok.Setter;
 import org.apache.commons.collections4.map.ListOrderedMap;
-import oth.shipeditor.components.datafiles.entities.ShipCSVEntry;
 import oth.shipeditor.components.datafiles.entities.WeaponCSVEntry;
 import oth.shipeditor.components.viewer.layers.ship.ShipPainter;
 import oth.shipeditor.components.viewer.layers.weapon.WeaponPainter;
 import oth.shipeditor.components.viewer.painters.points.ship.features.FireMode;
 import oth.shipeditor.components.viewer.painters.points.ship.features.FittedWeaponGroup;
 import oth.shipeditor.components.viewer.painters.points.ship.features.InstalledFeature;
-import oth.shipeditor.representation.*;
+import oth.shipeditor.representation.GameDataRepository;
+import oth.shipeditor.representation.SpecWeaponGroup;
+import oth.shipeditor.representation.VariantFile;
 import oth.shipeditor.representation.weapon.WeaponSpecFile;
 import oth.shipeditor.undo.EditDispatch;
 import oth.shipeditor.utility.text.StringValues;
@@ -122,7 +123,6 @@ public class ShipVariant implements Variant {
         return result;
     }
 
-    @SuppressWarnings("OverlyCoupledMethod")
     public void initialize(VariantFile file) {
         this.setVariantId(variantId);
         this.setShipHullId(file.getHullId());
@@ -155,25 +155,8 @@ public class ShipVariant implements Variant {
             fittedModules = new LinkedHashMap<>();
             installedModules.forEach((slotID, variantID) -> {
                 VariantFile variant = GameDataRepository.getVariantByID(variantID);
-                ShipSpecFile specFile = GameDataRepository.retrieveSpecByID(variant.getHullId());
-                String baseHullId;
-                SkinSpecFile skinSpec = null;
-                if (specFile instanceof SkinSpecFile checkedSkin) {
-                    baseHullId = checkedSkin.getBaseHullId();
-                    skinSpec = checkedSkin;
-                } else {
-                    baseHullId = specFile.getHullId();
-                }
-                ShipCSVEntry csvEntry = GameDataRepository.retrieveShipCSVEntryByID(baseHullId);
-                ShipPainter modulePainter = csvEntry.createPainterFromEntry(null);
-
-                if (skinSpec != null) {
-                    ShipSkin shipSkin = ShipSkin.createFromSpec(skinSpec);
-                    modulePainter.setActiveSpec(ActiveShipSpec.SKIN, shipSkin);
-                }
-
-                modulePainter.selectVariant(variant);
-                fittedModules.put(slotID, InstalledFeature.of(slotID, variantID, modulePainter, csvEntry));
+                InstalledFeature moduleFeature = GameDataRepository.createModuleFromVariant(slotID, variant);
+                fittedModules.put(slotID, moduleFeature);
             });
         }
 
@@ -183,6 +166,11 @@ public class ShipVariant implements Variant {
     public String toString() {
         if (empty) {
             return EMPTY_VARIANT;
+        }
+        var hullFile = GameDataRepository.retrieveSpecByID(this.getShipHullId());
+        if (hullFile != null) {
+            String hullName = hullFile.getHullName();
+            return this.displayName + " " + hullName;
         }
         return displayName;
     }

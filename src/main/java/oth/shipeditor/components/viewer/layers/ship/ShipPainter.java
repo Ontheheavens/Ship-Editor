@@ -188,7 +188,10 @@ public class ShipPainter extends LayerPainter {
     }
 
     private void notifyLayerUpdate() {
-        EventBus.publish(new ActiveLayerUpdated(this.getParentLayer()));
+        ShipLayer parentLayer = this.getParentLayer();
+        if (parentLayer != null) {
+            EventBus.publish(new ActiveLayerUpdated(parentLayer));
+        }
         EventBus.publish(new SkinPanelRepaintQueued());
         Events.repaintShipView();
     }

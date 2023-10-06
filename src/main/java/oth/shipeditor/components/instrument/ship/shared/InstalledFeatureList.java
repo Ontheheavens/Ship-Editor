@@ -118,7 +118,21 @@ public class InstalledFeatureList extends SortableList<InstalledFeature> {
         });
     }
 
-    private void actOnSelectedEntry(Consumer<InstalledFeature> action) {
+    protected JMenuItem getSelectEntryOption(InstalledFeature selected) {
+        JMenuItem selectEntry = new JMenuItem(StringValues.SELECT_WEAPON_ENTRY);
+        selectEntry.addActionListener(event -> actOnSelectedEntry(feature -> {
+            CSVEntry dataEntry = feature.getDataEntry();
+            if (dataEntry instanceof WeaponCSVEntry weaponEntry) {
+                EventBus.publish(new SelectWeaponDataEntry(weaponEntry));
+            }
+        }));
+        if (!(selected.getDataEntry() instanceof WeaponCSVEntry)) {
+            selectEntry.setEnabled(false);
+        }
+        return selectEntry;
+    }
+
+    protected void actOnSelectedEntry(Consumer<InstalledFeature> action) {
         int index = this.getSelectedIndex();
         if (index != -1) {
             ListModel<InstalledFeature> listModel = this.getModel();
@@ -141,22 +155,14 @@ public class InstalledFeatureList extends SortableList<InstalledFeature> {
     private class FeatureContextMenuListener extends MouseAdapter {
 
         private JPopupMenu getContextMenu() {
+            InstalledFeature selected = getSelectedValue();
+            if (selected == null) return null;
             JPopupMenu menu = new JPopupMenu();
             JMenuItem removePoint = new JMenuItem(StringValues.UNINSTALL_FEATURE);
             removePoint.addActionListener(event -> actOnSelectedEntry(uninstaller));
             menu.add(removePoint);
 
-            JMenuItem selectEntry = new JMenuItem(StringValues.SELECT_WEAPON_ENTRY);
-            selectEntry.addActionListener(event -> actOnSelectedEntry(feature -> {
-                CSVEntry dataEntry = feature.getDataEntry();
-                if (dataEntry instanceof WeaponCSVEntry weaponEntry) {
-                    EventBus.publish(new SelectWeaponDataEntry(weaponEntry));
-                }
-            }));
-            InstalledFeature selected = getSelectedValue();
-            if (!(selected.getDataEntry() instanceof WeaponCSVEntry)) {
-                selectEntry.setEnabled(false);
-            }
+            JMenuItem selectEntry = getSelectEntryOption(selected);
             menu.add(selectEntry);
 
             return menu;
@@ -166,7 +172,9 @@ public class InstalledFeatureList extends SortableList<InstalledFeature> {
             if ( SwingUtilities.isRightMouseButton(e) ) {
                 setSelectedIndex(locationToIndex(e.getPoint()));
                 JPopupMenu menu = getContextMenu();
-                menu.show(InstalledFeatureList.this, e.getPoint().x, e.getPoint().y);
+                if (menu != null) {
+                    menu.show(InstalledFeatureList.this, e.getPoint().x, e.getPoint().y);
+                }
             }
         }
     }

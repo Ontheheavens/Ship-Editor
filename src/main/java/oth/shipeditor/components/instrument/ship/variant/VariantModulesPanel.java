@@ -3,8 +3,10 @@ package oth.shipeditor.components.instrument.ship.variant;
 import org.kordamp.ikonli.fluentui.FluentUiRegularAL;
 import org.kordamp.ikonli.swing.FontIcon;
 import oth.shipeditor.communication.EventBus;
+import oth.shipeditor.communication.events.components.SelectShipDataEntry;
 import oth.shipeditor.communication.events.components.ShipEntryPicked;
 import oth.shipeditor.communication.events.components.VariantModulesRepaintQueued;
+import oth.shipeditor.components.datafiles.entities.CSVEntry;
 import oth.shipeditor.components.datafiles.entities.ShipCSVEntry;
 import oth.shipeditor.components.instrument.ship.shared.InstalledFeatureList;
 import oth.shipeditor.components.viewer.layers.ViewerLayer;
@@ -14,6 +16,7 @@ import oth.shipeditor.components.viewer.layers.ship.ShipPainter;
 import oth.shipeditor.components.viewer.layers.ship.data.ShipVariant;
 import oth.shipeditor.components.viewer.painters.points.ship.features.InstalledFeature;
 import oth.shipeditor.representation.ShipData;
+import oth.shipeditor.representation.VariantFile;
 import oth.shipeditor.undo.EditDispatch;
 import oth.shipeditor.utility.components.ComponentUtilities;
 import oth.shipeditor.utility.overseers.StaticController;
@@ -95,7 +98,7 @@ public class VariantModulesPanel extends AbstractVariantPanel{
         }
 
         String pickedModule = StringValues.PICKED_FOR_INSTALL;
-        ShipCSVEntry pickedForInstall = FeaturesOverseer.getModuleForInstall();
+        VariantFile pickedForInstall = FeaturesOverseer.getModuleVariantForInstall();
         if (pickedForInstall != null) {
             pickedModulePanel = new JPanel();
             pickedModulePanel.setLayout(new BoxLayout(pickedModulePanel, BoxLayout.LINE_AXIS));
@@ -168,7 +171,22 @@ public class VariantModulesPanel extends AbstractVariantPanel{
         var slotPainter = painter.getWeaponSlotPainter();
 
         var listContainer = new InstalledFeatureList(listModel, slotPainter,
-                removeAction, activeVariant::sortModules);
+                removeAction, activeVariant::sortModules) {
+            @Override
+            protected JMenuItem getSelectEntryOption(InstalledFeature selected) {
+                JMenuItem selectEntry = new JMenuItem("Select ship entry");
+                selectEntry.addActionListener(event -> actOnSelectedEntry(feature -> {
+                    CSVEntry dataEntry = feature.getDataEntry();
+                    if (dataEntry instanceof ShipCSVEntry shipEntry) {
+                        EventBus.publish(new SelectShipDataEntry(shipEntry));
+                    }
+                }));
+                if (!(selected.getDataEntry() instanceof ShipCSVEntry)) {
+                    selectEntry.setEnabled(false);
+                }
+                return selectEntry;
+            }
+        };
         listContainer.setBorder(new LineBorder(Color.LIGHT_GRAY));
         return listContainer;
     }

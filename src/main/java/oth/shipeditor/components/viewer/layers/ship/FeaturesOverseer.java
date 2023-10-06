@@ -8,7 +8,6 @@ import oth.shipeditor.communication.events.components.ShipEntryPicked;
 import oth.shipeditor.communication.events.components.WeaponEntryPicked;
 import oth.shipeditor.communication.events.viewer.control.FeatureInstallQueued;
 import oth.shipeditor.components.datafiles.entities.InstallableEntry;
-import oth.shipeditor.components.datafiles.entities.ShipCSVEntry;
 import oth.shipeditor.components.datafiles.entities.WeaponCSVEntry;
 import oth.shipeditor.components.instrument.ship.EditorInstrument;
 import oth.shipeditor.components.viewer.entities.weapon.SlotData;
@@ -19,6 +18,8 @@ import oth.shipeditor.components.viewer.painters.points.ship.WeaponSlotPainter;
 import oth.shipeditor.components.viewer.painters.points.ship.features.FireMode;
 import oth.shipeditor.components.viewer.painters.points.ship.features.FittedWeaponGroup;
 import oth.shipeditor.components.viewer.painters.points.ship.features.InstalledFeature;
+import oth.shipeditor.representation.GameDataRepository;
+import oth.shipeditor.representation.VariantFile;
 import oth.shipeditor.representation.weapon.WeaponSpecFile;
 import oth.shipeditor.representation.weapon.WeaponType;
 import oth.shipeditor.undo.EditDispatch;
@@ -35,7 +36,7 @@ import java.util.stream.Stream;
  * @author Ontheheavens
  * @since 19.09.2023
  */
-@SuppressWarnings({"WeakerAccess", "OverlyCoupledClass"})
+@SuppressWarnings({"WeakerAccess", "OverlyCoupledClass", "OverlyComplexClass"})
 public class FeaturesOverseer {
 
     @SuppressWarnings("StaticNonFinalField")
@@ -44,7 +45,7 @@ public class FeaturesOverseer {
 
     @SuppressWarnings("StaticNonFinalField")
     @Getter
-    public static ShipCSVEntry moduleForInstall;
+    public static VariantFile moduleVariantForInstall;
     private final ShipLayer parent;
 
     @Getter
@@ -61,8 +62,9 @@ public class FeaturesOverseer {
         EventBus.publish(new WeaponEntryPicked());
     }
 
-    public static void setModuleForInstall(ShipCSVEntry entry) {
-        FeaturesOverseer.moduleForInstall = entry;
+    @SuppressWarnings("StaticMethodOnlyUsedInOneClass")
+    public static void setModuleForInstall(VariantFile variant) {
+        FeaturesOverseer.moduleVariantForInstall = variant;
         EventBus.publish(new ShipEntryPicked());
     }
 
@@ -223,7 +225,8 @@ public class FeaturesOverseer {
                 if (selected == null || !eligibleSlots.contains(selected)) return;
                 var mode = StaticController.getEditorMode();
 
-                if (mode == EditorInstrument.VARIANT_MODULES && moduleForInstall != null) {
+                boolean choseVariant = moduleVariantForInstall != null && !moduleVariantForInstall.isEmpty();
+                if (mode == EditorInstrument.VARIANT_MODULES && choseVariant) {
                     if (selected.isModule()) {
                         installModule(selected);
                     } else {
@@ -247,7 +250,7 @@ public class FeaturesOverseer {
                     }
                     case VARIANT_WEAPONS -> {
                         if (selected.isFittable()) {
-                            fitToVariant(selected);
+                            installWeapon(selected);
                         }
                     }
                 }
@@ -320,7 +323,7 @@ public class FeaturesOverseer {
         }
     }
 
-    private void fitToVariant(SlotData selected) {
+    private void installWeapon(SlotData selected) {
         var shipPainter = parent.getPainter();
         var activeVariant = shipPainter.getActiveVariant();
         if (activeVariant == null || activeVariant.isEmpty()) return;
@@ -363,7 +366,22 @@ public class FeaturesOverseer {
     }
 
     private void installModule(SlotData selected) {
+        var shipPainter = parent.getPainter();
+        var activeVariant = shipPainter.getActiveVariant();
+        if (activeVariant == null || activeVariant.isEmpty()) return;
 
+        String slotID = selected.getId();
+        VariantFile forInstall = moduleVariantForInstall;
+        var modules = activeVariant.getFittedModules();
+
+        InstalledFeature moduleFeature = GameDataRepository.createModuleFromVariant(slotID, forInstall);
+
+        InstalledFeature existing = modules.get(slotID);
+        if (existing != null) {
+            EditDispatch.postFeatureUninstalled(modules, slotID, existing, null);
+        }
+
+        FeaturesOverseer.commenceInstall(slotID, moduleFeature, modules, null);
     }
 
     private void installBuiltIn(SlotData selected) {

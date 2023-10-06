@@ -104,6 +104,12 @@ public class HotkeyHelpPainter implements Painter {
                 hints.add(installHint);
                 hints.add(removeHint);
             }
+            case VARIANT_MODULES -> {
+                String installHint = "Install module: CTRL+LMB";
+                String removeHint = "Uninstall module: Del";
+                hints.add(installHint);
+                hints.add(removeHint);
+            }
             case DECORATIVES -> {
                 String installHint = "Install decorative: CTRL+LMB";
                 String removeHint = "Uninstall decorative: Del";

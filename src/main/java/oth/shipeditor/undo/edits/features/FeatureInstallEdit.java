@@ -3,6 +3,8 @@ package oth.shipeditor.undo.edits.features;
 import lombok.AllArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import oth.shipeditor.components.datafiles.entities.InstallableEntry;
+import oth.shipeditor.components.datafiles.entities.ShipCSVEntry;
+import oth.shipeditor.components.viewer.painters.points.ship.features.InstalledFeature;
 import oth.shipeditor.undo.AbstractEdit;
 import oth.shipeditor.utility.overseers.StaticController;
 
@@ -35,8 +37,12 @@ public class FeatureInstallEdit<T extends InstallableEntry> extends AbstractEdit
         }
         var repainter = StaticController.getRepainter();
         repainter.queueViewerRepaint();
-        repainter.queueBuiltInsRepaint();
-        repainter.queueVariantsRepaint();
+        if (feature instanceof InstalledFeature installed && installed.getDataEntry() instanceof ShipCSVEntry) {
+            repainter.queueModulesRepaint();
+        } else {
+            repainter.queueBuiltInsRepaint();
+            repainter.queueVariantsRepaint();
+        }
     }
 
     @Override
@@ -47,8 +53,12 @@ public class FeatureInstallEdit<T extends InstallableEntry> extends AbstractEdit
         }
         var repainter = StaticController.getRepainter();
         repainter.queueViewerRepaint();
-        repainter.queueBuiltInsRepaint();
-        repainter.queueVariantsRepaint();
+        if (feature instanceof InstalledFeature installed && installed.getDataEntry() instanceof ShipCSVEntry) {
+            repainter.queueModulesRepaint();
+        } else {
+            repainter.queueBuiltInsRepaint();
+            repainter.queueVariantsRepaint();
+        }
     }
     @Override
 

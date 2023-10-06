@@ -3,10 +3,7 @@ package oth.shipeditor.components;
 import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
 import oth.shipeditor.communication.EventBus;
-import oth.shipeditor.communication.events.components.GameDataPanelResized;
-import oth.shipeditor.communication.events.components.InstrumentSplitterResized;
-import oth.shipeditor.communication.events.components.SelectWeaponDataEntry;
-import oth.shipeditor.communication.events.components.WindowGUIShowConfirmed;
+import oth.shipeditor.communication.events.components.*;
 import oth.shipeditor.communication.events.viewer.layers.LayerWasSelected;
 import oth.shipeditor.components.datafiles.GameDataPanel;
 import oth.shipeditor.components.help.HelpMainPanel;
@@ -36,7 +33,7 @@ import java.util.Map;
  * @author Ontheheavens
  * @since 23.06.2023
  */
-@SuppressWarnings({"ClassWithTooManyFields", "OverlyCoupledClass"})
+@SuppressWarnings("ClassWithTooManyFields")
 @Log4j2
 final class TripleSplitContainer extends JSplitPane {
 
@@ -178,8 +175,16 @@ final class TripleSplitContainer extends JSplitPane {
             }
         });
         EventBus.subscribe(event -> {
-            if (event instanceof SelectWeaponDataEntry) {
-                this.minimizer.maximize();
+            switch (event) {
+                case SelectWeaponDataEntry ignored -> {
+                    this.minimizer.maximize();
+                    minimizer.setMinimized(false);
+                }
+                case SelectShipDataEntry ignored -> {
+                    this.minimizer.maximize();
+                    minimizer.setMinimized(false);
+                }
+                default -> {}
             }
         });
         EventBus.subscribe(event -> {

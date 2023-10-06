@@ -101,6 +101,11 @@ public class VariantFile implements Variant {
         if (empty) {
             return ShipVariant.EMPTY_VARIANT;
         }
+        var hullFile = GameDataRepository.retrieveSpecByID(this.hullId);
+        if (hullFile != null) {
+            String hullName = hullFile.getHullName();
+            return this.displayName + " " + hullName;
+        }
         return displayName;
     }
 

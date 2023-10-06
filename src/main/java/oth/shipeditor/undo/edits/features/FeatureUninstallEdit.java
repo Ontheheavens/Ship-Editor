@@ -27,6 +27,8 @@ public class FeatureUninstallEdit<T extends InstallableEntry> extends AbstractEd
      */
     private final Runnable invalidator;
 
+    private final boolean isModule;
+
     @Override
     public void undo() {
         collection.clear();
@@ -36,8 +38,12 @@ public class FeatureUninstallEdit<T extends InstallableEntry> extends AbstractEd
         }
         var repainter = StaticController.getRepainter();
         repainter.queueViewerRepaint();
-        repainter.queueBuiltInsRepaint();
-        repainter.queueVariantsRepaint();
+        if (isModule) {
+            repainter.queueModulesRepaint();
+        } else {
+            repainter.queueBuiltInsRepaint();
+            repainter.queueVariantsRepaint();
+        }
     }
 
     @Override
@@ -49,8 +55,12 @@ public class FeatureUninstallEdit<T extends InstallableEntry> extends AbstractEd
         }
         var repainter = StaticController.getRepainter();
         repainter.queueViewerRepaint();
-        repainter.queueBuiltInsRepaint();
-        repainter.queueVariantsRepaint();
+        if (isModule) {
+            repainter.queueModulesRepaint();
+        } else {
+            repainter.queueBuiltInsRepaint();
+            repainter.queueVariantsRepaint();
+        }
     }
     @Override
 

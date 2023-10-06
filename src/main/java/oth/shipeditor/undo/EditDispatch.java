@@ -7,6 +7,7 @@ import oth.shipeditor.communication.events.Events;
 import oth.shipeditor.communication.events.viewer.control.ViewerMouseReleased;
 import oth.shipeditor.components.datafiles.entities.HullmodCSVEntry;
 import oth.shipeditor.components.datafiles.entities.InstallableEntry;
+import oth.shipeditor.components.datafiles.entities.ShipCSVEntry;
 import oth.shipeditor.components.datafiles.entities.WingCSVEntry;
 import oth.shipeditor.components.viewer.entities.*;
 import oth.shipeditor.components.viewer.entities.bays.LaunchBay;
@@ -324,8 +325,12 @@ public final class EditDispatch {
         }
         var repainter = StaticController.getRepainter();
         repainter.queueViewerRepaint();
-        repainter.queueBuiltInsRepaint();
-        repainter.queueVariantsRepaint();
+        if (feature instanceof InstalledFeature installed && installed.getDataEntry() instanceof ShipCSVEntry) {
+            repainter.queueModulesRepaint();
+        } else {
+            repainter.queueBuiltInsRepaint();
+            repainter.queueVariantsRepaint();
+        }
     }
 
     public static<T extends InstallableEntry> void postFeatureUninstalled(Map<String, T> collection,
@@ -337,15 +342,21 @@ public final class EditDispatch {
         Map<String, T> before = new LinkedHashMap<>(collection);
         collection.remove(slotID, feature);
         Map<String, T> after = new LinkedHashMap<>(collection);
-        Edit uninstallEdit = new FeatureUninstallEdit<>(before, after, collection, invalidator);
+        boolean isModule = feature instanceof InstalledFeature installed
+                && installed.getDataEntry() instanceof ShipCSVEntry;
+        Edit uninstallEdit = new FeatureUninstallEdit<>(before, after, collection, invalidator, isModule);
         UndoOverseer.post(uninstallEdit);
         if (invalidator != null) {
             invalidator.run();
         }
         var repainter = StaticController.getRepainter();
         repainter.queueViewerRepaint();
-        repainter.queueBuiltInsRepaint();
-        repainter.queueVariantsRepaint();
+        if (isModule) {
+            repainter.queueModulesRepaint();
+        } else {
+            repainter.queueBuiltInsRepaint();
+            repainter.queueVariantsRepaint();
+        }
     }
 
     public static<T extends InstallableEntry> void postBuiltInFeaturesSorted(Consumer<Map<String, T>> consumer,
