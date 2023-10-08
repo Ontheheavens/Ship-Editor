@@ -7,6 +7,11 @@ import oth.shipeditor.communication.events.files.HullmodDataSet;
 import oth.shipeditor.communication.events.files.WingDataSet;
 import oth.shipeditor.components.datafiles.entities.*;
 import oth.shipeditor.components.datafiles.trees.WeaponFilterPanel;
+import oth.shipeditor.components.viewer.layers.ship.ShipPainter;
+import oth.shipeditor.components.viewer.layers.ship.data.ActiveShipSpec;
+import oth.shipeditor.components.viewer.layers.ship.data.ShipSkin;
+import oth.shipeditor.components.viewer.layers.ship.data.Variant;
+import oth.shipeditor.components.viewer.painters.points.ship.features.InstalledFeature;
 import oth.shipeditor.persistence.SettingsManager;
 import oth.shipeditor.representation.weapon.ProjectileSpecFile;
 
@@ -20,7 +25,7 @@ import java.util.Map;
  * @author Ontheheavens
  * @since 08.07.2023
  */
-@SuppressWarnings({"ClassWithTooManyFields", "StaticMethodOnlyUsedInOneClass", "unused"})
+@SuppressWarnings({"ClassWithTooManyFields", "ClassWithTooManyMethods", "StaticMethodOnlyUsedInOneClass", "unused"})
 @Getter
 public class GameDataRepository {
 
@@ -125,6 +130,28 @@ public class GameDataRepository {
         GameDataRepository dataRepository = SettingsManager.getGameData();
         var allSpecs = dataRepository.getAllSpecEntries();
         return allSpecs.get(hullID);
+    }
+
+    public static InstalledFeature createModuleFromVariant(String slotID, Variant variant) {
+        ShipSpecFile specFile = GameDataRepository.retrieveSpecByID(variant.getShipHullId());
+        String baseHullId;
+        SkinSpecFile skinSpec = null;
+        if (specFile instanceof SkinSpecFile checkedSkin) {
+            baseHullId = checkedSkin.getBaseHullId();
+            skinSpec = checkedSkin;
+        } else {
+            baseHullId = specFile.getHullId();
+        }
+        ShipCSVEntry csvEntry = GameDataRepository.retrieveShipCSVEntryByID(baseHullId);
+        ShipPainter modulePainter = csvEntry.createPainterFromEntry(null);
+
+        if (skinSpec != null) {
+            ShipSkin shipSkin = ShipSkin.createFromSpec(skinSpec);
+            modulePainter.setActiveSpec(ActiveShipSpec.SKIN, shipSkin);
+        }
+
+        modulePainter.selectVariant(variant);
+        return InstalledFeature.of(slotID, variant.getVariantId(), modulePainter, csvEntry);
     }
 
     public static void putSpec(ShipSpecFile specFile) {

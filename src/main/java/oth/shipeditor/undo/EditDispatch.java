@@ -7,6 +7,7 @@ import oth.shipeditor.communication.events.Events;
 import oth.shipeditor.communication.events.viewer.control.ViewerMouseReleased;
 import oth.shipeditor.components.datafiles.entities.HullmodCSVEntry;
 import oth.shipeditor.components.datafiles.entities.InstallableEntry;
+import oth.shipeditor.components.datafiles.entities.ShipCSVEntry;
 import oth.shipeditor.components.datafiles.entities.WingCSVEntry;
 import oth.shipeditor.components.viewer.entities.*;
 import oth.shipeditor.components.viewer.entities.bays.LaunchBay;
@@ -28,10 +29,7 @@ import oth.shipeditor.representation.weapon.WeaponMount;
 import oth.shipeditor.representation.weapon.WeaponSize;
 import oth.shipeditor.representation.weapon.WeaponType;
 import oth.shipeditor.undo.edits.*;
-import oth.shipeditor.undo.edits.features.FeatureInstallEdit;
-import oth.shipeditor.undo.edits.features.FeatureSortEdit;
-import oth.shipeditor.undo.edits.features.FeatureUninstallEdit;
-import oth.shipeditor.undo.edits.features.WeaponGroupsSortEdit;
+import oth.shipeditor.undo.edits.features.*;
 import oth.shipeditor.undo.edits.points.*;
 import oth.shipeditor.undo.edits.points.engines.*;
 import oth.shipeditor.undo.edits.points.slots.*;
@@ -132,7 +130,11 @@ public final class EditDispatch {
         Edit offsetChangeEdit = new AnchorOffsetEdit(layerPainter, oldOffset, updated);
         EditDispatch.handleContinuousEdit(offsetChangeEdit);
         layerPainter.setAnchor(updated);
-        Events.repaintShipView();
+        var repainter = StaticController.getRepainter();
+        repainter.queueViewerRepaint();
+        repainter.queueBoundsPanelRepaint();
+        repainter.queueCenterPanelsRepaint();
+        repainter.queueBuiltInsRepaint();
     }
 
     public static void postSlotAngleSet(SlotData slotPoint, double old, double updated ) {
@@ -198,7 +200,11 @@ public final class EditDispatch {
         Edit rotationEdit = new LayerRotationEdit(painter, old, updated);
         EditDispatch.handleContinuousEdit(rotationEdit);
         painter.setRotationRadians(updated);
-        Events.repaintShipView();
+        var repainter = StaticController.getRepainter();
+        repainter.queueViewerRepaint();
+        repainter.queueBoundsPanelRepaint();
+        repainter.queueCenterPanelsRepaint();
+        repainter.queueBuiltInsRepaint();
     }
 
     public static void postPointDragged(WorldPoint selected, Point2D changedPosition) {
@@ -319,8 +325,12 @@ public final class EditDispatch {
         }
         var repainter = StaticController.getRepainter();
         repainter.queueViewerRepaint();
-        repainter.queueBuiltInsRepaint();
-        repainter.queueVariantsRepaint();
+        if (feature instanceof InstalledFeature installed && installed.getDataEntry() instanceof ShipCSVEntry) {
+            repainter.queueModulesRepaint();
+        } else {
+            repainter.queueBuiltInsRepaint();
+            repainter.queueVariantsRepaint();
+        }
     }
 
     public static<T extends InstallableEntry> void postFeatureUninstalled(Map<String, T> collection,
@@ -332,19 +342,25 @@ public final class EditDispatch {
         Map<String, T> before = new LinkedHashMap<>(collection);
         collection.remove(slotID, feature);
         Map<String, T> after = new LinkedHashMap<>(collection);
-        Edit uninstallEdit = new FeatureUninstallEdit<>(before, after, collection, invalidator);
+        boolean isModule = feature instanceof InstalledFeature installed
+                && installed.getDataEntry() instanceof ShipCSVEntry;
+        Edit uninstallEdit = new FeatureUninstallEdit<>(before, after, collection, invalidator, isModule);
         UndoOverseer.post(uninstallEdit);
         if (invalidator != null) {
             invalidator.run();
         }
         var repainter = StaticController.getRepainter();
         repainter.queueViewerRepaint();
-        repainter.queueBuiltInsRepaint();
-        repainter.queueVariantsRepaint();
+        if (isModule) {
+            repainter.queueModulesRepaint();
+        } else {
+            repainter.queueBuiltInsRepaint();
+            repainter.queueVariantsRepaint();
+        }
     }
 
     public static<T extends InstallableEntry> void postBuiltInFeaturesSorted(Consumer<Map<String, T>> consumer,
-                                                                             Map<String, T>  oldMap,
+                                                                             Map<String, T> oldMap,
                                                                              Map<String, T> newMap) {
         Edit sortEdit = new FeatureSortEdit<>(consumer, oldMap, newMap);
         UndoOverseer.post(sortEdit);
@@ -366,6 +382,17 @@ public final class EditDispatch {
         UndoOverseer.post(groupsSortEdit);
 
         groupsSortEdit.redo();
+    }
+
+    public static void postModulesSorted(Consumer<Map<String, InstalledFeature>> moduleSetter,
+                                                                             Map<String, InstalledFeature> oldMap,
+                                                                             Map<String, InstalledFeature> newMap) {
+        Edit sortEdit = new ModulesSortEdit(moduleSetter, oldMap, newMap);
+        UndoOverseer.post(sortEdit);
+        moduleSetter.accept(newMap);
+        var repainter = StaticController.getRepainter();
+        repainter.queueViewerRepaint();
+        repainter.queueModulesRepaint();
     }
 
 }

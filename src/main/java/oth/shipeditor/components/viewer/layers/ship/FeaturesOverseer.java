@@ -3,9 +3,11 @@ package oth.shipeditor.components.viewer.layers.ship;
 import lombok.Getter;
 import oth.shipeditor.communication.BusEventListener;
 import oth.shipeditor.communication.EventBus;
+import oth.shipeditor.communication.events.components.DeleteButtonPressed;
+import oth.shipeditor.communication.events.components.ShipEntryPicked;
+import oth.shipeditor.communication.events.components.WeaponEntryPicked;
 import oth.shipeditor.communication.events.viewer.control.FeatureInstallQueued;
 import oth.shipeditor.components.datafiles.entities.InstallableEntry;
-import oth.shipeditor.components.datafiles.entities.ShipCSVEntry;
 import oth.shipeditor.components.datafiles.entities.WeaponCSVEntry;
 import oth.shipeditor.components.instrument.ship.EditorInstrument;
 import oth.shipeditor.components.viewer.entities.weapon.SlotData;
@@ -16,6 +18,8 @@ import oth.shipeditor.components.viewer.painters.points.ship.WeaponSlotPainter;
 import oth.shipeditor.components.viewer.painters.points.ship.features.FireMode;
 import oth.shipeditor.components.viewer.painters.points.ship.features.FittedWeaponGroup;
 import oth.shipeditor.components.viewer.painters.points.ship.features.InstalledFeature;
+import oth.shipeditor.representation.GameDataRepository;
+import oth.shipeditor.representation.VariantFile;
 import oth.shipeditor.representation.weapon.WeaponSpecFile;
 import oth.shipeditor.representation.weapon.WeaponType;
 import oth.shipeditor.undo.EditDispatch;
@@ -32,7 +36,7 @@ import java.util.stream.Stream;
  * @author Ontheheavens
  * @since 19.09.2023
  */
-@SuppressWarnings({"WeakerAccess", "OverlyCoupledClass"})
+@SuppressWarnings({"WeakerAccess", "OverlyCoupledClass", "OverlyComplexClass"})
 public class FeaturesOverseer {
 
     @SuppressWarnings("StaticNonFinalField")
@@ -41,7 +45,7 @@ public class FeaturesOverseer {
 
     @SuppressWarnings("StaticNonFinalField")
     @Getter
-    public static ShipCSVEntry moduleForInstall;
+    public static VariantFile moduleVariantForInstall;
     private final ShipLayer parent;
 
     @Getter
@@ -55,11 +59,13 @@ public class FeaturesOverseer {
     @SuppressWarnings("StaticMethodOnlyUsedInOneClass")
     public static void setWeaponForInstall(WeaponCSVEntry entry) {
         weaponForInstall = entry;
-        var mode = StaticController.getEditorMode();
-        var repainter = StaticController.getRepainter();
-        if (mode == EditorInstrument.BUILT_IN_WEAPONS || mode == EditorInstrument.DECORATIVES) {
-            repainter.queueBuiltInsRepaint();
-        }
+        EventBus.publish(new WeaponEntryPicked());
+    }
+
+    @SuppressWarnings("StaticMethodOnlyUsedInOneClass")
+    public static void setModuleForInstall(VariantFile variant) {
+        FeaturesOverseer.moduleVariantForInstall = variant;
+        EventBus.publish(new ShipEntryPicked());
     }
 
     // This getter business is not good at all.
@@ -219,7 +225,8 @@ public class FeaturesOverseer {
                 if (selected == null || !eligibleSlots.contains(selected)) return;
                 var mode = StaticController.getEditorMode();
 
-                if (mode == EditorInstrument.VARIANT_MODULES && moduleForInstall != null) {
+                boolean choseVariant = moduleVariantForInstall != null && !moduleVariantForInstall.isEmpty();
+                if (mode == EditorInstrument.VARIANT_MODULES && choseVariant) {
                     if (selected.isModule()) {
                         installModule(selected);
                     } else {
@@ -243,7 +250,7 @@ public class FeaturesOverseer {
                     }
                     case VARIANT_WEAPONS -> {
                         if (selected.isFittable()) {
-                            fitToVariant(selected);
+                            installWeapon(selected);
                         }
                     }
                 }
@@ -251,9 +258,72 @@ public class FeaturesOverseer {
         };
         listeners.add(installListener);
         EventBus.subscribe(installListener);
+
+        BusEventListener uninstallListener = event -> {
+            if (event instanceof DeleteButtonPressed) {
+                if (StaticController.getActiveLayer() != parent) return;
+                var shipPainter = parent.getPainter();
+                if (shipPainter == null || shipPainter.isUninitialized()) return;
+                var slotPainter = shipPainter.getWeaponSlotPainter();
+
+                var mode = StaticController.getEditorMode();
+                WeaponSlotPoint selected = slotPainter.getSelected();
+                var eligibleSlots = slotPainter.getEligibleForSelection();
+
+                if (selected == null || !eligibleSlots.contains(selected)) return;
+
+                FeaturesOverseer.handleFeatureRemoval(selected, mode, shipPainter);
+            }
+        };
+        listeners.add(uninstallListener);
+        EventBus.subscribe(uninstallListener);
     }
 
-    private void fitToVariant(SlotData selected) {
+    @SuppressWarnings({"MethodWithMultipleReturnPoints", "OverlyComplexMethod"})
+    private static void handleFeatureRemoval(SlotData selected, EditorInstrument mode,
+                                             ShipPainter shipPainter) {
+        String slotID = selected.getId();
+        switch (mode) {
+            case BUILT_IN_WEAPONS, DECORATIVES -> {
+                ShipSkin activeSkin = shipPainter.getActiveSkin();
+                if (activeSkin != null && !activeSkin.isBase()) {
+                    var addedBySkin = activeSkin.getBuiltInWeapons();
+                    WeaponCSVEntry toRemove = addedBySkin.get(slotID);
+                    if (toRemove == null) return;
+                    EditDispatch.postFeatureUninstalled(addedBySkin, slotID,
+                            toRemove, activeSkin::invalidateBuiltIns);
+                } else {
+                    var weapons = shipPainter.getBuiltInWeapons();
+                    InstalledFeature toRemove = weapons.get(slotID);
+                    if (toRemove == null) return;
+                    EditDispatch.postFeatureUninstalled(weapons, slotID,
+                            toRemove, null);
+                }
+            }
+            case VARIANT_WEAPONS -> {
+                var variant = shipPainter.getActiveVariant();
+                if (variant == null || variant.isEmpty()) return;
+                FittedWeaponGroup targetGroup = variant.getGroupWithExistingMapping(slotID);
+                Map<String, InstalledFeature> groupWeapons;
+                if (targetGroup != null) {
+                    groupWeapons = targetGroup.getWeapons();
+                    InstalledFeature existing = groupWeapons.get(slotID);
+                    EditDispatch.postFeatureUninstalled(groupWeapons, slotID, existing, null);
+                }
+            }
+            case VARIANT_MODULES -> {
+                var variant = shipPainter.getActiveVariant();
+                if (variant == null || variant.isEmpty()) return;
+                var modules = variant.getFittedModules();
+                InstalledFeature toRemove = modules.get(slotID);
+                if (toRemove == null) return;
+                EditDispatch.postFeatureUninstalled(modules, slotID,
+                        toRemove, null);
+            }
+        }
+    }
+
+    private void installWeapon(SlotData selected) {
         var shipPainter = parent.getPainter();
         var activeVariant = shipPainter.getActiveVariant();
         if (activeVariant == null || activeVariant.isEmpty()) return;
@@ -275,7 +345,14 @@ public class FeaturesOverseer {
             InstalledFeature existing = groupWeapons.get(slotID);
             EditDispatch.postFeatureUninstalled(groupWeapons, slotID, existing, null);
         } else {
-            targetGroup = weaponGroups.get(0);
+            if (weaponGroups.isEmpty()) {
+                FittedWeaponGroup newGroup = new FittedWeaponGroup(activeVariant,
+                        false, FireMode.ALTERNATING);
+                weaponGroups.add(newGroup);
+                targetGroup = newGroup;
+            } else {
+                targetGroup = weaponGroups.get(0);
+            }
         }
 
         if (targetGroup == null) {
@@ -289,7 +366,22 @@ public class FeaturesOverseer {
     }
 
     private void installModule(SlotData selected) {
+        var shipPainter = parent.getPainter();
+        var activeVariant = shipPainter.getActiveVariant();
+        if (activeVariant == null || activeVariant.isEmpty()) return;
 
+        String slotID = selected.getId();
+        VariantFile forInstall = moduleVariantForInstall;
+        var modules = activeVariant.getFittedModules();
+
+        InstalledFeature moduleFeature = GameDataRepository.createModuleFromVariant(slotID, forInstall);
+
+        InstalledFeature existing = modules.get(slotID);
+        if (existing != null) {
+            EditDispatch.postFeatureUninstalled(modules, slotID, existing, null);
+        }
+
+        FeaturesOverseer.commenceInstall(slotID, moduleFeature, modules, null);
     }
 
     private void installBuiltIn(SlotData selected) {

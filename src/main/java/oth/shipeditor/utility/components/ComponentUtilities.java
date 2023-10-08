@@ -524,4 +524,24 @@ public final class ComponentUtilities {
         return spinner;
     }
 
+    public static JPanel createHintPanel(String text, FontIcon icon) {
+        JPanel hintPanel = new JPanel();
+        hintPanel.setLayout(new BoxLayout(hintPanel, BoxLayout.LINE_AXIS));
+
+        JLabel hintIcon = new JLabel(icon);
+        hintIcon.setBorder(new EmptyBorder(4, 4, 4, 0));
+        hintIcon.setAlignmentY(0.5f);
+        hintPanel.add(hintIcon);
+
+        JPanel hintInfo = ComponentUtilities.createTextPanel(text, 2);
+        hintInfo.setBorder(new EmptyBorder(4, 0, 4, 4));
+        hintInfo.setAlignmentY(0.5f);
+        hintPanel.add(hintInfo);
+
+        hintPanel.setMaximumSize(new Dimension(Integer.MAX_VALUE, 45));
+
+        Insets insets = new Insets(1, 0, 0, 0);
+        return hintPanel;
+    }
+
 }

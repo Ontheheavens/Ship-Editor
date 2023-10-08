@@ -80,6 +80,13 @@ public class WeaponCSVEntry implements CSVEntry, InstallableEntry {
         }
     }
 
+    public int getOPCost() {
+        var data = this.getRowData();
+        String costText = data.get("OPs");
+        if (costText == null|| costText.isEmpty()) return 0;
+        return Integer.parseInt(costText);
+    }
+
     public int getDrawOrder() {
         WeaponSize specFileSize = getSize();
         return specFileSize.getNumericSize();
@@ -301,7 +308,7 @@ public class WeaponCSVEntry implements CSVEntry, InstallableEntry {
         weaponPickPanel.add(text);
 
         Insets insets = new Insets(1, 0, 0, 0);
-        ComponentUtilities.outfitPanelWithTitle(weaponPickPanel, insets, "Picked weapon");
+        ComponentUtilities.outfitPanelWithTitle(weaponPickPanel, insets, StringValues.PICKED_FOR_INSTALL);
 
         return weaponPickPanel;
     }

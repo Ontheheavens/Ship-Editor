@@ -67,6 +67,15 @@ public final class InstalledFeature implements InstallableEntry {
         } else throw new IllegalArgumentException("Illegal data entry passed for installable feature!");
     }
 
+    public int getOPCost() {
+        if (dataEntry instanceof WeaponCSVEntry weaponEntry) {
+            if (containedInBuiltIns) return 0;
+            return weaponEntry.getOPCost();
+        } else {
+            return 0;
+        }
+    }
+
     public boolean isDecoWeapon() {
         if (dataEntry instanceof WeaponCSVEntry weaponEntry) {
             return weaponEntry.getType() == WeaponType.DECORATIVE;

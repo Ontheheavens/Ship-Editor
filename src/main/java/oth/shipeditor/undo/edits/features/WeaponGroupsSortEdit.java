@@ -32,6 +32,8 @@ public class WeaponGroupsSortEdit extends AbstractEdit {
 
     private int cachedNewGroupIndex;
 
+    private boolean removeEmptyGroups;
+
 
     @Override
     public void undo() {
@@ -52,7 +54,7 @@ public class WeaponGroupsSortEdit extends AbstractEdit {
         var oldParentWeapons = supplier.getWeapons();
         oldParentWeapons.remove(feature.getSlotID());
 
-        if (oldParentWeapons.isEmpty()) {
+        if (oldParentWeapons.isEmpty() && removeEmptyGroups) {
             var variant = supplier.getParent();
             List<FittedWeaponGroup> groupList = variant.getWeaponGroups();
             cachedIndexSetter.accept(groupList.indexOf(supplier));

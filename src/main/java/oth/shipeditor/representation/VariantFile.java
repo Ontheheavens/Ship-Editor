@@ -73,11 +73,9 @@ public class VariantFile implements Variant {
     @JsonProperty("hullMods")
     private List<String> hullMods;
 
+    @JsonAlias(StringConstants.BUILT_IN_MODS)
     @JsonProperty("permaMods")
     private List<String> permaMods;
-
-    @JsonProperty(StringConstants.BUILT_IN_MODS)
-    private List<String> builtInMods;
 
     @JsonProperty("sMods")
     private List<String> sMods;
@@ -102,6 +100,11 @@ public class VariantFile implements Variant {
     public String toString() {
         if (empty) {
             return ShipVariant.EMPTY_VARIANT;
+        }
+        var hullFile = GameDataRepository.retrieveSpecByID(this.hullId);
+        if (hullFile != null) {
+            String hullName = hullFile.getHullName();
+            return this.displayName + " " + hullName;
         }
         return displayName;
     }

@@ -23,8 +23,8 @@ import oth.shipeditor.representation.weapon.WeaponMount;
 import oth.shipeditor.representation.weapon.WeaponSize;
 import oth.shipeditor.representation.weapon.WeaponType;
 import oth.shipeditor.undo.EditDispatch;
-import oth.shipeditor.utility.overseers.StaticController;
 import oth.shipeditor.utility.Utility;
+import oth.shipeditor.utility.overseers.StaticController;
 
 import java.awt.*;
 import java.awt.event.KeyEvent;
@@ -32,6 +32,9 @@ import java.awt.geom.AffineTransform;
 import java.awt.geom.Point2D;
 import java.util.List;
 import java.util.*;
+
+import static oth.shipeditor.components.viewer.painters.PainterVisibility.ALWAYS_SHOWN;
+import static oth.shipeditor.components.viewer.painters.PainterVisibility.SHOWN_WHEN_EDITED;
 
 /**
  * Is not supposed to handle launch bays - bays deserialize to different points and painter.
@@ -332,7 +335,18 @@ public class WeaponSlotPainter extends AngledPointPainter {
         pointsIndex.forEach(slotPoint -> {
             paintDelegate(g, worldToScreen, w, h, slotPoint);
             slotPoint.setPaintSizeMultiplier(1);
-            setSlotTransparency(slotPoint, 0.8d);
+            double alpha = 0.8d;
+            switch (StaticController.getEditorMode()) {
+                case BUILT_IN_WEAPONS, DECORATIVES, VARIANT_WEAPONS, VARIANT_MODULES -> {
+                    if (slotPoint.isPointSelected()) {
+                        alpha = 1.0d;
+                    }
+                    else {
+                        alpha = 0.3d;
+                    }
+                }
+            }
+            setSlotTransparency(slotPoint, alpha);
         });
     }
 
@@ -440,7 +454,10 @@ public class WeaponSlotPainter extends AngledPointPainter {
 
     @Override
     public void paint(Graphics2D g, AffineTransform worldToScreen, double w, double h) {
-        if (checkVisibility() || isVisibleForRelatedMode()) {
+        var visibility = this.getVisibilityMode();
+        boolean isRightMode = visibility == ALWAYS_SHOWN || visibility == SHOWN_WHEN_EDITED;
+        boolean visibleForRelatedMode = isVisibleForRelatedMode() && isRightMode;
+        if (checkVisibility() || visibleForRelatedMode) {
             this.paintPainterContent(g, worldToScreen, w, h);
 
             this.handleSelectionHighlight();

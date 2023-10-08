@@ -148,6 +148,11 @@ public class LaunchBaysTree extends DynamicWidthTree {
         this.repaint();
     }
 
+    @Override
+    public boolean isNodeDragValid(DefaultMutableTreeNode dragged) {
+        return dragged.getUserObject() instanceof LaunchPortPoint;
+    }
+
     void repopulateTree(LaunchBayPainter bayPainter) {
         final List<LaunchBay> bays = bayPainter.getBaysList();
         for (LaunchBay bay : bays) {

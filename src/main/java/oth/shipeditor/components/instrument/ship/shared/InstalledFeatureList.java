@@ -10,11 +10,12 @@ import oth.shipeditor.components.datafiles.entities.CSVEntry;
 import oth.shipeditor.components.datafiles.entities.WeaponCSVEntry;
 import oth.shipeditor.components.viewer.entities.weapon.WeaponSlotPoint;
 import oth.shipeditor.components.viewer.layers.ship.ShipLayer;
-import oth.shipeditor.components.viewer.painters.points.ship.features.InstalledFeature;
 import oth.shipeditor.components.viewer.painters.points.ship.WeaponSlotPainter;
-import oth.shipeditor.utility.overseers.StaticController;
+import oth.shipeditor.components.viewer.painters.points.ship.features.InstalledFeature;
 import oth.shipeditor.utility.components.containers.SortableList;
 import oth.shipeditor.utility.components.rendering.InstalledFeatureCellRenderer;
+import oth.shipeditor.utility.overseers.StaticController;
+import oth.shipeditor.utility.text.StringValues;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -50,9 +51,7 @@ public class InstalledFeatureList extends SortableList<InstalledFeature> {
         this.uninstaller = removeAction;
         this.sorter = sortAction;
         this.addListSelectionListener(e -> {
-            this.actOnSelectedEntry(feature -> {
-
-            });
+            this.actOnSelectedEntry(this::handleEntrySelection);
             if (propagationBlock) {
                 propagationBlock = false;
                 return;
@@ -67,6 +66,8 @@ public class InstalledFeatureList extends SortableList<InstalledFeature> {
 
         this.setDragEnabled(true);
     }
+
+    protected void handleEntrySelection(InstalledFeature feature) {}
 
     private static ListCellRenderer<InstalledFeature> createCellRenderer() {
         return new InstalledFeatureCellRenderer();
@@ -117,7 +118,21 @@ public class InstalledFeatureList extends SortableList<InstalledFeature> {
         });
     }
 
-    private void actOnSelectedEntry(Consumer<InstalledFeature> action) {
+    protected JMenuItem getSelectEntryOption(InstalledFeature selected) {
+        JMenuItem selectEntry = new JMenuItem(StringValues.SELECT_WEAPON_ENTRY);
+        selectEntry.addActionListener(event -> actOnSelectedEntry(feature -> {
+            CSVEntry dataEntry = feature.getDataEntry();
+            if (dataEntry instanceof WeaponCSVEntry weaponEntry) {
+                EventBus.publish(new SelectWeaponDataEntry(weaponEntry));
+            }
+        }));
+        if (!(selected.getDataEntry() instanceof WeaponCSVEntry)) {
+            selectEntry.setEnabled(false);
+        }
+        return selectEntry;
+    }
+
+    protected void actOnSelectedEntry(Consumer<InstalledFeature> action) {
         int index = this.getSelectedIndex();
         if (index != -1) {
             ListModel<InstalledFeature> listModel = this.getModel();
@@ -140,22 +155,14 @@ public class InstalledFeatureList extends SortableList<InstalledFeature> {
     private class FeatureContextMenuListener extends MouseAdapter {
 
         private JPopupMenu getContextMenu() {
+            InstalledFeature selected = getSelectedValue();
+            if (selected == null) return null;
             JPopupMenu menu = new JPopupMenu();
-            JMenuItem removePoint = new JMenuItem("Uninstall feature");
+            JMenuItem removePoint = new JMenuItem(StringValues.UNINSTALL_FEATURE);
             removePoint.addActionListener(event -> actOnSelectedEntry(uninstaller));
             menu.add(removePoint);
 
-            JMenuItem selectEntry = new JMenuItem("Select weapon entry");
-            selectEntry.addActionListener(event -> actOnSelectedEntry(feature -> {
-                CSVEntry dataEntry = feature.getDataEntry();
-                if (dataEntry instanceof WeaponCSVEntry weaponEntry) {
-                    EventBus.publish(new SelectWeaponDataEntry(weaponEntry));
-                }
-            }));
-            InstalledFeature selected = getSelectedValue();
-            if (!(selected.getDataEntry() instanceof WeaponCSVEntry)) {
-                selectEntry.setEnabled(false);
-            }
+            JMenuItem selectEntry = getSelectEntryOption(selected);
             menu.add(selectEntry);
 
             return menu;
@@ -165,7 +172,9 @@ public class InstalledFeatureList extends SortableList<InstalledFeature> {
             if ( SwingUtilities.isRightMouseButton(e) ) {
                 setSelectedIndex(locationToIndex(e.getPoint()));
                 JPopupMenu menu = getContextMenu();
-                menu.show(InstalledFeatureList.this, e.getPoint().x, e.getPoint().y);
+                if (menu != null) {
+                    menu.show(InstalledFeatureList.this, e.getPoint().x, e.getPoint().y);
+                }
             }
         }
     }

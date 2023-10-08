@@ -12,7 +12,11 @@ import javax.swing.tree.DefaultMutableTreeNode;
 @Getter @Setter
 public class CustomTreeNode extends DefaultMutableTreeNode {
 
-    private String tip;
+    private String firstLineTip;
+
+    private String secondLineTip;
+
+    private String thirdLineTip;
 
     @SuppressWarnings("ParameterHidesMemberVariable")
     public CustomTreeNode(Object userObject) {

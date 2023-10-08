@@ -3,6 +3,7 @@ package oth.shipeditor.components.viewer.control;
 import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
 import oth.shipeditor.communication.EventBus;
+import oth.shipeditor.communication.events.components.DeleteButtonPressed;
 import oth.shipeditor.communication.events.viewer.control.*;
 import oth.shipeditor.communication.events.viewer.layers.LayerRotationQueued;
 import oth.shipeditor.communication.events.viewer.points.*;
@@ -89,6 +90,7 @@ public final class LayerViewerControls implements ViewerControl {
             @Override
             public void actionPerformed(ActionEvent e) {
                 EventBus.publish(new PointRemoveQueued(null, false));
+                EventBus.publish(new DeleteButtonPressed());
             }
         });
     }

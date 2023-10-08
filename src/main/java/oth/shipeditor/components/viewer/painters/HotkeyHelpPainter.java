@@ -100,11 +100,21 @@ public class HotkeyHelpPainter implements Painter {
             }
             case BUILT_IN_WEAPONS, VARIANT_WEAPONS -> {
                 String installHint = "Install weapon: CTRL+LMB";
+                String removeHint = "Uninstall weapon: Del";
                 hints.add(installHint);
+                hints.add(removeHint);
+            }
+            case VARIANT_MODULES -> {
+                String installHint = "Install module: CTRL+LMB";
+                String removeHint = "Uninstall module: Del";
+                hints.add(installHint);
+                hints.add(removeHint);
             }
             case DECORATIVES -> {
                 String installHint = "Install decorative: CTRL+LMB";
+                String removeHint = "Uninstall decorative: Del";
                 hints.add(installHint);
+                hints.add(removeHint);
             }
             default -> {
             }

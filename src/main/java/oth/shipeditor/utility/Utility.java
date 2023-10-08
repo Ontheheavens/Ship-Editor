@@ -102,9 +102,12 @@ public final class Utility {
         StringBuilder builder = new StringBuilder("<html>" );
         Stream<String> stringStream = Arrays.stream(lines);
         stringStream.forEachOrdered(line -> {
+            if (line == null || line.isEmpty()) return;
             builder.append(line);
             builder.append("<br>");
         });
+        String builderUnfinished = builder.toString();
+        if ("<html>".equals(builderUnfinished)) return "";
         builder.append("</html>");
         return builder.toString();
     }
@@ -199,6 +202,7 @@ public final class Utility {
         return transformed - 90;
     }
 
+    @SuppressWarnings("CallToPrintStackTrace")
     public static void setSpriteFromPath(String pathInPackage, Consumer<Sprite> setter, Path packageFolderPath) {
         if (pathInPackage != null && !pathInPackage.isEmpty()) {
             Path filePath = Path.of(pathInPackage);

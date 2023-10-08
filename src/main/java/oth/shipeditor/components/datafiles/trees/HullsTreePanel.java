@@ -3,6 +3,7 @@ package oth.shipeditor.components.datafiles.trees;
 import lombok.extern.log4j.Log4j2;
 import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.components.GameDataPanelResized;
+import oth.shipeditor.communication.events.components.SelectShipDataEntry;
 import oth.shipeditor.communication.events.files.HullTreeEntryCleared;
 import oth.shipeditor.communication.events.files.HullTreeReloadQueued;
 import oth.shipeditor.components.datafiles.OpenDataTarget;
@@ -11,8 +12,8 @@ import oth.shipeditor.menubar.FileUtilities;
 import oth.shipeditor.representation.HullSize;
 import oth.shipeditor.representation.HullSpecFile;
 import oth.shipeditor.representation.SkinSpecFile;
-import oth.shipeditor.utility.objects.Pair;
 import oth.shipeditor.utility.components.ComponentUtilities;
+import oth.shipeditor.utility.objects.Pair;
 import oth.shipeditor.utility.text.StringValues;
 
 import javax.swing.*;
@@ -82,6 +83,17 @@ class HullsTreePanel extends DataTreePanel {
                 this.reload();
             }
         });
+        EventBus.subscribe(event -> {
+            if (event instanceof SelectShipDataEntry checked) {
+                ShipCSVEntry entry = checked.entry();
+                DefaultMutableTreeNode node = getNodeOfEntry(entry);
+                if (node != null) {
+                    TreePath path = new TreePath(node.getPath());
+                    tree.setSelectionPath(path);
+                    tree.scrollPathToVisible(path);
+                }
+            }
+        });
     }
 
     @SuppressWarnings("WeakerAccess")
@@ -98,6 +110,19 @@ class HullsTreePanel extends DataTreePanel {
     protected JPanel createSearchContainer() {
         JPanel searchContainer = new JPanel(new GridBagLayout());
         searchContainer.setBorder(new EmptyBorder(0, 0, 0, 0));
+        JTextField searchField = HullsTreePanel.getSearchField();
+        GridBagConstraints gridBagConstraints = new GridBagConstraints();
+        gridBagConstraints.fill = GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new Insets(0, 0, 0, 0);
+        searchContainer.add(searchField, gridBagConstraints);
+        JButton searchButton = new JButton(StringValues.SEARCH);
+        searchButton.addActionListener(e -> reload());
+        searchContainer.add(searchButton);
+        return searchContainer;
+    }
+
+    private static JTextField getSearchField() {
         JTextField searchField = new JTextField();
         searchField.setToolTipText("Input is checked against displayed name and base hull ID as a substring.");
         Document document = searchField.getDocument();
@@ -115,15 +140,7 @@ class HullsTreePanel extends DataTreePanel {
                 ShipFilterPanel.setCurrentTextFilter(searchField.getText());
             }
         });
-        GridBagConstraints gridBagConstraints = new GridBagConstraints();
-        gridBagConstraints.fill = GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new Insets(0, 0, 0, 0);
-        searchContainer.add(searchField, gridBagConstraints);
-        JButton searchButton = new JButton(StringValues.SEARCH);
-        searchButton.addActionListener(e -> reload());
-        searchContainer.add(searchButton);
-        return searchContainer;
+        return searchField;
     }
 
     private void initComponentListeners() {
@@ -156,6 +173,7 @@ class HullsTreePanel extends DataTreePanel {
         createRightPanelDataTable(data);
 
         cachedEntry = selected;
+
         rightPanel.revalidate();
         rightPanel.repaint();
     }

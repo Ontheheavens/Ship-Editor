@@ -3,6 +3,7 @@ package oth.shipeditor.components;
 import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
 import oth.shipeditor.communication.EventBus;
+import oth.shipeditor.communication.events.components.SelectShipDataEntry;
 import oth.shipeditor.communication.events.components.SelectWeaponDataEntry;
 import oth.shipeditor.components.layering.ViewerLayersPanel;
 import oth.shipeditor.components.viewer.LayerViewer;
@@ -46,8 +47,10 @@ public final class WindowContentPanes {
     public WindowContentPanes(Container pane) {
         this.primaryContentPane = pane;
         EventBus.subscribe(event -> {
-            if (event instanceof SelectWeaponDataEntry) {
-                westTabsPane.setSelectedIndex(0);
+            switch (event) {
+                case SelectWeaponDataEntry ignored -> westTabsPane.setSelectedIndex(0);
+                case SelectShipDataEntry ignored -> westTabsPane.setSelectedIndex(0);
+                default -> {}
             }
         });
     }
@@ -120,9 +123,9 @@ public final class WindowContentPanes {
         this.refreshContent();
     }
 
+     @Getter
      @SuppressWarnings("PackageVisibleInnerClass")
      static class LeftsidePanelTab extends JPanel {
-        @Getter
         private final LeftsideTabType tabType;
         LeftsidePanelTab(LeftsideTabType type) {
             this.setMaximumSize(new Dimension());

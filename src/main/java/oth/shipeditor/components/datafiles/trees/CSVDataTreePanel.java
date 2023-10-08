@@ -4,20 +4,18 @@ import lombok.extern.log4j.Log4j2;
 import oth.shipeditor.components.datafiles.OpenDataTarget;
 import oth.shipeditor.components.datafiles.entities.CSVEntry;
 import oth.shipeditor.menubar.FileUtilities;
-import oth.shipeditor.utility.objects.Pair;
 import oth.shipeditor.utility.Utility;
 import oth.shipeditor.utility.components.ComponentUtilities;
+import oth.shipeditor.utility.objects.Pair;
 
 import javax.swing.*;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.MutableTreeNode;
-import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.*;
-import java.util.stream.Stream;
-import java.util.stream.StreamSupport;
+import java.util.List;
+import java.util.Map;
 
 /**
  * @author Ontheheavens
@@ -53,26 +51,6 @@ public abstract class CSVDataTreePanel<T extends CSVEntry> extends DataTreePanel
         loadAllEntries(entriesByPackage);
         sortAndExpandTree();
         repaint();
-    }
-
-    DefaultMutableTreeNode getNodeOfEntry(CSVEntry entry) {
-        DefaultMutableTreeNode rootNode = this.getRootNode();
-        Enumeration<TreeNode> allNodes = rootNode.depthFirstEnumeration();
-        Spliterator<TreeNode> spliterator = Spliterators.spliteratorUnknownSize(
-                allNodes.asIterator(), Spliterator.ORDERED);
-        Stream<TreeNode> stream = StreamSupport.stream(spliterator, false);
-        Optional<DefaultMutableTreeNode> treeNode = stream
-                .filter(node -> node instanceof DefaultMutableTreeNode)
-                .map(node -> (DefaultMutableTreeNode) node)
-                .filter(node -> {
-                    Object userObject = node.getUserObject();
-                    if (userObject instanceof CSVEntry csvEntry) {
-                        String entryID = csvEntry.getID();
-                        return entryID.equals(entry.getID());
-                    }
-                    return false;
-                }).findFirst();
-        return treeNode.orElse(null);
     }
 
     protected abstract Map<String, T> getRepository();

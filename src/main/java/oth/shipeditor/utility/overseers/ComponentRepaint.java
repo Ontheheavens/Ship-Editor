@@ -10,6 +10,7 @@ import javax.swing.*;
  * @author Ontheheavens
  * @since 04.09.2023
  */
+@SuppressWarnings("ClassWithTooManyFields")
 public class ComponentRepaint {
 
     private boolean viewerRepaintQueued;
@@ -32,6 +33,9 @@ public class ComponentRepaint {
 
     private boolean variantsPanelRepaintQueued;
 
+    private boolean variantModulesRepaintQueued;
+
+    @SuppressWarnings("OverlyCoupledMethod")
     ComponentRepaint() {
         Timer repaintTimer = new Timer(2, e -> {
             if (viewerRepaintQueued) {
@@ -73,6 +77,10 @@ public class ComponentRepaint {
             if (variantsPanelRepaintQueued) {
                 EventBus.publish(new VariantPanelRepaintQueued());
                 variantsPanelRepaintQueued = false;
+            }
+            if (variantModulesRepaintQueued) {
+                EventBus.publish(new VariantModulesRepaintQueued());
+                variantModulesRepaintQueued = false;
             }
         });
         repaintTimer.setRepeats(true);
@@ -119,6 +127,10 @@ public class ComponentRepaint {
 
     public void queueVariantsRepaint() {
         this.variantsPanelRepaintQueued = true;
+    }
+
+    public void queueModulesRepaint() {
+        this.variantModulesRepaintQueued = true;
     }
 
 }

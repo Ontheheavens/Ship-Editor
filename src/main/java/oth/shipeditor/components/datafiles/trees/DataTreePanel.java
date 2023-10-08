@@ -3,12 +3,14 @@ package oth.shipeditor.components.datafiles.trees;
 import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
 import oth.shipeditor.components.datafiles.OpenDataTarget;
+import oth.shipeditor.components.datafiles.entities.CSVEntry;
+import oth.shipeditor.components.viewer.layers.ship.FeaturesOverseer;
 import oth.shipeditor.components.viewer.layers.ship.ShipLayer;
 import oth.shipeditor.components.viewer.layers.ship.ShipPainter;
 import oth.shipeditor.representation.VariantFile;
-import oth.shipeditor.utility.overseers.StaticController;
 import oth.shipeditor.utility.components.ComponentUtilities;
 import oth.shipeditor.utility.components.MouseoverLabelListener;
+import oth.shipeditor.utility.overseers.StaticController;
 import oth.shipeditor.utility.text.StringValues;
 
 import javax.swing.*;
@@ -70,7 +72,7 @@ public abstract class DataTreePanel extends JPanel {
         return variantLabel;
     }
 
-    static JPanel createVariantsPanel(Collection<VariantFile> variantFiles, Dimension pad) {
+    static JPanel createVariantsPanel(Collection<VariantFile> variantFiles, boolean withSelector) {
         JPanel variantsPanel = new JPanel();
         variantsPanel.setLayout(new FlowLayout(FlowLayout.LEADING, 0, 0));
         ComponentUtilities.outfitPanelWithTitle(variantsPanel, new Insets(1, 0, 0, 0), "Variants");
@@ -82,10 +84,31 @@ public abstract class DataTreePanel extends JPanel {
         labelContainer.setLayout(new BoxLayout(labelContainer, BoxLayout.PAGE_AXIS));
 
         if (variantFiles.isEmpty()) throw new IllegalArgumentException("Empty variants list!");
+
+        ButtonGroup group = new ButtonGroup();
         variantFiles.forEach(variant -> {
-            labelContainer.add(DataTreePanel.createVariantFileLabel(variant));
-            labelContainer.add(Box.createRigidArea(pad));
+            JPanel variantLine = new JPanel();
+            variantLine.setAlignmentX(LEFT_ALIGNMENT);
+            variantLine.setLayout(new BoxLayout(variantLine, BoxLayout.LINE_AXIS));
+
+            JLabel variantFileLabel = DataTreePanel.createVariantFileLabel(variant);
+            if (withSelector) {
+                JRadioButton selector = new JRadioButton();
+                selector.addActionListener(e -> FeaturesOverseer.setModuleForInstall(variant));
+                selector.setToolTipText("Select variant to be installed as module");
+                group.add(selector);
+                variantLine.add(selector);
+            }
+            variantLine.add(variantFileLabel);
+            labelContainer.add(variantLine);
+            labelContainer.add(Box.createVerticalStrut(2));
         });
+
+        if (withSelector) {
+            Enumeration<AbstractButton> elements = group.getElements();
+            AbstractButton abstractButton = elements.nextElement();
+            abstractButton.doClick();
+        }
 
         variantsPanel.add(labelContainer);
         return variantsPanel;
@@ -209,6 +232,26 @@ public abstract class DataTreePanel extends JPanel {
     }
 
     protected abstract void initTreePanelListeners(JPanel passedTreePanel);
+
+    DefaultMutableTreeNode getNodeOfEntry(CSVEntry entry) {
+        DefaultMutableTreeNode root = this.getRootNode();
+        Enumeration<TreeNode> allNodes = root.depthFirstEnumeration();
+        Spliterator<TreeNode> spliterator = Spliterators.spliteratorUnknownSize(
+                allNodes.asIterator(), Spliterator.ORDERED);
+        Stream<TreeNode> stream = StreamSupport.stream(spliterator, false);
+        Optional<DefaultMutableTreeNode> treeNode = stream
+                .filter(node -> node instanceof DefaultMutableTreeNode)
+                .map(node -> (DefaultMutableTreeNode) node)
+                .filter(node -> {
+                    Object userObject = node.getUserObject();
+                    if (userObject instanceof CSVEntry csvEntry) {
+                        String entryID = csvEntry.getID();
+                        return entryID.equals(entry.getID());
+                    }
+                    return false;
+                }).findFirst();
+        return treeNode.orElse(null);
+    }
 
     JTree createCustomTree() {
         return new JTree(getRootNode()) {
