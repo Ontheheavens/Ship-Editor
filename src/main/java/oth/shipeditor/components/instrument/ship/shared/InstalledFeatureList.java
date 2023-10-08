@@ -10,11 +10,11 @@ import oth.shipeditor.components.datafiles.entities.CSVEntry;
 import oth.shipeditor.components.datafiles.entities.WeaponCSVEntry;
 import oth.shipeditor.components.viewer.entities.weapon.WeaponSlotPoint;
 import oth.shipeditor.components.viewer.layers.ship.ShipLayer;
-import oth.shipeditor.components.viewer.painters.points.ship.features.InstalledFeature;
 import oth.shipeditor.components.viewer.painters.points.ship.WeaponSlotPainter;
-import oth.shipeditor.utility.overseers.StaticController;
+import oth.shipeditor.components.viewer.painters.points.ship.features.InstalledFeature;
 import oth.shipeditor.utility.components.containers.SortableList;
 import oth.shipeditor.utility.components.rendering.InstalledFeatureCellRenderer;
+import oth.shipeditor.utility.overseers.StaticController;
 import oth.shipeditor.utility.text.StringValues;
 
 import javax.swing.*;
@@ -51,9 +51,7 @@ public class InstalledFeatureList extends SortableList<InstalledFeature> {
         this.uninstaller = removeAction;
         this.sorter = sortAction;
         this.addListSelectionListener(e -> {
-            this.actOnSelectedEntry(feature -> {
-
-            });
+            this.actOnSelectedEntry(this::handleEntrySelection);
             if (propagationBlock) {
                 propagationBlock = false;
                 return;
@@ -68,6 +66,8 @@ public class InstalledFeatureList extends SortableList<InstalledFeature> {
 
         this.setDragEnabled(true);
     }
+
+    protected void handleEntrySelection(InstalledFeature feature) {}
 
     private static ListCellRenderer<InstalledFeature> createCellRenderer() {
         return new InstalledFeatureCellRenderer();

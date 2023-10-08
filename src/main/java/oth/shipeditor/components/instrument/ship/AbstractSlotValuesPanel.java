@@ -29,9 +29,6 @@ import java.awt.event.MouseWheelEvent;
  */
 public abstract class AbstractSlotValuesPanel extends JPanel {
 
-    private static final String CHANGE_APPLIES_TO_ALL_SELECTED_SLOTS = "Change applies to all selected slots";
-    private static final String CHANGE_APPLIES_TO_FIRST_SELECTED_SLOT = "Change applies to first selected slot";
-
     @Getter
     private final SlotData selected;
 
@@ -46,7 +43,6 @@ public abstract class AbstractSlotValuesPanel extends JPanel {
 
     protected abstract String getEntityName();
 
-    @SuppressWarnings("WeakerAccess")
     protected void addContent() {
         this.addIDPanel();
 
@@ -75,12 +71,10 @@ public abstract class AbstractSlotValuesPanel extends JPanel {
                                                            SlotData slotPoint);
 
     protected void addIDPanel() {
-        JPanel container = new JPanel();
-        container.setLayout(new BoxLayout(container, BoxLayout.LINE_AXIS));
         JLabel label = new JLabel(getEntityName() + " ID:");
 
         if (multiSelectionAllowed) {
-            label.setToolTipText(CHANGE_APPLIES_TO_FIRST_SELECTED_SLOT);
+            label.setToolTipText(StringValues.CHANGE_APPLIES_TO_FIRST_SELECTED_SLOT);
         }
 
         JComponent right = ComponentUtilities.getNoSelected();
@@ -127,7 +121,7 @@ public abstract class AbstractSlotValuesPanel extends JPanel {
     private void addTypeSelector() {
         JLabel selectorLabel = new JLabel(getEntityName() + " type:");
         if (multiSelectionAllowed) {
-            selectorLabel.setToolTipText(CHANGE_APPLIES_TO_ALL_SELECTED_SLOTS);
+            selectorLabel.setToolTipText(StringValues.CHANGE_APPLIES_TO_ALL_SELECTED_SLOTS);
         }
 
         if (selected == null) {
@@ -156,7 +150,7 @@ public abstract class AbstractSlotValuesPanel extends JPanel {
     protected void addMountSelector() {
         JLabel selectorLabel = new JLabel(getEntityName() + " mount:");
         if (multiSelectionAllowed) {
-            selectorLabel.setToolTipText(CHANGE_APPLIES_TO_ALL_SELECTED_SLOTS);
+            selectorLabel.setToolTipText(StringValues.CHANGE_APPLIES_TO_ALL_SELECTED_SLOTS);
         }
 
         if (selected == null) {
@@ -183,7 +177,7 @@ public abstract class AbstractSlotValuesPanel extends JPanel {
     protected void addSizeSelector() {
         JLabel selectorLabel = new JLabel(getEntityName() + " size:");
         if (multiSelectionAllowed) {
-            selectorLabel.setToolTipText(CHANGE_APPLIES_TO_ALL_SELECTED_SLOTS);
+            selectorLabel.setToolTipText(StringValues.CHANGE_APPLIES_TO_ALL_SELECTED_SLOTS);
         }
         if (selected == null) {
             ComponentUtilities.addLabelAndComponent(this, selectorLabel, ComponentUtilities.getNoSelected(), 3);
@@ -211,7 +205,7 @@ public abstract class AbstractSlotValuesPanel extends JPanel {
 
         String tooltip;
         if (multiSelectionAllowed) {
-            tooltip = Utility.getWithLinebreaks(CHANGE_APPLIES_TO_FIRST_SELECTED_SLOT, StringValues.MOUSEWHEEL_TO_CHANGE);
+            tooltip = Utility.getWithLinebreaks(StringValues.CHANGE_APPLIES_TO_FIRST_SELECTED_SLOT, StringValues.MOUSEWHEEL_TO_CHANGE);
         } else {
             tooltip = StringValues.MOUSEWHEEL_TO_CHANGE;
         }
@@ -256,7 +250,7 @@ public abstract class AbstractSlotValuesPanel extends JPanel {
 
         String tooltip;
         if (multiSelectionAllowed) {
-            tooltip = Utility.getWithLinebreaks(CHANGE_APPLIES_TO_FIRST_SELECTED_SLOT, StringValues.MOUSEWHEEL_TO_CHANGE);
+            tooltip = Utility.getWithLinebreaks(StringValues.CHANGE_APPLIES_TO_FIRST_SELECTED_SLOT, StringValues.MOUSEWHEEL_TO_CHANGE);
         } else {
             tooltip = StringValues.MOUSEWHEEL_TO_CHANGE;
         }

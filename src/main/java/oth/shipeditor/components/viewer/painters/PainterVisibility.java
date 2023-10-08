@@ -19,13 +19,13 @@ import java.awt.event.ActionListener;
  * @author Ontheheavens
  * @since 16.07.2023
  */
+@Getter
 public enum PainterVisibility {
     ALWAYS_HIDDEN("Always hidden"),
     SHOWN_WHEN_SELECTED("When selected"),
     SHOWN_WHEN_EDITED("When edited"),
     ALWAYS_SHOWN("Always shown");
 
-    @Getter
     private final String name;
 
     PainterVisibility(String inputName) {

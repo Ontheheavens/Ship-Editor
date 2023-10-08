@@ -49,6 +49,8 @@ public final class StringValues {
     public static final String PICKED_WEAPON = "Picked weapon";
     public static final String USE_RIGHT_CLICK_CONTEXT_MENU_OF_GAME_DATA_WIDGET_TO_ADD_ENTRIES = "Use right-click context menu of game data widget to add entries.";
     public static final String PICKED_FOR_INSTALL = "Picked for install";
+    public static final String CHANGE_APPLIES_TO_ALL_SELECTED_SLOTS = "Change applies to all selected slots";
+    public static final String CHANGE_APPLIES_TO_FIRST_SELECTED_SLOT = "Change applies to first selected slot";
 
     private StringValues() {
     }

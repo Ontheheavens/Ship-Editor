@@ -25,7 +25,7 @@ import java.util.Map;
  * @author Ontheheavens
  * @since 08.07.2023
  */
-@SuppressWarnings({"ClassWithTooManyFields", "StaticMethodOnlyUsedInOneClass", "unused"})
+@SuppressWarnings({"ClassWithTooManyFields", "ClassWithTooManyMethods", "StaticMethodOnlyUsedInOneClass", "unused"})
 @Getter
 public class GameDataRepository {
 

@@ -14,6 +14,7 @@ import oth.shipeditor.components.viewer.layers.ship.FeaturesOverseer;
 import oth.shipeditor.components.viewer.layers.ship.ShipLayer;
 import oth.shipeditor.components.viewer.layers.ship.ShipPainter;
 import oth.shipeditor.components.viewer.layers.ship.data.ShipVariant;
+import oth.shipeditor.components.viewer.painters.points.ship.WeaponSlotPainter;
 import oth.shipeditor.components.viewer.painters.points.ship.features.InstalledFeature;
 import oth.shipeditor.representation.ShipData;
 import oth.shipeditor.representation.VariantFile;
@@ -41,10 +42,12 @@ public class VariantModulesPanel extends AbstractVariantPanel{
 
     private final JPanel northPanel;
 
+    private final JPanel controlPanel;
+
     private JPanel pickedModulePanel;
 
     @SuppressWarnings("FieldCanBeLocal")
-    private InstalledFeatureList modulesList;
+    private ModuleList modulesList;
 
     public VariantModulesPanel() {
         this.setLayout(new BorderLayout());
@@ -52,6 +55,10 @@ public class VariantModulesPanel extends AbstractVariantPanel{
         northPanel = new JPanel();
         northPanel.setLayout(new BorderLayout());
         this.add(northPanel, BorderLayout.PAGE_START);
+
+        controlPanel = new JPanel();
+        controlPanel.setLayout(new BorderLayout());
+        northPanel.add(controlPanel, BorderLayout.CENTER);
 
         contentPanel = new JPanel();
         contentPanel.setLayout(new BorderLayout());
@@ -121,7 +128,7 @@ public class VariantModulesPanel extends AbstractVariantPanel{
             Insets insets = new Insets(1, 0, 0, 0);
             ComponentUtilities.outfitPanelWithTitle(pickedModulePanel, insets, pickedModule);
         }
-        northPanel.add(pickedModulePanel, BorderLayout.PAGE_START);
+        northPanel.add(pickedModulePanel, BorderLayout.PAGE_END);
 
         this.revalidate();
         this.repaint();
@@ -146,18 +153,35 @@ public class VariantModulesPanel extends AbstractVariantPanel{
         ShipVariant activeVariant = painter.getActiveVariant();
 
         if (activeVariant != null && !activeVariant.isEmpty()) {
-            var listContainer = VariantModulesPanel.getModuleList(activeVariant, painter);
+            var listContainer = this.getModuleList(activeVariant, painter);
 
             JScrollPane scroller = new JScrollPane(listContainer);
             contentPanel.add(scroller, BorderLayout.CENTER);
         } else {
             this.installPlaceholders();
         }
+
+        refreshControlPanel();
+
         this.revalidate();
         this.repaint();
     }
 
-    private static InstalledFeatureList getModuleList(ShipVariant activeVariant, ShipPainter painter) {
+    private void refreshControlPanel() {
+        controlPanel.removeAll();
+
+        if (modulesList == null) return;
+        InstalledFeature selected = modulesList.getSelectedValue();
+        if (selected == null) return;
+
+        JPanel moduleControl = new ModuleControlPanel(selected, this);
+        controlPanel.add(moduleControl, BorderLayout.CENTER);
+
+        controlPanel.revalidate();
+        controlPanel.repaint();
+    }
+
+    private ModuleList getModuleList(ShipVariant activeVariant, ShipPainter painter) {
         Map<String, InstalledFeature> fittedModules = activeVariant.getFittedModules();
         Collection<InstalledFeature> modules = fittedModules.values();
 
@@ -170,25 +194,40 @@ public class VariantModulesPanel extends AbstractVariantPanel{
 
         var slotPainter = painter.getWeaponSlotPainter();
 
-        var listContainer = new InstalledFeatureList(listModel, slotPainter,
-                removeAction, activeVariant::sortModules) {
-            @Override
-            protected JMenuItem getSelectEntryOption(InstalledFeature selected) {
-                JMenuItem selectEntry = new JMenuItem("Select ship entry");
-                selectEntry.addActionListener(event -> actOnSelectedEntry(feature -> {
-                    CSVEntry dataEntry = feature.getDataEntry();
-                    if (dataEntry instanceof ShipCSVEntry shipEntry) {
-                        EventBus.publish(new SelectShipDataEntry(shipEntry));
-                    }
-                }));
-                if (!(selected.getDataEntry() instanceof ShipCSVEntry)) {
-                    selectEntry.setEnabled(false);
+        modulesList = new ModuleList(listModel, slotPainter, removeAction, activeVariant);
+        modulesList.setBorder(new LineBorder(Color.LIGHT_GRAY));
+        return modulesList;
+    }
+
+    private final class ModuleList extends InstalledFeatureList {
+
+        private ModuleList(ListModel<InstalledFeature> dataModel,
+                           WeaponSlotPainter painter,
+                           Consumer<InstalledFeature> removeAction,
+                           ShipVariant activeVariant) {
+            super(dataModel, painter, removeAction, activeVariant::sortModules);
+        }
+
+        @Override
+        protected void handleEntrySelection(InstalledFeature feature) {
+            refreshControlPanel();
+        }
+
+        @Override
+        protected JMenuItem getSelectEntryOption(InstalledFeature selected) {
+            JMenuItem selectEntry = new JMenuItem("Select ship entry");
+            selectEntry.addActionListener(event -> actOnSelectedEntry(feature -> {
+                CSVEntry dataEntry = feature.getDataEntry();
+                if (dataEntry instanceof ShipCSVEntry shipEntry) {
+                    EventBus.publish(new SelectShipDataEntry(shipEntry));
                 }
-                return selectEntry;
+            }));
+            if (!(selected.getDataEntry() instanceof ShipCSVEntry)) {
+                selectEntry.setEnabled(false);
             }
-        };
-        listContainer.setBorder(new LineBorder(Color.LIGHT_GRAY));
-        return listContainer;
+            return selectEntry;
+        }
+
     }
 
 }

@@ -68,17 +68,12 @@ public final class StaticController {
     }
 
     /**
-     * Is used as a shortcut to refresh UI for respective ship editing panels.
+     * Is used as a shortcut to refresh UI for respective ship editing panels. It's not an optimal practice!
      */
     public static void reselectCurrentLayer() {
         LayerManager manager = viewer.getLayerManager();
         var current = manager.getActiveLayer();
         manager.setActiveLayer(current);
-    }
-
-    public static void selectLayer(ViewerLayer layer) {
-        LayerManager manager = viewer.getLayerManager();
-        manager.setActiveLayer(layer);
     }
 
     public static AffineTransform getScreenToWorld() {
