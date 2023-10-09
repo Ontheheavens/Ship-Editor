@@ -1,8 +1,10 @@
 package oth.shipeditor.components.instrument.ship.variant;
 
+import lombok.Getter;
 import org.kordamp.ikonli.fluentui.FluentUiRegularAL;
 import org.kordamp.ikonli.swing.FontIcon;
 import oth.shipeditor.communication.EventBus;
+import oth.shipeditor.communication.events.components.ModuleControlRefreshQueued;
 import oth.shipeditor.communication.events.components.SelectShipDataEntry;
 import oth.shipeditor.communication.events.components.ShipEntryPicked;
 import oth.shipeditor.communication.events.components.VariantModulesRepaintQueued;
@@ -46,7 +48,7 @@ public class VariantModulesPanel extends AbstractVariantPanel{
 
     private JPanel pickedModulePanel;
 
-    @SuppressWarnings("FieldCanBeLocal")
+    @Getter
     private ModuleList modulesList;
 
     public VariantModulesPanel() {
@@ -96,6 +98,11 @@ public class VariantModulesPanel extends AbstractVariantPanel{
                 this.refreshModulePicker();
             }
         });
+        EventBus.subscribe(event -> {
+            if (event instanceof ModuleControlRefreshQueued) {
+                this.refreshControlPanel();
+            }
+        });
     }
 
     @SuppressWarnings("InstanceVariableUsedBeforeInitialized")
@@ -112,12 +119,11 @@ public class VariantModulesPanel extends AbstractVariantPanel{
             pickedModulePanel.setBorder(new EmptyBorder(4, 4, 4, 4));
 
             String moduleText = pickedForInstall.toString();
-            JLabel entry = new JLabel("Module: ");
             JLabel text = new JLabel(moduleText);
-            entry.setBorder(new EmptyBorder(0, 4, 0, 0));
-            pickedModulePanel.add(entry);
+            text.setAlignmentX(0.5f);
             pickedModulePanel.add(Box.createHorizontalGlue());
             pickedModulePanel.add(text);
+            pickedModulePanel.add(Box.createHorizontalGlue());
 
             Insets insets = new Insets(1, 0, 0, 0);
             ComponentUtilities.outfitPanelWithTitle(pickedModulePanel, insets, pickedModule);
@@ -167,7 +173,7 @@ public class VariantModulesPanel extends AbstractVariantPanel{
         this.repaint();
     }
 
-    private void refreshControlPanel() {
+    void refreshControlPanel() {
         controlPanel.removeAll();
 
         if (modulesList == null) return;
@@ -199,7 +205,8 @@ public class VariantModulesPanel extends AbstractVariantPanel{
         return modulesList;
     }
 
-    private final class ModuleList extends InstalledFeatureList {
+    @SuppressWarnings("ProtectedInnerClass")
+    protected final class ModuleList extends InstalledFeatureList {
 
         private ModuleList(ListModel<InstalledFeature> dataModel,
                            WeaponSlotPainter painter,

@@ -2,6 +2,7 @@ package oth.shipeditor.components.instrument.ship.variant;
 
 import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.viewer.ViewerRepaintQueued;
+import oth.shipeditor.components.instrument.ship.centers.CollisionPanel;
 import oth.shipeditor.components.viewer.layers.ship.ShipPainter;
 import oth.shipeditor.components.viewer.painters.PainterVisibility;
 import oth.shipeditor.components.viewer.painters.points.ship.features.InstalledFeature;
@@ -10,7 +11,9 @@ import oth.shipeditor.utility.text.StringValues;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionListener;
+import java.util.List;
+import java.util.function.Consumer;
+import java.util.function.Function;
 
 /**
  * @author Ontheheavens
@@ -20,10 +23,11 @@ class ModuleControlPanel extends JPanel {
 
     private final InstalledFeature module;
 
-    @SuppressWarnings("FieldCanBeLocal")
     private final VariantModulesPanel parent;
 
     private final JPanel visibilitiesPanel;
+
+    private final JPanel anchorWidgetWrapper;
 
     ModuleControlPanel(InstalledFeature feature, VariantModulesPanel modulesPanel) {
         this.module = feature;
@@ -34,39 +38,109 @@ class ModuleControlPanel extends JPanel {
         visibilitiesPanel = new JPanel();
         visibilitiesPanel.setLayout(new GridBagLayout());
         this.add(visibilitiesPanel, BorderLayout.CENTER);
+
+        anchorWidgetWrapper = new JPanel();
+        anchorWidgetWrapper.setLayout(new BorderLayout());
+        anchorWidgetWrapper.setAlignmentX(0.5f);
+        anchorWidgetWrapper.setAlignmentY(0);
+        this.add(anchorWidgetWrapper, BorderLayout.PAGE_END);
+
         this.addContent();
     }
 
     private void addContent() {
         this.addCollisionVisibilityPanel();
+        this.addBoundsVisibilityPanel();
+        this.addSlotsVisibilityPanel();
+
+        ShipPainter modulePainter = (ShipPainter) module.getFeaturePainter();
+        var centersPainter = modulePainter.getCenterPointPainter();
+        CollisionPanel.addAnchorWidgetToPanel(centersPainter,
+                anchorWidgetWrapper, parent::refreshControlPanel);
     }
 
     private void addCollisionVisibilityPanel() {
-        JLabel label = new JLabel("Collision view:");
-        label.setToolTipText(StringValues.CHANGE_APPLIES_TO_FIRST_SELECTED_SLOT);
+        Consumer<JComboBox<PainterVisibility>> chooserAction = comboBox -> {
+            PainterVisibility changedValue = (PainterVisibility) comboBox.getSelectedItem();
+            actOnSelectedModules(shipPainter -> {
+                var pointPainter = shipPainter.getCenterPointPainter();
+                pointPainter.setVisibilityMode(changedValue);
+            });
+            EventBus.publish(new ViewerRepaintQueued());
+        };
+        Function<ShipPainter, PainterVisibility> currentSupplier = modulePainter -> {
+            var centerPointPainter = modulePainter.getCenterPointPainter();
+            return centerPointPainter.getVisibilityMode();
+        };
+        this.addVisibilityPanel("Collision view:", 0, chooserAction, currentSupplier);
+    }
+
+    private void addBoundsVisibilityPanel() {
+        Consumer<JComboBox<PainterVisibility>> chooserAction = comboBox -> {
+            PainterVisibility changedValue = (PainterVisibility) comboBox.getSelectedItem();
+            actOnSelectedModules(shipPainter -> {
+                var pointPainter = shipPainter.getBoundsPainter();
+                pointPainter.setVisibilityMode(changedValue);
+            });
+            EventBus.publish(new ViewerRepaintQueued());
+        };
+        Function<ShipPainter, PainterVisibility> currentSupplier = modulePainter -> {
+            var boundsPainter = modulePainter.getBoundsPainter();
+            return boundsPainter.getVisibilityMode();
+        };
+        this.addVisibilityPanel("Bounds view:", 1, chooserAction, currentSupplier);
+    }
+
+    private void addSlotsVisibilityPanel() {
+        Consumer<JComboBox<PainterVisibility>> chooserAction = comboBox -> {
+            PainterVisibility changedValue = (PainterVisibility) comboBox.getSelectedItem();
+            actOnSelectedModules(shipPainter -> {
+                var pointPainter = shipPainter.getWeaponSlotPainter();
+                pointPainter.setVisibilityMode(changedValue);
+            });
+            EventBus.publish(new ViewerRepaintQueued());
+        };
+        // TODO: revisit slots conditional paint later, not satisfactory with regards to modes!
+        Function<ShipPainter, PainterVisibility> currentSupplier = modulePainter -> {
+            var slotPainter = modulePainter.getWeaponSlotPainter();
+            return slotPainter.getVisibilityMode();
+        };
+        this.addVisibilityPanel("Slots view:", 2, chooserAction, currentSupplier);
+    }
+
+    private void addVisibilityPanel(String labelText, int position,
+                                    Consumer<JComboBox<PainterVisibility>> chooserAction,
+                                    Function<ShipPainter, PainterVisibility> currentSupplier) {
+        JLabel label = new JLabel(labelText);
+        label.setToolTipText(StringValues.CHANGE_APPLIES_TO_ALL_SELECTED_SLOTS);
 
         JComponent right = ComponentUtilities.getNoSelected();
 
         if (module != null) {
-            JComboBox<PainterVisibility> centersVisibility = new JComboBox<>(PainterVisibility.values());
+            JComboBox<PainterVisibility> visibilityBox = new JComboBox<>(PainterVisibility.values());
             ShipPainter modulePainter = (ShipPainter) module.getFeaturePainter();
-            var centerPointPainter = modulePainter.getCenterPointPainter();
-            var current = centerPointPainter.getVisibilityMode();
-            centersVisibility.setSelectedItem(current);
+            var current = currentSupplier.apply(modulePainter);
+            visibilityBox.setSelectedItem(current);
 
-            right = centersVisibility;
+            right = visibilityBox;
 
-            ActionListener chooserAction = e -> {
-                PainterVisibility changedValue = (PainterVisibility) centersVisibility.getSelectedItem();
-                centerPointPainter.setVisibilityMode(changedValue);
-                EventBus.publish(new ViewerRepaintQueued());
-            };
-
-            centersVisibility.setRenderer(PainterVisibility.createCellRenderer());
-            centersVisibility.addActionListener(chooserAction);
-            centersVisibility.setMaximumSize(centersVisibility.getPreferredSize());
+            visibilityBox.setRenderer(PainterVisibility.createCellRenderer());
+            visibilityBox.addActionListener(e -> chooserAction.accept(visibilityBox));
+            visibilityBox.setMaximumSize(visibilityBox.getPreferredSize());
         }
-        ComponentUtilities.addLabelAndComponent(visibilitiesPanel, label, right, 0);
+        ComponentUtilities.addLabelAndComponent(visibilitiesPanel, label, right, position);
+    }
+
+    private void actOnSelectedModules(Consumer<ShipPainter> action) {
+        VariantModulesPanel.ModuleList moduleList = parent.getModulesList();
+        if (moduleList == null) return;
+        List<InstalledFeature> selectedValuesList = moduleList.getSelectedValuesList();
+        if (selectedValuesList != null && !selectedValuesList.isEmpty()) {
+            for (InstalledFeature feature : selectedValuesList) {
+                action.accept((ShipPainter) feature.getFeaturePainter());
+            }
+            EventBus.publish(new ViewerRepaintQueued());
+        }
     }
 
 }

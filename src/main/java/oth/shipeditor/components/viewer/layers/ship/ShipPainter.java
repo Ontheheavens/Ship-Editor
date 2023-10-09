@@ -49,6 +49,7 @@ public class ShipPainter extends LayerPainter {
     private static final char SPACE = ' ';
 
     private BoundPointsPainter boundsPainter;
+
     private CenterPointPainter centerPointPainter;
 
     private ShieldPointPainter shieldPointPainter;

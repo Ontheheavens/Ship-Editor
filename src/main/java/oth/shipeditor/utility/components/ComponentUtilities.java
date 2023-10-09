@@ -477,7 +477,20 @@ public final class ComponentUtilities {
      * @param y vertical grid position in layout, 0 corresponds to first/top.
      */
     @SuppressWarnings("MethodWithTooManyParameters")
-    public static JSpinner addLabelWithSpinner(JPanel container, String labelText, Consumer<Double> spinnerEffect,
+    public static JSpinner addLabelWithSpinner(JPanel container, String labelText,
+                                               Consumer<Double> spinnerEffect,
+                                               double minValue, double maxValue, int y) {
+        SpinnerNumberModel spinnerNumberModel = new SpinnerNumberModel(0,
+                minValue, maxValue, 0.5d);
+        JSpinner spinner = new JSpinner(spinnerNumberModel);
+        return ComponentUtilities.addLabelWithSpinner(container, labelText, spinnerEffect,
+                spinner, spinnerNumberModel, minValue, maxValue, y);
+    }
+
+    @SuppressWarnings("MethodWithTooManyParameters")
+    public static JSpinner addLabelWithSpinner(JPanel container, String labelText,
+                                               Consumer<Double> spinnerEffect, JSpinner spinner,
+                                               SpinnerNumberModel spinnerNumberModel,
                                                double minValue, double maxValue, int y) {
         GridBagConstraints constraints = new GridBagConstraints();
 
@@ -498,10 +511,6 @@ public final class ComponentUtilities {
         constraints.fill = GridBagConstraints.HORIZONTAL;
         constraints.insets = new Insets(3, 3, 0, 6);
         constraints.anchor = GridBagConstraints.LINE_END;
-
-        SpinnerNumberModel spinnerNumberModel = new SpinnerNumberModel(0,
-                minValue, maxValue, 0.5d);
-        JSpinner spinner = new JSpinner(spinnerNumberModel);
 
         spinner.addChangeListener(e -> {
             Number modelNumber = spinnerNumberModel.getNumber();
