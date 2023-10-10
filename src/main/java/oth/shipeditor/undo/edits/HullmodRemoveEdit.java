@@ -1,5 +1,6 @@
 package oth.shipeditor.undo.edits;
 
+import lombok.AllArgsConstructor;
 import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.viewer.layers.ActiveLayerUpdated;
 import oth.shipeditor.components.datafiles.entities.HullmodCSVEntry;
@@ -13,6 +14,7 @@ import java.util.List;
  * @author Ontheheavens
  * @since 27.08.2023
  */
+@AllArgsConstructor
 public class HullmodRemoveEdit extends AbstractEdit {
 
     private final List<HullmodCSVEntry> hullmodIndex;
@@ -21,15 +23,11 @@ public class HullmodRemoveEdit extends AbstractEdit {
 
     private final HullmodCSVEntry entry;
 
-    public HullmodRemoveEdit(List<HullmodCSVEntry> index, ShipLayer shipLayer, HullmodCSVEntry hullmod) {
-        this.hullmodIndex = index;
-        this.layer = shipLayer;
-        this.entry = hullmod;
-    }
+    private int positionIndex;
 
     @Override
     public void undo() {
-        hullmodIndex.add(entry);
+        hullmodIndex.add(positionIndex, entry);
         if (StaticController.getActiveLayer() == layer) {
             EventBus.publish(new ActiveLayerUpdated(layer));
         }

@@ -16,6 +16,7 @@
     requires lombok;
     requires com.formdev.flatlaf;
     requires org.apache.logging.log4j;
+    requires org.apache.logging.log4j.core;
     requires org.apache.commons.collections4;
 
     // These packages are mostly cosmetic.
@@ -87,5 +88,7 @@
     opens oth.shipeditor.components.instrument.ship.shared;
     exports oth.shipeditor.utility.objects;
     exports oth.shipeditor.utility.overseers;
+    exports oth.shipeditor.components.logging;
+    opens oth.shipeditor.components.logging;
 
 }

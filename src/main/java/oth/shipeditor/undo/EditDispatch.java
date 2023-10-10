@@ -328,7 +328,8 @@ public final class EditDispatch {
     }
 
     public static void postHullmodRemoved(List<HullmodCSVEntry> index, ShipLayer shipLayer, HullmodCSVEntry hullmod) {
-        Edit hullmodAddEdit = new HullmodRemoveEdit(index, shipLayer, hullmod);
+        int ordering = index.indexOf(hullmod);
+        Edit hullmodAddEdit = new HullmodRemoveEdit(index, shipLayer, hullmod, ordering);
         UndoOverseer.post(hullmodAddEdit);
         index.remove(hullmod);
     }

@@ -93,6 +93,7 @@ public final class WindowContentPanes {
         westTabsPane.setTabPlacement(SwingConstants.LEFT);
         westTabsPane.addTab("Game data", new LeftsidePanelTab(LeftsideTabType.GAME_DATA));
         westTabsPane.addTab("Help", new LeftsidePanelTab(LeftsideTabType.HELP));
+        westTabsPane.addTab("Logs", new LeftsidePanelTab(LeftsideTabType.LOG));
 
         westTabsPane.setToolTipTextAt(0, "Right-click to reload data");
         westTabsPane.addMouseListener(new MouseAdapter() {

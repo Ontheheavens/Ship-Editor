@@ -222,7 +222,7 @@ public class VariantModulesPanel extends AbstractVariantPanel{
 
         @Override
         protected JMenuItem getSelectEntryOption(InstalledFeature selected) {
-            JMenuItem selectEntry = new JMenuItem("Select ship entry");
+            JMenuItem selectEntry = new JMenuItem(StringValues.SELECT_SHIP_ENTRY);
             selectEntry.addActionListener(event -> actOnSelectedEntry(feature -> {
                 CSVEntry dataEntry = feature.getDataEntry();
                 if (dataEntry instanceof ShipCSVEntry shipEntry) {

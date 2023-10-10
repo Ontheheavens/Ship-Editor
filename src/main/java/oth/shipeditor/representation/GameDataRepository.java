@@ -132,8 +132,24 @@ public class GameDataRepository {
         return allSpecs.get(hullID);
     }
 
+    /**
+     * @param shipHullID ship ID, whether base or skin.
+     * @return base hull ID.
+     */
+    public static String getBaseHullID(String shipHullID) {
+        ShipSpecFile specFile = GameDataRepository.retrieveSpecByID(shipHullID);
+        String baseHullId;
+        if (specFile instanceof SkinSpecFile checkedSkin) {
+            baseHullId = checkedSkin.getBaseHullId();
+        } else {
+            baseHullId = specFile.getHullId();
+        }
+        return baseHullId;
+    }
+
     public static InstalledFeature createModuleFromVariant(String slotID, Variant variant) {
-        ShipSpecFile specFile = GameDataRepository.retrieveSpecByID(variant.getShipHullId());
+        String shipHullId = variant.getShipHullId();
+        ShipSpecFile specFile = GameDataRepository.retrieveSpecByID(shipHullId);
         String baseHullId;
         SkinSpecFile skinSpec = null;
         if (specFile instanceof SkinSpecFile checkedSkin) {

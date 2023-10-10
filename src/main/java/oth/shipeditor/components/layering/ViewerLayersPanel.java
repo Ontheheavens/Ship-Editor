@@ -4,6 +4,7 @@ import lombok.extern.log4j.Log4j2;
 import org.kordamp.ikonli.boxicons.BoxiconsRegular;
 import org.kordamp.ikonli.swing.FontIcon;
 import oth.shipeditor.communication.EventBus;
+import oth.shipeditor.communication.events.components.SelectShipDataEntry;
 import oth.shipeditor.communication.events.components.WindowRepaintQueued;
 import oth.shipeditor.communication.events.viewer.layers.ActiveLayerUpdated;
 import oth.shipeditor.communication.events.viewer.layers.LayerRemovalQueued;
@@ -11,6 +12,7 @@ import oth.shipeditor.communication.events.viewer.layers.LayerWasSelected;
 import oth.shipeditor.communication.events.viewer.layers.ViewerLayerRemovalConfirmed;
 import oth.shipeditor.communication.events.viewer.layers.ships.ShipLayerCreated;
 import oth.shipeditor.communication.events.viewer.layers.weapons.WeaponLayerCreated;
+import oth.shipeditor.components.datafiles.entities.ShipCSVEntry;
 import oth.shipeditor.components.viewer.layers.LayerManager;
 import oth.shipeditor.components.viewer.layers.LayerPainter;
 import oth.shipeditor.components.viewer.layers.ViewerLayer;
@@ -21,15 +23,20 @@ import oth.shipeditor.components.viewer.layers.ship.data.ShipSkin;
 import oth.shipeditor.components.viewer.layers.weapon.WeaponLayer;
 import oth.shipeditor.components.viewer.layers.weapon.WeaponPainter;
 import oth.shipeditor.components.viewer.layers.weapon.WeaponSprites;
+import oth.shipeditor.representation.GameDataRepository;
 import oth.shipeditor.representation.HullSpecFile;
 import oth.shipeditor.representation.ShipData;
 import oth.shipeditor.representation.weapon.WeaponMount;
 import oth.shipeditor.representation.weapon.WeaponSpecFile;
 import oth.shipeditor.utility.components.containers.SortableTabbedPane;
 import oth.shipeditor.utility.graphics.Sprite;
+import oth.shipeditor.utility.text.StringValues;
 
 import javax.swing.*;
+import javax.swing.plaf.TabbedPaneUI;
 import java.awt.*;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
 import java.util.List;
 import java.util.*;
@@ -77,6 +84,7 @@ public final class ViewerLayersPanel extends SortableTabbedPane {
                 layerManager.setActiveLayer(newlySelected);
             }
         });
+        this.addMouseListener(new TabContextListener());
         this.setBorder(BorderFactory.createMatteBorder(1, 0, 0, 0, Color.LIGHT_GRAY));
     }
 
@@ -242,6 +250,47 @@ public final class ViewerLayersPanel extends SortableTabbedPane {
             }
         }
         return null;
+    }
+
+    @SuppressWarnings("PackageVisibleInnerClass")
+    class TabContextListener extends MouseAdapter {
+        @Override
+        public void mousePressed(MouseEvent e) {
+            if(SwingUtilities.isRightMouseButton(e)){
+                TabbedPaneUI paneUI = getUI();
+                int targetTab = paneUI.tabForCoordinate(ViewerLayersPanel.this, e.getX(), e.getY());
+                if (targetTab < 0) return;
+                LayerTab tab = (LayerTab) getComponentAt(targetTab);
+                ViewerLayer layer = getLayerByTab(tab);
+
+                showMenuIfMatching(layer, e);
+            }
+        }
+
+        private void showMenuIfMatching(ViewerLayer layer, MouseEvent e) {
+            if (layer instanceof ShipLayer shipLayer) {
+                var menu = TabContextListener.createContextMenu(shipLayer);
+                if (menu != null) {
+                    menu.show(ViewerLayersPanel.this, e.getPoint().x, e.getPoint().y);
+                }
+            }
+        }
+
+        private static JPopupMenu createContextMenu(ShipLayer shipLayer) {
+            JPopupMenu menu = new JPopupMenu();
+            JMenuItem selectEntry = new JMenuItem(StringValues.SELECT_SHIP_ENTRY);
+
+            if (shipLayer.getPainter() == null || shipLayer.getHull() == null) return null;
+
+            String baseHullID = GameDataRepository.getBaseHullID(shipLayer.getShipID());
+            ShipCSVEntry entry = GameDataRepository.retrieveShipCSVEntryByID(baseHullID);
+            selectEntry.addActionListener(event -> EventBus.publish(new SelectShipDataEntry(entry)));
+
+            menu.add(selectEntry);
+
+            return menu;
+        }
+
     }
 
 }
