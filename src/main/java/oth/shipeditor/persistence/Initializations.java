@@ -54,7 +54,7 @@ public final class Initializations {
         loadActions.forEach(action -> action.actionPerformed(initEvent));
     }
 
-    @SuppressWarnings("ProhibitedExceptionThrown")
+    @SuppressWarnings({"ProhibitedExceptionThrown", "CallToPrintStackTrace"})
     public static void updateStateFromSettings(PrimaryWindow window) {
         Settings settings = SettingsManager.getSettings();
         EventBus.publish(new ViewerBackgroundChanged(settings.getBackgroundColor()));

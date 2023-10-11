@@ -125,6 +125,7 @@ public final class Main {
         shipView.centerViewpoint();
     }
 
+    @SuppressWarnings("CallToPrintStackTrace")
     private static void loadShip(PrimaryWindow window, String spriteFilePath, String hullFilePath) {
         EventBus.publish(new ShipLayerCreationQueued());
         EventBus.publish(new LastLayerSelectQueued());
