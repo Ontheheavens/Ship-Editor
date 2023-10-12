@@ -15,20 +15,27 @@ import java.io.Serializable;
  * @since 10.10.2023
  */
 @Plugin(
-        name = "TextAreaAppender",
+        name = TextAreaAppender.DESIGNATION,
         category = Core.CATEGORY_NAME,
         elementType = Appender.ELEMENT_TYPE)
 public class TextAreaAppender extends AbstractAppender {
+
+    private static final String DEFAULT_PATTERN = "%d{HH:mm:ss.SSS} %-5level %logger{1} - %msg%n";
+
+    static final String DESIGNATION = "TextAreaAppender";
 
     private final PatternLayout patternLayout;
 
     @SuppressWarnings("deprecation")
     protected TextAreaAppender(String name, Filter filter, Layout<? extends Serializable> layout) {
         super(name, filter, layout);
-        this.patternLayout = (layout instanceof PatternLayout) ? (PatternLayout) layout :
-                PatternLayout.newBuilder()
-                        .withPattern("%d{HH:mm:ss.SSS} %-5level %logger{1} - %msg%n")
-                        .build();
+        if (layout instanceof PatternLayout checked) {
+            this.patternLayout = checked;
+        } else {
+            this.patternLayout = PatternLayout.newBuilder()
+                    .withPattern(DEFAULT_PATTERN)
+                    .build();
+        }
     }
 
     @PluginFactory

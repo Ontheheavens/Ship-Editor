@@ -3,6 +3,7 @@ package oth.shipeditor.components.viewer.layers.ship.data;
 import lombok.Getter;
 import lombok.Setter;
 import org.apache.commons.collections4.map.ListOrderedMap;
+import oth.shipeditor.components.datafiles.entities.HullmodCSVEntry;
 import oth.shipeditor.components.datafiles.entities.WeaponCSVEntry;
 import oth.shipeditor.components.viewer.layers.ship.ShipPainter;
 import oth.shipeditor.components.viewer.layers.weapon.WeaponPainter;
@@ -24,6 +25,7 @@ import java.util.*;
  * @author Ontheheavens
  * @since 28.08.2023
  */
+@SuppressWarnings("ClassWithTooManyFields")
 @Getter @Setter
 public class ShipVariant implements Variant {
 
@@ -47,6 +49,12 @@ public class ShipVariant implements Variant {
     private String variantId;
 
     private String displayName;
+
+    private List<HullmodCSVEntry> hullMods;
+
+    private List<HullmodCSVEntry> permaMods;
+
+    private List<HullmodCSVEntry> sMods;
 
     private Map<String, InstalledFeature> fittedModules;
 

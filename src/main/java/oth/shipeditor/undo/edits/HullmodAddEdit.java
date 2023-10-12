@@ -3,6 +3,7 @@ package oth.shipeditor.undo.edits;
 import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.viewer.layers.ActiveLayerUpdated;
 import oth.shipeditor.components.datafiles.entities.HullmodCSVEntry;
+import oth.shipeditor.components.viewer.layers.LayerPainter;
 import oth.shipeditor.components.viewer.layers.ship.ShipLayer;
 import oth.shipeditor.undo.AbstractEdit;
 import oth.shipeditor.utility.overseers.StaticController;
@@ -13,11 +14,11 @@ import java.util.List;
  * @author Ontheheavens
  * @since 27.08.2023
  */
-public class HullmodAddEdit extends AbstractEdit {
+public class HullmodAddEdit extends AbstractEdit implements LayerEdit{
 
     private final List<HullmodCSVEntry> hullmodIndex;
 
-    private final ShipLayer layer;
+    private ShipLayer layer;
 
     private final HullmodCSVEntry entry;
 
@@ -46,6 +47,16 @@ public class HullmodAddEdit extends AbstractEdit {
     @Override
     public String getName() {
         return "Add Hullmod";
+    }
+
+    @Override
+    public LayerPainter getLayerPainter() {
+        return layer.getPainter();
+    }
+
+    @Override
+    public void cleanupReferences() {
+        layer = null;
     }
 
 }

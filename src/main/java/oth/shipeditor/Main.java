@@ -19,8 +19,8 @@ import oth.shipeditor.persistence.SettingsManager;
 import oth.shipeditor.representation.HullSpecFile;
 import oth.shipeditor.representation.SkinSpecFile;
 import oth.shipeditor.undo.UndoOverseer;
-import oth.shipeditor.utility.overseers.StaticController;
 import oth.shipeditor.utility.graphics.Sprite;
+import oth.shipeditor.utility.overseers.StaticController;
 
 import javax.swing.*;
 import java.awt.*;
