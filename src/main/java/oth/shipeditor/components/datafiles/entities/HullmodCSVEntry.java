@@ -4,9 +4,12 @@ import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
 import oth.shipeditor.parsing.loading.FileLoading;
 import oth.shipeditor.representation.HullSize;
+import oth.shipeditor.utility.components.ComponentUtilities;
 import oth.shipeditor.utility.text.StringConstants;
 import oth.shipeditor.utility.text.StringValues;
 
+import javax.swing.*;
+import java.awt.image.BufferedImage;
 import java.io.File;
 import java.nio.file.Path;
 import java.util.Map;
@@ -17,7 +20,7 @@ import java.util.Map;
  */
 @Log4j2
 @Getter
-public class HullmodCSVEntry implements CSVEntry {
+public class HullmodCSVEntry implements OrdnancedCSVEntry {
 
     private final Map<String, String> rowData;
 
@@ -53,7 +56,8 @@ public class HullmodCSVEntry implements CSVEntry {
         return displayedName;
     }
 
-    public int getOrdnanceCostForHull(HullSize size) {
+    @Override
+    public int getOrdnanceCost(HullSize size) {
         var csvData = this.getRowData();
         String stringValue;
         switch (size) {
@@ -66,7 +70,21 @@ public class HullmodCSVEntry implements CSVEntry {
         return Integer.parseInt(stringValue);
     }
 
-    public File fetchHullmodSpriteFile() {
+    @Override
+    public JLabel getIconLabel() {
+        return getIconLabel(32);
+    }
+
+    @Override
+    public JLabel getIconLabel(int maxSize) {
+        Map<String, String> csvData = this.getRowData();
+        String name = csvData.get("name");
+        File imageFile = this.fetchHullmodSpriteFile();
+        BufferedImage iconImage = FileLoading.loadSpriteAsImage(imageFile);
+        return ComponentUtilities.createIconFromImage(iconImage, name, maxSize);
+    }
+
+    private File fetchHullmodSpriteFile() {
         if (fetchedSpriteFile != null) {
             return fetchedSpriteFile;
         }

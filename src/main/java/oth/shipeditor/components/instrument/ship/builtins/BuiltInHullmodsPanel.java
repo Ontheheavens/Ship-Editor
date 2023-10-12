@@ -87,7 +87,7 @@ public class BuiltInHullmodsPanel extends CSVEntryBuiltInsPanel<HullmodCSVEntry>
     }
 
     private JPanel addModPanel(HullmodCSVEntry mod, ActionListener removeAction) {
-        JLabel hullmodIcon = ComponentUtilities.createHullmodIcon(mod);
+        JLabel hullmodIcon = mod.getIconLabel();
         JLabel label = new JLabel(mod.toString(), SwingConstants.LEFT);
 
         var cachedLayer = this.getCachedLayer();
@@ -104,7 +104,7 @@ public class BuiltInHullmodsPanel extends CSVEntryBuiltInsPanel<HullmodCSVEntry>
             size = HullSize.valueOf(hullSize);
         }
 
-        int hullmodCost = mod.getOrdnanceCostForHull(size);
+        int hullmodCost = mod.getOrdnanceCost(size);
 
         JLabel middleLower = new JLabel("Base cost: " + hullmodCost);
         middleLower.setForeground(Color.GRAY);

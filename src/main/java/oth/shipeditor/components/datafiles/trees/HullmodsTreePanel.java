@@ -5,6 +5,7 @@ import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.files.HullmodFoldersWalked;
 import oth.shipeditor.communication.events.viewer.layers.ActiveLayerUpdated;
 import oth.shipeditor.components.datafiles.entities.HullmodCSVEntry;
+import oth.shipeditor.components.datafiles.entities.OrdnancedCSVEntry;
 import oth.shipeditor.components.instrument.ship.EditorInstrument;
 import oth.shipeditor.components.viewer.layers.ViewerLayer;
 import oth.shipeditor.components.viewer.layers.ship.ShipLayer;
@@ -15,7 +16,6 @@ import oth.shipeditor.persistence.SettingsManager;
 import oth.shipeditor.representation.GameDataRepository;
 import oth.shipeditor.undo.EditDispatch;
 import oth.shipeditor.utility.overseers.StaticController;
-import oth.shipeditor.utility.components.ComponentUtilities;
 
 import javax.swing.*;
 import javax.swing.tree.DefaultMutableTreeNode;
@@ -92,8 +92,8 @@ class HullmodsTreePanel extends CSVDataTreePanel<HullmodCSVEntry>{
         createRightPanelDataTable(data);
     }
 
-    private static JPanel createHullmodIconPanel(HullmodCSVEntry selected) {
-        JLabel imageLabel = ComponentUtilities.createHullmodIcon(selected);
+    private static JPanel createHullmodIconPanel(OrdnancedCSVEntry selected) {
+        JLabel imageLabel = selected.getIconLabel();
         JPanel iconPanel = new JPanel();
         iconPanel.add(imageLabel);
         return iconPanel;

@@ -15,9 +15,6 @@ import oth.shipeditor.representation.GameDataRepository;
 import oth.shipeditor.representation.VariantFile;
 import oth.shipeditor.undo.EditDispatch;
 import oth.shipeditor.utility.overseers.StaticController;
-import oth.shipeditor.utility.Utility;
-import oth.shipeditor.utility.components.ComponentUtilities;
-import oth.shipeditor.utility.graphics.Sprite;
 
 import javax.swing.*;
 import javax.swing.tree.DefaultMutableTreeNode;
@@ -87,10 +84,8 @@ public class WingsTreePanel extends CSVDataTreePanel<WingCSVEntry>{
         GridBagConstraints constraints = DataTreePanel.getDefaultConstraints();
         constraints.gridy = 0;
         constraints.insets = new Insets(0, 5, 0, 5);
-        Sprite sprite = selected.getWingMemberSprite();
-        if (sprite != null) {
-            String tooltip = Utility.getTooltipForSprite(sprite);
-            JLabel spriteIcon = ComponentUtilities.createIconFromImage(sprite.image(), tooltip, 128);
+        JLabel spriteIcon = selected.getIconLabel(128);
+        if (spriteIcon != null) {
             JPanel iconPanel = new JPanel();
             iconPanel.add(spriteIcon);
             rightPanel.add(iconPanel, constraints);
@@ -117,7 +112,6 @@ public class WingsTreePanel extends CSVDataTreePanel<WingCSVEntry>{
         return checked;
     }
 
-    @SuppressWarnings("OverlyComplexMethod")
     @Override
     JPopupMenu getContextMenu() {
         JPopupMenu menu = super.getContextMenu();
@@ -143,28 +137,33 @@ public class WingsTreePanel extends CSVDataTreePanel<WingCSVEntry>{
             }
             menu.add(addToHullBuiltIns);
 
-            JMenuItem addToSkinAdded = new JMenuItem("Add to skin built-in wings");
-            addToSkinAdded.addActionListener(e -> {
-                if (activeLayer instanceof ShipLayer checkedLayer) {
-
-                    ShipPainter shipPainter = checkedLayer.getPainter();
-                    if (shipPainter == null || shipPainter.isUninitialized()) return;
-                    var skin = shipPainter.getActiveSkin();
-                    if (skin == null || skin.isBase()) return;
-
-                    var skinAdded = skin.getBuiltInWings();
-                    if (WingsTreePanel.isPushEntryToListSuccessful(skinAdded, checkedLayer, checked)) {
-                        EventBus.publish(new ActiveLayerUpdated(activeLayer));
-                    }
-                }
-            });
-            if (DataTreePanel.isCurrentSkinNotEligible() || WingsTreePanel.isNotActiveInstrument()) {
-                addToSkinAdded.setEnabled(false);
-            }
+            JMenuItem addToSkinAdded = WingsTreePanel.getAddToSkinAdded(checked, activeLayer);
             menu.add(addToSkinAdded);
 
         }
         return menu;
+    }
+
+    private static JMenuItem getAddToSkinAdded(WingCSVEntry checked, ViewerLayer activeLayer) {
+        JMenuItem addToSkinAdded = new JMenuItem("Add to skin built-in wings");
+        addToSkinAdded.addActionListener(e -> {
+            if (activeLayer instanceof ShipLayer checkedLayer) {
+
+                ShipPainter shipPainter = checkedLayer.getPainter();
+                if (shipPainter == null || shipPainter.isUninitialized()) return;
+                var skin = shipPainter.getActiveSkin();
+                if (skin == null || skin.isBase()) return;
+
+                var skinAdded = skin.getBuiltInWings();
+                if (WingsTreePanel.isPushEntryToListSuccessful(skinAdded, checkedLayer, checked)) {
+                    EventBus.publish(new ActiveLayerUpdated(activeLayer));
+                }
+            }
+        });
+        if (DataTreePanel.isCurrentSkinNotEligible() || WingsTreePanel.isNotActiveInstrument()) {
+            addToSkinAdded.setEnabled(false);
+        }
+        return addToSkinAdded;
     }
 
     private static boolean isNotActiveInstrument() {

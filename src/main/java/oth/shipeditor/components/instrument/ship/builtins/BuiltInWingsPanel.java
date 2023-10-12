@@ -16,7 +16,6 @@ import oth.shipeditor.utility.text.StringValues;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionListener;
-import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -152,15 +151,12 @@ public class BuiltInWingsPanel extends CSVEntryBuiltInsPanel<WingCSVEntry> {
     }
 
     private static JPanel addWingPanel(WingCSVEntry wing, ActionListener removeAction) {
-        var wingMemberSprite = wing.getWingMemberSprite();
-        BufferedImage sprite = wingMemberSprite.image();
-
         String tooltip = wing.getEntryName();
-        JLabel spriteIcon = ComponentUtilities.createIconFromImage(sprite, tooltip, 32);
+        JLabel spriteIcon = wing.getIconLabel();
 
         JLabel label = new JLabel(tooltip, SwingConstants.LEFT);
 
-        int wingOrdnanceCost = wing.getOrdnanceCost();
+        int wingOrdnanceCost = wing.getOrdnanceCost(null);
 
         JLabel middleLower = new JLabel("Ordnance cost: " + wingOrdnanceCost);
         middleLower.setForeground(Color.GRAY);
