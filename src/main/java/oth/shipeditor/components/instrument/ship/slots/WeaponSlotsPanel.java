@@ -10,8 +10,7 @@ import java.awt.*;
  * @since 29.07.2023
  */
 public class WeaponSlotsPanel extends JPanel {
-
-
+    
     public WeaponSlotsPanel() {
         this.setLayout(new BorderLayout());
 
