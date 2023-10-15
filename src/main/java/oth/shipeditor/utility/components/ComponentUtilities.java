@@ -336,6 +336,16 @@ public final class ComponentUtilities {
         return container;
     }
 
+
+
+    public static void outfitPanelWithTitle(JPanel panel, String text) {
+        var insets = new Insets(1, 0, 0, 0);
+        MatteBorder matteLine = new MatteBorder(insets, Color.LIGHT_GRAY);
+        Border titledBorder = new TitledBorder(matteLine, text,
+                TitledBorder.CENTER, TitledBorder.DEFAULT_POSITION);
+        panel.setBorder(titledBorder);
+    }
+
     public static void outfitPanelWithTitle(JPanel panel, Insets insets, String text) {
         MatteBorder matteLine = new MatteBorder(insets, Color.LIGHT_GRAY);
         Border titledBorder = new TitledBorder(matteLine, text,

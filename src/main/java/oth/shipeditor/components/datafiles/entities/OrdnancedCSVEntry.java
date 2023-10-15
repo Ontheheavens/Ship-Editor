@@ -8,7 +8,7 @@ import javax.swing.*;
  * @author Ontheheavens
  * @since 12.10.2023
  */
-public interface OrdnancedCSVEntry extends CSVEntry{
+public interface OrdnancedCSVEntry extends CSVEntry {
 
     JLabel getIconLabel();
 

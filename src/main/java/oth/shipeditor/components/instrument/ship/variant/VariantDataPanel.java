@@ -1,5 +1,6 @@
 package oth.shipeditor.components.instrument.ship.variant;
 
+import oth.shipeditor.components.instrument.ship.variant.hullmods.VariantHullmodsPanel;
 import oth.shipeditor.utility.text.StringConstants;
 import oth.shipeditor.utility.text.StringValues;
 
@@ -17,7 +18,7 @@ public class VariantDataPanel extends JPanel {
 
         JTabbedPane tabContainer = new JTabbedPane(SwingConstants.BOTTOM);
         tabContainer.addTab("Main", new VariantMainPanel());
-        tabContainer.addTab(StringValues.HULLMODS, new JPanel());
+        tabContainer.addTab(StringValues.HULLMODS, new VariantHullmodsPanel());
         tabContainer.addTab(StringValues.WINGS, new JPanel());
         tabContainer.setTabLayoutPolicy(JTabbedPane.SCROLL_TAB_LAYOUT);
         tabContainer.putClientProperty(StringConstants.JTABBED_PANE_TAB_AREA_ALIGNMENT, "fill");

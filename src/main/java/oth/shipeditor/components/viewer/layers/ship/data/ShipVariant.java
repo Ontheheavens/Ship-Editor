@@ -17,6 +17,7 @@ import oth.shipeditor.representation.weapon.WeaponSpecFile;
 import oth.shipeditor.undo.EditDispatch;
 import oth.shipeditor.utility.text.StringValues;
 
+import javax.swing.*;
 import java.nio.file.Path;
 import java.util.*;
 
@@ -168,6 +169,36 @@ public class ShipVariant implements Variant {
             });
         }
 
+        var normalMods = file.getHullMods();
+        if (normalMods != null) {
+            this.hullMods = ShipVariant.constructModsList(normalMods);
+        }
+
+        var filePermaMods = file.getPermaMods();
+        if (filePermaMods != null) {
+            this.permaMods = ShipVariant.constructModsList(filePermaMods);
+        }
+
+        var fileSMods = file.getSMods();
+        if (fileSMods != null) {
+            this.sMods = ShipVariant.constructModsList(fileSMods);
+        }
+    }
+
+    private static List<HullmodCSVEntry> constructModsList(Iterable<String> rawList) {
+        List<HullmodCSVEntry> result = new ArrayList<>();
+        rawList.forEach(hullmodID -> {
+            HullmodCSVEntry entry = GameDataRepository.retrieveHullmodCSVEntryByID(hullmodID);
+            if (entry != null) {
+                result.add(entry);
+            } else {
+                JOptionPane.showMessageDialog(null,
+                        "Hullmod entry not found, skipping in shown variant. ID: " + hullmodID,
+                        StringValues.FILE_LOADING_ERROR,
+                        JOptionPane.ERROR_MESSAGE);
+            }
+        });
+        return result;
     }
 
     @Override

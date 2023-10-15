@@ -120,6 +120,12 @@ public class GameDataRepository {
         return shipEntries.get(baseHullID);
     }
 
+    public static HullmodCSVEntry retrieveHullmodCSVEntryByID(String hullmodID) {
+        GameDataRepository dataRepository = SettingsManager.getGameData();
+        var hullmodEntries = dataRepository.getAllHullmodEntries();
+        return hullmodEntries.get(hullmodID);
+    }
+
     public static WeaponCSVEntry retrieveWeaponCSVEntryByID(String weaponID) {
         GameDataRepository dataRepository = SettingsManager.getGameData();
         var weaponEntries = dataRepository.getAllWeaponEntries();
