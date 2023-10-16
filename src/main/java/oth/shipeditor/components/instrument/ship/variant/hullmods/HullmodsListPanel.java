@@ -5,12 +5,16 @@ import oth.shipeditor.components.viewer.layers.ViewerLayer;
 import oth.shipeditor.components.viewer.layers.ship.ShipLayer;
 import oth.shipeditor.components.viewer.layers.ship.ShipPainter;
 import oth.shipeditor.components.viewer.layers.ship.data.ShipVariant;
+import oth.shipeditor.undo.EditDispatch;
 import oth.shipeditor.utility.components.containers.OrdnancedEntryList;
+import oth.shipeditor.utility.overseers.StaticController;
 
 import javax.swing.*;
 import javax.swing.border.LineBorder;
 import java.awt.*;
 import java.util.List;
+import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 import java.util.function.Function;
 
 /**
@@ -25,9 +29,10 @@ class HullmodsListPanel extends JPanel{
 
     private final Function<ShipVariant, List<HullmodCSVEntry>> modsGetter;
 
-    HullmodsListPanel(Function<ShipVariant, List<HullmodCSVEntry>> getter) {
+    HullmodsListPanel(Function<ShipVariant, List<HullmodCSVEntry>> getter,
+                      BiConsumer<ShipVariant, List<HullmodCSVEntry>> sortSetter) {
         this.modsModel = new DefaultListModel<>();
-        this.modsList = new HullmodsList(modsModel);
+        this.modsList = new HullmodsList(modsModel, sortSetter);
         modsList.setBorder(new LineBorder(Color.LIGHT_GRAY));
         this.modsGetter = getter;
         this.setLayout(new BorderLayout());
@@ -61,15 +66,31 @@ class HullmodsListPanel extends JPanel{
         this.modsList.setModel(newModel);
     }
 
-    private static class HullmodsList extends OrdnancedEntryList<HullmodCSVEntry> {
+    private class HullmodsList extends OrdnancedEntryList<HullmodCSVEntry> {
 
-        HullmodsList(ListModel<HullmodCSVEntry> dataModel) {
-            super(dataModel);
+        @SuppressWarnings("InnerClassTooDeeplyNested")
+        private final Consumer<HullmodCSVEntry> removeAction = entry ->
+                StaticController.actOnCurrentVariant(new BiConsumer<>() {
+            @Override
+            public void accept(ShipLayer shipLayer, ShipVariant variant) {
+                var entryList = modsGetter.apply(variant);
+                EditDispatch.postHullmodRemoved(entryList, shipLayer, entry);
+            }
+        });
+
+        HullmodsList(ListModel<HullmodCSVEntry> dataModel,
+                     BiConsumer<ShipVariant, List<HullmodCSVEntry>> sortSetter) {
+            super(dataModel, updatedList ->
+                    StaticController.actOnCurrentVariant((shipLayer, variant) -> {
+                var oldMods = modsGetter.apply(variant);
+                EditDispatch.postHullmodsSorted(oldMods, updatedList, shipLayer,
+                        list -> sortSetter.accept(variant, list));
+            }));
         }
 
         @Override
-        protected void publishEntriesSorted(List<HullmodCSVEntry> rearranged) {
-
+        protected Consumer<HullmodCSVEntry> getRemoveAction() {
+            return removeAction;
         }
 
     }

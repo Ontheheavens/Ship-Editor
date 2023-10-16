@@ -33,7 +33,6 @@ import java.awt.image.BufferedImage;
  * @author Ontheheavens
  * @since 01.05.2023
  */
-@SuppressWarnings("OverlyCoupledClass")
 @Log4j2
 final class ViewerStatusPanel extends JPanel {
 
@@ -292,7 +291,7 @@ final class ViewerStatusPanel extends JPanel {
     private void setDimensionsLabel(BufferedImage sprite) {
         if (sprite != null) {
             dimensions.setText(sprite.getWidth() + " × " + sprite.getHeight());
-            log.info("Sprite dimensions loaded.");
+            log.info("Layer selected: sprite dimensions loaded.");
         } else {
             dimensions.setText("Sprite not loaded.");
         }

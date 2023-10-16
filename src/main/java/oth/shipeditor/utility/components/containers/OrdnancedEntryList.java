@@ -2,10 +2,14 @@ package oth.shipeditor.utility.components.containers;
 
 import oth.shipeditor.components.datafiles.entities.OrdnancedCSVEntry;
 import oth.shipeditor.utility.components.rendering.OrdnancedEntryCellRenderer;
+import oth.shipeditor.utility.text.StringValues;
 
 import javax.swing.*;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Consumer;
 
 /**
  * @author Ontheheavens
@@ -13,9 +17,14 @@ import java.util.List;
  */
 public abstract class OrdnancedEntryList<T extends OrdnancedCSVEntry> extends SortableList<T>{
 
-    protected OrdnancedEntryList(ListModel<T> dataModel) {
+    private final Consumer<List<T>> sorter;
+
+    protected OrdnancedEntryList(ListModel<T> dataModel, Consumer<List<T>> sortAction) {
         super(dataModel);
+        this.sorter = sortAction;
         this.setCellRenderer(new OrdnancedEntryCellRenderer());
+        this.addMouseListener(new ContextMenuListener());
+        this.setDragEnabled(true);
     }
 
     @Override
@@ -26,9 +35,34 @@ public abstract class OrdnancedEntryList<T extends OrdnancedCSVEntry> extends So
             T point = model.getElementAt(i);
             rearranged.add(point);
         }
-        this.publishEntriesSorted(rearranged);
+        this.sorter.accept(rearranged);
     }
 
-    protected abstract void publishEntriesSorted(List<T> rearranged);
+    protected abstract Consumer<T> getRemoveAction();
+
+    private class ContextMenuListener extends MouseAdapter {
+
+        private JPopupMenu getContextMenu() {
+            T selected = getSelectedValue();
+            if (selected == null) return null;
+
+            JPopupMenu menu = new JPopupMenu();
+            JMenuItem remove = new JMenuItem(StringValues.UNINSTALL_FEATURE);
+            remove.addActionListener(event -> actOnSelectedEntry(getRemoveAction()));
+            menu.add(remove);
+
+            return menu;
+        }
+
+        public void mousePressed(MouseEvent e) {
+            if ( SwingUtilities.isRightMouseButton(e) ) {
+                setSelectedIndex(locationToIndex(e.getPoint()));
+                JPopupMenu menu = getContextMenu();
+                if (menu != null) {
+                    menu.show(OrdnancedEntryList.this, e.getPoint().x, e.getPoint().y);
+                }
+            }
+        }
+    }
 
 }

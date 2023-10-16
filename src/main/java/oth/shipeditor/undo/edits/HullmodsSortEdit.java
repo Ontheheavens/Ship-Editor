@@ -9,28 +9,33 @@ import oth.shipeditor.undo.AbstractEdit;
 import oth.shipeditor.utility.overseers.StaticController;
 
 import java.util.List;
+import java.util.function.Consumer;
 
 /**
  * @author Ontheheavens
- * @since 27.08.2023
+ * @since 16.10.2023
  */
-public class HullmodAddEdit extends AbstractEdit implements LayerEdit {
+public class HullmodsSortEdit extends AbstractEdit implements LayerEdit  {
 
-    private final List<HullmodCSVEntry> hullmodIndex;
+    private final List<HullmodCSVEntry> oldList;
+
+    private final List<HullmodCSVEntry> newList;
 
     private ShipLayer layer;
 
-    private final HullmodCSVEntry entry;
+    private final Consumer<List<HullmodCSVEntry>> sortSetter;
 
-    public HullmodAddEdit(List<HullmodCSVEntry> index, ShipLayer shipLayer, HullmodCSVEntry hullmod) {
-        this.hullmodIndex = index;
+    public HullmodsSortEdit(List<HullmodCSVEntry> old, List<HullmodCSVEntry> updated, ShipLayer shipLayer,
+                            Consumer<List<HullmodCSVEntry>> setter) {
+        this.oldList = old;
+        this.newList = updated;
         this.layer = shipLayer;
-        this.entry = hullmod;
+        this.sortSetter = setter;
     }
 
     @Override
     public void undo() {
-        hullmodIndex.remove(entry);
+        sortSetter.accept(oldList);
         if (StaticController.getActiveLayer() == layer) {
             EventBus.publish(new ActiveLayerUpdated(layer));
         }
@@ -38,7 +43,7 @@ public class HullmodAddEdit extends AbstractEdit implements LayerEdit {
 
     @Override
     public void redo() {
-        hullmodIndex.add(entry);
+        sortSetter.accept(newList);
         if (StaticController.getActiveLayer() == layer) {
             EventBus.publish(new ActiveLayerUpdated(layer));
         }
@@ -46,7 +51,7 @@ public class HullmodAddEdit extends AbstractEdit implements LayerEdit {
 
     @Override
     public String getName() {
-        return "Add Hullmod";
+        return "Sort Hullmods";
     }
 
     @Override

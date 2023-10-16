@@ -25,11 +25,11 @@ public class VariantHullmodsPanel extends JPanel {
     public VariantHullmodsPanel() {
         this.setLayout(new BorderLayout());
 
-        this.normalModsPanel = new HullmodsListPanel(ShipVariant::getHullMods);
+        this.normalModsPanel = new HullmodsListPanel(ShipVariant::getHullMods, ShipVariant::setHullMods);
         ComponentUtilities.outfitPanelWithTitle(normalModsPanel, "Normal");
-        this.permaModsPanel = new HullmodsListPanel(ShipVariant::getPermaMods);
+        this.permaModsPanel = new HullmodsListPanel(ShipVariant::getPermaMods, ShipVariant::setPermaMods);
         ComponentUtilities.outfitPanelWithTitle(permaModsPanel, "Permanent");
-        this.sModsPanel = new HullmodsListPanel(ShipVariant::getSMods);
+        this.sModsPanel = new HullmodsListPanel(ShipVariant::getSMods, ShipVariant::setSMods);
         ComponentUtilities.outfitPanelWithTitle(sModsPanel, "S-Mods");
 
         JPanel container = new JPanel();

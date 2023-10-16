@@ -8,9 +8,12 @@ import oth.shipeditor.communication.events.components.ModuleControlRefreshQueued
 import oth.shipeditor.communication.events.components.SelectShipDataEntry;
 import oth.shipeditor.communication.events.components.ShipEntryPicked;
 import oth.shipeditor.communication.events.components.VariantModulesRepaintQueued;
+import oth.shipeditor.communication.events.viewer.points.PointSelectedConfirmed;
 import oth.shipeditor.components.datafiles.entities.CSVEntry;
 import oth.shipeditor.components.datafiles.entities.ShipCSVEntry;
+import oth.shipeditor.components.instrument.ship.EditorInstrument;
 import oth.shipeditor.components.instrument.ship.shared.InstalledFeatureList;
+import oth.shipeditor.components.viewer.entities.weapon.WeaponSlotPoint;
 import oth.shipeditor.components.viewer.layers.ViewerLayer;
 import oth.shipeditor.components.viewer.layers.ship.FeaturesOverseer;
 import oth.shipeditor.components.viewer.layers.ship.ShipLayer;
@@ -69,6 +72,15 @@ public class VariantModulesPanel extends AbstractVariantPanel{
         ViewerLayer layer = StaticController.getActiveLayer();
         this.refreshPanel(layer);
         this.refreshModulePicker();
+
+        EventBus.subscribe(event -> {
+            if (event instanceof PointSelectedConfirmed checked) {
+                if (!(checked.point() instanceof WeaponSlotPoint slotPoint)) return;
+                if (modulesList != null && StaticController.getEditorMode() == EditorInstrument.VARIANT_MODULES) {
+                    modulesList.selectEntryByPoint(slotPoint);
+                }
+            }
+        });
     }
 
     private void installPlaceholders() {

@@ -6,6 +6,7 @@ import oth.shipeditor.communication.events.BusEvent;
 import oth.shipeditor.communication.events.Events;
 import oth.shipeditor.communication.events.viewer.control.ModuleAnchorChangeConcluded;
 import oth.shipeditor.communication.events.viewer.control.ViewerMouseReleased;
+import oth.shipeditor.communication.events.viewer.layers.ActiveLayerUpdated;
 import oth.shipeditor.components.datafiles.entities.HullmodCSVEntry;
 import oth.shipeditor.components.datafiles.entities.InstallableEntry;
 import oth.shipeditor.components.datafiles.entities.ShipCSVEntry;
@@ -327,11 +328,20 @@ public final class EditDispatch {
         index.add(hullmod);
     }
 
+    public static void postHullmodsSorted(List<HullmodCSVEntry> old, List<HullmodCSVEntry> updated, ShipLayer shipLayer,
+                                          Consumer<List<HullmodCSVEntry>> setter) {
+        Edit sortEdit = new HullmodsSortEdit(old, updated, shipLayer, setter);
+        UndoOverseer.post(sortEdit);
+        setter.accept(updated);
+        EventBus.publish(new ActiveLayerUpdated(shipLayer));
+    }
+
     public static void postHullmodRemoved(List<HullmodCSVEntry> index, ShipLayer shipLayer, HullmodCSVEntry hullmod) {
         int ordering = index.indexOf(hullmod);
         Edit hullmodAddEdit = new HullmodRemoveEdit(index, shipLayer, hullmod, ordering);
         UndoOverseer.post(hullmodAddEdit);
         index.remove(hullmod);
+        EventBus.publish(new ActiveLayerUpdated(shipLayer));
     }
 
     public static void postWingAdded(List<WingCSVEntry> index, ShipLayer shipLayer, WingCSVEntry wing) {

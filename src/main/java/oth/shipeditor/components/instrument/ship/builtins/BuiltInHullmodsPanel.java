@@ -75,10 +75,8 @@ public class BuiltInHullmodsPanel extends CSVEntryBuiltInsPanel<HullmodCSVEntry>
                                      Consumer<JPanel> panelMutator) {
         ShipLayer cachedLayer = this.getCachedLayer();
         for (HullmodCSVEntry entry : entryList) {
-            JPanel modPanel = this.addModPanel(entry, e -> {
-                EditDispatch.postHullmodRemoved(entryList, cachedLayer, entry);
-                this.refreshPanel(cachedLayer);
-            });
+            JPanel modPanel = this.addModPanel(entry, e ->
+                    EditDispatch.postHullmodRemoved(entryList, cachedLayer, entry));
             if (panelMutator != null) {
                 panelMutator.accept(modPanel);
             }
