@@ -16,12 +16,15 @@ import oth.shipeditor.components.viewer.control.ControlPredicates;
 import oth.shipeditor.components.viewer.layers.LayerManager;
 import oth.shipeditor.components.viewer.layers.LayerPainter;
 import oth.shipeditor.components.viewer.layers.ViewerLayer;
+import oth.shipeditor.components.viewer.layers.ship.ShipLayer;
+import oth.shipeditor.components.viewer.layers.ship.data.ShipVariant;
 import oth.shipeditor.menubar.FileUtilities;
 import oth.shipeditor.utility.Utility;
 
 import java.awt.*;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Point2D;
+import java.util.function.BiConsumer;
 
 /**
  * Convenience class for static access to active layer and whatever other global features need to be accessed.
@@ -134,6 +137,17 @@ public final class StaticController {
                 EventBus.publish(new CenterPanelsRepaintQueued());
             }
         });
+    }
+
+    public static void actOnCurrentVariant(BiConsumer<ShipLayer, ShipVariant> action) {
+        if (activeLayer instanceof ShipLayer shipLayer) {
+            var shipPainter = shipLayer.getPainter();
+            if (shipPainter == null || shipPainter.isUninitialized()) return;
+            var variant = shipPainter.getActiveVariant();
+            if (variant == null || variant.isEmpty()) return;
+
+            action.accept(shipLayer, variant);
+        }
     }
 
 }

@@ -30,7 +30,7 @@ public final class PrimaryWindow extends JFrame {
     private final WindowContentPanes contentPanes;
 
     private PrimaryWindow() {
-        log.info("Creating window.");
+        log.info("Application start: creating window.");
         this.setTitle(SHIP_EDITOR);
         this.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
 

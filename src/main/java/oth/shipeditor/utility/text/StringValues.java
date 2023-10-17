@@ -51,6 +51,9 @@ public final class StringValues {
     public static final String PICKED_FOR_INSTALL = "Picked for install";
     public static final String CHANGE_APPLIES_TO_ALL_SELECTED_SLOTS = "Change applies to all selected slots";
     public static final String CHANGE_APPLIES_TO_FIRST_SELECTED_SLOT = "Change applies to first selected slot";
+    public static final String SELECT_SHIP_ENTRY = "Select ship entry";
+    public static final String HULLMODS = "Hullmods";
+    public static final String WINGS = "Wings";
 
     private StringValues() {
     }

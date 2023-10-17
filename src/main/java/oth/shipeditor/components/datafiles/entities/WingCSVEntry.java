@@ -5,9 +5,12 @@ import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
 import oth.shipeditor.parsing.loading.FileLoading;
 import oth.shipeditor.persistence.SettingsManager;
+import oth.shipeditor.representation.HullSize;
 import oth.shipeditor.representation.ShipSpecFile;
 import oth.shipeditor.representation.SkinSpecFile;
 import oth.shipeditor.representation.VariantFile;
+import oth.shipeditor.utility.Utility;
+import oth.shipeditor.utility.components.ComponentUtilities;
 import oth.shipeditor.utility.graphics.Sprite;
 import oth.shipeditor.utility.text.StringConstants;
 import oth.shipeditor.utility.text.StringValues;
@@ -23,7 +26,7 @@ import java.util.Map;
  */
 @Log4j2
 @Getter
-public class WingCSVEntry implements CSVEntry {
+public class WingCSVEntry implements OrdnancedCSVEntry {
 
     private final Map<String, String> rowData;
 
@@ -98,7 +101,7 @@ public class WingCSVEntry implements CSVEntry {
         return desiredSpec;
     }
 
-    public Sprite getWingMemberSprite() {
+    private Sprite getWingMemberSprite() {
         if (this.memberSprite != null) {
             return this.memberSprite;
         }
@@ -126,11 +129,16 @@ public class WingCSVEntry implements CSVEntry {
         }
     }
 
-    public int getOrdnanceCost() {
+    /**
+     * @param size irrelevant, should be null.
+     */
+    @Override
+    public int getOrdnanceCost(HullSize size) {
         String tableValue = this.rowData.get("op cost");
         return Integer.parseInt(tableValue);
     }
 
+    @Override
     public String getEntryName() {
         if (this.displayedName != null) {
             return this.displayedName;
@@ -156,6 +164,21 @@ public class WingCSVEntry implements CSVEntry {
         }
 
         return this.getWingID();
+    }
+
+    @Override
+    public JLabel getIconLabel() {
+        return getIconLabel(32);
+    }
+
+    @Override
+    public JLabel getIconLabel(int maxSize) {
+        Sprite sprite = this.getWingMemberSprite();
+        if (sprite != null) {
+            String tooltip = Utility.getTooltipForSprite(sprite);
+            return ComponentUtilities.createIconFromImage(sprite.image(), tooltip, maxSize);
+        }
+        return null;
     }
 
 }

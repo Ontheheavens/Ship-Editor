@@ -39,6 +39,8 @@ import java.util.stream.Stream;
 @Log4j2
 public final class FileUtilities {
 
+    // TODO: loading actions should be performed in a separate thread.
+
     public static final String STARSECTOR_CORE = "starsector-core";
 
     @Getter
@@ -120,6 +122,7 @@ public final class FileUtilities {
         FileUtilities.openPathInDesktop(toOpen.toFile());
     }
 
+    @SuppressWarnings("CallToPrintStackTrace")
     private static void openPathInDesktop(File toOpen) {
         try {
             Desktop.getDesktop().open(toOpen);

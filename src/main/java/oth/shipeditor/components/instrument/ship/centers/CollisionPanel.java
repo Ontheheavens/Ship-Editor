@@ -3,7 +3,9 @@ package oth.shipeditor.components.instrument.ship.centers;
 import lombok.extern.log4j.Log4j2;
 import oth.shipeditor.communication.BusEventListener;
 import oth.shipeditor.communication.EventBus;
+import oth.shipeditor.communication.events.BusEvent;
 import oth.shipeditor.communication.events.components.CenterPanelsRepaintQueued;
+import oth.shipeditor.communication.events.viewer.control.ModuleAnchorChangeConcluded;
 import oth.shipeditor.communication.events.viewer.layers.LayerWasSelected;
 import oth.shipeditor.communication.events.viewer.layers.PainterOpacityChangeQueued;
 import oth.shipeditor.components.viewer.entities.ShipCenterPoint;
@@ -48,6 +50,26 @@ public final class CollisionPanel extends JPanel {
     private JPopupMenu shipCenterMenu;
     private JPopupMenu collisionRadiusMenu;
     private JPanel anchorWrapper;
+
+    private static boolean anchorEditCommenced;
+
+    static {
+        var anchorChangeFinisher = new SwingWorker<>() {
+            @SuppressWarnings({"InfiniteLoopStatement", "BusyWait"})
+            @Override
+            protected Void doInBackground() throws InterruptedException {
+                while (true) {
+                    Thread.sleep(1000);
+                    if (anchorEditCommenced) {
+                        EventBus.publish(new ModuleAnchorChangeConcluded());
+                        anchorEditCommenced = false;
+                    }
+                }
+            }
+
+        };
+        anchorChangeFinisher.execute();
+    }
 
     public CollisionPanel() {
         LayoutManager layout = new BorderLayout();
@@ -214,27 +236,7 @@ public final class CollisionPanel extends JPanel {
             float changedValue = opacity / 100.0f;
             EventBus.publish(new PainterOpacityChangeQueued(CenterPointPainter.class, changedValue));
         };
-        BusEventListener eventListener = event -> {
-            if (event instanceof LayerWasSelected checked) {
-                ViewerLayer selected = checked.selected();
-                int defaultOpacity = (int) (CenterPointPainter.COLLISION_OPACITY * 100.0f);
-                if (!(selected instanceof ShipLayer checkedLayer)) {
-                    updateCollisionOpacityLabel(defaultOpacity);
-                    collisionOpacitySlider.setValue(defaultOpacity);
-                    return;
-                }
-                ShipPainter painter = checkedLayer.getPainter();
-                int value;
-                if (painter == null || painter.isUninitialized()) {
-                    value = defaultOpacity;
-                } else {
-                    CenterPointPainter centerPointPainter = painter.getCenterPointPainter();
-                    value = (int) (centerPointPainter.getPaintOpacity() * 100.0f);
-                }
-                updateCollisionOpacityLabel(value);
-                collisionOpacitySlider.setValue(value);
-            }
-        };
+        BusEventListener eventListener = this::handleSelectedLayerOpacity;
         Pair<JSlider, JLabel> widgetComponents = ComponentUtilities.createOpacityWidget(changeListener, eventListener);
 
         collisionOpacitySlider = widgetComponents.getFirst();
@@ -250,7 +252,11 @@ public final class CollisionPanel extends JPanel {
 
     private void refreshModuleAnchor() {
         anchorWrapper.removeAll();
+        CollisionPanel.addAnchorWidgetToPanel(centerPainter, anchorWrapper, this::refresh);
+    }
 
+    public static void addAnchorWidgetToPanel(CenterPointPainter centerPainter,
+                                              JPanel wrapper, Runnable panelRefresh) {
         JPanel container = new JPanel();
         container.setLayout(new GridBagLayout());
 
@@ -269,49 +275,77 @@ public final class CollisionPanel extends JPanel {
                 new Insets(1, 0, 0, 0), StringValues.MODULE_ANCHOR);
 
         if (centerPainter != null && centerPainter.getModuleAnchorOffset() != null) {
-            Consumer<Double> spinnerEffectX = value -> {
-                Point2D original = centerPainter.getModuleAnchorOffset();
-                Point2D changed = new Point2D.Double(value, original.getY());
-                centerPainter.setModuleAnchorOffset(changed);
-            };
-            JSpinner spinnerX = ComponentUtilities.addLabelWithSpinner(container, "Y coordinate:",
-                    spinnerEffectX, -9000, 9000, 0);
-
-            Consumer<Double> spinnerEffectY = value -> {
-                Point2D original = centerPainter.getModuleAnchorOffset();
-                Point2D changed = new Point2D.Double(original.getX(), value);
-                centerPainter.setModuleAnchorOffset(changed);
-            };
-            JSpinner spinnerY = ComponentUtilities.addLabelWithSpinner(container, "X coordinate:",
-                    spinnerEffectY, -9000, 9000, 1);
-
-            Point2D moduleAnchorOffset = centerPainter.getModuleAnchorOffset();
-            spinnerX.setValue(moduleAnchorOffset.getX());
-            spinnerY.setValue(moduleAnchorOffset.getY());
-
-            JButton removeAnchor = new JButton("Clear anchor");
-            removeAnchor.addActionListener(e -> {
-                centerPainter.setModuleAnchorOffset(null);
-                this.refresh();
-            });
-            constraints.gridy = 3;
-            container.add(removeAnchor, constraints);
+            CollisionPanel.populateAnchorWidget(centerPainter, panelRefresh, container, constraints);
         } else {
             JButton defineAnchor = new JButton("Define anchor");
             if (centerPainter != null) {
                 defineAnchor.addActionListener(e -> {
-                    centerPainter.setModuleAnchorOffset(new Point2D.Double());
-                    this.refresh();
+                    centerPainter.changeModuleAnchor(new Point2D.Double());
+                    EventBus.publish(new ModuleAnchorChangeConcluded());
+                    panelRefresh.run();
                 });
             } else {
                 defineAnchor.setEnabled(false);
             }
             container.add(defineAnchor, constraints);
         }
-        anchorWrapper.add(container, BorderLayout.CENTER);
+        wrapper.add(container, BorderLayout.CENTER);
 
         Dimension containerPreferredSize = container.getPreferredSize();
-        anchorWrapper.setMaximumSize(new Dimension(container.getMaximumSize().width, containerPreferredSize.height));
+        int width = container.getMaximumSize().width;
+        Dimension maximumSize = new Dimension(width, containerPreferredSize.height);
+        wrapper.setMaximumSize(maximumSize);
+    }
+
+    private static void populateAnchorWidget(CenterPointPainter centerPainter,
+                                             Runnable panelRefresh, JPanel container,
+                                             GridBagConstraints constraints) {
+        // This construction is bug-prone: particularly, any attempts to set the spinner value directly
+        // should be avoided, since that pushes new edit on overseer stack via change listener of spinner.
+
+        Point2D moduleAnchorOffset = centerPainter.getModuleAnchorOffset();
+        SpinnerNumberModel spinnerNumberModelX = new SpinnerNumberModel(moduleAnchorOffset.getX(),
+                Integer.MIN_VALUE, Integer.MAX_VALUE, 0.5d);
+        JSpinner spinnerX = new JSpinner(spinnerNumberModelX);
+
+        Consumer<Double> spinnerEffectX = value -> {
+            Point2D original = centerPainter.getModuleAnchorOffset();
+            Point2D changed = new Point2D.Double(value, original.getY());
+            centerPainter.changeModuleAnchor(changed);
+            CollisionPanel.startEditFinishCountdown();
+        };
+        ComponentUtilities.addLabelWithSpinner(container, "Y coordinate:",
+                spinnerEffectX, spinnerX, spinnerNumberModelX,
+                Integer.MIN_VALUE, Integer.MAX_VALUE, 0);
+
+        SpinnerNumberModel spinnerNumberModelY = new SpinnerNumberModel(moduleAnchorOffset.getY(),
+                Integer.MIN_VALUE, Integer.MAX_VALUE, 0.5d);
+        JSpinner spinnerY = new JSpinner(spinnerNumberModelY);
+
+
+        Consumer<Double> spinnerEffectY = value -> {
+            Point2D original = centerPainter.getModuleAnchorOffset();
+            Point2D changed = new Point2D.Double(original.getX(), value);
+            centerPainter.changeModuleAnchor(changed);
+            CollisionPanel.startEditFinishCountdown();
+        };
+        ComponentUtilities.addLabelWithSpinner(container, "X coordinate:",
+                spinnerEffectY, spinnerY, spinnerNumberModelY,
+                Integer.MIN_VALUE, Integer.MAX_VALUE, 1);
+
+
+        JButton removeAnchor = new JButton("Clear anchor");
+        removeAnchor.addActionListener(e -> {
+            centerPainter.changeModuleAnchor(null);
+            EventBus.publish(new ModuleAnchorChangeConcluded());
+            panelRefresh.run();
+        });
+        constraints.gridy = 3;
+        container.add(removeAnchor, constraints);
+    }
+
+    private static void startEditFinishCountdown() {
+        anchorEditCommenced = true;
     }
 
     private JPanel createModuleAnchorPanel() {
@@ -320,6 +354,29 @@ public final class CollisionPanel extends JPanel {
         anchorWrapper.setAlignmentX(0.5f);
         anchorWrapper.setAlignmentY(0);
         return anchorWrapper;
+    }
+
+    private void handleSelectedLayerOpacity(BusEvent event) {
+        if (event instanceof LayerWasSelected checked) {
+            ViewerLayer selected = checked.selected();
+            int defaultOpacity = (int) (CenterPointPainter.COLLISION_OPACITY * 100.0f);
+            if (!(selected instanceof ShipLayer checkedLayer)) {
+                updateCollisionOpacityLabel(defaultOpacity);
+                collisionOpacitySlider.setValue(defaultOpacity);
+                return;
+            }
+            ShipPainter painter = checkedLayer.getPainter();
+            int value;
+            if (painter == null || painter.isUninitialized()) {
+                value = defaultOpacity;
+            }
+            else {
+                CenterPointPainter centerPointPainter = painter.getCenterPointPainter();
+                value = (int) (centerPointPainter.getPaintOpacity() * 100.0f);
+            }
+            updateCollisionOpacityLabel(value);
+            collisionOpacitySlider.setValue(value);
+        }
     }
 
 }

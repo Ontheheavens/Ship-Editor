@@ -6,5 +6,6 @@ package oth.shipeditor.components;
  */
 enum LeftsideTabType {
     GAME_DATA,
-    HELP
+    HELP,
+    LOG
     }

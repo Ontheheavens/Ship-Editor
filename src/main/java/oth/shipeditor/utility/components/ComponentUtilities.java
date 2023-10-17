@@ -6,16 +6,15 @@ import org.kordamp.ikonli.fluentui.FluentUiRegularAL;
 import org.kordamp.ikonli.swing.FontIcon;
 import oth.shipeditor.communication.BusEventListener;
 import oth.shipeditor.communication.EventBus;
-import oth.shipeditor.components.datafiles.entities.HullmodCSVEntry;
 import oth.shipeditor.components.viewer.painters.PainterVisibility;
 import oth.shipeditor.components.viewer.painters.points.AbstractPointPainter;
 import oth.shipeditor.menubar.FileUtilities;
 import oth.shipeditor.parsing.loading.FileLoading;
-import oth.shipeditor.utility.objects.Pair;
 import oth.shipeditor.utility.Utility;
 import oth.shipeditor.utility.components.containers.SortableList;
 import oth.shipeditor.utility.components.containers.TextScrollPanel;
 import oth.shipeditor.utility.graphics.ColorUtilities;
+import oth.shipeditor.utility.objects.Pair;
 import oth.shipeditor.utility.text.StringValues;
 
 import javax.swing.*;
@@ -32,7 +31,6 @@ import java.io.File;
 import java.nio.file.Path;
 import java.util.Dictionary;
 import java.util.Hashtable;
-import java.util.Map;
 import java.util.function.Consumer;
 
 /**
@@ -93,13 +91,6 @@ public final class ComponentUtilities {
         imageLabel.setBorder(new FlatLineBorder(new Insets(2, 2, 2, 2), Color.GRAY));
         imageLabel.setBackground(Color.LIGHT_GRAY);
         return imageLabel;
-    }
-
-    public static JLabel createHullmodIcon(HullmodCSVEntry entry) {
-        Map<String, String> rowData = entry.getRowData();
-        String name = rowData.get("name");
-        File imageFile = entry.fetchHullmodSpriteFile();
-        return ComponentUtilities.createIconFromImage(imageFile, name);
     }
 
     @SuppressWarnings("WeakerAccess")
@@ -345,6 +336,16 @@ public final class ComponentUtilities {
         return container;
     }
 
+
+
+    public static void outfitPanelWithTitle(JPanel panel, String text) {
+        var insets = new Insets(1, 0, 0, 0);
+        MatteBorder matteLine = new MatteBorder(insets, Color.LIGHT_GRAY);
+        Border titledBorder = new TitledBorder(matteLine, text,
+                TitledBorder.CENTER, TitledBorder.DEFAULT_POSITION);
+        panel.setBorder(titledBorder);
+    }
+
     public static void outfitPanelWithTitle(JPanel panel, Insets insets, String text) {
         MatteBorder matteLine = new MatteBorder(insets, Color.LIGHT_GRAY);
         Border titledBorder = new TitledBorder(matteLine, text,
@@ -476,8 +477,21 @@ public final class ComponentUtilities {
      * @param container expected to have GridBagLayout.
      * @param y vertical grid position in layout, 0 corresponds to first/top.
      */
+    @SuppressWarnings({"MethodWithTooManyParameters", "WeakerAccess"})
+    public static JSpinner addLabelWithSpinner(JPanel container, String labelText,
+                                               Consumer<Double> spinnerEffect,
+                                               double minValue, double maxValue, int y) {
+        SpinnerNumberModel spinnerNumberModel = new SpinnerNumberModel(0,
+                minValue, maxValue, 0.5d);
+        JSpinner spinner = new JSpinner(spinnerNumberModel);
+        return ComponentUtilities.addLabelWithSpinner(container, labelText, spinnerEffect,
+                spinner, spinnerNumberModel, minValue, maxValue, y);
+    }
+
     @SuppressWarnings("MethodWithTooManyParameters")
-    public static JSpinner addLabelWithSpinner(JPanel container, String labelText, Consumer<Double> spinnerEffect,
+    public static JSpinner addLabelWithSpinner(JPanel container, String labelText,
+                                               Consumer<Double> spinnerEffect, JSpinner spinner,
+                                               SpinnerNumberModel spinnerNumberModel,
                                                double minValue, double maxValue, int y) {
         GridBagConstraints constraints = new GridBagConstraints();
 
@@ -498,10 +512,6 @@ public final class ComponentUtilities {
         constraints.fill = GridBagConstraints.HORIZONTAL;
         constraints.insets = new Insets(3, 3, 0, 6);
         constraints.anchor = GridBagConstraints.LINE_END;
-
-        SpinnerNumberModel spinnerNumberModel = new SpinnerNumberModel(0,
-                minValue, maxValue, 0.5d);
-        JSpinner spinner = new JSpinner(spinnerNumberModel);
 
         spinner.addChangeListener(e -> {
             Number modelNumber = spinnerNumberModel.getNumber();

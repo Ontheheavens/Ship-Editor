@@ -10,6 +10,7 @@ import oth.shipeditor.components.help.HelpMainPanel;
 import oth.shipeditor.components.instrument.AbstractInstrumentsPane;
 import oth.shipeditor.components.instrument.ship.ShipInstrumentsPane;
 import oth.shipeditor.components.instrument.weapon.WeaponInstrumentsPane;
+import oth.shipeditor.components.logging.LogsPanel;
 import oth.shipeditor.components.viewer.LayerViewer;
 import oth.shipeditor.components.viewer.layers.ViewerLayer;
 import oth.shipeditor.components.viewer.layers.weapon.WeaponLayer;
@@ -80,6 +81,8 @@ final class TripleSplitContainer extends JSplitPane {
         leftsidePanels = new EnumMap<>(LeftsideTabType.class);
 
         leftsidePanels.put(LeftsideTabType.HELP, new HelpMainPanel());
+        leftsidePanels.put(LeftsideTabType.LOG, new LogsPanel());
+
         this.initDividerListeners(westPane);
     }
 
@@ -90,6 +93,7 @@ final class TripleSplitContainer extends JSplitPane {
             switch (selected.getTabType()) {
                 case HELP -> toSelect = leftsidePanels.get(LeftsideTabType.HELP);
                 case GAME_DATA -> toSelect = leftsidePanels.get(LeftsideTabType.GAME_DATA);
+                case LOG -> toSelect = leftsidePanels.get(LeftsideTabType.LOG);
             }
             this.setLeftComponent(toSelect);
             if (dividerLocations.get(toSelect) != null) {

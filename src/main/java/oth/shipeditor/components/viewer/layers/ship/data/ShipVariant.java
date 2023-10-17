@@ -3,12 +3,15 @@ package oth.shipeditor.components.viewer.layers.ship.data;
 import lombok.Getter;
 import lombok.Setter;
 import org.apache.commons.collections4.map.ListOrderedMap;
+import oth.shipeditor.components.datafiles.entities.HullmodCSVEntry;
 import oth.shipeditor.components.datafiles.entities.WeaponCSVEntry;
+import oth.shipeditor.components.datafiles.entities.WingCSVEntry;
 import oth.shipeditor.components.viewer.layers.ship.ShipPainter;
 import oth.shipeditor.components.viewer.layers.weapon.WeaponPainter;
 import oth.shipeditor.components.viewer.painters.points.ship.features.FireMode;
 import oth.shipeditor.components.viewer.painters.points.ship.features.FittedWeaponGroup;
 import oth.shipeditor.components.viewer.painters.points.ship.features.InstalledFeature;
+import oth.shipeditor.persistence.SettingsManager;
 import oth.shipeditor.representation.GameDataRepository;
 import oth.shipeditor.representation.SpecWeaponGroup;
 import oth.shipeditor.representation.VariantFile;
@@ -16,6 +19,7 @@ import oth.shipeditor.representation.weapon.WeaponSpecFile;
 import oth.shipeditor.undo.EditDispatch;
 import oth.shipeditor.utility.text.StringValues;
 
+import javax.swing.*;
 import java.nio.file.Path;
 import java.util.*;
 
@@ -24,6 +28,7 @@ import java.util.*;
  * @author Ontheheavens
  * @since 28.08.2023
  */
+@SuppressWarnings("ClassWithTooManyFields")
 @Getter @Setter
 public class ShipVariant implements Variant {
 
@@ -47,6 +52,14 @@ public class ShipVariant implements Variant {
     private String variantId;
 
     private String displayName;
+
+    private List<HullmodCSVEntry> hullMods;
+
+    private List<HullmodCSVEntry> permaMods;
+
+    private List<HullmodCSVEntry> sMods;
+
+    private List<WingCSVEntry> wings;
 
     private Map<String, InstalledFeature> fittedModules;
 
@@ -160,6 +173,54 @@ public class ShipVariant implements Variant {
             });
         }
 
+        var normalMods = file.getHullMods();
+        if (normalMods != null) {
+            this.hullMods = ShipVariant.constructModsList(normalMods);
+        }
+
+        var filePermaMods = file.getPermaMods();
+        if (filePermaMods != null) {
+            this.permaMods = ShipVariant.constructModsList(filePermaMods);
+        }
+
+        var fileSMods = file.getSMods();
+        if (fileSMods != null) {
+            this.sMods = ShipVariant.constructModsList(fileSMods);
+        }
+
+        var fileWings = file.getWings();
+        if (fileWings != null) {
+            this.wings = new ArrayList<>();
+            GameDataRepository gameData = SettingsManager.getGameData();
+            Map<String, WingCSVEntry> allWingEntries = gameData.getAllWingEntries();
+            fileWings.forEach(wingID -> {
+                WingCSVEntry entry = allWingEntries.get(wingID);
+                if (entry != null) {
+                    wings.add(entry);
+                } else {
+                    JOptionPane.showMessageDialog(null,
+                            "Wing entry not found, skipping in shown variant. ID: " + wingID,
+                            StringValues.FILE_LOADING_ERROR,
+                            JOptionPane.ERROR_MESSAGE);
+                }
+            });
+        }
+    }
+
+    private static List<HullmodCSVEntry> constructModsList(Iterable<String> rawList) {
+        List<HullmodCSVEntry> result = new ArrayList<>();
+        rawList.forEach(hullmodID -> {
+            HullmodCSVEntry entry = GameDataRepository.retrieveHullmodCSVEntryByID(hullmodID);
+            if (entry != null) {
+                result.add(entry);
+            } else {
+                JOptionPane.showMessageDialog(null,
+                        "Hullmod entry not found, skipping in shown variant. ID: " + hullmodID,
+                        StringValues.FILE_LOADING_ERROR,
+                        JOptionPane.ERROR_MESSAGE);
+            }
+        });
+        return result;
     }
 
     @Override

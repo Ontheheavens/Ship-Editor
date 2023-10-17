@@ -44,7 +44,7 @@ public final class JsonProcessor {
         return preprocessed;
     }
 
-    @SuppressWarnings({"NestedAssignment", "RegExpSimplifiable"})
+    @SuppressWarnings({"NestedAssignment", "RegExpSimplifiable", "CallToPrintStackTrace"})
     private static String correctJSONUnquotedValues(File malformed) {
         StringBuilder jsonString = new StringBuilder();
         try (BufferedReader reader = new BufferedReader(new FileReader(malformed, StandardCharsets.UTF_8))) {

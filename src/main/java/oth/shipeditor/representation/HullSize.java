@@ -3,6 +3,9 @@ package oth.shipeditor.representation;
 import lombok.Getter;
 import org.kordamp.ikonli.boxicons.BoxiconsRegular;
 import org.kordamp.ikonli.swing.FontIcon;
+import oth.shipeditor.components.viewer.layers.ship.ShipLayer;
+import oth.shipeditor.components.viewer.layers.ship.data.ShipHull;
+import oth.shipeditor.utility.overseers.StaticController;
 import oth.shipeditor.utility.text.StringValues;
 
 import java.awt.*;
@@ -31,6 +34,26 @@ public enum HullSize {
     HullSize(FontIcon fontIcon, String name) {
         this.icon = fontIcon;
         this.displayedName = name;
+    }
+
+    public static HullSize getSizeOfActiveLayer() {
+        HullSize size = null;
+
+        var activeLayer = StaticController.getActiveLayer();
+
+        if (activeLayer instanceof ShipLayer shipLayer) {
+            ShipHull shipHull = shipLayer.getHull();
+            if (shipHull != null) {
+                size = shipHull.getHullSize();
+            } else {
+                var shipData = shipLayer.getShipData();
+                HullSpecFile hullSpecFile = shipData.getHullSpecFile();
+                String hullSize = hullSpecFile.getHullSize();
+                size = HullSize.valueOf(hullSize);
+            }
+        }
+
+        return size;
     }
 
 }

@@ -1,14 +1,19 @@
 package oth.shipeditor.components.instrument.ship.variant;
 
+import lombok.Getter;
 import org.kordamp.ikonli.fluentui.FluentUiRegularAL;
 import org.kordamp.ikonli.swing.FontIcon;
 import oth.shipeditor.communication.EventBus;
+import oth.shipeditor.communication.events.components.ModuleControlRefreshQueued;
 import oth.shipeditor.communication.events.components.SelectShipDataEntry;
 import oth.shipeditor.communication.events.components.ShipEntryPicked;
 import oth.shipeditor.communication.events.components.VariantModulesRepaintQueued;
+import oth.shipeditor.communication.events.viewer.points.PointSelectedConfirmed;
 import oth.shipeditor.components.datafiles.entities.CSVEntry;
 import oth.shipeditor.components.datafiles.entities.ShipCSVEntry;
+import oth.shipeditor.components.instrument.ship.EditorInstrument;
 import oth.shipeditor.components.instrument.ship.shared.InstalledFeatureList;
+import oth.shipeditor.components.viewer.entities.weapon.WeaponSlotPoint;
 import oth.shipeditor.components.viewer.layers.ViewerLayer;
 import oth.shipeditor.components.viewer.layers.ship.FeaturesOverseer;
 import oth.shipeditor.components.viewer.layers.ship.ShipLayer;
@@ -46,7 +51,7 @@ public class VariantModulesPanel extends AbstractVariantPanel{
 
     private JPanel pickedModulePanel;
 
-    @SuppressWarnings("FieldCanBeLocal")
+    @Getter
     private ModuleList modulesList;
 
     public VariantModulesPanel() {
@@ -67,6 +72,15 @@ public class VariantModulesPanel extends AbstractVariantPanel{
         ViewerLayer layer = StaticController.getActiveLayer();
         this.refreshPanel(layer);
         this.refreshModulePicker();
+
+        EventBus.subscribe(event -> {
+            if (event instanceof PointSelectedConfirmed checked) {
+                if (!(checked.point() instanceof WeaponSlotPoint slotPoint)) return;
+                if (modulesList != null && StaticController.getEditorMode() == EditorInstrument.VARIANT_MODULES) {
+                    modulesList.selectEntryByPoint(slotPoint);
+                }
+            }
+        });
     }
 
     private void installPlaceholders() {
@@ -96,6 +110,11 @@ public class VariantModulesPanel extends AbstractVariantPanel{
                 this.refreshModulePicker();
             }
         });
+        EventBus.subscribe(event -> {
+            if (event instanceof ModuleControlRefreshQueued) {
+                this.refreshControlPanel();
+            }
+        });
     }
 
     @SuppressWarnings("InstanceVariableUsedBeforeInitialized")
@@ -112,12 +131,11 @@ public class VariantModulesPanel extends AbstractVariantPanel{
             pickedModulePanel.setBorder(new EmptyBorder(4, 4, 4, 4));
 
             String moduleText = pickedForInstall.toString();
-            JLabel entry = new JLabel("Module: ");
             JLabel text = new JLabel(moduleText);
-            entry.setBorder(new EmptyBorder(0, 4, 0, 0));
-            pickedModulePanel.add(entry);
+            text.setAlignmentX(0.5f);
             pickedModulePanel.add(Box.createHorizontalGlue());
             pickedModulePanel.add(text);
+            pickedModulePanel.add(Box.createHorizontalGlue());
 
             Insets insets = new Insets(1, 0, 0, 0);
             ComponentUtilities.outfitPanelWithTitle(pickedModulePanel, insets, pickedModule);
@@ -167,7 +185,7 @@ public class VariantModulesPanel extends AbstractVariantPanel{
         this.repaint();
     }
 
-    private void refreshControlPanel() {
+    void refreshControlPanel() {
         controlPanel.removeAll();
 
         if (modulesList == null) return;
@@ -199,7 +217,8 @@ public class VariantModulesPanel extends AbstractVariantPanel{
         return modulesList;
     }
 
-    private final class ModuleList extends InstalledFeatureList {
+    @SuppressWarnings("ProtectedInnerClass")
+    protected final class ModuleList extends InstalledFeatureList {
 
         private ModuleList(ListModel<InstalledFeature> dataModel,
                            WeaponSlotPainter painter,
@@ -215,7 +234,7 @@ public class VariantModulesPanel extends AbstractVariantPanel{
 
         @Override
         protected JMenuItem getSelectEntryOption(InstalledFeature selected) {
-            JMenuItem selectEntry = new JMenuItem("Select ship entry");
+            JMenuItem selectEntry = new JMenuItem(StringValues.SELECT_SHIP_ENTRY);
             selectEntry.addActionListener(event -> actOnSelectedEntry(feature -> {
                 CSVEntry dataEntry = feature.getDataEntry();
                 if (dataEntry instanceof ShipCSVEntry shipEntry) {

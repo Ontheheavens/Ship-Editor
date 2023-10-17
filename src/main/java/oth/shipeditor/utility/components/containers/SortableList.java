@@ -8,6 +8,7 @@ import java.awt.*;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
 import java.awt.dnd.*;
+import java.util.function.Consumer;
 
 /**
  * @author Terai Atsuhiro, refactored by Ontheheavens
@@ -36,6 +37,15 @@ public abstract class SortableList<E> extends JList<E> implements DragGestureLis
     }
 
     protected abstract void sortListModel();
+
+    protected void actOnSelectedEntry(Consumer<E> action) {
+        int index = this.getSelectedIndex();
+        if (index != -1) {
+            ListModel<E> listModel = this.getModel();
+            E feature = listModel.getElementAt(index);
+            action.accept(feature);
+        }
+    }
 
     @Override
     public void updateUI() {

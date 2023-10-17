@@ -120,6 +120,12 @@ public class GameDataRepository {
         return shipEntries.get(baseHullID);
     }
 
+    public static HullmodCSVEntry retrieveHullmodCSVEntryByID(String hullmodID) {
+        GameDataRepository dataRepository = SettingsManager.getGameData();
+        var hullmodEntries = dataRepository.getAllHullmodEntries();
+        return hullmodEntries.get(hullmodID);
+    }
+
     public static WeaponCSVEntry retrieveWeaponCSVEntryByID(String weaponID) {
         GameDataRepository dataRepository = SettingsManager.getGameData();
         var weaponEntries = dataRepository.getAllWeaponEntries();
@@ -132,8 +138,24 @@ public class GameDataRepository {
         return allSpecs.get(hullID);
     }
 
+    /**
+     * @param shipHullID ship ID, whether base or skin.
+     * @return base hull ID.
+     */
+    public static String getBaseHullID(String shipHullID) {
+        ShipSpecFile specFile = GameDataRepository.retrieveSpecByID(shipHullID);
+        String baseHullId;
+        if (specFile instanceof SkinSpecFile checkedSkin) {
+            baseHullId = checkedSkin.getBaseHullId();
+        } else {
+            baseHullId = specFile.getHullId();
+        }
+        return baseHullId;
+    }
+
     public static InstalledFeature createModuleFromVariant(String slotID, Variant variant) {
-        ShipSpecFile specFile = GameDataRepository.retrieveSpecByID(variant.getShipHullId());
+        String shipHullId = variant.getShipHullId();
+        ShipSpecFile specFile = GameDataRepository.retrieveSpecByID(shipHullId);
         String baseHullId;
         SkinSpecFile skinSpec = null;
         if (specFile instanceof SkinSpecFile checkedSkin) {

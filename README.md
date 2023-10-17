@@ -16,6 +16,23 @@ Visualizer and editor of object data in JSON and CSV format. Developed as utilit
  - Ikonli: https://github.com/kordamp/ikonli
  - Flatlaf: https://github.com/JFormDesigner/FlatLaf
 
+## Development Note 17.10.23:
+
+![](showcase/history/Sample%207.png)
+
+### Implemented:
+
+- Built-in weapons logical split: normal and decorative.
+- CellRenderer stamp panels code with custom TreeUI fixes.
+- Variant weapons.
+- Variant modules.
+- Java 21 update.
+- Display of logging activity in GUI with Log4J2 config.
+- Hullmods and wings object hierarchy refactor.
+- Variant hullmods.
+- Variant wings (unfinished).
+- Numerous fixes, refactors and small functionality additions across the board.
+
 ## Development Note 17.09.23:
 
 ![](showcase/history/Sample%205.png)

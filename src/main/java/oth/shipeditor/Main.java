@@ -19,8 +19,8 @@ import oth.shipeditor.persistence.SettingsManager;
 import oth.shipeditor.representation.HullSpecFile;
 import oth.shipeditor.representation.SkinSpecFile;
 import oth.shipeditor.undo.UndoOverseer;
-import oth.shipeditor.utility.overseers.StaticController;
 import oth.shipeditor.utility.graphics.Sprite;
+import oth.shipeditor.utility.overseers.StaticController;
 
 import javax.swing.*;
 import java.awt.*;
@@ -125,6 +125,7 @@ public final class Main {
         shipView.centerViewpoint();
     }
 
+    @SuppressWarnings("CallToPrintStackTrace")
     private static void loadShip(PrimaryWindow window, String spriteFilePath, String hullFilePath) {
         EventBus.publish(new ShipLayerCreationQueued());
         EventBus.publish(new LastLayerSelectQueued());

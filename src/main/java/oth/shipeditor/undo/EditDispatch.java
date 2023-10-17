@@ -4,7 +4,9 @@ import oth.shipeditor.communication.BusEventListener;
 import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.BusEvent;
 import oth.shipeditor.communication.events.Events;
+import oth.shipeditor.communication.events.viewer.control.ModuleAnchorChangeConcluded;
 import oth.shipeditor.communication.events.viewer.control.ViewerMouseReleased;
+import oth.shipeditor.communication.events.viewer.layers.ActiveLayerUpdated;
 import oth.shipeditor.components.datafiles.entities.HullmodCSVEntry;
 import oth.shipeditor.components.datafiles.entities.InstallableEntry;
 import oth.shipeditor.components.datafiles.entities.ShipCSVEntry;
@@ -20,6 +22,7 @@ import oth.shipeditor.components.viewer.layers.ship.ShipLayer;
 import oth.shipeditor.components.viewer.painters.points.AbstractPointPainter;
 import oth.shipeditor.components.viewer.painters.points.MirrorablePointPainter;
 import oth.shipeditor.components.viewer.painters.points.ship.BoundPointsPainter;
+import oth.shipeditor.components.viewer.painters.points.ship.CenterPointPainter;
 import oth.shipeditor.components.viewer.painters.points.ship.EngineSlotPainter;
 import oth.shipeditor.components.viewer.painters.points.ship.WeaponSlotPainter;
 import oth.shipeditor.components.viewer.painters.points.ship.features.FittedWeaponGroup;
@@ -54,21 +57,28 @@ public final class EditDispatch {
     }
 
     private static void handleContinuousEdit(Edit edit) {
+        BusEventListener finishListener = new BusEventListener() {
+            @Override
+            public void handleEvent(BusEvent event) {
+                // This is far from perfect, more like a quick hack...
+                // However, refactoring with another solution may prove very difficult.
+                if (event instanceof ViewerMouseReleased && !edit.isFinished()) {
+                    edit.setFinished(true);
+                    EventBus.unsubscribe(this);
+                }
+            }
+        };
+        EditDispatch.handleContinuousEdit(edit, finishListener);
+    }
+
+    private static void handleContinuousEdit(Edit edit, BusEventListener finishListener) {
         Class<? extends Edit> editClass = edit.getClass();
         Edit previousEdit = UndoOverseer.getNextUndoable();
         if (editClass.isInstance(previousEdit) && !previousEdit.isFinished()) {
             edit.setFinished(true);
             previousEdit.add(edit);
         } else {
-            EventBus.subscribe(new BusEventListener() {
-                @Override
-                public void handleEvent(BusEvent event) {
-                    if (event instanceof ViewerMouseReleased && !edit.isFinished()) {
-                        edit.setFinished(true);
-                        EventBus.unsubscribe(this);
-                    }
-                }
-            });
+            EventBus.subscribe(finishListener);
             UndoOverseer.post(edit);
         }
     }
@@ -128,6 +138,7 @@ public final class EditDispatch {
     public static void postAnchorOffsetChanged(LayerPainter layerPainter, Point2D updated) {
         Point2D oldOffset = layerPainter.getAnchor();
         Edit offsetChangeEdit = new AnchorOffsetEdit(layerPainter, oldOffset, updated);
+
         EditDispatch.handleContinuousEdit(offsetChangeEdit);
         layerPainter.setAnchor(updated);
         var repainter = StaticController.getRepainter();
@@ -135,6 +146,28 @@ public final class EditDispatch {
         repainter.queueBoundsPanelRepaint();
         repainter.queueCenterPanelsRepaint();
         repainter.queueBuiltInsRepaint();
+    }
+
+    public static void postModuleAnchorChanged(CenterPointPainter centersPainter, Point2D updated) {
+        Point2D oldOffset = centersPainter.getModuleAnchorOffset();
+        Edit offsetChangeEdit = new ModuleAnchorEdit(centersPainter, oldOffset, updated);
+
+        BusEventListener finishListener = new BusEventListener() {
+            @Override
+            public void handleEvent(BusEvent event) {
+                if (event instanceof ModuleAnchorChangeConcluded && !offsetChangeEdit.isFinished()) {
+                    offsetChangeEdit.setFinished(true);
+                    EventBus.unsubscribe(this);
+                }
+            }
+        };
+
+        EditDispatch.handleContinuousEdit(offsetChangeEdit, finishListener);
+        centersPainter.setModuleAnchorOffset(updated);
+        var repainter = StaticController.getRepainter();
+        repainter.queueViewerRepaint();
+        repainter.queueCenterPanelsRepaint();
+        repainter.queueModuleControlRepaint();
     }
 
     public static void postSlotAngleSet(SlotData slotPoint, double old, double updated ) {
@@ -295,10 +328,20 @@ public final class EditDispatch {
         index.add(hullmod);
     }
 
+    public static void postHullmodsSorted(List<HullmodCSVEntry> old, List<HullmodCSVEntry> updated, ShipLayer shipLayer,
+                                          Consumer<List<HullmodCSVEntry>> setter) {
+        Edit sortEdit = new HullmodsSortEdit(old, updated, shipLayer, setter);
+        UndoOverseer.post(sortEdit);
+        setter.accept(updated);
+        EventBus.publish(new ActiveLayerUpdated(shipLayer));
+    }
+
     public static void postHullmodRemoved(List<HullmodCSVEntry> index, ShipLayer shipLayer, HullmodCSVEntry hullmod) {
-        Edit hullmodAddEdit = new HullmodRemoveEdit(index, shipLayer, hullmod);
+        int ordering = index.indexOf(hullmod);
+        Edit hullmodAddEdit = new HullmodRemoveEdit(index, shipLayer, hullmod, ordering);
         UndoOverseer.post(hullmodAddEdit);
         index.remove(hullmod);
+        EventBus.publish(new ActiveLayerUpdated(shipLayer));
     }
 
     public static void postWingAdded(List<WingCSVEntry> index, ShipLayer shipLayer, WingCSVEntry wing) {

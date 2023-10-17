@@ -7,6 +7,7 @@ import oth.shipeditor.communication.events.components.SelectWeaponDataEntry;
 import oth.shipeditor.components.datafiles.styles.EngineStylesPanel;
 import oth.shipeditor.components.datafiles.styles.HullStylesPanel;
 import oth.shipeditor.components.datafiles.trees.*;
+import oth.shipeditor.utility.text.StringValues;
 
 import javax.swing.*;
 import java.awt.*;
@@ -22,9 +23,9 @@ public class GameDataPanel extends JPanel {
         JTabbedPane container = new JTabbedPane(SwingConstants.BOTTOM);
         container.addTab("Hulls", new HullsTreePanel());
         container.addTab("Weapons", new WeaponsTreePanel());
-        container.addTab("Hullmods", new HullmodsTreePanel());
+        container.addTab(StringValues.HULLMODS, new HullmodsTreePanel());
         container.addTab("Shipsystems", new ShipSystemsTreePanel());
-        container.addTab("Wings", new WingsTreePanel());
+        container.addTab(StringValues.WINGS, new WingsTreePanel());
         container.addTab("Hull styles", new HullStylesPanel());
         container.addTab("Engine styles", new EngineStylesPanel());
         container.setTabLayoutPolicy(JTabbedPane.SCROLL_TAB_LAYOUT);

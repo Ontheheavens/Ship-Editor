@@ -5,10 +5,9 @@ import lombok.Setter;
 import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.components.SelectWeaponDataEntry;
 import oth.shipeditor.communication.events.viewer.points.PointSelectQueued;
-import oth.shipeditor.communication.events.viewer.points.PointSelectedConfirmed;
 import oth.shipeditor.components.datafiles.entities.CSVEntry;
 import oth.shipeditor.components.datafiles.entities.WeaponCSVEntry;
-import oth.shipeditor.components.viewer.entities.weapon.WeaponSlotPoint;
+import oth.shipeditor.components.viewer.entities.weapon.SlotData;
 import oth.shipeditor.components.viewer.layers.ship.ShipLayer;
 import oth.shipeditor.components.viewer.painters.points.ship.WeaponSlotPainter;
 import oth.shipeditor.components.viewer.painters.points.ship.features.InstalledFeature;
@@ -62,8 +61,6 @@ public class InstalledFeatureList extends SortableList<InstalledFeature> {
         this.setCellRenderer(InstalledFeatureList.createCellRenderer());
         int margin = 3;
         this.setBorder(new EmptyBorder(margin, margin, margin, margin));
-        this.initListeners();
-
         this.setDragEnabled(true);
     }
 
@@ -91,31 +88,20 @@ public class InstalledFeatureList extends SortableList<InstalledFeature> {
         }
     }
 
-    private void initListeners() {
-        // TODO: this one is currently not cleaned up from event bus. As it's a UI class, should not be super spammy...
-        //  However, keep in mind for future refactors. Difficulty here is, you can't easily get a hold of time
-        //  when old feature list is discarded - it's done in Swing internals. Possible solutions are:
-        //  Either move listener to outer panel classes or employ WeakHashMap (entails huge refactor).
-        EventBus.subscribe(event -> {
-            if (event instanceof PointSelectedConfirmed checked) {
-                DefaultListModel<InstalledFeature> model = (DefaultListModel<InstalledFeature>) this.getModel();
+    public void selectEntryByPoint(SlotData slotPoint) {
+        DefaultListModel<InstalledFeature> model = (DefaultListModel<InstalledFeature>) this.getModel();
+        InstalledFeature target = null;
 
-                if (!(checked.point() instanceof WeaponSlotPoint slotPoint)) return;
-
-                InstalledFeature target = null;
-
-                for (int i = 0; i < model.size(); i++) {
-                    InstalledFeature feature = model.get(i);
-                    String slotID = feature.getSlotID();
-                    if (slotID.equals(slotPoint.getId())) {
-                        target = feature;
-                    }
-                }
-
-                propagationBlock = true;
-                this.setSelectedValue(target, true);
+        for (int i = 0; i < model.size(); i++) {
+            InstalledFeature feature = model.get(i);
+            String slotID = feature.getSlotID();
+            if (slotID.equals(slotPoint.getId())) {
+                target = feature;
             }
-        });
+        }
+
+        propagationBlock = true;
+        this.setSelectedValue(target, true);
     }
 
     protected JMenuItem getSelectEntryOption(InstalledFeature selected) {
@@ -130,15 +116,6 @@ public class InstalledFeatureList extends SortableList<InstalledFeature> {
             selectEntry.setEnabled(false);
         }
         return selectEntry;
-    }
-
-    protected void actOnSelectedEntry(Consumer<InstalledFeature> action) {
-        int index = this.getSelectedIndex();
-        if (index != -1) {
-            ListModel<InstalledFeature> listModel = this.getModel();
-            InstalledFeature feature = listModel.getElementAt(index);
-            action.accept(feature);
-        }
     }
 
     @Override

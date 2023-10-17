@@ -7,9 +7,12 @@ import oth.shipeditor.communication.events.BusEvent;
 import oth.shipeditor.communication.events.components.BuiltInsPanelsRepaintQueued;
 import oth.shipeditor.communication.events.components.WeaponEntryPicked;
 import oth.shipeditor.communication.events.viewer.ViewerRepaintQueued;
+import oth.shipeditor.communication.events.viewer.points.PointSelectedConfirmed;
 import oth.shipeditor.components.datafiles.entities.WeaponCSVEntry;
+import oth.shipeditor.components.instrument.ship.EditorInstrument;
 import oth.shipeditor.components.instrument.ship.builtins.AbstractBuiltInsPanel;
 import oth.shipeditor.components.instrument.ship.shared.InstalledFeatureList;
+import oth.shipeditor.components.viewer.entities.weapon.WeaponSlotPoint;
 import oth.shipeditor.components.viewer.layers.ship.FeaturesOverseer;
 import oth.shipeditor.components.viewer.layers.ship.ShipLayer;
 import oth.shipeditor.components.viewer.layers.ship.ShipPainter;
@@ -20,6 +23,7 @@ import oth.shipeditor.components.viewer.painters.points.ship.features.InstalledF
 import oth.shipeditor.persistence.SettingsManager;
 import oth.shipeditor.undo.EditDispatch;
 import oth.shipeditor.utility.components.ComponentUtilities;
+import oth.shipeditor.utility.overseers.StaticController;
 import oth.shipeditor.utility.text.StringValues;
 
 import javax.swing.*;
@@ -34,11 +38,15 @@ import java.util.function.Consumer;
  * @author Ontheheavens
  * @since 20.09.2023
  */
+@SuppressWarnings("OverlyCoupledClass")
 public abstract class AbstractWeaponsPanel extends AbstractBuiltInsPanel {
 
     private JPanel weaponPickPanel;
 
     private JPanel northContainer;
+
+    private InstalledFeatureList baseHullList;
+    private InstalledFeatureList skinEntriesList;
 
     @Override
     protected void initLayerListeners() {
@@ -52,7 +60,21 @@ public abstract class AbstractWeaponsPanel extends AbstractBuiltInsPanel {
                 this.refreshWeaponPicker();
             }
         });
+        EventBus.subscribe(event -> {
+            if (event instanceof PointSelectedConfirmed checked) {
+                if (!(checked.point() instanceof WeaponSlotPoint slotPoint)) return;
+                boolean correctMode = StaticController.getEditorMode() == getMode();
+                if (baseHullList != null && correctMode) {
+                    baseHullList.selectEntryByPoint(slotPoint);
+                }
+                if (skinEntriesList != null && correctMode) {
+                    skinEntriesList.selectEntryByPoint(slotPoint);
+                }
+            }
+        });
     }
+
+    protected abstract EditorInstrument getMode();
 
     private void refreshWeaponPicker() {
         if (weaponPickPanel != null) {
@@ -124,6 +146,9 @@ public abstract class AbstractWeaponsPanel extends AbstractBuiltInsPanel {
 
     @Override
     protected void refreshPanel(ShipLayer layer) {
+        baseHullList = null;
+        skinEntriesList = null;
+
         JPanel contentPane = getContentPane();
         contentPane.removeAll();
         contentPane.setLayout(new GridBagLayout());
@@ -189,10 +214,10 @@ public abstract class AbstractWeaponsPanel extends AbstractBuiltInsPanel {
 
             var slotPainter = shipPainter.getWeaponSlotPainter();
 
-            var listContainer = new InstalledFeatureList(listModel, slotPainter,
+            baseHullList = new InstalledFeatureList(listModel, slotPainter,
                     removeAction, getBaseHullSortAction(featuresOverseer));
-            listContainer.setBorder(new LineBorder(Color.LIGHT_GRAY));
-            listContainer.setBelongsToBaseHullBuiltIns(true);
+            baseHullList.setBorder(new LineBorder(Color.LIGHT_GRAY));
+            baseHullList.setBelongsToBaseHullBuiltIns(true);
 
             GridBagConstraints constraints = new GridBagConstraints();
             constraints.fill = GridBagConstraints.HORIZONTAL;
@@ -204,7 +229,7 @@ public abstract class AbstractWeaponsPanel extends AbstractBuiltInsPanel {
             constraints.gridwidth = GridBagConstraints.REMAINDER;
             constraints.insets = new Insets(0, 0, 3, 0);
 
-            contentPane.add(listContainer, constraints);
+            contentPane.add(baseHullList, constraints);
         }
     }
 
@@ -242,9 +267,9 @@ public abstract class AbstractWeaponsPanel extends AbstractBuiltInsPanel {
 
             var slotPainter = painter.getWeaponSlotPainter();
 
-            var listContainer = new InstalledFeatureList(listModel, slotPainter, removeAction,
+            skinEntriesList = new InstalledFeatureList(listModel, slotPainter, removeAction,
                     getSkinSortAction(featuresOverseer));
-            listContainer.setBorder(new LineBorder(Color.LIGHT_GRAY));
+            skinEntriesList.setBorder(new LineBorder(Color.LIGHT_GRAY));
 
             GridBagConstraints constraints = new GridBagConstraints();
             constraints.fill = GridBagConstraints.HORIZONTAL;
@@ -256,7 +281,7 @@ public abstract class AbstractWeaponsPanel extends AbstractBuiltInsPanel {
             constraints.weightx = 1;
             constraints.weighty = 1;
 
-            container.add(listContainer);
+            container.add(skinEntriesList);
             contentPane.add(container, constraints);
         }
     }

@@ -75,10 +75,8 @@ public class BuiltInHullmodsPanel extends CSVEntryBuiltInsPanel<HullmodCSVEntry>
                                      Consumer<JPanel> panelMutator) {
         ShipLayer cachedLayer = this.getCachedLayer();
         for (HullmodCSVEntry entry : entryList) {
-            JPanel modPanel = this.addModPanel(entry, e -> {
-                EditDispatch.postHullmodRemoved(entryList, cachedLayer, entry);
-                this.refreshPanel(cachedLayer);
-            });
+            JPanel modPanel = this.addModPanel(entry, e ->
+                    EditDispatch.postHullmodRemoved(entryList, cachedLayer, entry));
             if (panelMutator != null) {
                 panelMutator.accept(modPanel);
             }
@@ -87,7 +85,7 @@ public class BuiltInHullmodsPanel extends CSVEntryBuiltInsPanel<HullmodCSVEntry>
     }
 
     private JPanel addModPanel(HullmodCSVEntry mod, ActionListener removeAction) {
-        JLabel hullmodIcon = ComponentUtilities.createHullmodIcon(mod);
+        JLabel hullmodIcon = mod.getIconLabel();
         JLabel label = new JLabel(mod.toString(), SwingConstants.LEFT);
 
         var cachedLayer = this.getCachedLayer();
@@ -104,7 +102,7 @@ public class BuiltInHullmodsPanel extends CSVEntryBuiltInsPanel<HullmodCSVEntry>
             size = HullSize.valueOf(hullSize);
         }
 
-        int hullmodCost = mod.getOrdnanceCostForHull(size);
+        int hullmodCost = mod.getOrdnanceCost(size);
 
         JLabel middleLower = new JLabel("Base cost: " + hullmodCost);
         middleLower.setForeground(Color.GRAY);

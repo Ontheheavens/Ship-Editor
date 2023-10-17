@@ -332,6 +332,7 @@ public class WeaponSlotPainter extends AngledPointPainter {
     @Override
     protected void paintDelegates(Graphics2D g, AffineTransform worldToScreen, double w, double h) {
         List<WeaponSlotPoint> pointsIndex = this.getEligibleForSelection();
+        // TODO: revisit slots conditional paint later, not satisfactory with regards to modes!
         pointsIndex.forEach(slotPoint -> {
             paintDelegate(g, worldToScreen, w, h, slotPoint);
             slotPoint.setPaintSizeMultiplier(1);

@@ -18,9 +18,9 @@ import oth.shipeditor.components.viewer.painters.TextPainter;
 import oth.shipeditor.representation.HullSpecFile;
 import oth.shipeditor.representation.weapon.WeaponType;
 import oth.shipeditor.undo.EditDispatch;
-import oth.shipeditor.utility.overseers.StaticController;
 import oth.shipeditor.utility.Utility;
 import oth.shipeditor.utility.graphics.DrawUtilities;
+import oth.shipeditor.utility.overseers.StaticController;
 import oth.shipeditor.utility.text.StringValues;
 
 import java.awt.*;
@@ -49,7 +49,7 @@ public class CenterPointPainter extends SinglePointPainter {
 
     private final TextPainter moduleAnchorText;
 
-    private final int dragCollisionRadiusHotkey = KeyEvent.VK_C;
+    private static final int dragCollisionRadiusHotkey = KeyEvent.VK_C;
 
     private boolean collisionRadiusHotkeyPressed;
 
@@ -63,6 +63,10 @@ public class CenterPointPainter extends SinglePointPainter {
         this.setPaintOpacity(COLLISION_OPACITY);
 
         this.moduleAnchorText = new TextPainter();
+    }
+
+    public void changeModuleAnchor(Point2D updated) {
+        EditDispatch.postModuleAnchorChanged(this, updated);
     }
 
     @Override

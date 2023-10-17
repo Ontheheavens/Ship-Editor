@@ -30,7 +30,6 @@ public final class ImageCache {
     public static BufferedImage loadImage(File file) {
         BufferedImage sprite = instance.cache.get(file);
         if (sprite != null) {
-            log.info("Retrieved cached sprite: {}.", file.getName());
             return sprite;
         }
         try {

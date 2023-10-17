@@ -18,11 +18,12 @@ import oth.shipeditor.representation.SkinSpecFile;
 import oth.shipeditor.representation.VariantFile;
 import oth.shipeditor.representation.weapon.ProjectileSpecFile;
 import oth.shipeditor.representation.weapon.WeaponSpecFile;
-import oth.shipeditor.utility.overseers.ImageCache;
 import oth.shipeditor.utility.graphics.Sprite;
+import oth.shipeditor.utility.overseers.ImageCache;
 import oth.shipeditor.utility.text.StringConstants;
 import oth.shipeditor.utility.text.StringValues;
 
+import javax.imageio.ImageIO;
 import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.event.ActionEvent;
@@ -30,6 +31,8 @@ import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.Files;
@@ -45,6 +48,7 @@ import java.util.stream.Stream;
  * @author Ontheheavens
  * @since 16.07.2023
  */
+@SuppressWarnings("CallToPrintStackTrace")
 @Log4j2
 public final class FileLoading {
 
@@ -90,6 +94,7 @@ public final class FileLoading {
         }
     }
 
+    @SuppressWarnings("NestedTryStatement")
     public static BufferedImage loadImageResource(String imageFilename) {
         Class<FileLoading> loadingClass = FileLoading.class;
         ClassLoader classLoader = loadingClass.getClassLoader();
@@ -97,7 +102,19 @@ public final class FileLoading {
         URL spritePath = Objects.requireNonNull(classLoader.getResource(imageFilename));
         File spriteFile;
         try {
-            spriteFile = new File(spritePath.toURI());
+            URI pathURI = spritePath.toURI();
+            if (pathURI.isOpaque()) {
+                try ( InputStream inputStream = loadingClass.getResourceAsStream("/" + imageFilename)) {
+                    if (inputStream != null) {
+                        return ImageIO.read(inputStream);
+                    } else {
+                        throw new RuntimeException("Resource not found!");
+                    }
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+            spriteFile = new File(pathURI);
         } catch (URISyntaxException e) {
             JOptionPane.showMessageDialog(null,
                     "Image resource loading failed, exception thrown at: " + spritePath,
@@ -109,9 +126,6 @@ public final class FileLoading {
     }
 
     public static BufferedImage loadSpriteAsImage(File file) {
-        if (file == null) {
-
-        }
         return ImageCache.loadImage(file);
     }
 

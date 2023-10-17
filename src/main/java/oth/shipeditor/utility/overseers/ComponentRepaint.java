@@ -35,7 +35,9 @@ public class ComponentRepaint {
 
     private boolean variantModulesRepaintQueued;
 
-    @SuppressWarnings("OverlyCoupledMethod")
+    private boolean moduleControlRepaintQueued;
+
+    @SuppressWarnings({"OverlyCoupledMethod", "OverlyComplexMethod"})
     ComponentRepaint() {
         Timer repaintTimer = new Timer(2, e -> {
             if (viewerRepaintQueued) {
@@ -81,6 +83,10 @@ public class ComponentRepaint {
             if (variantModulesRepaintQueued) {
                 EventBus.publish(new VariantModulesRepaintQueued());
                 variantModulesRepaintQueued = false;
+            }
+            if (moduleControlRepaintQueued) {
+                EventBus.publish(new ModuleControlRefreshQueued());
+                moduleControlRepaintQueued = false;
             }
         });
         repaintTimer.setRepeats(true);
@@ -131,6 +137,10 @@ public class ComponentRepaint {
 
     public void queueModulesRepaint() {
         this.variantModulesRepaintQueued = true;
+    }
+
+    public void queueModuleControlRepaint() {
+        this.moduleControlRepaintQueued = true;
     }
 
 }
