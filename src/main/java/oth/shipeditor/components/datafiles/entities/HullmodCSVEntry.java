@@ -57,6 +57,11 @@ public class HullmodCSVEntry implements OrdnancedCSVEntry {
     }
 
     @Override
+    public String getEntryName() {
+        return toString();
+    }
+
+    @Override
     public int getOrdnanceCost(HullSize size) {
         var csvData = this.getRowData();
         String stringValue;

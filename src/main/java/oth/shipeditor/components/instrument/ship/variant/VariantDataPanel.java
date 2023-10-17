@@ -19,7 +19,7 @@ public class VariantDataPanel extends JPanel {
         JTabbedPane tabContainer = new JTabbedPane(SwingConstants.BOTTOM);
         tabContainer.addTab("Main", new VariantMainPanel());
         tabContainer.addTab(StringValues.HULLMODS, new VariantHullmodsPanel());
-        tabContainer.addTab(StringValues.WINGS, new JPanel());
+        tabContainer.addTab(StringValues.WINGS, new VariantWingsPanel());
         tabContainer.setTabLayoutPolicy(JTabbedPane.SCROLL_TAB_LAYOUT);
         tabContainer.putClientProperty(StringConstants.JTABBED_PANE_TAB_AREA_ALIGNMENT, "fill");
         this.add(tabContainer, BorderLayout.CENTER);

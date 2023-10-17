@@ -16,4 +16,6 @@ public interface OrdnancedCSVEntry extends CSVEntry {
 
     int getOrdnanceCost(HullSize size);
 
+    String getEntryName();
+
 }

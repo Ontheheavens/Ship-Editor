@@ -68,7 +68,7 @@ public class OrdnancedEntryCellRenderer extends PanelListCellRenderer<OrdnancedC
         JLabel label = value.getIconLabel();
         iconLabel.setIcon(label.getIcon());
 
-        textLabel.setText(value.toString());
+        textLabel.setText(value.getEntryName());
 
         HullSize size = HullSize.getSizeOfActiveLayer();
         int ordnanceCost = value.getOrdnanceCost(size);

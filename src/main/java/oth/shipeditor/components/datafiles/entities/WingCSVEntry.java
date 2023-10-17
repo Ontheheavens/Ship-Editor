@@ -132,11 +132,13 @@ public class WingCSVEntry implements OrdnancedCSVEntry {
     /**
      * @param size irrelevant, should be null.
      */
+    @Override
     public int getOrdnanceCost(HullSize size) {
         String tableValue = this.rowData.get("op cost");
         return Integer.parseInt(tableValue);
     }
 
+    @Override
     public String getEntryName() {
         if (this.displayedName != null) {
             return this.displayedName;

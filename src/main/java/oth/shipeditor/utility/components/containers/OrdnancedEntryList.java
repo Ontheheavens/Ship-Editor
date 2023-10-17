@@ -2,7 +2,6 @@ package oth.shipeditor.utility.components.containers;
 
 import oth.shipeditor.components.datafiles.entities.OrdnancedCSVEntry;
 import oth.shipeditor.utility.components.rendering.OrdnancedEntryCellRenderer;
-import oth.shipeditor.utility.text.StringValues;
 
 import javax.swing.*;
 import java.awt.event.MouseAdapter;
@@ -47,7 +46,7 @@ public abstract class OrdnancedEntryList<T extends OrdnancedCSVEntry> extends So
             if (selected == null) return null;
 
             JPopupMenu menu = new JPopupMenu();
-            JMenuItem remove = new JMenuItem(StringValues.UNINSTALL_FEATURE);
+            JMenuItem remove = new JMenuItem("Remove entry");
             remove.addActionListener(event -> actOnSelectedEntry(getRemoveAction()));
             menu.add(remove);
 

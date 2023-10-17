@@ -68,15 +68,11 @@ class HullmodsListPanel extends JPanel{
 
     private class HullmodsList extends OrdnancedEntryList<HullmodCSVEntry> {
 
-        @SuppressWarnings("InnerClassTooDeeplyNested")
         private final Consumer<HullmodCSVEntry> removeAction = entry ->
-                StaticController.actOnCurrentVariant(new BiConsumer<>() {
-            @Override
-            public void accept(ShipLayer shipLayer, ShipVariant variant) {
-                var entryList = modsGetter.apply(variant);
-                EditDispatch.postHullmodRemoved(entryList, shipLayer, entry);
-            }
-        });
+                StaticController.actOnCurrentVariant((shipLayer, variant) -> {
+                    var entryList = modsGetter.apply(variant);
+                    EditDispatch.postHullmodRemoved(entryList, shipLayer, entry);
+                });
 
         HullmodsList(ListModel<HullmodCSVEntry> dataModel,
                      BiConsumer<ShipVariant, List<HullmodCSVEntry>> sortSetter) {
