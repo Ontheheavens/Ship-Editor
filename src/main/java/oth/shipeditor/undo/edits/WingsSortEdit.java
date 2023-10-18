@@ -10,25 +10,26 @@ import oth.shipeditor.undo.AbstractEdit;
 import oth.shipeditor.utility.overseers.StaticController;
 
 import java.util.List;
+import java.util.function.Consumer;
 
 /**
  * @author Ontheheavens
- * @since 27.08.2023
+ * @since 18.10.2023
  */
 @AllArgsConstructor
-public class WingRemoveEdit extends AbstractEdit implements LayerEdit {
+public class WingsSortEdit extends AbstractEdit implements LayerEdit {
 
-    private final List<WingCSVEntry> wingIndex;
+    private final List<WingCSVEntry> oldList;
+
+    private final List<WingCSVEntry> newList;
 
     private ShipLayer layer;
 
-    private final WingCSVEntry entry;
-
-    private int positionIndex;
+    private final Consumer<List<WingCSVEntry>> sortSetter;
 
     @Override
     public void undo() {
-        wingIndex.add(positionIndex, entry);
+        sortSetter.accept(oldList);
         if (StaticController.getActiveLayer() == layer) {
             EventBus.publish(new ActiveLayerUpdated(layer));
         }
@@ -36,7 +37,7 @@ public class WingRemoveEdit extends AbstractEdit implements LayerEdit {
 
     @Override
     public void redo() {
-        wingIndex.remove(positionIndex);
+        sortSetter.accept(newList);
         if (StaticController.getActiveLayer() == layer) {
             EventBus.publish(new ActiveLayerUpdated(layer));
         }
@@ -44,9 +45,8 @@ public class WingRemoveEdit extends AbstractEdit implements LayerEdit {
 
     @Override
     public String getName() {
-        return "Remove Wing";
+        return "Sort Wings";
     }
-
 
     @Override
     public LayerPainter getLayerPainter() {

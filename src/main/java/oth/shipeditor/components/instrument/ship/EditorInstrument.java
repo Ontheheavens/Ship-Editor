@@ -22,7 +22,7 @@ public enum EditorInstrument {
     BUILT_IN_WEAPONS("Built-in Weapons"),
     DECORATIVES("Decoratives"),
     SKIN_DATA("Skin: Data"),
-    SKIN_SLOTS("Skin: Slots"),
+    SKIN_SLOTS("Skin: Overrides"),
     VARIANT_DATA("Variant: Data"),
     VARIANT_WEAPONS("Variant: Weapons"),
     VARIANT_MODULES("Variant: Modules");

@@ -39,19 +39,19 @@ public abstract class OrdnancedEntryList<T extends OrdnancedCSVEntry> extends So
 
     protected abstract Consumer<T> getRemoveAction();
 
+    protected JPopupMenu getContextMenu() {
+        T selected = getSelectedValue();
+        if (selected == null) return null;
+
+        JPopupMenu menu = new JPopupMenu();
+        JMenuItem remove = new JMenuItem("Remove entry");
+        remove.addActionListener(event -> actOnSelectedEntry(getRemoveAction()));
+        menu.add(remove);
+
+        return menu;
+    }
+
     private class ContextMenuListener extends MouseAdapter {
-
-        private JPopupMenu getContextMenu() {
-            T selected = getSelectedValue();
-            if (selected == null) return null;
-
-            JPopupMenu menu = new JPopupMenu();
-            JMenuItem remove = new JMenuItem("Remove entry");
-            remove.addActionListener(event -> actOnSelectedEntry(getRemoveAction()));
-            menu.add(remove);
-
-            return menu;
-        }
 
         public void mousePressed(MouseEvent e) {
             if ( SwingUtilities.isRightMouseButton(e) ) {

@@ -7,9 +7,11 @@ import oth.shipeditor.components.viewer.layers.ViewerLayer;
 import oth.shipeditor.components.viewer.layers.ship.ShipLayer;
 import oth.shipeditor.components.viewer.layers.ship.ShipPainter;
 import oth.shipeditor.components.viewer.layers.ship.data.ShipVariant;
+import oth.shipeditor.undo.EditDispatch;
 import oth.shipeditor.utility.components.ComponentUtilities;
 import oth.shipeditor.utility.components.containers.OrdnancedEntryList;
 import oth.shipeditor.utility.overseers.StaticController;
+import oth.shipeditor.utility.text.StringValues;
 
 import javax.swing.*;
 import java.awt.*;
@@ -17,6 +19,7 @@ import java.util.List;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.function.Supplier;
 
 /**
  * @author Ontheheavens
@@ -30,7 +33,19 @@ class VariantWingsPanel extends JPanel {
 
     private final Function<ShipVariant, List<WingCSVEntry>> wingsGetter;
 
-    @SuppressWarnings("ThisEscapedInObjectConstruction")
+    private JLabel shipOPCap;
+
+    private JLabel usedOPTotal;
+
+    private JLabel usedOPInWings;
+
+
+    private JLabel totalBayCount;
+
+    private JLabel builtInWingsCount;
+
+    private JLabel fittedWingsCount;
+
     VariantWingsPanel() {
         this.setLayout(new BorderLayout());
 
@@ -39,15 +54,57 @@ class VariantWingsPanel extends JPanel {
 
         this.wingsModel = new DefaultListModel<>();
         this.wingsList = new WingsList(wingsModel, sortSetter);
-//        wingsList.setBorder(new LineBorder(Color.LIGHT_GRAY));
 
         JScrollPane scroller = new JScrollPane(wingsList);
         JScrollBar verticalScrollBar = scroller.getVerticalScrollBar();
         verticalScrollBar.setUnitIncrement(16);
 
+        JPanel infoPanel = createInfoPanel();
+        this.add(infoPanel, BorderLayout.PAGE_START);
         this.add(scroller, BorderLayout.CENTER);
-        ComponentUtilities.outfitPanelWithTitle(this, "Fitted wings");
+
         this.initLayerListeners();
+    }
+
+    private JPanel createInfoPanel() {
+        JPanel infoPanel = new JPanel();
+        ComponentUtilities.outfitPanelWithTitle(infoPanel, "Fitted wings");
+        infoPanel.setLayout(new GridBagLayout());
+
+        JLabel shipOPCapLabel = new JLabel("Total OP capacity:");
+        shipOPCap = new JLabel();
+
+        ComponentUtilities.addLabelAndComponent(infoPanel, shipOPCapLabel, shipOPCap, 0);
+
+        JLabel usedOPTotalLabel = new JLabel("Used OP for ship:");
+        usedOPTotal = new JLabel();
+
+        ComponentUtilities.addLabelAndComponent(infoPanel, usedOPTotalLabel, usedOPTotal, 1);
+
+        JLabel usedOPLabel = new JLabel("Used OP in wings:");
+        usedOPInWings = new JLabel();
+
+        ComponentUtilities.addLabelAndComponent(infoPanel, usedOPLabel, usedOPInWings, 2);
+
+        // Empty placeholder to create some padding - is a quick hack, consider for proper rewrite later!
+        ComponentUtilities.addLabelAndComponent(infoPanel, new JLabel(), new JLabel(), 3);
+
+        JLabel totalBaysLabel = new JLabel("Total ship bays:");
+        totalBayCount = new JLabel();
+
+        ComponentUtilities.addLabelAndComponent(infoPanel, totalBaysLabel, totalBayCount, 4);
+
+        JLabel totalBuiltInsLabel = new JLabel("Total built-in wings:");
+        builtInWingsCount = new JLabel();
+
+        ComponentUtilities.addLabelAndComponent(infoPanel, totalBuiltInsLabel, builtInWingsCount, 5);
+
+        JLabel totalFittedLabel = new JLabel("Total fitted wings:");
+        fittedWingsCount = new JLabel();
+
+        ComponentUtilities.addLabelAndComponent(infoPanel, totalFittedLabel, fittedWingsCount, 6);
+
+        return infoPanel;
     }
 
     private void initLayerListeners() {
@@ -55,8 +112,56 @@ class VariantWingsPanel extends JPanel {
             if (event instanceof LayerWasSelected checked) {
                 ViewerLayer selected = checked.selected();
                 refreshListModel(selected);
+                refreshLayerInfo(selected);
             }
         });
+    }
+
+    private static String translateIntegerValue(Supplier<Integer> getter) {
+        String notInitialized = StringValues.NOT_INITIALIZED;
+        int value = getter.get();
+        String textResult;
+        if (value == -1) {
+            textResult = notInitialized;
+        } else {
+            textResult = String.valueOf(value);
+        }
+        return textResult;
+    }
+
+    private void refreshLayerInfo(ViewerLayer selected) {
+        String notInitialized = StringValues.NOT_INITIALIZED;
+
+        if (selected instanceof ShipLayer shipLayer) {
+
+            String totalOP = VariantWingsPanel.translateIntegerValue(shipLayer::getTotalOP);
+            shipOPCap.setText(totalOP);
+            String totalBays = VariantWingsPanel.translateIntegerValue(shipLayer::getBayCount);
+            totalBayCount.setText(totalBays);
+            String totalBuiltIns =  VariantWingsPanel.translateIntegerValue(shipLayer::getBuiltInWingsCount);
+            builtInWingsCount.setText(totalBuiltIns);
+
+            var activeVariant = shipLayer.getActiveVariant();
+            if (activeVariant == null) {
+                usedOPTotal.setText(notInitialized);
+                usedOPInWings.setText(notInitialized);
+                fittedWingsCount.setText(notInitialized);
+                return;
+            }
+
+            int totalUsedOP = shipLayer.getTotalUsedOP();
+            usedOPTotal.setText(String.valueOf(totalUsedOP));
+
+            int totalOPInWings = shipLayer.getTotalOPInWings();
+            usedOPInWings.setText(String.valueOf(totalOPInWings));
+
+            int wingsCount = activeVariant.getFittedWingsCount();
+            fittedWingsCount.setText(String.valueOf(wingsCount));
+        } else {
+            shipOPCap.setText(notInitialized);
+            usedOPTotal.setText(notInitialized);
+            usedOPInWings.setText(notInitialized);
+        }
     }
 
     private void refreshListModel(ViewerLayer selected) {
@@ -88,27 +193,50 @@ class VariantWingsPanel extends JPanel {
 
     private class WingsList extends OrdnancedEntryList<WingCSVEntry> {
 
-        // TODO: finish sorting, removing (in EditDispatch) and adding (in WingsTreePanel context menu).
-
-        private final Consumer<WingCSVEntry> removeAction = entry ->
+        private final BiConsumer<Integer, WingCSVEntry> removeAction = (entryIndex, wingCSVEntry) ->
                 StaticController.actOnCurrentVariant((shipLayer, variant) -> {
-                    var entryList = wingsGetter.apply(variant);
-//                    EditDispatch.postHullmodRemoved(entryList, shipLayer, entry);
-                });
+            var entryList = wingsGetter.apply(variant);
+            EditDispatch.postWingRemoved(entryList, shipLayer, wingCSVEntry, entryIndex);
+        });
 
         WingsList(ListModel<WingCSVEntry> dataModel,
                      BiConsumer<ShipVariant, List<WingCSVEntry>> sortSetter) {
             super(dataModel, updatedList ->
                     StaticController.actOnCurrentVariant((shipLayer, variant) -> {
-                        var oldMods = wingsGetter.apply(variant);
-//                        EditDispatch.postHullmodsSorted(oldMods, updatedList, shipLayer,
-//                                list -> sortSetter.accept(variant, list));
+                        var oldWings = wingsGetter.apply(variant);
+                        EditDispatch.postWingsSorted(oldWings, updatedList, shipLayer,
+                                list -> sortSetter.accept(variant, list));
                     }));
+        }
+
+        BiConsumer<Integer, WingCSVEntry> getWingRemoveAction() {
+            return removeAction;
         }
 
         @Override
         protected Consumer<WingCSVEntry> getRemoveAction() {
-            return removeAction;
+            return null;
+        }
+
+        void actOnSelectedWing(BiConsumer<Integer, WingCSVEntry> action) {
+            int index = this.getSelectedIndex();
+            if (index != -1) {
+                ListModel<WingCSVEntry> listModel = this.getModel();
+                WingCSVEntry feature = listModel.getElementAt(index);
+                action.accept(index, feature);
+            }
+        }
+
+        protected JPopupMenu getContextMenu() {
+            WingCSVEntry selected = getSelectedValue();
+            if (selected == null) return null;
+
+            JPopupMenu menu = new JPopupMenu();
+            JMenuItem remove = new JMenuItem("Remove wing");
+            remove.addActionListener(event -> actOnSelectedWing(getWingRemoveAction()));
+            menu.add(remove);
+
+            return menu;
         }
 
     }

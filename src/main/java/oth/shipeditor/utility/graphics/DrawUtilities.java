@@ -151,14 +151,14 @@ public final class DrawUtilities {
         g.setRenderingHints(originalHints);
     }
 
-    public static Shape paintScreenTextOutlined(Graphics2D g, String text, Point2D screenPosition) {
-        return DrawUtilities.paintScreenTextOutlined(g, text, null, screenPosition);
+    public static Shape paintScreenTextOutlined(Graphics2D g, String text, Point2D screenPoint) {
+        return DrawUtilities.paintScreenTextOutlined(g, text, null, screenPoint);
     }
 
     @SuppressWarnings("WeakerAccess")
-    public static Shape paintScreenTextOutlined(Graphics2D g, String text, Font hintFont, Point2D screenPosition) {
-        return DrawUtilities.paintScreenTextOutlined(g, text, hintFont,
-                null, screenPosition, RectangleCorner.BOTTOM_RIGHT);
+    public static Shape paintScreenTextOutlined(Graphics2D g, String text, Font fontInput, Point2D screenPoint) {
+        return DrawUtilities.paintScreenTextOutlined(g, text, fontInput,
+                null, screenPoint, RectangleCorner.BOTTOM_RIGHT);
     }
 
     @SuppressWarnings("MethodWithTooManyParameters")

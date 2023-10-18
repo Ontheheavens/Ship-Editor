@@ -9,6 +9,8 @@ import oth.shipeditor.components.viewer.layers.ViewerLayer;
 import oth.shipeditor.components.viewer.layers.ship.data.ShipHull;
 import oth.shipeditor.components.viewer.layers.ship.data.ShipSkin;
 import oth.shipeditor.components.viewer.layers.ship.data.ShipVariant;
+import oth.shipeditor.persistence.SettingsManager;
+import oth.shipeditor.representation.GameDataRepository;
 import oth.shipeditor.representation.HullSpecFile;
 import oth.shipeditor.representation.ShipData;
 import oth.shipeditor.representation.SkinSpecFile;
@@ -21,30 +23,28 @@ import java.util.*;
  * @author Ontheheavens
  * @since 27.05.2023
  */
+@Getter
 public class ShipLayer extends ViewerLayer {
 
     /**
      * Storage of raw JSON-deserialized ship files.
      */
-    @Getter
     private ShipData shipData;
 
-    @Getter @Setter
+    @Setter
     private String activeSkinFileName = "";
 
-    @Getter @Setter
+    @Setter
     private ShipHull hull;
 
-    @Getter @Setter
+    @Setter
     private Set<ShipSkin> skins;
 
     /**
      * Keys are variant IDs.
      */
-    @Getter
     private final Map<String, ShipVariant> loadedVariants;
 
-    @Getter
     private final FeaturesOverseer featuresOverseer;
 
     @SuppressWarnings("ThisEscapedInObjectConstruction")
@@ -78,6 +78,82 @@ public class ShipLayer extends ViewerLayer {
             throw new IllegalArgumentException("ShipLayer provided with incompatible instance of LayerPainter!");
         }
         super.setPainter(painter);
+    }
+
+    public ShipSkin getActiveSkin() {
+        ShipPainter shipPainter = this.getPainter();
+        if (shipPainter == null || shipPainter.isUninitialized()) return null;
+        var skin = shipPainter.getActiveSkin();
+        if (skin == null || skin.isBase()) return null;
+        return skin;
+    }
+
+    public int getTotalOP() {
+        if (hull == null) return -1;
+        String hullID = hull.getHullID();
+        var shipEntry = GameDataRepository.retrieveShipCSVEntryByID(hullID);
+        if (shipEntry == null) return -1;
+        return shipEntry.getTotalOP();
+    }
+
+    public int getBayCount() {
+        int result = 0;
+        var shipHull = this.getHull();
+        if (shipHull != null) {
+            var gameData = SettingsManager.getGameData();
+            var allShipEntries = gameData.getAllShipEntries();
+            var selectedCSVEntry = allShipEntries.get(shipHull.getHullID());
+            if (selectedCSVEntry != null) {
+                result = selectedCSVEntry.getBayCount();
+            }
+        } else {
+            return -1;
+        }
+        return result;
+    }
+
+    public int getTotalOPInWings() {
+        int totalOPInWings = 0;
+        ShipVariant activeVariant = getActiveVariant();
+        if (activeVariant == null) {
+            return -1;
+        }
+        return activeVariant.getTotalOPInWings();
+    }
+
+    public int getTotalUsedOP() {
+        int totalUsedOP = 0;
+        ShipVariant activeVariant = getActiveVariant();
+        if (activeVariant == null) {
+            return -1;
+        }
+        return activeVariant.getTotalUsedOP(this);
+    }
+
+    public int getBuiltInWingsCount() {
+        int result = 0;
+        ShipHull layerHull = this.getHull();
+        if (layerHull == null) {
+            return -1;
+        }
+        var wings = layerHull.getBuiltInWings();
+        result += wings.size();
+
+        ShipPainter shipPainter = getPainter();
+        ShipSkin activeSkin = shipPainter.getActiveSkin();
+        if (activeSkin != null && !activeSkin.isBase()) {
+            var skinWings = activeSkin.getBuiltInWings();
+            result += skinWings.size();
+        }
+        return result;
+    }
+
+    public ShipVariant getActiveVariant() {
+        ShipPainter shipPainter = this.getPainter();
+        if (shipPainter == null || shipPainter.isUninitialized()) return null;
+        var activeVariant = shipPainter.getActiveVariant();
+        if (activeVariant == null || activeVariant.isEmpty()) return null;
+        return activeVariant;
     }
 
     public void createShipData(HullSpecFile hullSpecFile) {

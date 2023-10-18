@@ -164,15 +164,11 @@ class HullmodsTreePanel extends CSVDataTreePanel<HullmodCSVEntry>{
         return option;
     }
 
-    @SuppressWarnings("MethodWithMultipleReturnPoints")
     private static List<HullmodCSVEntry> getVariantMods(ViewerLayer activeLayer,
                                                         Function<ShipVariant, List<HullmodCSVEntry>> getter) {
         if (activeLayer instanceof ShipLayer checkedLayer) {
-            ShipPainter shipPainter = checkedLayer.getPainter();
-            if (shipPainter == null || shipPainter.isUninitialized()) return null;
-            var activeVariant = shipPainter.getActiveVariant();
-            if (activeVariant == null || activeVariant.isEmpty()) return null;
-
+            var activeVariant = checkedLayer.getActiveVariant();
+            if (activeVariant == null) return null;
             return getter.apply(activeVariant);
         } else return null;
     }

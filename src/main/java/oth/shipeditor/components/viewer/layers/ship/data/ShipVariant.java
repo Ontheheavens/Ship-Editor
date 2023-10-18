@@ -4,8 +4,10 @@ import lombok.Getter;
 import lombok.Setter;
 import org.apache.commons.collections4.map.ListOrderedMap;
 import oth.shipeditor.components.datafiles.entities.HullmodCSVEntry;
+import oth.shipeditor.components.datafiles.entities.ShipCSVEntry;
 import oth.shipeditor.components.datafiles.entities.WeaponCSVEntry;
 import oth.shipeditor.components.datafiles.entities.WingCSVEntry;
+import oth.shipeditor.components.viewer.layers.ship.ShipLayer;
 import oth.shipeditor.components.viewer.layers.ship.ShipPainter;
 import oth.shipeditor.components.viewer.layers.weapon.WeaponPainter;
 import oth.shipeditor.components.viewer.painters.points.ship.features.FireMode;
@@ -13,6 +15,7 @@ import oth.shipeditor.components.viewer.painters.points.ship.features.FittedWeap
 import oth.shipeditor.components.viewer.painters.points.ship.features.InstalledFeature;
 import oth.shipeditor.persistence.SettingsManager;
 import oth.shipeditor.representation.GameDataRepository;
+import oth.shipeditor.representation.HullSize;
 import oth.shipeditor.representation.SpecWeaponGroup;
 import oth.shipeditor.representation.VariantFile;
 import oth.shipeditor.representation.weapon.WeaponSpecFile;
@@ -28,7 +31,7 @@ import java.util.*;
  * @author Ontheheavens
  * @since 28.08.2023
  */
-@SuppressWarnings("ClassWithTooManyFields")
+@SuppressWarnings({"ClassWithTooManyFields", "ClassWithTooManyMethods", "OverlyCoupledClass"})
 @Getter @Setter
 public class ShipVariant implements Variant {
 
@@ -51,19 +54,23 @@ public class ShipVariant implements Variant {
 
     private String variantId;
 
-    private String displayName;
+    private String displayName = "New Variant";
 
-    private List<HullmodCSVEntry> hullMods;
+    private List<HullmodCSVEntry> hullMods = new ArrayList<>();
 
-    private List<HullmodCSVEntry> permaMods;
+    private List<HullmodCSVEntry> permaMods = new ArrayList<>();
 
-    private List<HullmodCSVEntry> sMods;
+    private List<HullmodCSVEntry> sMods = new ArrayList<>();
 
-    private List<WingCSVEntry> wings;
+    private List<WingCSVEntry> wings = new ArrayList<>();
 
     private Map<String, InstalledFeature> fittedModules;
 
-    private List<FittedWeaponGroup> weaponGroups;
+    private List<FittedWeaponGroup> weaponGroups = new ArrayList<>();
+
+    private int fluxCapacitors;
+
+    private int fluxVents;
 
     public ShipVariant() {
         this(true);
@@ -127,7 +134,65 @@ public class ShipVariant implements Variant {
         return result;
     }
 
-        public Map<String, InstalledFeature> getAllFittedWeapons() {
+    public ShipCSVEntry getEntryFromShipID() {
+        var baseHullID = GameDataRepository.getBaseHullID(this.shipHullId);
+        return GameDataRepository.retrieveShipCSVEntryByID(baseHullID);
+    }
+
+    public int getFittedWingsCount() {
+        return this.wings.size();
+    }
+
+    public int getTotalUsedOP(ShipLayer parentLayer) {
+        int result = 0;
+
+        result += getTotalOPInWings();
+        result += getTotalOPInWeapons();
+        result += getTotalOPInHullmods(parentLayer);
+
+        result += getFluxVents();
+        result += getFluxCapacitors();
+
+        return result;
+    }
+
+    public int getTotalOPInWeapons() {
+        var allWeapons = this.getAllFittedWeapons();
+        int totalOP = 0;
+
+        for (InstalledFeature feature : allWeapons.values()) {
+            totalOP += feature.getOPCost();
+        }
+        return totalOP;
+    }
+
+    /**
+     * @param parentLayer needed to determine hull size, on which hullmod costs are dependent.
+     */
+    @SuppressWarnings("WeakerAccess")
+    public int getTotalOPInHullmods(ShipLayer parentLayer) {
+        if (parentLayer == null) return -1;
+        ShipHull shipHull = parentLayer.getHull();
+        if (shipHull == null) return -1;
+
+        HullSize size = shipHull.getHullSize();
+        int result = 0;
+        for (HullmodCSVEntry entry : hullMods) {
+            result += entry.getOrdnanceCost(size);
+        }
+        return result;
+    }
+
+    public int getTotalOPInWings() {
+        int totalOPInWings = 0;
+        var wingCSVEntries = this.getWings();
+        for (WingCSVEntry wingCSVEntry : wingCSVEntries) {
+            totalOPInWings += wingCSVEntry.getOrdnanceCost(null);
+        }
+        return totalOPInWings;
+    }
+
+    public Map<String, InstalledFeature> getAllFittedWeapons() {
         Map<String, InstalledFeature> result = new LinkedHashMap<>();
         for (FittedWeaponGroup weaponGroup : weaponGroups) {
             var weaponsInGroup = weaponGroup.getWeapons();
@@ -142,6 +207,9 @@ public class ShipVariant implements Variant {
         this.setVariantFilePath(file.getVariantFilePath());
         this.setContainingPackage(file.getContainingPackage());
         this.setDisplayName(file.getDisplayName());
+
+        this.setFluxVents(file.getFluxVents());
+        this.setFluxCapacitors(file.getFluxCapacitors());
 
         weaponGroups = new ArrayList<>();
 

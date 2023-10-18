@@ -348,12 +348,22 @@ public final class EditDispatch {
         Edit wingAddEdit = new WingAddEdit(index, shipLayer, wing);
         UndoOverseer.post(wingAddEdit);
         index.add(wing);
+        EventBus.publish(new ActiveLayerUpdated(shipLayer));
     }
 
-    public static void postWingRemoved(List<WingCSVEntry> index, ShipLayer shipLayer, WingCSVEntry wing) {
-        Edit wingRemoveEdit = new WingRemoveEdit(index, shipLayer, wing);
+    public static void postWingsSorted(List<WingCSVEntry> old, List<WingCSVEntry> updated, ShipLayer shipLayer,
+                                          Consumer<List<WingCSVEntry>> setter) {
+        Edit sortEdit = new WingsSortEdit(old, updated, shipLayer, setter);
+        UndoOverseer.post(sortEdit);
+        setter.accept(updated);
+        EventBus.publish(new ActiveLayerUpdated(shipLayer));
+    }
+
+    public static void postWingRemoved(List<WingCSVEntry> index, ShipLayer shipLayer, WingCSVEntry wing, int entryIndex) {
+        Edit wingRemoveEdit = new WingRemoveEdit(index, shipLayer, wing, entryIndex);
         UndoOverseer.post(wingRemoveEdit);
-        index.remove(wing);
+        index.remove(entryIndex);
+        EventBus.publish(new ActiveLayerUpdated(shipLayer));
     }
 
     public static<T extends InstallableEntry> void postFeatureInstalled(Map<String, T> collection,

@@ -3,6 +3,7 @@ package oth.shipeditor.components.instrument.ship.builtins;
 import org.kordamp.ikonli.fluentui.FluentUiRegularAL;
 import org.kordamp.ikonli.fluentui.FluentUiRegularMZ;
 import org.kordamp.ikonli.swing.FontIcon;
+import oth.shipeditor.components.datafiles.entities.OrdnancedCSVEntry;
 import oth.shipeditor.components.datafiles.entities.WingCSVEntry;
 import oth.shipeditor.components.viewer.layers.ship.ShipLayer;
 import oth.shipeditor.components.viewer.layers.ship.ShipPainter;
@@ -84,24 +85,7 @@ public class BuiltInWingsPanel extends CSVEntryBuiltInsPanel<WingCSVEntry> {
             totalEntries.addAll(skinEntries);
         }
 
-        int bayCount = 0;
-
-        var shipData = layer.getShipData();
-        if (shipData != null && shipData.getHullSpecFile() != null) {
-            var hullSpecFile = shipData.getHullSpecFile();
-
-            var gameData = SettingsManager.getGameData();
-            var allShipEntries = gameData.getAllShipEntries();
-            var selectedCSVEntry = allShipEntries.get(hullSpecFile.getHullId());
-            if (selectedCSVEntry != null) {
-                var entryRowData = selectedCSVEntry.getRowData();
-                String fighterBays = entryRowData.get("fighter bays");
-
-                if (fighterBays != null && !fighterBays.isEmpty()) {
-                    bayCount = Integer.parseInt(fighterBays);
-                }
-            }
-        }
+        int bayCount = layer.getBayCount();
 
         int wingsSize = totalEntries.size();
         String text;
@@ -139,8 +123,11 @@ public class BuiltInWingsPanel extends CSVEntryBuiltInsPanel<WingCSVEntry> {
                                      Consumer<JPanel> panelMutator) {
         ShipLayer cachedLayer = this.getCachedLayer();
         for (WingCSVEntry entry : entryList) {
+            // TODO: test for lambda behaviour later. Not sure, but perhaps index call can cause problems
+            //  because it is invoked later in lambda, and not at panel creation.
             JPanel modPanel = BuiltInWingsPanel.addWingPanel(entry, e -> {
-                EditDispatch.postWingRemoved(entryList, cachedLayer, entry);
+                EditDispatch.postWingRemoved(entryList, cachedLayer,
+                        entry, entryList.indexOf(entry));
                 this.refreshPanel(cachedLayer);
             });
             if (panelMutator != null) {
@@ -150,7 +137,7 @@ public class BuiltInWingsPanel extends CSVEntryBuiltInsPanel<WingCSVEntry> {
         }
     }
 
-    private static JPanel addWingPanel(WingCSVEntry wing, ActionListener removeAction) {
+    private static JPanel addWingPanel(OrdnancedCSVEntry wing, ActionListener removeAction) {
         String tooltip = wing.getEntryName();
         JLabel spriteIcon = wing.getIconLabel();
 

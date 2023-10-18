@@ -12,7 +12,6 @@ import oth.shipeditor.components.viewer.layers.ship.FeaturesOverseer;
 import oth.shipeditor.components.viewer.layers.ship.ShipLayer;
 import oth.shipeditor.components.viewer.layers.ship.ShipPainter;
 import oth.shipeditor.components.viewer.layers.ship.data.ShipVariant;
-import oth.shipeditor.components.viewer.painters.points.ship.features.InstalledFeature;
 import oth.shipeditor.representation.ShipData;
 import oth.shipeditor.utility.components.ComponentUtilities;
 import oth.shipeditor.utility.components.rendering.CustomTreeNode;
@@ -133,15 +132,9 @@ public class VariantWeaponsPanel extends AbstractVariantPanel {
         JPanel container = new JPanel();
         container.setLayout(new GridBagLayout());
 
-        var allWeapons = activeVariant.getAllFittedWeapons();
-        int totalOP = 0;
-
-        for (InstalledFeature feature : allWeapons.values()) {
-            totalOP += feature.getOPCost();
-        }
-
         JLabel totalOPLabel = new JLabel("Total OP in weapons:");
-        JLabel value = new JLabel(String.valueOf(totalOP));
+        int totalOPInWeapons = activeVariant.getTotalOPInWeapons();
+        JLabel value = new JLabel(String.valueOf(totalOPInWeapons));
 
         ComponentUtilities.addLabelAndComponent(container, totalOPLabel, value, 0);
 

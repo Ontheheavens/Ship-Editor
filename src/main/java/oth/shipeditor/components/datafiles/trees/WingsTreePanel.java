@@ -7,7 +7,6 @@ import oth.shipeditor.components.datafiles.entities.WingCSVEntry;
 import oth.shipeditor.components.instrument.ship.EditorInstrument;
 import oth.shipeditor.components.viewer.layers.ViewerLayer;
 import oth.shipeditor.components.viewer.layers.ship.ShipLayer;
-import oth.shipeditor.components.viewer.layers.ship.ShipPainter;
 import oth.shipeditor.components.viewer.layers.ship.data.ShipHull;
 import oth.shipeditor.menubar.FileUtilities;
 import oth.shipeditor.persistence.SettingsManager;
@@ -117,57 +116,88 @@ public class WingsTreePanel extends CSVDataTreePanel<WingCSVEntry>{
         JPopupMenu menu = super.getContextMenu();
         DefaultMutableTreeNode cachedSelectForMenu = getCachedSelectForMenu();
         if (cachedSelectForMenu.getUserObject() instanceof WingCSVEntry checked) {
-            menu.addSeparator();
-
-            JMenuItem addToHullBuiltIns = new JMenuItem("Add to hull built-in wings");
-            ViewerLayer activeLayer = StaticController.getActiveLayer();
-            addToHullBuiltIns.addActionListener(e -> {
-                if (activeLayer instanceof ShipLayer checkedLayer) {
-                    ShipHull hull = checkedLayer.getHull();
-                    if (hull == null) return;
-                    var builtInWings = hull.getBuiltInWings();
-                    if (builtInWings == null) return;
-                    if (WingsTreePanel.isPushEntryToListSuccessful(builtInWings, checkedLayer, checked)) {
-                        EventBus.publish(new ActiveLayerUpdated(activeLayer));
-                    }
+            switch (StaticController.getEditorMode()) {
+                case BUILT_IN_WINGS -> {
+                    menu.addSeparator();
+                    WingsTreePanel.populateBuiltInOptions(menu, checked);
                 }
-            });
-            if (!WingsTreePanel.isCurrentLayerDataEligible() || WingsTreePanel.isNotActiveInstrument()) {
-                addToHullBuiltIns.setEnabled(false);
+                case VARIANT_DATA -> {
+                    menu.addSeparator();
+                    WingsTreePanel.populateVariantOptions(menu, checked);
+                }
+                default -> {}
             }
-            menu.add(addToHullBuiltIns);
-
-            JMenuItem addToSkinAdded = WingsTreePanel.getAddToSkinAdded(checked, activeLayer);
-            menu.add(addToSkinAdded);
-
         }
         return menu;
     }
 
+    private static void populateVariantOptions(JPopupMenu menu, WingCSVEntry entry) {
+        EditorInstrument targetMode = EditorInstrument.VARIANT_DATA;
+
+        JMenuItem addToVariantWings = new JMenuItem("Add to variant wings");
+        ViewerLayer activeLayer = StaticController.getActiveLayer();
+        addToVariantWings.addActionListener(e -> {
+            if (activeLayer instanceof ShipLayer checkedLayer) {
+                var variant = checkedLayer.getActiveVariant();
+                if (variant == null) return;
+                var variantWings = variant.getWings();
+                if (WingsTreePanel.isPushEntryToListSuccessful(variantWings, checkedLayer, entry)) {
+                    EventBus.publish(new ActiveLayerUpdated(activeLayer));
+                }
+            }
+        });
+        if (!WingsTreePanel.isCurrentLayerVariantEligible() || WingsTreePanel.isNotActiveInstrument(targetMode)) {
+            addToVariantWings.setEnabled(false);
+        }
+        menu.add(addToVariantWings);
+    }
+
+    private static void populateBuiltInOptions(JPopupMenu menu, WingCSVEntry entry) {
+        EditorInstrument targetMode = EditorInstrument.BUILT_IN_WINGS;
+
+        JMenuItem addToHullBuiltIns = new JMenuItem("Add to hull built-in wings");
+        ViewerLayer activeLayer = StaticController.getActiveLayer();
+        addToHullBuiltIns.addActionListener(e -> {
+            if (activeLayer instanceof ShipLayer checkedLayer) {
+                ShipHull hull = checkedLayer.getHull();
+                if (hull == null) return;
+                var builtInWings = hull.getBuiltInWings();
+                if (builtInWings == null) return;
+                if (WingsTreePanel.isPushEntryToListSuccessful(builtInWings, checkedLayer, entry)) {
+                    EventBus.publish(new ActiveLayerUpdated(activeLayer));
+                }
+            }
+        });
+        if (!WingsTreePanel.areCurrentLayerBuiltInsEligible() || WingsTreePanel.isNotActiveInstrument(targetMode)) {
+            addToHullBuiltIns.setEnabled(false);
+        }
+        menu.add(addToHullBuiltIns);
+
+        JMenuItem addToSkinAdded = WingsTreePanel.getAddToSkinAdded(entry, activeLayer);
+        menu.add(addToSkinAdded);
+    }
+
     private static JMenuItem getAddToSkinAdded(WingCSVEntry checked, ViewerLayer activeLayer) {
+        EditorInstrument targetMode = EditorInstrument.BUILT_IN_WINGS;
         JMenuItem addToSkinAdded = new JMenuItem("Add to skin built-in wings");
         addToSkinAdded.addActionListener(e -> {
             if (activeLayer instanceof ShipLayer checkedLayer) {
-
-                ShipPainter shipPainter = checkedLayer.getPainter();
-                if (shipPainter == null || shipPainter.isUninitialized()) return;
-                var skin = shipPainter.getActiveSkin();
-                if (skin == null || skin.isBase()) return;
-
+                var skin = checkedLayer.getActiveSkin();
+                if (skin == null) return;
                 var skinAdded = skin.getBuiltInWings();
                 if (WingsTreePanel.isPushEntryToListSuccessful(skinAdded, checkedLayer, checked)) {
                     EventBus.publish(new ActiveLayerUpdated(activeLayer));
                 }
             }
         });
-        if (DataTreePanel.isCurrentSkinNotEligible() || WingsTreePanel.isNotActiveInstrument()) {
+        if (DataTreePanel.isCurrentSkinNotEligible() || WingsTreePanel.isNotActiveInstrument(targetMode)) {
             addToSkinAdded.setEnabled(false);
         }
         return addToSkinAdded;
     }
 
-    private static boolean isNotActiveInstrument() {
-        return StaticController.getEditorMode() != EditorInstrument.BUILT_IN_WINGS;
+    private static boolean isNotActiveInstrument(EditorInstrument target) {
+        return StaticController.getEditorMode() != target;
     }
 
     private static boolean isPushEntryToListSuccessful(List<WingCSVEntry> list, ShipLayer layer,
@@ -176,7 +206,8 @@ public class WingsTreePanel extends CSVDataTreePanel<WingCSVEntry>{
         return true;
     }
 
-    private static boolean isCurrentLayerDataEligible() {
+    @SuppressWarnings("BooleanMethodIsAlwaysInverted")
+    private static boolean areCurrentLayerBuiltInsEligible() {
         ViewerLayer activeLayer = StaticController.getActiveLayer();
         boolean isShipLayer = activeLayer instanceof ShipLayer;
         ShipLayer shipLayer;
@@ -185,6 +216,20 @@ public class WingsTreePanel extends CSVDataTreePanel<WingCSVEntry>{
         } else return false;
         ShipHull hull = shipLayer.getHull();
         return hull != null && hull.getBuiltInWings() != null;
+    }
+
+    private static boolean isCurrentLayerVariantEligible() {
+        ViewerLayer activeLayer = StaticController.getActiveLayer();
+        boolean isShipLayer = activeLayer instanceof ShipLayer;
+        ShipLayer shipLayer;
+        if (isShipLayer) {
+            shipLayer = (ShipLayer) activeLayer;
+        } else return false;
+        var variant = shipLayer.getActiveVariant();
+        if (variant != null) {
+            var wings = variant.getWings();
+            return wings != null;
+        } else return false;
     }
 
     @Override

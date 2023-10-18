@@ -5,10 +5,7 @@ import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
 import oth.shipeditor.parsing.loading.FileLoading;
 import oth.shipeditor.persistence.SettingsManager;
-import oth.shipeditor.representation.HullSize;
-import oth.shipeditor.representation.ShipSpecFile;
-import oth.shipeditor.representation.SkinSpecFile;
-import oth.shipeditor.representation.VariantFile;
+import oth.shipeditor.representation.*;
 import oth.shipeditor.utility.Utility;
 import oth.shipeditor.utility.components.ComponentUtilities;
 import oth.shipeditor.utility.graphics.Sprite;
@@ -153,7 +150,9 @@ public class WingCSVEntry implements OrdnancedCSVEntry {
 
         if (specFile != null) {
             var variant = this.retrieveMemberVariant();
-            String result = wingMemberSpec.getHullName();
+            ShipCSVEntry entry = GameDataRepository.retrieveShipCSVEntryByID(variant.getShipHullId());
+            String result = entry.getShipName();
+
             String drone = "Drone";
             String displayName = variant.getDisplayName();
             if (!(result.endsWith(drone) && displayName.equals(drone))) {
