@@ -71,7 +71,7 @@ class VariantWingsPanel extends JPanel {
         ComponentUtilities.outfitPanelWithTitle(infoPanel, "Fitted wings");
         infoPanel.setLayout(new GridBagLayout());
 
-        JLabel shipOPCapLabel = new JLabel("Total OP capacity:");
+        JLabel shipOPCapLabel = new JLabel(StringValues.TOTAL_OP_CAPACITY);
         shipOPCap = new JLabel();
 
         ComponentUtilities.addLabelAndComponent(infoPanel, shipOPCapLabel, shipOPCap, 0);

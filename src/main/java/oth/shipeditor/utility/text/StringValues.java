@@ -54,6 +54,7 @@ public final class StringValues {
     public static final String SELECT_SHIP_ENTRY = "Select ship entry";
     public static final String HULLMODS = "Hullmods";
     public static final String WINGS = "Wings";
+    public static final String TOTAL_OP_CAPACITY = "Total OP capacity:";
 
     private StringValues() {
     }

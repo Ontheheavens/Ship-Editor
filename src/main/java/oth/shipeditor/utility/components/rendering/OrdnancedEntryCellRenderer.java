@@ -31,7 +31,7 @@ public class OrdnancedEntryCellRenderer extends PanelListCellRenderer<OrdnancedC
 
         GridBagConstraints constraints = new GridBagConstraints();
         constraints.anchor = GridBagConstraints.LINE_START;
-        constraints.insets = new Insets(2, 2, 2, 0);
+        constraints.insets = new Insets(2, 2, 0, 0);
         constraints.gridx = 0;
         constraints.gridy = 0;
         constraints.gridheight = 2;

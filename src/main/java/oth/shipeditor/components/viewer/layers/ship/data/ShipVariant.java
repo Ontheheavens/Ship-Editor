@@ -161,6 +161,7 @@ public class ShipVariant implements Variant {
         int totalOP = 0;
 
         for (InstalledFeature feature : allWeapons.values()) {
+            if (feature.isContainedInBuiltIns()) continue;
             totalOP += feature.getOPCost();
         }
         return totalOP;

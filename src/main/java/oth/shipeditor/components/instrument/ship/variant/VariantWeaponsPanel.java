@@ -122,21 +122,35 @@ public class VariantWeaponsPanel extends AbstractVariantPanel {
             weaponsTree.setSlotPainter(painter.getWeaponSlotPainter());
             weaponsTree.repopulateTree(activeVariant, checkedLayer);
 
-            northPanel.add(VariantWeaponsPanel.createDataSummary(activeVariant), BorderLayout.CENTER);
+            northPanel.add(VariantWeaponsPanel.createDataSummary(checkedLayer, activeVariant),
+                    BorderLayout.CENTER);
         }
         this.revalidate();
         this.repaint();
     }
 
-    private static JPanel createDataSummary(ShipVariant activeVariant) {
+    private static JPanel createDataSummary(ShipLayer shipLayer, ShipVariant activeVariant) {
         JPanel container = new JPanel();
+        ComponentUtilities.outfitPanelWithTitle(container, "Fitted weapons");
         container.setLayout(new GridBagLayout());
+
+        JLabel shipOPCapLabel = new JLabel(StringValues.TOTAL_OP_CAPACITY);
+        int shipOPTotalValue = shipLayer.getTotalOP();
+        JLabel shipOPCap = new JLabel(String.valueOf(shipOPTotalValue));
+
+        ComponentUtilities.addLabelAndComponent(container, shipOPCapLabel, shipOPCap, 0);
+
+        JLabel usedOPTotalLabel = new JLabel("Used OP for ship:");
+        int usedOP = shipLayer.getTotalUsedOP();
+        JLabel usedOPTotal = new JLabel(String.valueOf(usedOP));
+
+        ComponentUtilities.addLabelAndComponent(container, usedOPTotalLabel, usedOPTotal, 1);
 
         JLabel totalOPLabel = new JLabel("Total OP in weapons:");
         int totalOPInWeapons = activeVariant.getTotalOPInWeapons();
         JLabel value = new JLabel(String.valueOf(totalOPInWeapons));
 
-        ComponentUtilities.addLabelAndComponent(container, totalOPLabel, value, 0);
+        ComponentUtilities.addLabelAndComponent(container, totalOPLabel, value, 2);
 
         return container;
     }
