@@ -18,21 +18,28 @@ import java.awt.*;
 @SuppressWarnings("NonSerializableFieldInSerializableClass")
 public enum HullSize {
 
-    // TODO: dynamic getter of icons to account for selection color and size change.
-
-    DEFAULT(FontIcon.of(BoxiconsRegular.DICE_1, 16, Color.DARK_GRAY), StringValues.DEFAULT),
-    FIGHTER(FontIcon.of(BoxiconsRegular.DICE_1, 16, Color.DARK_GRAY), "Fighter"),
-    FRIGATE(FontIcon.of(BoxiconsRegular.DICE_2, 16, Color.DARK_GRAY), "Frigate"),
-    DESTROYER(FontIcon.of(BoxiconsRegular.DICE_3, 16, Color.DARK_GRAY), "Destroyer"),
-    CRUISER(FontIcon.of(BoxiconsRegular.DICE_4, 16, Color.DARK_GRAY), "Cruiser"),
-    CAPITAL_SHIP(FontIcon.of(BoxiconsRegular.DICE_5, 16, Color.DARK_GRAY), "Capital");
+    DEFAULT(FontIcon.of(BoxiconsRegular.DICE_1,
+            16, Color.DARK_GRAY), 0, StringValues.DEFAULT),
+    FIGHTER(FontIcon.of(BoxiconsRegular.DICE_1,
+            16, Color.DARK_GRAY), 0, "Fighter"),
+    FRIGATE(FontIcon.of(BoxiconsRegular.DICE_2,
+            16, Color.DARK_GRAY), 10, "Frigate"),
+    DESTROYER(FontIcon.of(BoxiconsRegular.DICE_3,
+            16, Color.DARK_GRAY), 20, "Destroyer"),
+    CRUISER(FontIcon.of(BoxiconsRegular.DICE_4,
+            16, Color.DARK_GRAY), 30, "Cruiser"),
+    CAPITAL_SHIP(FontIcon.of(BoxiconsRegular.DICE_5,
+            16, Color.DARK_GRAY), 50, "Capital");
 
     private final FontIcon icon;
 
+    private final int maxFluxRegulators;
+
     private final String displayedName;
 
-    HullSize(FontIcon fontIcon, String name) {
+    HullSize(FontIcon fontIcon, int fluxCap, String name) {
         this.icon = fontIcon;
+        this.maxFluxRegulators = fluxCap;
         this.displayedName = name;
     }
 
