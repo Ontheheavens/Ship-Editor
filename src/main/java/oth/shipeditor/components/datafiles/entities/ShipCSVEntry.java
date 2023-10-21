@@ -92,11 +92,16 @@ public class ShipCSVEntry implements CSVEntry, InstallableEntry {
         return rowData.get(StringConstants.NAME);
     }
 
-    public int getTotalOP() {
+    public int getTotalOPWithSkin() {
         if (activeSkinSpecFile != null && !activeSkinSpecFile.isBase()) {
             return activeSkinSpecFile.getOrdnancePoints();
         }
-        String ordnancePoints = rowData.get("ordnance points");
+        String ordnancePoints = rowData.get(StringConstants.ORDNANCE_POINTS_SPACED);
+        return Integer.parseInt(ordnancePoints);
+    }
+
+    public int getBaseTotalOP() {
+        String ordnancePoints = rowData.get(StringConstants.ORDNANCE_POINTS_SPACED);
         return Integer.parseInt(ordnancePoints);
     }
 

@@ -59,7 +59,7 @@ public final class LayerViewerControls implements ViewerControl {
      */
     private final Point layerDragPoint = new Point();
 
-    private final int layerDragHotkey = KeyEvent.VK_SHIFT;
+    private static final int layerDragHotkey = KeyEvent.VK_SHIFT;
 
     @Getter
     private Point mousePoint = new Point();

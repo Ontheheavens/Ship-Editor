@@ -55,6 +55,10 @@ public final class StringValues {
     public static final String HULLMODS = "Hullmods";
     public static final String WINGS = "Wings";
     public static final String TOTAL_OP_CAPACITY = "Total OP capacity:";
+    public static final String REMOVE = "Remove";
+    public static final String TYPE_AND_PRESS_ENTER_TO_EDIT_ID = "Type and press Enter to edit ID";
+    public static final String USED_OP_IN_HULLMODS = "Used OP in hullmods:";
+    public static final String USED_OP_IN_WINGS = "Used OP in wings:";
 
     private StringValues() {
     }

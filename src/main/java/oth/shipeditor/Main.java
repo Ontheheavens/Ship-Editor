@@ -9,6 +9,7 @@ import oth.shipeditor.communication.events.viewer.control.ViewerTransformsReset;
 import oth.shipeditor.communication.events.viewer.layers.LastLayerSelectQueued;
 import oth.shipeditor.communication.events.viewer.layers.ships.ShipLayerCreationQueued;
 import oth.shipeditor.components.datafiles.entities.ShipCSVEntry;
+import oth.shipeditor.components.logging.StandardOutputRedirector;
 import oth.shipeditor.components.viewer.LayerViewer;
 import oth.shipeditor.components.viewer.layers.LayerManager;
 import oth.shipeditor.components.viewer.layers.LayerPainter;
@@ -48,6 +49,7 @@ public final class Main {
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> {
             // These method calls are initialization block; the order of calls is important.
+            StandardOutputRedirector.redirectStandardStreams();
             Main.configureLaf();
             PrimaryWindow window = PrimaryWindow.create();
             Initializations.updateStateFromSettings(window);

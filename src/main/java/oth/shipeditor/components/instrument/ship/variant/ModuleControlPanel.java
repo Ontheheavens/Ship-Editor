@@ -6,6 +6,7 @@ import oth.shipeditor.components.instrument.ship.centers.CollisionPanel;
 import oth.shipeditor.components.viewer.layers.ship.ShipPainter;
 import oth.shipeditor.components.viewer.painters.PainterVisibility;
 import oth.shipeditor.components.viewer.painters.points.ship.features.InstalledFeature;
+import oth.shipeditor.utility.Utility;
 import oth.shipeditor.utility.components.ComponentUtilities;
 import oth.shipeditor.utility.text.StringValues;
 
@@ -34,7 +35,6 @@ class ModuleControlPanel extends JPanel {
         this.parent = modulesPanel;
 
         this.setLayout(new BorderLayout());
-
         visibilitiesPanel = new JPanel();
         visibilitiesPanel.setLayout(new GridBagLayout());
         this.add(visibilitiesPanel, BorderLayout.CENTER);
@@ -43,6 +43,10 @@ class ModuleControlPanel extends JPanel {
         anchorWidgetWrapper.setLayout(new BorderLayout());
         anchorWidgetWrapper.setAlignmentX(0.5f);
         anchorWidgetWrapper.setAlignmentY(0);
+        String tooltip = Utility.getWithLinebreaks("Mockup editing, changes are not saved to file",
+                "Create separate ship layer from module to edit module anchor offset");
+        anchorWidgetWrapper.setToolTipText(tooltip);
+
         this.add(anchorWidgetWrapper, BorderLayout.PAGE_END);
 
         this.addContent();

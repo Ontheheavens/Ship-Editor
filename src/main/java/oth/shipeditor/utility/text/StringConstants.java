@@ -41,6 +41,8 @@ public interface StringConstants {
 
     String ORDNANCE_POINTS = "ordnancePoints";
 
+    String ORDNANCE_POINTS_SPACED = "ordnance points";
+
     String BASE_VALUE = "baseValue";
 
     String SUPPLIES_PER_MONTH = "suppliesPerMonth";

@@ -54,7 +54,7 @@ public class ShipVariant implements Variant {
 
     private String variantId;
 
-    private String displayName = "New Variant";
+    private String displayName = "Custom";
 
     private List<HullmodCSVEntry> hullMods = new ArrayList<>();
 
@@ -68,9 +68,15 @@ public class ShipVariant implements Variant {
 
     private List<FittedWeaponGroup> weaponGroups = new ArrayList<>();
 
+    private boolean goalVariant;
+
+    private double quality;
+
     private int fluxCapacitors;
 
     private int fluxVents;
+
+    private boolean loadedFromFile;
 
     public ShipVariant() {
         this(true);
@@ -80,6 +86,24 @@ public class ShipVariant implements Variant {
     public ShipVariant(boolean isEmpty) {
         this.empty = isEmpty;
         this.fittedModules = new ListOrderedMap<>();
+    }
+
+    @SuppressWarnings("StaticMethodOnlyUsedInOneClass")
+    public static String createUniqueVariantID(ShipLayer shipLayer) {
+        String result;
+        String shipID = shipLayer.getShipID();
+
+        result = shipID + "_custom";
+
+        int counter = 1;
+        while (true) {
+            Map<String, ShipVariant> loadedVariants = shipLayer.getLoadedVariants();
+            if (!loadedVariants.containsKey(result)) break;
+            result = shipID + "_custom_" + String.format("%02d", counter);
+            counter++;
+        }
+
+        return result;
     }
 
     public void sortModules(Map<String, InstalledFeature> rearranged) {
@@ -203,7 +227,7 @@ public class ShipVariant implements Variant {
     }
 
     public void initialize(VariantFile file) {
-        this.setVariantId(variantId);
+        this.setVariantId(file.getVariantId());
         this.setShipHullId(file.getHullId());
         this.setVariantFilePath(file.getVariantFilePath());
         this.setContainingPackage(file.getContainingPackage());
@@ -211,6 +235,11 @@ public class ShipVariant implements Variant {
 
         this.setFluxVents(file.getFluxVents());
         this.setFluxCapacitors(file.getFluxCapacitors());
+
+        this.setGoalVariant(file.isGoalVariant());
+        this.setQuality(file.getQuality());
+
+        loadedFromFile = true;
 
         weaponGroups = new ArrayList<>();
 

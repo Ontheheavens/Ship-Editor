@@ -1,6 +1,7 @@
 package oth.shipeditor.components.instrument.ship.variant;
 
 import oth.shipeditor.communication.EventBus;
+import oth.shipeditor.communication.events.components.VariantPanelRepaintQueued;
 import oth.shipeditor.communication.events.viewer.layers.LayerWasSelected;
 import oth.shipeditor.components.datafiles.entities.WingCSVEntry;
 import oth.shipeditor.components.viewer.layers.ViewerLayer;
@@ -81,7 +82,7 @@ class VariantWingsPanel extends JPanel {
 
         ComponentUtilities.addLabelAndComponent(infoPanel, usedOPTotalLabel, usedOPTotal, 1);
 
-        JLabel usedOPLabel = new JLabel("Used OP in wings:");
+        JLabel usedOPLabel = new JLabel(StringValues.USED_OP_IN_WINGS);
         usedOPInWings = new JLabel();
 
         ComponentUtilities.addLabelAndComponent(infoPanel, usedOPLabel, usedOPInWings, 2);
@@ -113,6 +114,11 @@ class VariantWingsPanel extends JPanel {
                 ViewerLayer selected = checked.selected();
                 refreshListModel(selected);
                 refreshLayerInfo(selected);
+            }
+        });
+        EventBus.subscribe(event -> {
+            if (event instanceof VariantPanelRepaintQueued) {
+                this.refreshLayerInfo(StaticController.getActiveLayer());
             }
         });
     }

@@ -89,11 +89,20 @@ public class ShipLayer extends ViewerLayer {
     }
 
     public int getTotalOP() {
+        var activeSkin = this.getActiveSkin();
+        if (activeSkin != null) {
+            var skinOPs = activeSkin.getOrdnancePoints();
+            if (skinOPs != 0) {
+                return skinOPs;
+            }
+        }
+        // There is no way to know base hull OPs without parsing the CSV tables.
+        // So, we might as well query the repository.
         if (hull == null) return -1;
         String hullID = hull.getHullID();
         var shipEntry = GameDataRepository.retrieveShipCSVEntryByID(hullID);
         if (shipEntry == null) return -1;
-        return shipEntry.getTotalOP();
+        return shipEntry.getBaseTotalOP();
     }
 
     public int getBayCount() {

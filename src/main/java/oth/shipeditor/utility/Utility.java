@@ -25,6 +25,7 @@ import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.Locale;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
@@ -222,6 +223,18 @@ public final class Utility {
             Sprite newSprite = FileLoading.loadSprite(spriteFile);
             setter.accept(newSprite);
         }
+    }
+
+    public static String translateIntegerValue(Supplier<Integer> getter) {
+        String notInitialized = StringValues.NOT_INITIALIZED;
+        int value = getter.get();
+        String textResult;
+        if (value == -1) {
+            textResult = notInitialized;
+        } else {
+            textResult = String.valueOf(value);
+        }
+        return textResult;
     }
 
 }

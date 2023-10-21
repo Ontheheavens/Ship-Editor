@@ -80,8 +80,16 @@ public class VariantFile implements Variant {
     @JsonProperty("sMods")
     private List<String> sMods;
 
+    /**
+     * Is somewhat obscure; some sources claim the value contract is 1 being the best and 3 the worst quality.
+     * However, my own impression on the usage in vanilla is that 0.0 is the worst and 1.0 is best.
+     * According to Histidine, the field isn't used in newer Starsector versions.
+     * <p>
+     * Is set to -1 as default here for safety purposes.
+     * Anything less than 0 will be ignored at serialization to result file.
+     */
     @JsonProperty("quality")
-    private int quality;
+    private double quality = -1;
 
     @JsonProperty("variantId")
     private String variantId;
