@@ -70,9 +70,9 @@ public class WeaponSprites {
             case HARDPOINT -> {
                 BufferedImage spriteImage;
                 if (hardpointSprite != null) {
-                    spriteImage = hardpointSprite.image();
+                    spriteImage = hardpointSprite.getImage();
                 } else if (turretSprite != null) {
-                    spriteImage = turretSprite.image();
+                    spriteImage = turretSprite.getImage();
                 } else {
                     return new Point2D.Double(0, 0);
                 }
@@ -82,7 +82,7 @@ public class WeaponSprites {
             case TURRET, HIDDEN -> {
                 BufferedImage spriteImage;
                 if (turretSprite != null) {
-                    spriteImage = turretSprite.image();
+                    spriteImage = turretSprite.getImage();
                 } else {
                     return new Point2D.Double(0, 0);
                 }

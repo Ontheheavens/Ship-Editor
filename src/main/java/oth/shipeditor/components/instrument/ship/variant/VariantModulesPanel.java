@@ -18,10 +18,10 @@ import oth.shipeditor.components.viewer.layers.ViewerLayer;
 import oth.shipeditor.components.viewer.layers.ship.FeaturesOverseer;
 import oth.shipeditor.components.viewer.layers.ship.ShipLayer;
 import oth.shipeditor.components.viewer.layers.ship.ShipPainter;
+import oth.shipeditor.components.viewer.layers.ship.data.ShipHull;
 import oth.shipeditor.components.viewer.layers.ship.data.ShipVariant;
 import oth.shipeditor.components.viewer.painters.points.ship.WeaponSlotPainter;
 import oth.shipeditor.components.viewer.painters.points.ship.features.InstalledFeature;
-import oth.shipeditor.representation.ShipData;
 import oth.shipeditor.representation.VariantFile;
 import oth.shipeditor.undo.EditDispatch;
 import oth.shipeditor.utility.components.ComponentUtilities;
@@ -160,8 +160,8 @@ public class VariantModulesPanel extends AbstractVariantPanel{
             this.installPlaceholders();
             return;
         }
-        ShipData shipData = checkedLayer.getShipData();
-        if (shipData == null) {
+        ShipHull shipHull = checkedLayer.getHull();
+        if (shipHull == null) {
             this.installPlaceholders();
             return;
         }

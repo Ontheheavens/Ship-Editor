@@ -11,8 +11,8 @@ import oth.shipeditor.components.viewer.layers.ViewerLayer;
 import oth.shipeditor.components.viewer.layers.ship.FeaturesOverseer;
 import oth.shipeditor.components.viewer.layers.ship.ShipLayer;
 import oth.shipeditor.components.viewer.layers.ship.ShipPainter;
+import oth.shipeditor.components.viewer.layers.ship.data.ShipHull;
 import oth.shipeditor.components.viewer.layers.ship.data.ShipVariant;
-import oth.shipeditor.representation.ShipData;
 import oth.shipeditor.utility.components.ComponentUtilities;
 import oth.shipeditor.utility.components.rendering.CustomTreeNode;
 import oth.shipeditor.utility.overseers.StaticController;
@@ -111,8 +111,8 @@ public class VariantWeaponsPanel extends AbstractVariantPanel {
             return;
         }
 
-        ShipData shipData = checkedLayer.getShipData();
-        if (shipData == null) {
+        ShipHull shipHull = checkedLayer.getHull();
+        if (shipHull == null) {
             return;
         }
         ShipPainter painter = checkedLayer.getPainter();

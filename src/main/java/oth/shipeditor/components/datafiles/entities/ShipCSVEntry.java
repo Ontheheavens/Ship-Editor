@@ -168,7 +168,7 @@ public class ShipCSVEntry implements CSVEntry, InstallableEntry {
         }
 
         ShipLayer newLayer = FileUtilities.createShipLayerWithSprite(spriteFile);
-        newLayer.createShipData(this.hullSpecFile);
+        newLayer.initializeHullData(this.hullSpecFile);
 
         if (skins == null || skins.isEmpty()) return;
 
@@ -205,7 +205,7 @@ public class ShipCSVEntry implements CSVEntry, InstallableEntry {
         Path spriteFilePath = Path.of(spriteName);
         File spriteFile = FileLoading.fetchDataFile(spriteFilePath, this.packageFolderPath);
         Sprite sprite = FileLoading.loadSprite(spriteFile);
-        shipPainter.setSprite(sprite.image());
+        shipPainter.setSprite(sprite.getImage());
         shipPainter.setBaseHullSprite(sprite);
 
         shipPainter.initFromHullSpec(this.getHullSpecFile());

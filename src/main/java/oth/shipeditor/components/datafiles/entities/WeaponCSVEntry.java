@@ -130,12 +130,12 @@ public class WeaponCSVEntry implements CSVEntry, InstallableEntry {
 
             var turretSprite = spriteHolder.getTurretSprite();
             if (turretSprite == null) return null;
-            BufferedImage turretMain = turretSprite.image();
+            BufferedImage turretMain = turretSprite.getImage();
 
             var turretGunSprite = spriteHolder.getTurretGunSprite();
             BufferedImage turretGun = null;
             if (turretGunSprite != null) {
-                turretGun = turretGunSprite.image();
+                turretGun = turretGunSprite.getImage();
             }
 
             BufferedImage combinedImage = new BufferedImage(turretMain.getWidth(), turretMain.getHeight(),
@@ -164,7 +164,7 @@ public class WeaponCSVEntry implements CSVEntry, InstallableEntry {
             }
 
             g2d.dispose();
-            weaponImage = new Sprite(combinedImage, turretSprite.path(), turretSprite.name());
+            weaponImage = new Sprite(combinedImage, turretSprite.getPath(), turretSprite.getFilename());
         }
         return weaponImage;
     }
@@ -261,7 +261,7 @@ public class WeaponCSVEntry implements CSVEntry, InstallableEntry {
 
         Sprite loadedTurretSprite = spriteHolder.getTurretSprite();
         if (loadedTurretSprite != null) {
-            weaponPainter.setSprite(loadedTurretSprite.image());
+            weaponPainter.setSprite(loadedTurretSprite.getImage());
         }
         return weaponPainter;
     }

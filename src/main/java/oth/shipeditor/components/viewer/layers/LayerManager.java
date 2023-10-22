@@ -12,24 +12,25 @@ import oth.shipeditor.communication.events.viewer.layers.ships.ShipLayerCreated;
 import oth.shipeditor.communication.events.viewer.layers.ships.ShipLayerCreationQueued;
 import oth.shipeditor.communication.events.viewer.layers.weapons.WeaponLayerCreated;
 import oth.shipeditor.communication.events.viewer.layers.weapons.WeaponLayerCreationQueued;
+import oth.shipeditor.components.datafiles.entities.ShipCSVEntry;
 import oth.shipeditor.components.viewer.layers.ship.ShipLayer;
 import oth.shipeditor.components.viewer.layers.ship.ShipPainter;
 import oth.shipeditor.components.viewer.layers.ship.data.ActiveShipSpec;
 import oth.shipeditor.components.viewer.layers.ship.data.ShipHull;
 import oth.shipeditor.components.viewer.layers.ship.data.ShipSkin;
 import oth.shipeditor.components.viewer.layers.weapon.WeaponLayer;
+import oth.shipeditor.representation.GameDataRepository;
 import oth.shipeditor.representation.HullSpecFile;
-import oth.shipeditor.representation.ShipData;
 import oth.shipeditor.representation.SkinSpecFile;
-import oth.shipeditor.utility.overseers.StaticController;
 import oth.shipeditor.utility.graphics.Sprite;
+import oth.shipeditor.utility.overseers.StaticController;
 
 import javax.swing.*;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.function.Consumer;
+import java.util.function.BiConsumer;
 
 /**
  * @author Ontheheavens
@@ -138,12 +139,13 @@ public class LayerManager {
         });
     }
 
-    private void actOnAllLayerHulls(Consumer<ShipHull> action) {
+    private void actOnAllLayerHulls(BiConsumer<ShipHull, HullSpecFile> action) {
         layers.forEach(layer -> {
             if (layer instanceof ShipLayer checkedLayer) {
                 ShipHull hull = checkedLayer.getHull();
                 if (hull != null) {
-                    action.accept(hull);
+                    ShipCSVEntry shipEntry = GameDataRepository.retrieveShipCSVEntryByID(hull.getHullID());
+                    action.accept(hull, shipEntry.getHullSpecFile());
                 }
             }
         });
@@ -185,7 +187,7 @@ public class LayerManager {
             if (event instanceof HullFileOpened checked) {
                 HullSpecFile hullSpecFile = checked.hullSpecFile();
                 if (activeLayer != null && activeLayer instanceof ShipLayer checkedLayer) {
-                    checkedLayer.createShipData(hullSpecFile);
+                    checkedLayer.initializeHullData(hullSpecFile);
                 } else {
                     throw new IllegalStateException("Hull file loaded onto invalid layer!");
                 }
@@ -195,10 +197,9 @@ public class LayerManager {
             if (event instanceof SkinFileOpened checked) {
                 SkinSpecFile skinSpecFile = checked.skinSpecFile();
                 if (activeLayer != null && activeLayer instanceof ShipLayer checkedLayer) {
-                    ShipData data = checkedLayer.getShipData();
-                    if (data != null && data.getHullSpecFile() != null) {
-                        HullSpecFile baseHullSpecFile = data.getHullSpecFile();
-                        String hullID = baseHullSpecFile.getHullId();
+                    ShipHull data = checkedLayer.getHull();
+                    if (data != null) {
+                        String hullID = data.getHullID();
                         if (!hullID.equals(skinSpecFile.getBaseHullId())) {
                             Path skinFilePath = skinSpecFile.getFilePath();
                             JOptionPane.showMessageDialog(null,

@@ -37,7 +37,7 @@ public class ProjectilePainter implements Painter {
     }
 
     private void paintContent(Graphics2D g) {
-        BufferedImage image = this.projectileSprite.image();
+        BufferedImage image = this.projectileSprite.getImage();
         double x = paintAnchor.getX() - projectileCenter.getX();
         double y = paintAnchor.getY() - projectileCenter.getY();
 

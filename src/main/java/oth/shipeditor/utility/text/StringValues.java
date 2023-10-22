@@ -59,6 +59,9 @@ public final class StringValues {
     public static final String TYPE_AND_PRESS_ENTER_TO_EDIT_ID = "Type and press Enter to edit ID";
     public static final String USED_OP_IN_HULLMODS = "Used OP in hullmods:";
     public static final String USED_OP_IN_WINGS = "Used OP in wings:";
+    public static final String SHIP_HULL_DATA_NOT_FOUND_FOR_LAYER = "Ship hull data not found for layer: ";
+    public static final String JSON_SHIP_FILES = "JSON ship files";
+    public static final String FILE_SAVING_ERROR = "File saving error!";
 
     private StringValues() {
     }

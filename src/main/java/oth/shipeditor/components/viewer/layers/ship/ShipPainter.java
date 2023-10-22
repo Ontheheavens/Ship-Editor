@@ -3,26 +3,30 @@ package oth.shipeditor.components.viewer.layers.ship;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
-import oth.shipeditor.communication.BusEventListener;
 import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.Events;
 import oth.shipeditor.communication.events.components.SkinPanelRepaintQueued;
 import oth.shipeditor.communication.events.viewer.ViewerRepaintQueued;
 import oth.shipeditor.communication.events.viewer.layers.ActiveLayerUpdated;
 import oth.shipeditor.communication.events.viewer.layers.ships.LayerShipDataInitialized;
-import oth.shipeditor.communication.events.viewer.layers.ships.ShipDataCreated;
 import oth.shipeditor.components.datafiles.entities.ShipCSVEntry;
 import oth.shipeditor.components.viewer.entities.ShipCenterPoint;
 import oth.shipeditor.components.viewer.entities.bays.LaunchBay;
 import oth.shipeditor.components.viewer.entities.weapon.WeaponSlotPoint;
 import oth.shipeditor.components.viewer.layers.LayerPainter;
 import oth.shipeditor.components.viewer.layers.ViewerLayer;
-import oth.shipeditor.components.viewer.layers.ship.data.*;
+import oth.shipeditor.components.viewer.layers.ship.data.ActiveShipSpec;
+import oth.shipeditor.components.viewer.layers.ship.data.ShipSkin;
+import oth.shipeditor.components.viewer.layers.ship.data.ShipVariant;
+import oth.shipeditor.components.viewer.layers.ship.data.Variant;
 import oth.shipeditor.components.viewer.painters.points.AbstractPointPainter;
+import oth.shipeditor.components.viewer.painters.points.ship.*;
 import oth.shipeditor.components.viewer.painters.points.ship.features.InstalledFeature;
 import oth.shipeditor.components.viewer.painters.points.ship.features.InstalledFeaturePainter;
-import oth.shipeditor.components.viewer.painters.points.ship.*;
-import oth.shipeditor.representation.*;
+import oth.shipeditor.representation.GameDataRepository;
+import oth.shipeditor.representation.HullSpecFile;
+import oth.shipeditor.representation.ShipTypeHints;
+import oth.shipeditor.representation.VariantFile;
 import oth.shipeditor.utility.graphics.Sprite;
 import oth.shipeditor.utility.text.StringValues;
 
@@ -82,7 +86,6 @@ public class ShipPainter extends LayerPainter {
 
     public ShipPainter(ShipLayer layer) {
         super(layer);
-        this.initPainterListeners(layer);
         this.activateEmptySkin();
         this.selectVariant(VariantFile.empty());
     }
@@ -139,10 +142,10 @@ public class ShipPainter extends LayerPainter {
     public void setActiveSpec(ActiveShipSpec type, ShipSkin skin) {
         ShipLayer parentLayer = this.getParentLayer();
         if (type == ActiveShipSpec.HULL) {
-            this.setSprite(baseHullSprite.image());
+            this.setSprite(baseHullSprite.getImage());
 
             if (parentLayer != null) {
-                parentLayer.setSpriteFileName(baseHullSprite.name());
+                parentLayer.setSpriteFileName(baseHullSprite.getFilename());
                 parentLayer.setActiveSkinFileName(StringValues.NOT_LOADED);
             }
 
@@ -156,9 +159,9 @@ public class ShipPainter extends LayerPainter {
             }
             Sprite loadedSkinSprite = skin.getLoadedSkinSprite();
             if (loadedSkinSprite != null) {
-                this.setSprite(loadedSkinSprite.image());
+                this.setSprite(loadedSkinSprite.getImage());
             } else {
-                this.setSprite(baseHullSprite.image());
+                this.setSprite(baseHullSprite.getImage());
             }
 
             if (skin.getWeaponSlotChanges() != null) {
@@ -175,9 +178,9 @@ public class ShipPainter extends LayerPainter {
 
             if (parentLayer != null) {
                 if (loadedSkinSprite != null) {
-                    parentLayer.setSpriteFileName(loadedSkinSprite.name());
+                    parentLayer.setSpriteFileName(loadedSkinSprite.getFilename());
                 } else {
-                    parentLayer.setSpriteFileName(baseHullSprite.name());
+                    parentLayer.setSpriteFileName(baseHullSprite.getFilename());
                 }
                 String skinFileName = skin.getSkinFilePath().getFileName().toString();
                 parentLayer.setActiveSkinFileName(skinFileName);
@@ -237,27 +240,7 @@ public class ShipPainter extends LayerPainter {
 
     public void initFromHullSpec(HullSpecFile hullSpecFile) {
         this.createPointPainters();
-        ShipPainterInitialization.loadShipData(this, hullSpecFile);
-    }
-
-    @SuppressWarnings("WeakerAccess")
-    protected void initPainterListeners(ShipLayer layer) {
-        if (layer == null) return;
-        BusEventListener layerUpdateListener = event -> {
-            if (event instanceof ShipDataCreated checked) {
-                if (checked.layer() != layer) return;
-                ShipData shipData = layer.getShipData();
-                if (shipData != null && this.isUninitialized()) {
-                    ShipHull hull = layer.getHull();
-                    HullSpecFile hullSpecFile = shipData.getHullSpecFile();
-                    hull.initialize(hullSpecFile);
-                    this.initFromHullSpec(hullSpecFile);
-                }
-            }
-        };
-        List<BusEventListener> listeners = getListeners();
-        listeners.add(layerUpdateListener);
-        EventBus.subscribe(layerUpdateListener);
+        ShipPainterInitialization.loadHullData(this, hullSpecFile);
     }
 
     public ShipCenterPoint getShipCenter() {
@@ -383,14 +366,16 @@ public class ShipPainter extends LayerPainter {
 
         Map<String, InstalledFeature> result = new LinkedHashMap<>();
         var slotPainter = this.getWeaponSlotPainter();
-        builtIns.forEach((slotID, feature) -> {
-            boolean isSlotDecorative = slotPainter.isSlotDecorative(slotID);
-            if (isSlotDecorative && includeDecorative) {
-                result.put(slotID, feature);
-            } else if (slotPainter.getSlotByID(slotID) != null && !isSlotDecorative && includeNonDecorative) {
-                result.put(slotID, feature);
-            }
-        });
+        if (builtIns != null) {
+            builtIns.forEach((slotID, feature) -> {
+                boolean isSlotDecorative = slotPainter.isSlotDecorative(slotID);
+                if (isSlotDecorative && includeDecorative) {
+                    result.put(slotID, feature);
+                } else if (slotPainter.getSlotByID(slotID) != null && !isSlotDecorative && includeNonDecorative) {
+                    result.put(slotID, feature);
+                }
+            });
+        }
 
         if (activeSkin != null && !activeSkin.isBase()) {
             var removedBuiltIns = activeSkin.getRemoveBuiltInWeapons();

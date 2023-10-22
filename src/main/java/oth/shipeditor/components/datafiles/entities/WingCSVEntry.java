@@ -175,7 +175,7 @@ public class WingCSVEntry implements OrdnancedCSVEntry {
         Sprite sprite = this.getWingMemberSprite();
         if (sprite != null) {
             String tooltip = Utility.getTooltipForSprite(sprite);
-            return ComponentUtilities.createIconFromImage(sprite.image(), tooltip, maxSize);
+            return ComponentUtilities.createIconFromImage(sprite.getImage(), tooltip, maxSize);
         }
         return null;
     }

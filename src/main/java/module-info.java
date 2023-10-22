@@ -1,7 +1,8 @@
 /**
 * @author Ontheheavens
 * @since 08.05.2023
-*/module oth.shipeditor {
+*/
+module oth.shipeditor {
 
     // These packages are integral for the editor functionality.
     requires java.desktop;

@@ -36,33 +36,32 @@ public class ShipHull {
 
     private List<WingCSVEntry> builtInWings;
 
-    private HullSpecFile associatedSpecFile;
+    private String hullFileName;
 
     public void initialize(HullSpecFile specFile) {
-        this.associatedSpecFile = specFile;
         this.hullName = specFile.getHullName();
         this.hullID = specFile.getHullId();
         this.hullSize = HullSize.valueOf(specFile.getHullSize());
-        this.loadHullStyle();
+        this.loadHullStyle(specFile);
 
         var dataRepository = SettingsManager.getGameData();
         if (dataRepository.isHullmodDataLoaded()) {
-            this.loadBuiltInMods();
+            this.loadBuiltInMods(specFile);
         }
         if (dataRepository.isWingDataLoaded()) {
-            this.loadBuiltInWings();
+            this.loadBuiltInWings(specFile);
         }
+
+        this.hullFileName = String.valueOf(specFile.getFilePath().getFileName());
     }
 
-    private void loadHullStyle() {
-        var specFile = getAssociatedSpecFile();
+    private void loadHullStyle(HullSpecFile specFile) {
         var styleID = specFile.getStyle();
         this.hullStyle = GameDataRepository.fetchStyleByID(styleID);
     }
 
-    public void loadBuiltInMods() {
+    public void loadBuiltInMods(HullSpecFile specFile) {
         if (builtInMods != null) return;
-        var specFile = getAssociatedSpecFile();
         String[] specFileBuiltInMods = specFile.getBuiltInMods();
         if (specFileBuiltInMods == null) {
             this.builtInMods = new ArrayList<>();
@@ -83,9 +82,8 @@ public class ShipHull {
         this.builtInMods = builtInList;
     }
 
-    public void loadBuiltInWings() {
+    public void loadBuiltInWings(HullSpecFile specFile) {
         if (builtInWings != null) return;
-        var specFile = getAssociatedSpecFile();
         String[] specFileBuiltInWings = specFile.getBuiltInWings();
         if (specFileBuiltInWings == null) {
             this.builtInWings = new ArrayList<>();

@@ -14,7 +14,7 @@ import java.awt.geom.Point2D;
  * @author Ontheheavens
  * @since 01.05.2023
  */
-public class BoundPoint extends BaseWorldPoint{
+public class BoundPoint extends BaseWorldPoint {
 
     public BoundPoint(Point2D pointPosition, ShipPainter layer) {
         super(pointPosition, layer);

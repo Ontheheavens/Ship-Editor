@@ -11,7 +11,6 @@ import oth.shipeditor.components.viewer.layers.ship.data.ShipVariant;
 import oth.shipeditor.components.viewer.layers.ship.data.Variant;
 import oth.shipeditor.representation.GameDataRepository;
 import oth.shipeditor.representation.HullSize;
-import oth.shipeditor.representation.ShipData;
 import oth.shipeditor.representation.VariantFile;
 import oth.shipeditor.utility.Utility;
 import oth.shipeditor.utility.components.ComponentUtilities;
@@ -294,8 +293,8 @@ public class VariantMainPanel extends AbstractVariantPanel {
             return;
         }
 
-        ShipData shipData = checkedLayer.getShipData();
-        if (shipData == null) {
+        ShipHull shipHull = checkedLayer.getHull();
+        if (shipHull == null) {
             this.installPlaceholders();
             return;
         }
@@ -315,7 +314,6 @@ public class VariantMainPanel extends AbstractVariantPanel {
             if (variant.isLoadedFromFile()) {
                 removeVariantButton.setText("Reload");
             }
-            ShipHull shipHull = checkedLayer.getHull();
             HullSize hullSize = shipHull.getHullSize();
             int maxFluxRegulators = hullSize.getMaxFluxRegulators();
 
@@ -376,7 +374,7 @@ public class VariantMainPanel extends AbstractVariantPanel {
         });
         ComponentUtilities.addLabelAndComponent(dataPanel, variantIDLabel, variantIDEditor, 1);
 
-        JLabel variantDisplayNameLabel = new JLabel("Displayed name:");
+        JLabel variantDisplayNameLabel = new JLabel("Displayed filename:");
         variantDisplayNameEditor = new JTextField();
         String editorNameTooltip = Utility.getWithLinebreaks(StringValues.TYPE_AND_PRESS_ENTER_TO_EDIT_ID);
         variantDisplayNameEditor.setToolTipText(editorNameTooltip);

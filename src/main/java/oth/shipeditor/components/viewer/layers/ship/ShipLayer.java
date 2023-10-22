@@ -2,8 +2,6 @@ package oth.shipeditor.components.viewer.layers.ship;
 
 import lombok.Getter;
 import lombok.Setter;
-import oth.shipeditor.communication.EventBus;
-import oth.shipeditor.communication.events.viewer.layers.ships.ShipDataCreated;
 import oth.shipeditor.components.viewer.layers.LayerPainter;
 import oth.shipeditor.components.viewer.layers.ViewerLayer;
 import oth.shipeditor.components.viewer.layers.ship.data.ShipHull;
@@ -12,8 +10,8 @@ import oth.shipeditor.components.viewer.layers.ship.data.ShipVariant;
 import oth.shipeditor.persistence.SettingsManager;
 import oth.shipeditor.representation.GameDataRepository;
 import oth.shipeditor.representation.HullSpecFile;
-import oth.shipeditor.representation.ShipData;
 import oth.shipeditor.representation.SkinSpecFile;
+import oth.shipeditor.utility.graphics.Sprite;
 
 import java.util.*;
 
@@ -25,11 +23,6 @@ import java.util.*;
  */
 @Getter
 public class ShipLayer extends ViewerLayer {
-
-    /**
-     * Storage of raw JSON-deserialized ship files.
-     */
-    private ShipData shipData;
 
     @Setter
     private String activeSkinFileName = "";
@@ -66,10 +59,18 @@ public class ShipLayer extends ViewerLayer {
     }
 
     public String getHullFileName() {
-        if (shipData != null) {
-            return shipData.getHullFileName();
+        if (hull != null) {
+            return hull.getHullFileName();
         }
         return "";
+    }
+
+    public String getRelativeSpritePath() {
+        ShipPainter shipPainter = getPainter();
+        if (shipPainter != null) {
+            Sprite baseHullSprite = shipPainter.getBaseHullSprite();
+            return baseHullSprite.getPathFromPackage();
+        } else return null;
     }
 
     @Override
@@ -166,15 +167,15 @@ public class ShipLayer extends ViewerLayer {
         return activeVariant;
     }
 
-    public void createShipData(HullSpecFile hullSpecFile) {
-        ShipData data = this.getShipData();
-        if (data != null ) {
-            data.setHullSpecFile(hullSpecFile);
-        } else {
-            this.shipData = new ShipData(hullSpecFile);
-            this.hull = new ShipHull();
+    public void initializeHullData(HullSpecFile hullSpecFile) {
+        ShipHull shipHull = this.getHull();
+        if (shipHull == null) {
+            shipHull = new ShipHull();
         }
-        EventBus.publish(new ShipDataCreated(this));
+        shipHull.initialize(hullSpecFile);
+        this.hull = shipHull;
+        ShipPainter shipPainter = getPainter();
+        shipPainter.initFromHullSpec(hullSpecFile);
     }
 
     @Override
@@ -183,8 +184,6 @@ public class ShipLayer extends ViewerLayer {
     }
 
     public ShipSkin addSkin(SkinSpecFile skinSpecFile) {
-        Map<String, SkinSpecFile> shipDataSkins = this.shipData.getSkins();
-        shipDataSkins.put(skinSpecFile.getSkinHullId(), skinSpecFile);
         ShipSkin skin = ShipSkin.createFromSpec(skinSpecFile);
         this.skins.add(skin);
         return skin;

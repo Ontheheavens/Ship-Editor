@@ -46,19 +46,17 @@ import java.util.Locale;
  * @author Ontheheavens
  * @since 29.04.2023
  */
+@Getter
 @SuppressWarnings("OverlyCoupledClass")
 @Log4j2
 public final class PrimaryViewer extends Viewer implements LayerViewer {
 
     private static final Dimension minimumPanelSize = new Dimension(240, 120);
 
-    @Getter
     private final LayerManager layerManager;
 
-    @Getter
     private PaintOrderController paintOrderController;
 
-    @Getter
     private boolean cursorInViewer;
 
     public PrimaryViewer() {
@@ -197,7 +195,7 @@ public final class PrimaryViewer extends Viewer implements LayerViewer {
 
         if (newPainter != null) {
             if (painterCreated) {
-                newPainter.setSprite(sprite.image());
+                newPainter.setSprite(sprite.getImage());
             }
 
             List<ViewerLayer> layers = layerManager.getLayers();
@@ -216,7 +214,9 @@ public final class PrimaryViewer extends Viewer implements LayerViewer {
                 }
             }
         }
-        layer.setSpriteFileName(sprite.name());
+
+        layer.setSpriteFileName(sprite.getFilename());
+
         EventBus.publish(new LayerSpriteLoadConfirmed(layer, sprite));
         EventBus.publish(new ActiveLayerUpdated(layer));
         this.centerViewpoint();
@@ -251,7 +251,7 @@ public final class PrimaryViewer extends Viewer implements LayerViewer {
     }
 
     private static class SpriteDropReceiver extends DropTarget {
-        @SuppressWarnings({"unchecked", "AccessToStaticFieldLockedOnInstance"})
+        @SuppressWarnings({"unchecked", "AccessToStaticFieldLockedOnInstance", "CallToPrintStackTrace"})
         public synchronized void drop(DropTargetDropEvent dtde) {
             try {
                 dtde.acceptDrop(DnDConstants.ACTION_COPY);

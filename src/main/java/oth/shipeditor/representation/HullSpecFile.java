@@ -3,10 +3,12 @@ package oth.shipeditor.representation;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import lombok.Getter;
 import lombok.Setter;
 import oth.shipeditor.parsing.deserialize.Point2DArrayDeserializer;
 import oth.shipeditor.parsing.deserialize.Point2DDeserializer;
+import oth.shipeditor.parsing.serialize.Point2DArraySerializer;
 import oth.shipeditor.representation.weapon.WeaponSlot;
 import oth.shipeditor.utility.text.StringConstants;
 
@@ -21,8 +23,8 @@ import java.util.Map;
  * @author Ontheheavens
  * @since 05.05.2023
  */
-@SuppressWarnings("ClassWithTooManyFields")
-@Getter
+@SuppressWarnings({"ClassWithTooManyFields", "ClassWithTooManyMethods"})
+@Getter @Setter
 public class HullSpecFile implements ShipSpecFile {
 
     @JsonIgnore
@@ -95,6 +97,7 @@ public class HullSpecFile implements ShipSpecFile {
 
     @JsonProperty("bounds")
     @JsonDeserialize(using = Point2DArrayDeserializer.class)
+    @JsonSerialize(using = Point2DArraySerializer.class)
     Point2D.Double[] bounds;
 
 }

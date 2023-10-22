@@ -13,6 +13,7 @@ import oth.shipeditor.parsing.FileUtilities;
 import oth.shipeditor.representation.SpecWeaponGroup;
 import oth.shipeditor.representation.VariantFile;
 import oth.shipeditor.utility.text.StringConstants;
+import oth.shipeditor.utility.text.StringValues;
 
 import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
@@ -41,7 +42,8 @@ final class SaveVariantAction {
         FileUtilities.setLastDirectory(fileChooser.getCurrentDirectory());
 
         if (returnVal == JFileChooser.APPROVE_OPTION) {
-            File result = SaveVariantAction.getPreparedFile(fileChooser);
+            String extension = ((FileNameExtensionFilter) fileChooser.getFileFilter()).getExtensions()[0];
+            File result = FileUtilities.ensureFileExtension(fileChooser, extension);
 
             log.info("Commencing variant saving: {}", result);
 
@@ -53,26 +55,11 @@ final class SaveVariantAction {
                 log.error("Variant file saving failed: {}", result.getName());
                 JOptionPane.showMessageDialog(null,
                         "Variant file saving failed, exception thrown at: " + result,
-                        "File saving error!",
+                        StringValues.FILE_SAVING_ERROR,
                         JOptionPane.ERROR_MESSAGE);
                 e.printStackTrace();
             }
         }
-    }
-
-    private static File getPreparedFile(JFileChooser fileChooser) {
-        String extension = ((FileNameExtensionFilter) fileChooser.getFileFilter()).getExtensions()[0];
-        File selectedFile = fileChooser.getSelectedFile();
-        File result;
-
-        String fileName = selectedFile.getName();
-        boolean alreadyHasExtension = fileName.endsWith(StringConstants.VARIANT_EXTENSION);
-        if (alreadyHasExtension) {
-            result = selectedFile;
-        } else {
-            result = new File(selectedFile + "." + extension);
-        }
-        return result;
     }
 
     private static VariantFile rebuildVariantFile(ShipVariant shipVariant) {

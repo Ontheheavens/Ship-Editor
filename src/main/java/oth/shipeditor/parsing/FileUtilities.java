@@ -83,8 +83,8 @@ public final class FileUtilities {
             FileLoading.openSpriteAction.setEnabled(true);
             FileLoading.openShipDataAction.setEnabled(false);
         } else {
-            boolean spriteState = painter.getSprite() == null && layer.getShipData() == null;
-            boolean hullState = painter.getSprite() != null && layer.getShipData() == null;
+            boolean spriteState = painter.getSprite() == null && layer.getHull() == null;
+            boolean hullState = painter.getSprite() != null && layer.getHull() == null;
             FileLoading.openSpriteAction.setEnabled(spriteState);
             FileLoading.openShipDataAction.setEnabled(hullState);
         }
@@ -161,6 +161,20 @@ public final class FileUtilities {
         }
         fileChooser.setFileFilter(fileFilter);
         return fileChooser;
+    }
+
+    public static File ensureFileExtension(JFileChooser fileChooser, String extension) {
+        File selectedFile = fileChooser.getSelectedFile();
+        File result;
+
+        String fileName = selectedFile.getName();
+        boolean alreadyHasExtension = fileName.endsWith("." + extension);
+        if (alreadyHasExtension) {
+            result = selectedFile;
+        } else {
+            result = new File(selectedFile + "." + extension);
+        }
+        return result;
     }
 
 }

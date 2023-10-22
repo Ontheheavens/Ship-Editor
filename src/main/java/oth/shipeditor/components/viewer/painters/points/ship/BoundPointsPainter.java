@@ -46,8 +46,8 @@ public final class BoundPointsPainter extends MirrorablePointPainter {
     @Getter
     private static boolean insertBoundHotkeyPressed;
 
-    private final int appendBoundHotkey = KeyEvent.VK_Z;
-    private final int insertBoundHotkey = KeyEvent.VK_X;
+    private static final int appendBoundHotkey = KeyEvent.VK_Z;
+    private static final int insertBoundHotkey = KeyEvent.VK_X;
 
     private KeyEventDispatcher hotkeyDispatcher;
 

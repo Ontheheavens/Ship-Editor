@@ -1,18 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Configuration status="INFO" name="Standard">
     <Appenders>
-        <Console name="console" target="SYSTEM_OUT">
+        <GUIAppender name="GUIAppender">
+            <PatternLayout pattern="%d{HH:mm:ss.SSS} %-5level %logger{1} - %msg%n" />
+        </GUIAppender>
+        <Console name="Console" target="SYSTEM_OUT">
             <PatternLayout pattern="%d{yyyy-MM-dd HH:mm:ss.SSS} [%t] %-5level %logger{1} - %msg%n" />
         </Console>
-        <TextAreaAppender name="TextAreaAppender">
-            <PatternLayout pattern="%d{HH:mm:ss.SSS} %-5level %logger{1} - %msg%n" />
-        </TextAreaAppender>
     </Appenders>
 
     <Loggers>
         <Root level="trace">
-            <AppenderRef ref="console" />
-            <AppenderRef ref="TextAreaAppender"/>
+            <AppenderRef ref="Console" />
+            <AppenderRef ref="GUIAppender"/>
         </Root>
     </Loggers>
 </Configuration>

@@ -8,8 +8,8 @@ import oth.shipeditor.components.viewer.layers.ViewerLayer;
 import oth.shipeditor.components.viewer.layers.ship.ShipLayer;
 import oth.shipeditor.components.viewer.layers.ship.ShipPainter;
 import oth.shipeditor.components.viewer.layers.ship.data.ActiveShipSpec;
+import oth.shipeditor.components.viewer.layers.ship.data.ShipHull;
 import oth.shipeditor.components.viewer.layers.ship.data.ShipSkin;
-import oth.shipeditor.representation.ShipData;
 import oth.shipeditor.utility.overseers.StaticController;
 
 import javax.swing.*;
@@ -43,11 +43,19 @@ public class SkinListPanel extends JPanel {
             return;
         }
 
-        ShipData shipData = checkedLayer.getShipData();
+        ShipHull shipData = checkedLayer.getHull();
         if (shipData == null)  {
             chooserContainer.add(SkinListPanel.createDisabledChooser());
             return;
         }
+        JComboBox<ShipSkin> skinChooser = SkinListPanel.getShipSkinComboBox(checkedLayer);
+
+        chooserContainer.add(skinChooser);
+        chooserContainer.add(Box.createVerticalGlue());
+
+    }
+
+    private static JComboBox<ShipSkin> getShipSkinComboBox(ShipLayer checkedLayer) {
         Collection<ShipSkin> skins = checkedLayer.getSkins();
         ShipPainter painter = checkedLayer.getPainter();
 
@@ -67,10 +75,7 @@ public class SkinListPanel extends JPanel {
 
         });
         skinChooser.setAlignmentX(Component.CENTER_ALIGNMENT);
-
-        chooserContainer.add(skinChooser);
-        chooserContainer.add(Box.createVerticalGlue());
-
+        return skinChooser;
     }
 
     private static JComboBox<ShipSkin> createDisabledChooser() {

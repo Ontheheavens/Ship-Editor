@@ -7,6 +7,7 @@ import oth.shipeditor.components.viewer.layers.LayerPainter;
 import oth.shipeditor.components.viewer.layers.ViewerLayer;
 import oth.shipeditor.components.viewer.layers.ship.ShipPainter;
 import oth.shipeditor.parsing.loading.FileLoading;
+import oth.shipeditor.persistence.SettingsManager;
 import oth.shipeditor.utility.graphics.Sprite;
 import oth.shipeditor.utility.overseers.StaticController;
 import oth.shipeditor.utility.text.StringValues;
@@ -23,6 +24,7 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.nio.file.Path;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Locale;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
@@ -114,8 +116,8 @@ public final class Utility {
     }
 
     public static String getTooltipForSprite(Sprite sprite) {
-        String spriteName = "Filename: " + sprite.name();
-        BufferedImage image = sprite.image();
+        String spriteName = "Filename: " + sprite.getFilename();
+        BufferedImage image = sprite.getImage();
         String width = "Width: " + image.getWidth();
         String height = "Height: " + image.getHeight();
         return Utility.getWithLinebreaks(spriteName, width, height);
@@ -235,6 +237,33 @@ public final class Utility {
             textResult = String.valueOf(value);
         }
         return textResult;
+    }
+
+    public static String computeRelativePathFromPackage(Path fullPath) {
+        Path coreDataFolder = SettingsManager.getCoreFolderPath();
+        List<Path> otherModFolders = SettingsManager.getAllModFolders();
+        String relativePathFromCore = Utility.findRelativePath(coreDataFolder, fullPath);
+
+        if (relativePathFromCore != null) {
+            return relativePathFromCore;
+        }
+
+        for (Path modFolder : otherModFolders) {
+            String relativePathFromMod = Utility.findRelativePath(modFolder, fullPath);
+            if (relativePathFromMod != null) {
+                return relativePathFromMod;
+            }
+        }
+
+        return fullPath.toString();
+    }
+
+    private static String findRelativePath(Path baseFolder, Path fullPath) {
+        Path relativePath = baseFolder.relativize(fullPath);
+        if (!relativePath.isAbsolute()) {
+            return relativePath.toString().replace("\\", "/");
+        }
+        return null;
     }
 
 }

@@ -34,7 +34,7 @@ public final class ShipPainterInitialization {
     private ShipPainterInitialization() {
     }
 
-    static void loadShipData(ShipPainter shipPainter, HullSpecFile hullSpecFile) {
+    static void loadHullData(ShipPainter shipPainter, HullSpecFile hullSpecFile) {
         Point2D anchor = shipPainter.getCenterAnchor();
         Point2D hullCenter = hullSpecFile.getCenter();
 
@@ -72,7 +72,8 @@ public final class ShipPainterInitialization {
     }
 
     private static void initBounds(ShipPainter shipPainter, HullSpecFile hullSpecFile, Point2D translatedCenter) {
-        Stream<Point2D> boundStream = Arrays.stream(hullSpecFile.getBounds());
+        Point2D.Double[] bounds = hullSpecFile.getBounds();
+        Stream<Point2D> boundStream = Arrays.stream(bounds);
         BoundPointsPainter boundsPainter = shipPainter.getBoundsPainter();
         boundStream.forEach(bound -> {
             Point2D rotatedPosition = ShipPainterInitialization.rotatePointByCenter(bound, translatedCenter);

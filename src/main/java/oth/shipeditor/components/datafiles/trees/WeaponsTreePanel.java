@@ -162,7 +162,7 @@ public class WeaponsTreePanel extends CSVDataTreePanel<WeaponCSVEntry>{
 
     private static JTextField getTextField() {
         JTextField searchField = new JTextField();
-        searchField.setToolTipText("Input is checked against displayed name and weapon ID as a substring.");
+        searchField.setToolTipText("Input is checked against displayed filename and weapon ID as a substring.");
 
         Document document = searchField.getDocument();
         document.addDocumentListener(new DocumentListener() {
@@ -265,7 +265,7 @@ public class WeaponsTreePanel extends CSVDataTreePanel<WeaponCSVEntry>{
         Sprite sprite = selected.getWeaponImage();
         if (sprite != null) {
             String tooltip = Utility.getTooltipForSprite(sprite);
-            JLabel spriteIcon = ComponentUtilities.createIconFromImage(sprite.image(), tooltip, 128);
+            JLabel spriteIcon = ComponentUtilities.createIconFromImage(sprite.getImage(), tooltip, 128);
             JPanel iconPanel = new JPanel();
             iconPanel.add(spriteIcon);
             rightPanel.add(iconPanel, constraints);
@@ -329,7 +329,7 @@ public class WeaponsTreePanel extends CSVDataTreePanel<WeaponCSVEntry>{
 
     private static void addSpriteLabel(JPanel labelContainer, Sprite sprite, String description) {
         if (sprite != null) {
-            JLabel label = WeaponsTreePanel.createFileLabel(sprite.path(), description);
+            JLabel label = WeaponsTreePanel.createFileLabel(sprite.getPath(), description);
             labelContainer.add(Box.createVerticalStrut(2));
             labelContainer.add(label);
         }

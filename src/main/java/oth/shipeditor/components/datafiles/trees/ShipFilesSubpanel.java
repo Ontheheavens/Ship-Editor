@@ -87,7 +87,7 @@ class ShipFilesSubpanel extends JPanel {
         if (spriteFile != null) {
             Sprite sprite = FileLoading.loadSprite(spriteFile);
             String tooltip = Utility.getTooltipForSprite(sprite);
-            JLabel spriteIcon = ComponentUtilities.createIconFromImage(sprite.image(), tooltip, 128);
+            JLabel spriteIcon = ComponentUtilities.createIconFromImage(sprite.getImage(), tooltip, 128);
             spriteIcon.setAlignmentX(0.5f);
 
             JPanel spriteWrapper = new JPanel();
@@ -130,7 +130,7 @@ class ShipFilesSubpanel extends JPanel {
         labelContainer.setBorder(new EmptyBorder(0, 4, 0, 0));
 
         labelContainer.setLayout(new BoxLayout(labelContainer, BoxLayout.PAGE_AXIS));
-        JLabel shipNameLabel = new JLabel("Ship name: " + shipName);
+        JLabel shipNameLabel = new JLabel("Ship filename: " + shipName);
         shipNameLabel.setBorder(new EmptyBorder(ComponentUtilities.createLabelInsets()));
         labelContainer.add(shipNameLabel);
 

@@ -182,6 +182,16 @@ final class ViewerStatusPanel extends JPanel {
                 StringValues.RIGHT_CLICK_TO_ADJUST_VALUE);
         this.rotation.setToolTipText(rotationTooltip);
 
+        JPopupMenu rotationMenu = ViewerStatusPanel.getRotationMenu();
+
+        rotation.addMouseListener(new MouseoverLabelListener(rotationMenu, rotation));
+
+        leftsideContainer.add(this.rotation);
+
+        return leftsideContainer;
+    }
+
+    private static JPopupMenu getRotationMenu() {
         JPopupMenu rotationMenu = new JPopupMenu();
         JMenuItem adjustRotationValue = new JMenuItem(StringValues.ADJUST_VALUE);
         adjustRotationValue.addActionListener(event -> {
@@ -196,12 +206,7 @@ final class ViewerStatusPanel extends JPanel {
             Events.repaintShipView();
         });
         rotationMenu.add(resetRotation);
-
-        rotation.addMouseListener(new MouseoverLabelListener(rotationMenu, rotation));
-
-        leftsideContainer.add(this.rotation);
-
-        return leftsideContainer;
+        return rotationMenu;
     }
 
     private void addSeparator() {
@@ -228,7 +233,7 @@ final class ViewerStatusPanel extends JPanel {
         EventBus.subscribe(event -> {
             if (event instanceof LayerSpriteLoadConfirmed checked) {
                 Sprite sprite = checked.sprite();
-                this.setDimensionsLabel(sprite.image());
+                this.setDimensionsLabel(sprite.getImage());
             }
         });
         EventBus.subscribe(event -> {

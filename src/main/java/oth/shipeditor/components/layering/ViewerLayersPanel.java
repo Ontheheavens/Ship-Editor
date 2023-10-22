@@ -6,6 +6,7 @@ import org.kordamp.ikonli.swing.FontIcon;
 import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.components.SelectShipDataEntry;
 import oth.shipeditor.communication.events.components.WindowRepaintQueued;
+import oth.shipeditor.communication.events.files.saving.HullSaveQueued;
 import oth.shipeditor.communication.events.files.saving.VariantSaveQueued;
 import oth.shipeditor.communication.events.viewer.layers.ActiveLayerUpdated;
 import oth.shipeditor.communication.events.viewer.layers.LayerRemovalQueued;
@@ -25,8 +26,6 @@ import oth.shipeditor.components.viewer.layers.weapon.WeaponLayer;
 import oth.shipeditor.components.viewer.layers.weapon.WeaponPainter;
 import oth.shipeditor.components.viewer.layers.weapon.WeaponSprites;
 import oth.shipeditor.representation.GameDataRepository;
-import oth.shipeditor.representation.HullSpecFile;
-import oth.shipeditor.representation.ShipData;
 import oth.shipeditor.representation.weapon.WeaponMount;
 import oth.shipeditor.representation.weapon.WeaponSpecFile;
 import oth.shipeditor.utility.components.containers.SortableTabbedPane;
@@ -98,7 +97,7 @@ public final class ViewerLayersPanel extends SortableTabbedPane {
                 ShipLayerTab created = new ShipLayerTab(layer);
                 tabIndex.put(layer, created);
                 String tooltip = created.getTabTooltip();
-                this.addTab(LAYER + getTabCount(), tabIcon, tabIndex.get(layer), tooltip);
+                this.addTab(LAYER + (getTabCount() + 1), tabIcon, tabIndex.get(layer), tooltip);
                 EventBus.publish(new WindowRepaintQueued());
             }
             else if (event instanceof WeaponLayerCreated checked) {
@@ -107,7 +106,7 @@ public final class ViewerLayersPanel extends SortableTabbedPane {
                 WeaponLayerTab created = new WeaponLayerTab(layer);
                 tabIndex.put(layer, created);
                 String tooltip = created.getTabTooltip();
-                this.addTab(LAYER + getTabCount(), tabIcon, tabIndex.get(layer), tooltip);
+                this.addTab(LAYER + (getTabCount() + 1), tabIcon, tabIndex.get(layer), tooltip);
                 EventBus.publish(new WindowRepaintQueued());
             }
         });
@@ -144,7 +143,6 @@ public final class ViewerLayersPanel extends SortableTabbedPane {
         }
     }
 
-    @SuppressWarnings("MethodWithMultipleReturnPoints")
     private void updateShipTab(ShipLayerTab tab, ShipLayer layer) {
         LayerPainter painter = layer.getPainter();
         if (painter == null) return;
@@ -161,11 +159,9 @@ public final class ViewerLayersPanel extends SortableTabbedPane {
         if (shipHull != null) {
             hullName = shipHull.getHullName();
         } else {
-            ShipData shipData = layer.getShipData();
-            if (shipData == null) return;
-            HullSpecFile hullSpecFile = shipData.getHullSpecFile();
-            if (hullSpecFile == null) return;
-            hullName = hullSpecFile.getHullName();
+            List<ViewerLayer> layers = layerManager.getLayers();
+            int index = layers.indexOf(layer) + 1;
+            hullName = LAYER + index;
         }
 
         tab.setHullFileName(layer.getHullFileName());
@@ -196,22 +192,22 @@ public final class ViewerLayersPanel extends SortableTabbedPane {
 
         Sprite mainSprite = weaponSprites.getMainSprite(mount);
         if (mainSprite != null) {
-            tab.setSpriteName(mainSprite.name());
+            tab.setSpriteName(mainSprite.getFilename());
         }
 
         Sprite underSprite = weaponSprites.getUnderSprite(mount);
         if (underSprite != null) {
-            tab.setUnderSpriteName(underSprite.name());
+            tab.setUnderSpriteName(underSprite.getFilename());
         }
 
         Sprite gunSprite = weaponSprites.getGunSprite(mount);
         if (gunSprite != null) {
-            tab.setGunSpriteName(gunSprite.name());
+            tab.setGunSpriteName(gunSprite.getFilename());
         }
 
         Sprite glowSprite = weaponSprites.getGlowSprite(mount);
         if (glowSprite != null) {
-            tab.setGlowSpriteName(glowSprite.name());
+            tab.setGlowSpriteName(glowSprite.getFilename());
         }
 
         WeaponSpecFile specFile = layer.getSpecFile();
@@ -295,6 +291,11 @@ public final class ViewerLayersPanel extends SortableTabbedPane {
                 selectEntry.setEnabled(false);
             }
             menu.add(selectEntry);
+
+            JMenuItem saveHullData = new JMenuItem("Save hull data");
+            var shipHull = shipLayer.getHull();
+            saveHullData.addActionListener(event -> EventBus.publish(new HullSaveQueued(shipLayer)));
+            menu.add(saveHullData);
 
             JMenuItem saveActiveVariant = new JMenuItem("Save active variant");
             var activeVariant = shipPainter.getActiveVariant();

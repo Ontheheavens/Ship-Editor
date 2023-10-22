@@ -1,5 +1,6 @@
 package oth.shipeditor.components.logging;
 
+import lombok.extern.log4j.Log4j2;
 import org.apache.logging.log4j.core.*;
 import org.apache.logging.log4j.core.appender.AbstractAppender;
 import org.apache.logging.log4j.core.config.plugins.Plugin;
@@ -14,21 +15,21 @@ import java.io.Serializable;
  * @author Ontheheavens
  * @since 10.10.2023
  */
+@Log4j2
 @Plugin(
-        name = TextAreaAppender.DESIGNATION,
+        name = GUIAppender.DESIGNATION,
         category = Core.CATEGORY_NAME,
         elementType = Appender.ELEMENT_TYPE)
-public class TextAreaAppender extends AbstractAppender {
+public final class GUIAppender extends AbstractAppender {
 
     private static final String DEFAULT_PATTERN = "%d{HH:mm:ss.SSS} %-5level %logger{1} - %msg%n";
 
-    static final String DESIGNATION = "TextAreaAppender";
+    static final String DESIGNATION = "GUIAppender";
 
     private final PatternLayout patternLayout;
 
-    @SuppressWarnings("deprecation")
-    protected TextAreaAppender(String name, Filter filter, Layout<? extends Serializable> layout) {
-        super(name, filter, layout);
+    private GUIAppender(String name, Filter filter, Layout<? extends Serializable> layout) {
+        super(name, filter, layout, false, null);
         if (layout instanceof PatternLayout checked) {
             this.patternLayout = checked;
         } else {
@@ -39,11 +40,11 @@ public class TextAreaAppender extends AbstractAppender {
     }
 
     @PluginFactory
-    public static TextAreaAppender createAppender(
+    public static GUIAppender createAppender(
             @PluginAttribute("name") String name,
             @PluginElement("Filter") Filter filter,
             @PluginElement("Layout") Layout<? extends Serializable> layout) {
-        return new TextAreaAppender(name, filter, layout);
+        return new GUIAppender(name, filter, layout);
     }
 
     @Override

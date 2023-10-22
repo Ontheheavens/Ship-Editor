@@ -284,7 +284,7 @@ public final class FileLoading {
             shipDataChooser.setCurrentDirectory(FileUtilities.lastDirectory);
         }
         FileNameExtensionFilter shipDataFilter = new FileNameExtensionFilter(
-                "JSON ship files", "ship");
+                StringValues.JSON_SHIP_FILES, "ship");
         shipDataChooser.setFileFilter(shipDataFilter);
         int returnVal = shipDataChooser.showOpenDialog(null);
         FileUtilities.lastDirectory = shipDataChooser.getCurrentDirectory();

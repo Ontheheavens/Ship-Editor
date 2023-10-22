@@ -52,11 +52,6 @@ public enum HullSize {
             ShipHull shipHull = shipLayer.getHull();
             if (shipHull != null) {
                 size = shipHull.getHullSize();
-            } else {
-                var shipData = shipLayer.getShipData();
-                HullSpecFile hullSpecFile = shipData.getHullSpecFile();
-                String hullSize = hullSpecFile.getHullSize();
-                size = HullSize.valueOf(hullSize);
             }
         }
 

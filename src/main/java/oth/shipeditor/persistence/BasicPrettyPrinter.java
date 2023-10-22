@@ -12,10 +12,10 @@ import java.io.IOException;
  */
 public class BasicPrettyPrinter extends DefaultPrettyPrinter {
 
-    private static final String BLANK_LINE = DefaultIndenter.SYS_LF;
+    public static final String BLANK_LINE = DefaultIndenter.SYS_LF;
     private static final char ARRAY_END = ']';
 
-    private static final String INDENT = "    ";
+    public static final String INDENT = "    ";
 
     @Override
     public BasicPrettyPrinter createInstance() {

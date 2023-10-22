@@ -83,7 +83,7 @@ public class WeaponPainter extends LayerPainter {
     @Override
     public BufferedImage getSprite() {
         var mainSprite = weaponSprites.getMainSprite(mount);
-        return mainSprite.image();
+        return mainSprite.getImage();
     }
 
     @SuppressWarnings("SameParameterValue")
@@ -132,7 +132,7 @@ public class WeaponPainter extends LayerPainter {
     private void drawSpritePart(Graphics2D g, Sprite part) {
         if (part == null) return;
         Point2D anchor = this.getAnchor();
-        BufferedImage spriteImage = part.image();
+        BufferedImage spriteImage = part.getImage();
 
         AffineTransform transform = new AffineTransform();
         transform.translate(anchor.getX(),  anchor.getY());

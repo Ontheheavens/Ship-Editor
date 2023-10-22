@@ -71,8 +71,10 @@ public class OrdnancedEntryCellRenderer extends PanelListCellRenderer<OrdnancedC
         textLabel.setText(value.getEntryName());
 
         HullSize size = HullSize.getSizeOfActiveLayer();
-        int ordnanceCost = value.getOrdnanceCost(size);
-        ordnanceLabel.setText("OP: " + ordnanceCost);
+        if (size != null) {
+            int ordnanceCost = value.getOrdnanceCost(size);
+            ordnanceLabel.setText("OP: " + ordnanceCost);
+        }
 
         return this;
     }

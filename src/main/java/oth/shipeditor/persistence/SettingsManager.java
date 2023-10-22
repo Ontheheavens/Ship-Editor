@@ -66,7 +66,7 @@ public final class SettingsManager {
         Path workingDirectory = Paths.get("").toAbsolutePath();
         log.info("Default working directory: {}", workingDirectory);
         if (!workingDirectory.endsWith(PrimaryWindow.SHIP_EDITOR)) {
-            log.error("Error while initializing settings: default directory has wrong name.");
+            log.error("Error while initializing settings: default directory has wrong filename.");
         }
         Path settingsPath = workingDirectory.resolve("ship_editor_settings.json");
         return settingsPath.toFile();
