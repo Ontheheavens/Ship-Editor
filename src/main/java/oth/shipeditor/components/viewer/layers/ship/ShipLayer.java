@@ -88,6 +88,7 @@ public class ShipLayer extends ViewerLayer {
         return skin;
     }
 
+    @SuppressWarnings("MethodWithMultipleReturnPoints")
     public int getTotalOP() {
         var activeSkin = this.getActiveSkin();
         if (activeSkin != null) {

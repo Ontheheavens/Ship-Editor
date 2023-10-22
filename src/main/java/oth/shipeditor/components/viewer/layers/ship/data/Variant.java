@@ -6,7 +6,6 @@ package oth.shipeditor.components.viewer.layers.ship.data;
  */
 public interface Variant {
 
-    @SuppressWarnings("unused")
     String getShipHullId();
 
     String getVariantId();

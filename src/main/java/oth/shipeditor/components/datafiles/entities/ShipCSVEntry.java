@@ -6,7 +6,7 @@ import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.files.SkinFileOpened;
 import oth.shipeditor.components.viewer.layers.ship.ShipLayer;
 import oth.shipeditor.components.viewer.layers.ship.ShipPainter;
-import oth.shipeditor.menubar.FileUtilities;
+import oth.shipeditor.parsing.FileUtilities;
 import oth.shipeditor.parsing.loading.FileLoading;
 import oth.shipeditor.representation.HullSize;
 import oth.shipeditor.representation.HullSpecFile;

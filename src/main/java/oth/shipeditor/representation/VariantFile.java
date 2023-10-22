@@ -5,11 +5,13 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import lombok.Getter;
 import lombok.Setter;
 import oth.shipeditor.components.viewer.layers.ship.data.ShipVariant;
 import oth.shipeditor.components.viewer.layers.ship.data.Variant;
 import oth.shipeditor.parsing.deserialize.ModulesDeserializer;
+import oth.shipeditor.parsing.serialize.VariantFileSerializer;
 import oth.shipeditor.utility.text.StringConstants;
 
 import java.nio.file.Path;
@@ -21,12 +23,14 @@ import java.util.Map;
  * @since 05.08.2023
  */
 @SuppressWarnings("ClassWithTooManyFields")
-@Getter
+@Getter @Setter
+@JsonSerialize(using = VariantFileSerializer.class)
 public class VariantFile implements Variant {
 
     @JsonIgnore
     private static final VariantFile EMPTY = new VariantFile(true);
 
+    @JsonIgnore
     public static final String DEFAULT = StringConstants.DEFAULT_ID;
 
     @JsonCreator
@@ -53,54 +57,54 @@ public class VariantFile implements Variant {
     @JsonIgnore
     private Path containingPackage;
 
-    @JsonProperty("displayName")
+    @JsonProperty(StringConstants.DISPLAY_NAME)
     private String displayName;
 
     @JsonAlias("goalVariants")
-    @JsonProperty("goalVariant")
+    @JsonProperty(StringConstants.GOAL_VARIANT)
     private boolean goalVariant;
 
-    @JsonProperty("fluxCapacitors")
+    @JsonProperty(StringConstants.FLUX_CAPACITORS)
     private int fluxCapacitors;
 
-    @JsonProperty("fluxVents")
+    @JsonProperty(StringConstants.FLUX_VENTS)
     private int fluxVents;
 
     @JsonProperty(StringConstants.HULL_ID)
     private String hullId;
 
     @JsonAlias("mods")
-    @JsonProperty("hullMods")
+    @JsonProperty(StringConstants.HULL_MODS)
     private List<String> hullMods;
 
     @JsonAlias(StringConstants.BUILT_IN_MODS)
-    @JsonProperty("permaMods")
+    @JsonProperty(StringConstants.PERMA_MODS)
     private List<String> permaMods;
 
-    @JsonProperty("sMods")
+    @JsonProperty(StringConstants.S_MODS)
     private List<String> sMods;
 
     /**
      * Is somewhat obscure; some sources claim the value contract is 1 being the best and 3 the worst quality.
-     * However, my own impression on the usage in vanilla is that 0.0 is the worst and 1.0 is best.
+     * However, my own (Ontheheavens) impression on the usage in vanilla is that 0.0 is the worst and 1.0 is best.
      * According to Histidine, the field isn't used in newer Starsector versions.
      * <p>
      * Is set to -1 as default here for safety purposes.
      * Anything less than 0 will be ignored at serialization to result file.
      */
-    @JsonProperty("quality")
+    @JsonProperty(StringConstants.QUALITY)
     private double quality = -1;
 
-    @JsonProperty("variantId")
+    @JsonProperty(StringConstants.VARIANT_ID)
     private String variantId;
 
-    @JsonProperty("weaponGroups")
+    @JsonProperty(StringConstants.WEAPON_GROUPS)
     private List<SpecWeaponGroup> weaponGroups;
 
-    @JsonProperty("wings")
+    @JsonProperty(StringConstants.WINGS)
     private List<String> wings;
 
-    @JsonProperty("modules")
+    @JsonProperty(StringConstants.MODULES)
     @JsonDeserialize(using = ModulesDeserializer.class)
     private Map<String, String> modules;
 

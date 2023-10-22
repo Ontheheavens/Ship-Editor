@@ -12,7 +12,7 @@ import oth.shipeditor.components.viewer.layers.ship.ShipLayer;
 import oth.shipeditor.components.viewer.layers.ship.ShipPainter;
 import oth.shipeditor.components.viewer.layers.ship.data.ShipHull;
 import oth.shipeditor.components.viewer.layers.ship.data.ShipVariant;
-import oth.shipeditor.menubar.FileUtilities;
+import oth.shipeditor.parsing.loading.FileLoading;
 import oth.shipeditor.persistence.SettingsManager;
 import oth.shipeditor.representation.GameDataRepository;
 import oth.shipeditor.undo.EditDispatch;
@@ -44,7 +44,7 @@ class HullmodsTreePanel extends CSVDataTreePanel<HullmodCSVEntry>{
 
     @Override
     protected Action getLoadDataAction() {
-        return FileUtilities.getLoadHullmodDataAction();
+        return FileLoading.getLoadHullmodDataAction();
     }
 
     @Override

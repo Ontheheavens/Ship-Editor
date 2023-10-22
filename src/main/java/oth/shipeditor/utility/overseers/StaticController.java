@@ -18,7 +18,7 @@ import oth.shipeditor.components.viewer.layers.LayerPainter;
 import oth.shipeditor.components.viewer.layers.ViewerLayer;
 import oth.shipeditor.components.viewer.layers.ship.ShipLayer;
 import oth.shipeditor.components.viewer.layers.ship.data.ShipVariant;
-import oth.shipeditor.menubar.FileUtilities;
+import oth.shipeditor.parsing.FileUtilities;
 import oth.shipeditor.utility.Utility;
 
 import java.awt.*;

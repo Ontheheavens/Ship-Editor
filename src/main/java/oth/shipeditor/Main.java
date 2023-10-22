@@ -14,9 +14,13 @@ import oth.shipeditor.components.viewer.LayerViewer;
 import oth.shipeditor.components.viewer.layers.LayerManager;
 import oth.shipeditor.components.viewer.layers.LayerPainter;
 import oth.shipeditor.components.viewer.layers.ViewerLayer;
+import oth.shipeditor.components.viewer.layers.ship.ShipLayer;
+import oth.shipeditor.components.viewer.layers.ship.ShipPainter;
+import oth.shipeditor.components.viewer.layers.ship.data.Variant;
 import oth.shipeditor.parsing.loading.FileLoading;
 import oth.shipeditor.persistence.Initializations;
 import oth.shipeditor.persistence.SettingsManager;
+import oth.shipeditor.representation.GameDataRepository;
 import oth.shipeditor.representation.HullSpecFile;
 import oth.shipeditor.representation.SkinSpecFile;
 import oth.shipeditor.undo.UndoOverseer;
@@ -39,6 +43,7 @@ import java.util.function.Function;
  * @author Ontheheavens
  * @since 08.05.2023
  */
+@SuppressWarnings("OverlyCoupledClass")
 @Log4j2
 public final class Main {
 
@@ -108,6 +113,12 @@ public final class Main {
         painter.updateAnchorOffset(new Point2D.Double(-400, 0));
         UndoOverseer.finishAllEdits();
         EventBus.publish(new ViewerTransformsReset());
+
+        if (activeLayer instanceof ShipLayer shipLayer) {
+            Variant legionXIVVariant = GameDataRepository.getVariantByID("legion_xiv_Elite");
+            ShipPainter shipPainter = shipLayer.getPainter();
+            shipPainter.selectVariant(legionXIVVariant);
+        }
     }
 
     @SuppressWarnings("unused")

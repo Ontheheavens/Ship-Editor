@@ -1,31 +1,31 @@
-package oth.shipeditor.menubar;
+package oth.shipeditor.parsing;
 
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.core.json.JsonReadFeature;
+import com.fasterxml.jackson.core.util.DefaultPrettyPrinter;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import lombok.Getter;
+import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
-import oth.shipeditor.communication.EventBus;
-import oth.shipeditor.communication.events.files.HullFileOpened;
-import oth.shipeditor.communication.events.files.SpriteOpened;
-import oth.shipeditor.communication.events.viewer.layers.LastLayerSelectQueued;
-import oth.shipeditor.communication.events.viewer.layers.ships.ShipLayerCreationQueued;
 import oth.shipeditor.components.viewer.layers.LayerPainter;
 import oth.shipeditor.components.viewer.layers.ViewerLayer;
 import oth.shipeditor.components.viewer.layers.ship.ShipLayer;
 import oth.shipeditor.components.viewer.layers.ship.ShipPainter;
-import oth.shipeditor.parsing.loading.*;
+import oth.shipeditor.parsing.loading.FileLoading;
+import oth.shipeditor.persistence.BasicPrettyPrinter;
 import oth.shipeditor.persistence.Settings;
 import oth.shipeditor.persistence.SettingsManager;
-import oth.shipeditor.representation.HullSpecFile;
-import oth.shipeditor.utility.overseers.StaticController;
 import oth.shipeditor.utility.graphics.Sprite;
+import oth.shipeditor.utility.overseers.StaticController;
 
 import javax.swing.*;
+import javax.swing.filechooser.FileFilter;
 import java.awt.*;
-import java.awt.event.ActionEvent;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -35,86 +35,58 @@ import java.util.stream.Stream;
  * @author Ontheheavens
  * @since 09.05.2023
  */
-@SuppressWarnings({"ClassWithTooManyFields", "OverlyCoupledClass"})
 @Log4j2
 public final class FileUtilities {
 
-    // TODO: loading actions should be performed in a separate thread.
-
     public static final String STARSECTOR_CORE = "starsector-core";
 
-    @Getter
-    private static final Action loadShipDataAction = new LoadShipDataAction();
+    private static final ObjectMapper mapper;
 
-    @Getter
-    private static final Action loadHullmodDataAction = new LoadHullmodDataAction();
+    public static final String OPEN_COMMAND_CANCELLED_BY_USER = "Open command cancelled by user.";
 
-    @Getter
-    private static final Action loadHullStyleDataAction = new LoadHullStyleDataAction();
+    @SuppressWarnings("StaticNonFinalField")
+    @Getter @Setter
+    public static File lastDirectory;
 
-    @Getter
-    private static final Action loadEngineStyleDataAction = new LoadEngineStyleDataAction();
+    static {
+        mapper = new ObjectMapper();
+        mapper.configure(JsonParser.Feature.ALLOW_YAML_COMMENTS, true);
+        mapper.configure(JsonReadFeature.ALLOW_TRAILING_COMMA.mappedFeature(), true);
+        mapper.configure(JsonReadFeature.ALLOW_LEADING_DECIMAL_POINT_FOR_NUMBERS.mappedFeature(), true);
+        mapper.configure(JsonReadFeature.ALLOW_UNESCAPED_CONTROL_CHARS.mappedFeature(), true);
 
-    @Getter
-    private static final Action loadShipSystemDataAction = new LoadShipSystemDataAction();
+        DefaultPrettyPrinter prettyPrinter = new BasicPrettyPrinter().createInstance();
+        mapper.setDefaultPrettyPrinter(prettyPrinter);
 
-    @Getter
-    private static final Action loadWingDataAction = new LoadWingDataAction();
-
-    @Getter
-    private static final Action loadWeaponDataAction = new LoadWeaponsDataAction();
-
-    @Getter
-    private static final Action openSpriteAction = new OpenSpriteAction();
-
-    @Getter
-    private static final Action openShipDataAction = new OpenHullAction();
-
-    @Getter
-    private static final Action loadHullAsLayerAction = new LoadHullAsLayer();
-
-    @SuppressWarnings("StaticCollection")
-    @Getter
-    private static final List<Action> loadDataActions = FileUtilities.initLoadActions();
+        mapper.configure(SerializationFeature.INDENT_OUTPUT, true);
+    }
 
     private FileUtilities() {}
-
-    private static List<Action> initLoadActions() {
-        List<Action> actions = new ArrayList<>();
-        actions.add(loadShipDataAction);
-        actions.add(loadHullmodDataAction);
-        actions.add(loadHullStyleDataAction);
-        actions.add(loadEngineStyleDataAction);
-        actions.add(loadShipSystemDataAction);
-        actions.add(loadWingDataAction);
-        actions.add(loadWeaponDataAction);
-        return actions;
-    }
 
     public static void updateActionStates(ViewerLayer currentlySelected) {
         if (!(currentlySelected instanceof ShipLayer layer)) {
             if (currentlySelected != null) {
                 LayerPainter painter = currentlySelected.getPainter();
                 if (painter == null) {
-                    openSpriteAction.setEnabled(true);
+                    FileLoading.openSpriteAction.setEnabled(true);
                 } else {
-                    openSpriteAction.setEnabled(painter.getSprite() == null);
+                    FileLoading.openSpriteAction.setEnabled(painter.getSprite() == null);
                 }
             } else {
-                openSpriteAction.setEnabled(false);
+                FileLoading.openSpriteAction.setEnabled(false);
             }
-            openShipDataAction.setEnabled(false);
+            FileLoading.openShipDataAction.setEnabled(false);
             return;
         }
         ShipPainter painter = layer.getPainter();
         if (painter == null) {
-            openSpriteAction.setEnabled(true);
-            openShipDataAction.setEnabled(false);
+            FileLoading.openSpriteAction.setEnabled(true);
+            FileLoading.openShipDataAction.setEnabled(false);
         } else {
             boolean spriteState = painter.getSprite() == null && layer.getShipData() == null;
             boolean hullState = painter.getSprite() != null && layer.getShipData() == null;
-            openSpriteAction.setEnabled(spriteState);
-            openShipDataAction.setEnabled(hullState);
+            FileLoading.openSpriteAction.setEnabled(spriteState);
+            FileLoading.openShipDataAction.setEnabled(hullState);
         }
     }
 
@@ -148,25 +120,6 @@ public final class FileUtilities {
         return layer;
     }
 
-    @SuppressWarnings("unused")
-    private static void loadSpriteThroughBus(Sprite sprite) {
-        EventBus.publish(new ShipLayerCreationQueued());
-        EventBus.publish(new LastLayerSelectQueued());
-        EventBus.publish(new SpriteOpened(sprite));
-    }
-
-    private static class OpenHullAction extends AbstractAction {
-        @Override
-        public void actionPerformed(ActionEvent e) {
-            FileLoading.openHullAndDo(event -> {
-                    JFileChooser shipDataChooser = (JFileChooser) event.getSource();
-                    File file = shipDataChooser.getSelectedFile();
-                    HullSpecFile hullSpecFile = FileLoading.loadHullFile(file);
-                    EventBus.publish(new HullFileOpened(hullSpecFile, file.getName()));
-            });
-        }
-    }
-
     /**
      * @param targetFile can be either file (CSV table, usually) or a directory.
      * @return map of entries where key is package folder and value is file instance of target in package.
@@ -192,6 +145,22 @@ public final class FileUtilities {
             });
         }
         return matchingFiles;
+    }
+
+    public static ObjectMapper getConfigured() {
+        return mapper;
+    }
+
+    public static JFileChooser getFileChooser(FileFilter fileFilter) {
+        Path coreFolderPath = SettingsManager.getCoreFolderPath();
+        JFileChooser fileChooser = new JFileChooser(coreFolderPath.toString());
+
+        File directory = FileUtilities.getLastDirectory();
+        if (directory != null) {
+            fileChooser.setCurrentDirectory(directory);
+        }
+        fileChooser.setFileFilter(fileFilter);
+        return fileChooser;
     }
 
 }

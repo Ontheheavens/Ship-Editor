@@ -6,6 +6,7 @@ import org.kordamp.ikonli.swing.FontIcon;
 import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.components.SelectShipDataEntry;
 import oth.shipeditor.communication.events.components.WindowRepaintQueued;
+import oth.shipeditor.communication.events.files.saving.VariantSaveQueued;
 import oth.shipeditor.communication.events.viewer.layers.ActiveLayerUpdated;
 import oth.shipeditor.communication.events.viewer.layers.LayerRemovalQueued;
 import oth.shipeditor.communication.events.viewer.layers.LayerWasSelected;
@@ -277,16 +278,32 @@ public final class ViewerLayersPanel extends SortableTabbedPane {
         }
 
         private static JPopupMenu createContextMenu(ShipLayer shipLayer) {
+            ShipPainter shipPainter = shipLayer.getPainter();
+            if (shipPainter == null || shipLayer.getHull() == null) return null;
             JPopupMenu menu = new JPopupMenu();
+
             JMenuItem selectEntry = new JMenuItem(StringValues.SELECT_SHIP_ENTRY);
-
-            if (shipLayer.getPainter() == null || shipLayer.getHull() == null) return null;
-
             String baseHullID = GameDataRepository.getBaseHullID(shipLayer.getShipID());
-            ShipCSVEntry entry = GameDataRepository.retrieveShipCSVEntryByID(baseHullID);
-            selectEntry.addActionListener(event -> EventBus.publish(new SelectShipDataEntry(entry)));
-
+            if (baseHullID != null && !baseHullID.isEmpty()) {
+                ShipCSVEntry entry = GameDataRepository.retrieveShipCSVEntryByID(baseHullID);
+                if (entry != null) {
+                    selectEntry.addActionListener(event -> EventBus.publish(new SelectShipDataEntry(entry)));
+                } else {
+                    selectEntry.setEnabled(false);
+                }
+            } else {
+                selectEntry.setEnabled(false);
+            }
             menu.add(selectEntry);
+
+            JMenuItem saveActiveVariant = new JMenuItem("Save active variant");
+            var activeVariant = shipPainter.getActiveVariant();
+            if (activeVariant != null && !activeVariant.isEmpty()) {
+                saveActiveVariant.addActionListener(event -> EventBus.publish(new VariantSaveQueued(activeVariant)));
+            } else {
+                saveActiveVariant.setEnabled(false);
+            }
+            menu.add(saveActiveVariant);
 
             return menu;
         }

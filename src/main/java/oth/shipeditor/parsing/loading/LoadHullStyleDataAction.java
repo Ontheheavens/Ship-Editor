@@ -5,7 +5,7 @@ import com.fasterxml.jackson.databind.type.TypeFactory;
 import lombok.extern.log4j.Log4j2;
 import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.files.HullStylesLoaded;
-import oth.shipeditor.menubar.FileUtilities;
+import oth.shipeditor.parsing.FileUtilities;
 import oth.shipeditor.persistence.SettingsManager;
 import oth.shipeditor.representation.GameDataRepository;
 import oth.shipeditor.representation.HullStyle;
@@ -50,7 +50,7 @@ public class LoadHullStyleDataAction extends AbstractAction {
     }
 
     private static Map<String, HullStyle> loadHullStyleFile(File styleFile) {
-        ObjectMapper mapper = FileLoading.getConfigured();
+        ObjectMapper mapper = FileUtilities.getConfigured();
         Map<String, HullStyle> hullStyles = null;
         log.info("Fetching hullstyle data at: {}..", styleFile.toPath());
         try {

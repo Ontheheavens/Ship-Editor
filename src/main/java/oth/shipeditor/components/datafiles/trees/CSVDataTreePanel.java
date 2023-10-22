@@ -3,7 +3,7 @@ package oth.shipeditor.components.datafiles.trees;
 import lombok.extern.log4j.Log4j2;
 import oth.shipeditor.components.datafiles.OpenDataTarget;
 import oth.shipeditor.components.datafiles.entities.CSVEntry;
-import oth.shipeditor.menubar.FileUtilities;
+import oth.shipeditor.parsing.FileUtilities;
 import oth.shipeditor.utility.Utility;
 import oth.shipeditor.utility.components.ComponentUtilities;
 import oth.shipeditor.utility.objects.Pair;

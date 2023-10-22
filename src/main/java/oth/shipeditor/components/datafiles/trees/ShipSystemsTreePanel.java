@@ -4,7 +4,7 @@ import lombok.extern.log4j.Log4j2;
 import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.files.ShipSystemsLoaded;
 import oth.shipeditor.components.datafiles.entities.ShipSystemCSVEntry;
-import oth.shipeditor.menubar.FileUtilities;
+import oth.shipeditor.parsing.loading.FileLoading;
 import oth.shipeditor.persistence.SettingsManager;
 import oth.shipeditor.representation.GameDataRepository;
 
@@ -27,7 +27,7 @@ class ShipSystemsTreePanel extends CSVDataTreePanel<ShipSystemCSVEntry>{
 
     @Override
     protected Action getLoadDataAction() {
-        return FileUtilities.getLoadShipSystemDataAction();
+        return FileLoading.getLoadShipSystemDataAction();
     }
 
     @Override

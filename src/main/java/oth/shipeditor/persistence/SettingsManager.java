@@ -1,14 +1,11 @@
 package oth.shipeditor.persistence;
 
-import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.core.util.DefaultIndenter;
-import com.fasterxml.jackson.core.util.DefaultPrettyPrinter;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
 import oth.shipeditor.PrimaryWindow;
+import oth.shipeditor.parsing.FileUtilities;
 import oth.shipeditor.representation.GameDataRepository;
 
 import java.io.File;
@@ -43,16 +40,14 @@ public final class SettingsManager {
     }
 
     static ObjectMapper getMapperForSettingsFile() {
-        ObjectMapper mapper = new ObjectMapper();
-        mapper.setDefaultPrettyPrinter(new SettingsFilePrinter());
-        mapper.configure(SerializationFeature.INDENT_OUTPUT, true);
-        return mapper;
+        return FileUtilities.getConfigured();
     }
 
     /**
      * @return all directories in "mods" folder.
      * Caller is expected to do the filtering.
      */
+    @SuppressWarnings("CallToPrintStackTrace")
     public static List<Path> getAllModFolders() {
         List<Path> dataFolders = new ArrayList<>();
         try (Stream<Path> childDirectories = Files.list(Paths.get(settings.getModFolderPath()))) {
@@ -92,37 +87,6 @@ public final class SettingsManager {
         } catch (IOException e) {
             throw new UncheckedIOException("Failed to write settings file!", e);
         }
-    }
-
-    private static class SettingsFilePrinter extends DefaultPrettyPrinter {
-
-        private static final String BLANK_LINE = DefaultIndenter.SYS_LF;
-
-        @Override
-        public SettingsFilePrinter createInstance() {
-            SettingsFilePrinter settingsFilePrinter = new SettingsFilePrinter();
-            settingsFilePrinter._spacesInObjectEntries = false;
-            return settingsFilePrinter;
-        }
-
-        @Override
-        public void writeStartObject(JsonGenerator g) throws IOException {
-            super.writeStartObject(g);
-            g.writeRaw(BLANK_LINE);
-        }
-
-        @Override
-        public void writeObjectFieldValueSeparator(JsonGenerator g) throws IOException {
-            super.writeObjectFieldValueSeparator(g);
-            g.writeRaw(DefaultPrettyPrinter.DEFAULT_ROOT_VALUE_SEPARATOR);
-        }
-
-        @Override
-        public void writeEndObject(JsonGenerator g, int nrOfEntries) throws IOException {
-            g.writeRaw(BLANK_LINE);
-            super.writeEndObject(g, nrOfEntries);
-        }
-
     }
 
 }

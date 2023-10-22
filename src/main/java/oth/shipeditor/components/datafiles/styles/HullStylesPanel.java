@@ -2,10 +2,10 @@ package oth.shipeditor.components.datafiles.styles;
 
 import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.files.HullStylesLoaded;
-import oth.shipeditor.menubar.FileUtilities;
+import oth.shipeditor.parsing.loading.FileLoading;
 import oth.shipeditor.representation.HullStyle;
-import oth.shipeditor.utility.objects.Pair;
 import oth.shipeditor.utility.components.ComponentUtilities;
+import oth.shipeditor.utility.objects.Pair;
 
 import javax.swing.*;
 import java.nio.file.Path;
@@ -20,7 +20,7 @@ public class HullStylesPanel extends AbstractStylesPanel {
     @Override
     protected JPanel createTopPanel() {
         Pair<JPanel, JButton> singleButtonPanel = ComponentUtilities.createSingleButtonPanel("Hullstyle data:",
-                FileUtilities.getLoadHullStyleDataAction());
+                FileLoading.getLoadHullStyleDataAction());
         JButton button = singleButtonPanel.getSecond();
         button.setText("Reload hullstyle data");
         return singleButtonPanel.getFirst();

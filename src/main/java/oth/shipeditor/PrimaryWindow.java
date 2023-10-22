@@ -9,6 +9,7 @@ import oth.shipeditor.components.WindowContentPanes;
 import oth.shipeditor.components.viewer.LayerViewer;
 import oth.shipeditor.components.viewer.control.ControlPredicates;
 import oth.shipeditor.menubar.PrimaryMenuBar;
+import oth.shipeditor.parsing.saving.SaveCoordinator;
 import oth.shipeditor.persistence.Initializations;
 import oth.shipeditor.utility.overseers.StaticController;
 
@@ -59,6 +60,7 @@ public final class PrimaryWindow extends JFrame {
     private static void performStaticInits() {
         Initializations.initializeSettingsFile();
         Initializations.selectGameFolder();
+        SaveCoordinator.init();
         StaticController.init();
 
         ControlPredicates.initSelectionModeListening();

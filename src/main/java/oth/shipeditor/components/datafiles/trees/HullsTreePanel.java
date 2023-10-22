@@ -8,7 +8,8 @@ import oth.shipeditor.communication.events.files.HullTreeEntryCleared;
 import oth.shipeditor.communication.events.files.HullTreeReloadQueued;
 import oth.shipeditor.components.datafiles.OpenDataTarget;
 import oth.shipeditor.components.datafiles.entities.ShipCSVEntry;
-import oth.shipeditor.menubar.FileUtilities;
+import oth.shipeditor.parsing.FileUtilities;
+import oth.shipeditor.parsing.loading.FileLoading;
 import oth.shipeditor.representation.HullSize;
 import oth.shipeditor.representation.HullSpecFile;
 import oth.shipeditor.representation.SkinSpecFile;
@@ -199,7 +200,7 @@ class HullsTreePanel extends DataTreePanel {
     @Override
     protected JPanel createTopPanel() {
         Pair<JPanel, JButton> singleButtonPanel = ComponentUtilities.createSingleButtonPanel("",
-                FileUtilities.getLoadShipDataAction());
+                FileLoading.getLoadShipDataAction());
         JButton button = singleButtonPanel.getSecond();
         button.setText("Reload ship data");
         button.setToolTipText("Reload all ship, skin and variant files, grouped by package");

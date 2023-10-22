@@ -5,7 +5,7 @@ import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.files.HullTreeEntryCleared;
 import oth.shipeditor.communication.events.files.HullTreeReloadQueued;
 import oth.shipeditor.components.datafiles.entities.ShipCSVEntry;
-import oth.shipeditor.menubar.FileUtilities;
+import oth.shipeditor.parsing.FileUtilities;
 import oth.shipeditor.persistence.SettingsManager;
 import oth.shipeditor.representation.*;
 import oth.shipeditor.utility.objects.Pair;
@@ -90,11 +90,11 @@ class LoadShipDataAction extends AbstractAction {
             Map.Entry<HullSpecFile, Map<String, SkinSpecFile>> hullWithSkins = null;
             String fileName = "";
             String rowId = row.get("id");
-            for (String shipFileName : mappedHulls.keySet()) {
-                HullSpecFile shipFile = mappedHulls.get(shipFileName);
+            for (Map.Entry<String, HullSpecFile> entry : mappedHulls.entrySet()) {
+                HullSpecFile shipFile = entry.getValue();
                 String hullId = shipFile.getHullId();
                 if (hullId.equals(rowId)) {
-                    fileName = shipFileName;
+                    fileName = entry.getKey();
                     Map<String, SkinSpecFile> skinsOfHull = LoadShipDataAction.fetchSkinsByHull(shipFile, skins);
                     hullWithSkins = new AbstractMap.SimpleEntry<>(shipFile, skinsOfHull);
                 }

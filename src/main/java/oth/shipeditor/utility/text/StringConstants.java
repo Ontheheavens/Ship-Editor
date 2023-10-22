@@ -116,4 +116,30 @@ public interface StringConstants {
 
     String HINTS = "hints";
 
+    String DISPLAY_NAME = "displayName";
+
+    String FLUX_CAPACITORS = "fluxCapacitors";
+
+    String FLUX_VENTS = "fluxVents";
+
+    String GOAL_VARIANT = "goalVariant";
+
+    String HULL_MODS = "hullMods";
+
+    String PERMA_MODS = "permaMods";
+
+    String S_MODS = "sMods";
+
+    String VARIANT_EXTENSION = ".variant";
+
+    String WEAPON_GROUPS = "weaponGroups";
+
+    String WINGS = "wings";
+
+    String MODULES = "modules";
+
+    String VARIANT_ID = "variantId";
+
+    String QUALITY = "quality";
+
 }

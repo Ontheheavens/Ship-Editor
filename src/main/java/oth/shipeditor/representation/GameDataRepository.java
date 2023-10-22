@@ -144,6 +144,7 @@ public class GameDataRepository {
      */
     public static String getBaseHullID(String shipHullID) {
         ShipSpecFile specFile = GameDataRepository.retrieveSpecByID(shipHullID);
+        if (specFile == null) return null;
         String baseHullId;
         if (specFile instanceof SkinSpecFile checkedSkin) {
             baseHullId = checkedSkin.getBaseHullId();

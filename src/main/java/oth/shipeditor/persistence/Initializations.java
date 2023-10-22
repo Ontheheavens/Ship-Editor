@@ -6,7 +6,8 @@ import lombok.extern.log4j.Log4j2;
 import oth.shipeditor.PrimaryWindow;
 import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.viewer.ViewerBackgroundChanged;
-import oth.shipeditor.menubar.FileUtilities;
+import oth.shipeditor.parsing.FileUtilities;
+import oth.shipeditor.parsing.loading.FileLoading;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
@@ -50,7 +51,7 @@ public final class Initializations {
      */
     public static void loadGameData(Component source) {
         ActionEvent initEvent = new ActionEvent(source, ActionEvent.ACTION_PERFORMED, null);
-        List<Action> loadActions = FileUtilities.getLoadDataActions();
+        List<Action> loadActions = FileLoading.getLoadDataActions();
         loadActions.forEach(action -> action.actionPerformed(initEvent));
     }
 

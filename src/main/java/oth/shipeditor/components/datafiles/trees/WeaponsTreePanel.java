@@ -7,7 +7,7 @@ import oth.shipeditor.communication.events.files.WeaponTreeReloadQueued;
 import oth.shipeditor.components.datafiles.entities.WeaponCSVEntry;
 import oth.shipeditor.components.viewer.layers.ship.FeaturesOverseer;
 import oth.shipeditor.components.viewer.layers.weapon.WeaponSprites;
-import oth.shipeditor.menubar.FileUtilities;
+import oth.shipeditor.parsing.loading.FileLoading;
 import oth.shipeditor.persistence.SettingsManager;
 import oth.shipeditor.representation.GameDataRepository;
 import oth.shipeditor.representation.weapon.ProjectileSpecFile;
@@ -55,7 +55,7 @@ public class WeaponsTreePanel extends CSVDataTreePanel<WeaponCSVEntry>{
 
     @Override
     protected Action getLoadDataAction() {
-        return FileUtilities.getLoadWeaponDataAction();
+        return FileLoading.getLoadWeaponDataAction();
     }
 
     @Override

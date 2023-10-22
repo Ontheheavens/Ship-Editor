@@ -2,7 +2,7 @@ package oth.shipeditor.parsing.loading;
 
 import lombok.extern.log4j.Log4j2;
 import oth.shipeditor.components.datafiles.entities.CSVEntry;
-import oth.shipeditor.menubar.FileUtilities;
+import oth.shipeditor.parsing.FileUtilities;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;

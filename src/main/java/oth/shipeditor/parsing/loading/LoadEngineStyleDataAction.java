@@ -6,7 +6,7 @@ import com.fasterxml.jackson.databind.type.TypeFactory;
 import lombok.extern.log4j.Log4j2;
 import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.files.EngineStylesLoaded;
-import oth.shipeditor.menubar.FileUtilities;
+import oth.shipeditor.parsing.FileUtilities;
 import oth.shipeditor.persistence.SettingsManager;
 import oth.shipeditor.representation.EngineStyle;
 import oth.shipeditor.representation.GameDataRepository;
@@ -52,7 +52,7 @@ public class LoadEngineStyleDataAction extends AbstractAction {
     }
 
     private static Map<String, EngineStyle> loadEngineStyleFile(File styleFile) {
-        ObjectMapper mapper = FileLoading.getConfigured();
+        ObjectMapper mapper = FileUtilities.getConfigured();
         Map<String, EngineStyle> engineStyles;
         log.info("Fetching engine style data at: {}..", styleFile.toPath());
         MapType mapType = null;

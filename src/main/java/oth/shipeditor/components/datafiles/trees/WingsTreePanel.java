@@ -8,7 +8,7 @@ import oth.shipeditor.components.instrument.ship.EditorInstrument;
 import oth.shipeditor.components.viewer.layers.ViewerLayer;
 import oth.shipeditor.components.viewer.layers.ship.ShipLayer;
 import oth.shipeditor.components.viewer.layers.ship.data.ShipHull;
-import oth.shipeditor.menubar.FileUtilities;
+import oth.shipeditor.parsing.loading.FileLoading;
 import oth.shipeditor.persistence.SettingsManager;
 import oth.shipeditor.representation.GameDataRepository;
 import oth.shipeditor.representation.VariantFile;
@@ -35,7 +35,7 @@ public class WingsTreePanel extends CSVDataTreePanel<WingCSVEntry>{
 
     @Override
     protected Action getLoadDataAction() {
-        return FileUtilities.getLoadWingDataAction();
+        return FileLoading.getLoadWingDataAction();
     }
 
     @Override

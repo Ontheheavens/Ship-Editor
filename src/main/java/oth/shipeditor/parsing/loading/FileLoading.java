@@ -9,7 +9,11 @@ import com.fasterxml.jackson.databind.type.TypeFactory;
 import com.fasterxml.jackson.dataformat.csv.CsvMapper;
 import com.fasterxml.jackson.dataformat.csv.CsvParser;
 import com.fasterxml.jackson.dataformat.csv.CsvSchema;
+import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
+import oth.shipeditor.communication.EventBus;
+import oth.shipeditor.communication.events.files.HullFileOpened;
+import oth.shipeditor.parsing.FileUtilities;
 import oth.shipeditor.parsing.JsonProcessor;
 import oth.shipeditor.persistence.SettingsManager;
 import oth.shipeditor.representation.GameDataRepository;
@@ -48,29 +52,38 @@ import java.util.stream.Stream;
  * @author Ontheheavens
  * @since 16.07.2023
  */
-@SuppressWarnings("CallToPrintStackTrace")
+@SuppressWarnings({"CallToPrintStackTrace", "ClassWithTooManyFields"})
 @Log4j2
 public final class FileLoading {
 
-    static final String OPEN_COMMAND_CANCELLED_BY_USER = "Open command cancelled by user.";
+    // TODO: loading actions should be performed in a separate thread.
 
-    private static final ObjectMapper mapper;
+    @Getter
+    private static final Action loadShipDataAction = new LoadShipDataAction();
+    @Getter
+    private static final Action loadHullmodDataAction = new LoadHullmodDataAction();
+    @Getter
+    private static final Action loadHullStyleDataAction = new LoadHullStyleDataAction();
+    @Getter
+    private static final Action loadEngineStyleDataAction = new LoadEngineStyleDataAction();
+    @Getter
+    private static final Action loadShipSystemDataAction = new LoadShipSystemDataAction();
+    @Getter
+    private static final Action loadWingDataAction = new LoadWingDataAction();
+    @Getter
+    private static final Action loadWeaponDataAction = new LoadWeaponsDataAction();
+    @Getter
+    public static final Action openSpriteAction = new OpenSpriteAction();
+    @Getter
+    public static final Action openShipDataAction = new OpenHullAction();
+    @Getter
+    private static final Action loadHullAsLayerAction = new LoadHullAsLayer();
 
-    static {
-        mapper = new ObjectMapper();
-        mapper.configure(JsonParser.Feature.ALLOW_YAML_COMMENTS, true);
-        mapper.configure(JsonReadFeature.ALLOW_TRAILING_COMMA.mappedFeature(), true);
-        mapper.configure(JsonReadFeature.ALLOW_LEADING_DECIMAL_POINT_FOR_NUMBERS.mappedFeature(), true);
-        mapper.configure(JsonReadFeature.ALLOW_UNESCAPED_CONTROL_CHARS.mappedFeature(), true);
-    }
-
-    static File lastDirectory;
+    @SuppressWarnings("StaticCollection")
+    @Getter
+    private static final List<Action> loadDataActions = FileLoading.initLoadActions();
 
     private FileLoading() {
-    }
-
-    static ObjectMapper getConfigured() {
-        return mapper;
     }
 
     private static Path searchFileInFolder(Path filePath, Path folderPath) {
@@ -200,7 +213,7 @@ public final class FileLoading {
     }
 
     static VariantFile loadVariantFile(File file) {
-        VariantFile variantFile = FileLoading.loadDataFile(file, ".variant", VariantFile.class);
+        VariantFile variantFile = FileLoading.loadDataFile(file, StringConstants.VARIANT_EXTENSION, VariantFile.class);
         variantFile.setVariantFilePath(file.toPath());
         return variantFile;
     }
@@ -219,7 +232,7 @@ public final class FileLoading {
 
         T dataFile;
         try {
-            ObjectMapper objectMapper = FileLoading.getConfigured();
+            ObjectMapper objectMapper = FileUtilities.getConfigured();
             log.info("Opening data file: {}", file.getName());
             dataFile = objectMapper.readValue(file, dataClass);
         } catch (IOException e) {
@@ -241,7 +254,7 @@ public final class FileLoading {
 
     @SuppressWarnings("TypeMayBeWeakened")
     private static <T> T parseCorrectableJSON(File file, Class<T> target) {
-        ObjectMapper objectMapper = FileLoading.getConfigured();
+        ObjectMapper objectMapper = FileUtilities.getConfigured();
 
         TypeFactory typeFactory = objectMapper.getTypeFactory();
         JavaType javaType = typeFactory.constructType(target);
@@ -251,7 +264,7 @@ public final class FileLoading {
 
     static <T> T parseCorrectableJSON(File file, JavaType targetType) {
         T result = null;
-        ObjectMapper objectMapper = FileLoading.getConfigured();
+        ObjectMapper objectMapper = FileUtilities.getConfigured();
         objectMapper.configure(JsonReadFeature.ALLOW_LEADING_ZEROS_FOR_NUMBERS.mappedFeature(), true);
 
         String content = JsonProcessor.straightenMalformed(file);
@@ -264,23 +277,23 @@ public final class FileLoading {
         return result;
     }
 
-    public static void openHullAndDo(ActionListener action) {
+    static void openHullAndDo(ActionListener action) {
         Path coreFolderPath = SettingsManager.getCoreFolderPath();
         JFileChooser shipDataChooser = new JFileChooser(coreFolderPath.toString());
-        if (FileLoading.lastDirectory != null) {
-            shipDataChooser.setCurrentDirectory(FileLoading.lastDirectory);
+        if (FileUtilities.lastDirectory != null) {
+            shipDataChooser.setCurrentDirectory(FileUtilities.lastDirectory);
         }
         FileNameExtensionFilter shipDataFilter = new FileNameExtensionFilter(
                 "JSON ship files", "ship");
         shipDataChooser.setFileFilter(shipDataFilter);
         int returnVal = shipDataChooser.showOpenDialog(null);
-        FileLoading.lastDirectory = shipDataChooser.getCurrentDirectory();
+        FileUtilities.lastDirectory = shipDataChooser.getCurrentDirectory();
         if (returnVal == JFileChooser.APPROVE_OPTION) {
             ActionEvent event = new ActionEvent(shipDataChooser, ActionEvent.ACTION_PERFORMED, null);
             action.actionPerformed(event);
         }
         else {
-            log.info(FileLoading.OPEN_COMMAND_CANCELLED_BY_USER);
+            log.info(FileUtilities.OPEN_COMMAND_CANCELLED_BY_USER);
         }
     }
 
@@ -347,6 +360,30 @@ public final class FileLoading {
             boolean validID = id != null && !id.isEmpty();
             return validID && !id.startsWith("#");
         };
+    }
+
+    private static List<Action> initLoadActions() {
+        List<Action> actions = new ArrayList<>();
+        actions.add(loadShipDataAction);
+        actions.add(loadHullmodDataAction);
+        actions.add(loadHullStyleDataAction);
+        actions.add(loadEngineStyleDataAction);
+        actions.add(loadShipSystemDataAction);
+        actions.add(loadWingDataAction);
+        actions.add(loadWeaponDataAction);
+        return actions;
+    }
+
+    private static class OpenHullAction extends AbstractAction {
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            FileLoading.openHullAndDo(event -> {
+                    JFileChooser shipDataChooser = (JFileChooser) event.getSource();
+                    File file = shipDataChooser.getSelectedFile();
+                    HullSpecFile hullSpecFile = FileLoading.loadHullFile(file);
+                    EventBus.publish(new HullFileOpened(hullSpecFile, file.getName()));
+            });
+        }
     }
 
 }

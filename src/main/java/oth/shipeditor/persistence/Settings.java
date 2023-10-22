@@ -14,26 +14,23 @@ import java.awt.*;
  * @author Ontheheavens
  * @since 19.06.2023
  */
+@Getter
 public class Settings {
 
     Settings() {}
 
-    @Getter
     @JsonProperty("backgroundColor")
     @JsonDeserialize(using = ColorArrayRGBADeserializer.class)
     @JsonSerialize(using = ColorArrayRGBASerializer.class)
     @JsonInclude(JsonInclude.Include.NON_NULL)
     Color backgroundColor;
 
-    @Getter
     @JsonProperty("gameFolderPath")
     String gameFolderPath;
 
-    @Getter
     @JsonProperty("coreFolderPath")
     String coreFolderPath;
 
-    @Getter
     @JsonProperty("modFolderPath")
     String modFolderPath;
 
