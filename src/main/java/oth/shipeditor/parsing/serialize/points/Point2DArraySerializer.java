@@ -1,9 +1,10 @@
-package oth.shipeditor.parsing.serialize;
+package oth.shipeditor.parsing.serialize.points;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.PrettyPrinter;
 import com.fasterxml.jackson.databind.JsonSerializer;
 import com.fasterxml.jackson.databind.SerializerProvider;
+import oth.shipeditor.parsing.serialize.SerializationUtilities;
 import oth.shipeditor.persistence.BasicPrettyPrinter;
 
 import java.awt.geom.Point2D;
@@ -30,39 +31,20 @@ public class Point2DArraySerializer extends JsonSerializer<Point2D.Double[]> {
         for (int i = 0; i < length; i++) {
             Point2D.Double point = value[i];
 
-            String resultX;
-            String resultY;
+            SerializationUtilities.writePoint2DForArray(point, gen);
 
-            double pointX = point.getX();
-            double pointY = point.getY();
-
-            if (pointX % 1 == 0) {
-                resultX = String.format("%7d", (int) pointX);
-            } else {
-                resultX = String.format("%7.1f", pointX);
-            }
-
-            if (pointY % 1 == 0) {
-                resultY = String.format("%7d", (int) pointY);
-            } else {
-                resultY = String.format("%7.1f", pointY);
-            }
-
-            gen.writeRaw(resultX);
-            gen.writeRaw(", " + resultY);
-
-            if (i == length - 1) {
-                gen.writeRaw(BasicPrettyPrinter.BLANK_LINE);
+            if (i == length - 1 && length > 10) {
+                gen.writeRaw(BasicPrettyPrinter.LINEFEED);
                 gen.writeRaw(BasicPrettyPrinter.INDENT);
                 gen.writeRaw("# " + length + " points total.");
 
-                gen.writeRaw(BasicPrettyPrinter.BLANK_LINE);
+                gen.writeRaw(BasicPrettyPrinter.LINEFEED);
                 gen.writeRaw(BasicPrettyPrinter.INDENT);
             } else {
                 prettyPrinter.writeArrayValueSeparator(gen);
             }
             if ((i + 1) % 5 == 0 && i != length - 1) {
-                gen.writeRaw(BasicPrettyPrinter.BLANK_LINE);
+                gen.writeRaw(BasicPrettyPrinter.LINEFEED);
                 gen.writeRaw(BasicPrettyPrinter.INDENT);
                 gen.writeRaw(BasicPrettyPrinter.INDENT);
             }

@@ -8,7 +8,7 @@ import lombok.Getter;
 import lombok.Setter;
 import oth.shipeditor.parsing.deserialize.Point2DArrayDeserializer;
 import oth.shipeditor.parsing.deserialize.Point2DDeserializer;
-import oth.shipeditor.parsing.serialize.Point2DArraySerializer;
+import oth.shipeditor.parsing.serialize.points.Point2DArraySerializer;
 import oth.shipeditor.representation.weapon.WeaponSlot;
 import oth.shipeditor.utility.text.StringConstants;
 

@@ -46,9 +46,19 @@ public class EnginePoint extends AngledPoint {
     private int contrailSize;
 
     @Getter @Setter
+    private boolean styleIsCustom;
+
+    @Getter @Setter
     private String styleID;
 
     private EngineStyle style;
+
+    /**
+     * Purely for serialization compatibility purposes; supporting inline styles editing seems counterproductive,
+     * as they are an anti-pattern anyway.
+     */
+    @Getter @Setter
+    private EngineStyle customStyleSpec;
 
     @Getter
     private EngineDataOverride skinOverride;

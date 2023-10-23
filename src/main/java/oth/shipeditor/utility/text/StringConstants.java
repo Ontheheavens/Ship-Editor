@@ -142,4 +142,6 @@ public interface StringConstants {
 
     String QUALITY = "quality";
 
+    String CUSTOM = "CUSTOM";
+
 }

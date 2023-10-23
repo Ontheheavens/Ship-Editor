@@ -12,7 +12,7 @@ import java.io.IOException;
  */
 public class BasicPrettyPrinter extends DefaultPrettyPrinter {
 
-    public static final String BLANK_LINE = DefaultIndenter.SYS_LF;
+    public static final String LINEFEED = DefaultIndenter.SYS_LF;
     private static final char ARRAY_END = ']';
 
     public static final String INDENT = "    ";
@@ -21,7 +21,7 @@ public class BasicPrettyPrinter extends DefaultPrettyPrinter {
     public BasicPrettyPrinter createInstance() {
         BasicPrettyPrinter basicPrettyPrinter = new BasicPrettyPrinter();
 
-        DefaultIndenter indenter = new DefaultIndenter(BasicPrettyPrinter.INDENT, BasicPrettyPrinter.BLANK_LINE);
+        DefaultIndenter indenter = new DefaultIndenter(BasicPrettyPrinter.INDENT, BasicPrettyPrinter.LINEFEED);
         basicPrettyPrinter.indentArraysWith(indenter);
         basicPrettyPrinter.indentObjectsWith(indenter);
 

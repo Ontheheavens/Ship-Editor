@@ -12,6 +12,7 @@ import java.awt.*;
  * @author Ontheheavens.
  * @since 26.07.2023
  */
+@Getter
 public enum WeaponType {
 
     BALLISTIC("BALLISTIC", "Ballistic", new Color(255,215,0,255)),
@@ -27,13 +28,10 @@ public enum WeaponType {
     SYSTEM("SYSTEM", "System", new Color(145, 145, 145, 255)),
     STATION_MODULE("STATION_MODULE", "Station Module", new Color(170, 0, 255,255));
 
-    @Getter
     private final String id;
 
-    @Getter
     private final Color color;
 
-    @Getter
     private final String displayName;
 
     WeaponType(String serialized, String name, Color tone) {
@@ -115,8 +113,8 @@ public enum WeaponType {
                         && weaponType != WeaponType.STATION_MODULE
                         && isSameSize);
             }
-            case BUILT_IN -> result = (weaponType != WeaponType.DECORATIVE && isSameSize);
-            case DECORATIVE -> result = (weaponType == WeaponType.DECORATIVE && isSameSize);
+            case BUILT_IN -> result = (weaponType != WeaponType.DECORATIVE && isSameOrSmaller);
+            case DECORATIVE -> result = (weaponType == WeaponType.DECORATIVE && isSameOrSmaller);
             default -> {
                 result = false;
             }

@@ -9,6 +9,7 @@ import oth.shipeditor.components.viewer.entities.engine.EnginePoint;
 import oth.shipeditor.representation.EngineStyle;
 import oth.shipeditor.utility.components.ComponentUtilities;
 import oth.shipeditor.utility.components.rendering.PointCellRenderer;
+import oth.shipeditor.utility.text.StringConstants;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -74,6 +75,8 @@ public class EngineList extends PointList<EnginePoint> {
                                                       boolean isSelected, boolean cellHasFocus) {
             super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
 
+            this.setToolTipText(null);
+
             EnginePoint checked = (EnginePoint) value;
             EngineStyle engineStyle = checked.getStyle();
             String styleOrID = checked.getStyleID();
@@ -86,6 +89,9 @@ public class EngineList extends PointList<EnginePoint> {
 
                 styleIcon.setIcon(color);
                 styleIcon.setVisible(true);
+            } else if (checked.getCustomStyleSpec() != null) {
+                styleOrID = StringConstants.CUSTOM;
+                this.setToolTipText("Custom style spec detected: inline style editing not supported");
             }
             String displayText = styleOrID + " #" + index + ":";
 

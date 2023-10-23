@@ -4,14 +4,16 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.log4j.Log4j2;
 import oth.shipeditor.components.CoordsDisplayMode;
 import oth.shipeditor.components.viewer.entities.BoundPoint;
-import oth.shipeditor.components.viewer.entities.ShipCenterPoint;
+import oth.shipeditor.components.viewer.entities.engine.EnginePoint;
 import oth.shipeditor.components.viewer.layers.ship.ShipLayer;
 import oth.shipeditor.components.viewer.layers.ship.ShipPainter;
 import oth.shipeditor.components.viewer.painters.points.ship.BoundPointsPainter;
-import oth.shipeditor.components.viewer.painters.points.ship.CenterPointPainter;
+import oth.shipeditor.components.viewer.painters.points.ship.EngineSlotPainter;
 import oth.shipeditor.parsing.FileUtilities;
+import oth.shipeditor.representation.EngineSlot;
 import oth.shipeditor.representation.HullSpecFile;
 import oth.shipeditor.utility.Utility;
+import oth.shipeditor.utility.text.StringConstants;
 import oth.shipeditor.utility.text.StringValues;
 
 import javax.swing.*;
@@ -61,9 +63,22 @@ final class SaveHullAction {
         HullSpecFile result = new HullSpecFile();
 
         var shipPainter = shipLayer.getPainter();
-        Point2D.Double[] serializableBounds = SaveHullAction.rebuildBounds(shipPainter);
 
+        Point2D.Double[] serializableBounds = SaveHullAction.rebuildBounds(shipPainter);
         result.setBounds(serializableBounds);
+
+        EngineSlot[] serializableEngines = SaveHullAction.rebuildEngineSlots(shipPainter);
+        if (serializableEngines == null) {
+            String shipID = shipLayer.getShipID();
+            log.error("Engine misconfiguration at hull serialization: likely invalid style values. Ship ID: {}",
+                    shipID);
+            JOptionPane.showMessageDialog(null,
+                    "Engine misconfiguration at hull serialization: likely invalid style values. " +
+                            "Ship ID: " + shipID,
+                    StringValues.FILE_SAVING_ERROR,
+                    JOptionPane.ERROR_MESSAGE);
+        }
+        result.setEngineSlots(serializableEngines);
 
         return result;
     }
@@ -71,14 +86,9 @@ final class SaveHullAction {
     private static Point2D.Double[] rebuildBounds(ShipPainter shipPainter) {
         BoundPointsPainter boundsPainter = shipPainter.getBoundsPainter();
         var boundPoints = boundsPainter.getPointsIndex();
-        CenterPointPainter centerPointPainter = shipPainter.getCenterPointPainter();
-        ShipCenterPoint shipCenterPoint = centerPointPainter.getCenterPoint();
-        var centerPosition = shipCenterPoint.getPosition();
 
-        // Initialize the array for serializable bounds
         Point2D.Double[] serializableBounds = new Point2D.Double[boundPoints.size()];
 
-        // Rebuild each bound point
         for (int i = 0; i < boundPoints.size(); i++) {
             BoundPoint boundPoint = boundPoints.get(i);
             Point2D locationRelativeToCenter = Utility.getPointCoordinatesForDisplay(boundPoint.getPosition(),
@@ -87,6 +97,50 @@ final class SaveHullAction {
         }
 
         return serializableBounds;
+    }
+
+    private static EngineSlot[] rebuildEngineSlots(ShipPainter shipPainter) {
+        EngineSlotPainter enginePainter = shipPainter.getEnginePainter();
+        var enginePoints = enginePainter.getPointsIndex();
+
+        EngineSlot[] serializableEngines = new EngineSlot[enginePoints.size()];
+
+        for (int i = 0; i < enginePoints.size(); i++) {
+            EnginePoint enginePoint = enginePoints.get(i);
+
+            EngineSlot serializableSlot = new EngineSlot();
+
+            Point2D locationRelativeToCenter = Utility.getPointCoordinatesForDisplay(enginePoint.getPosition(),
+                    shipPainter, CoordsDisplayMode.SHIP_CENTER);
+            serializableSlot.setLocation((Point2D.Double) locationRelativeToCenter);
+
+            serializableSlot.setAngle(enginePoint.getAngle());
+            serializableSlot.setWidth(enginePoint.getWidth());
+            serializableSlot.setLength(enginePoint.getLength());
+            serializableSlot.setContrailSize(enginePoint.getContrailSize());
+
+            var engineStyle = enginePoint.getStyle();
+            if (engineStyle == null) {
+                var customStyleSpec = enginePoint.getCustomStyleSpec();
+                if (customStyleSpec != null) {
+                    serializableSlot.setStyle(StringConstants.CUSTOM);
+                    serializableSlot.setStyleSpec(customStyleSpec);
+                } else {
+                    return null;
+                }
+            } else {
+                if (enginePoint.isStyleIsCustom()) {
+                    serializableSlot.setStyle(StringConstants.CUSTOM);
+                    serializableSlot.setStyleId(enginePoint.getStyleID());
+                } else {
+                    serializableSlot.setStyle(enginePoint.getStyleID());
+                }
+            }
+
+            serializableEngines[i] = serializableSlot;
+        }
+
+        return serializableEngines;
     }
 
     private static JFileChooser getSaveHullFileChooser() {

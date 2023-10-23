@@ -91,5 +91,7 @@ module oth.shipeditor {
     exports oth.shipeditor.utility.overseers;
     exports oth.shipeditor.components.logging;
     opens oth.shipeditor.components.logging;
+    exports oth.shipeditor.parsing.serialize.points;
+    opens oth.shipeditor.parsing.serialize.points;
 
 }

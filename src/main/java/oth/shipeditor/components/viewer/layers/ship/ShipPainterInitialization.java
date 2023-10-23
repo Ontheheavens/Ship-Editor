@@ -11,6 +11,7 @@ import oth.shipeditor.components.viewer.layers.weapon.WeaponPainter;
 import oth.shipeditor.components.viewer.painters.points.ship.*;
 import oth.shipeditor.components.viewer.painters.points.ship.features.InstalledFeature;
 import oth.shipeditor.representation.EngineSlot;
+import oth.shipeditor.representation.EngineStyle;
 import oth.shipeditor.representation.GameDataRepository;
 import oth.shipeditor.representation.HullSpecFile;
 import oth.shipeditor.representation.weapon.*;
@@ -164,8 +165,19 @@ public final class ShipPainterInitialization {
 
             double contrailSize = engineSlot.getContrailSize();
             newEnginePoint.setContrailSize((int) contrailSize);
+
             String styleID = engineSlot.getStyle();
-            newEnginePoint.setStyleID(styleID);
+            String customStyle = engineSlot.getStyleId();
+            EngineStyle customStyleSpec = engineSlot.getStyleSpec();
+
+            if (StringConstants.CUSTOM.equals(styleID) && customStyleSpec != null) {
+                newEnginePoint.setCustomStyleSpec(customStyleSpec);
+            } else if (StringConstants.CUSTOM.equals(styleID) && customStyle != null && !customStyle.isEmpty()) {
+                newEnginePoint.setStyleID(customStyle);
+                newEnginePoint.setStyleIsCustom(true);
+            } else {
+                newEnginePoint.setStyleID(styleID);
+            }
 
             engineSlotPainter.addPoint(newEnginePoint);
         });

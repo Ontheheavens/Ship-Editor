@@ -1,12 +1,14 @@
 package oth.shipeditor.representation;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import lombok.Getter;
 import lombok.Setter;
 import oth.shipeditor.parsing.deserialize.ColorArrayRGBADeserializer;
+import oth.shipeditor.parsing.serialize.BaseNumberSerializer;
 import oth.shipeditor.parsing.serialize.ColorArrayRGBASerializer;
 
 import java.awt.*;
@@ -24,89 +26,126 @@ public class EngineStyle {
     @Setter
     private transient Path filePath;
 
-    @JsonIgnore @Setter
+    @JsonIgnore
+    @Setter
     private transient Path containingPackage;
 
     @Setter
+    @JsonIgnore
     private String engineStyleID;
 
     @JsonProperty("type")
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     private String type;
 
     @JsonDeserialize(using = ColorArrayRGBADeserializer.class)
     @JsonSerialize(using = ColorArrayRGBASerializer.class)
     @JsonProperty("engineColor")
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     private Color engineColor;
 
     @JsonDeserialize(using = ColorArrayRGBADeserializer.class)
     @JsonSerialize(using = ColorArrayRGBASerializer.class)
     @JsonProperty("engineCampaignColor")
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     private Color engineCampaignColor;
 
     @JsonProperty("mode")
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     private String mode;
 
     @JsonDeserialize(using = ColorArrayRGBADeserializer.class)
     @JsonSerialize(using = ColorArrayRGBASerializer.class)
     @JsonProperty("contrailColor")
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     private Color contrailColor;
 
     @JsonDeserialize(using = ColorArrayRGBADeserializer.class)
     @JsonSerialize(using = ColorArrayRGBASerializer.class)
     @JsonProperty("contrailCampaignColor")
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     private Color contrailCampaignColor;
 
     @JsonProperty("contrailDuration")
-    private double contrailDuration;
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @JsonSerialize(using = BaseNumberSerializer.class)
+    private Double contrailDuration;
 
     @JsonProperty("contrailWidthMult")
-    private double contrailWidthMult;
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @JsonSerialize(using = BaseNumberSerializer.class)
+    private Double contrailWidthMult;
 
     @JsonProperty("contrailWidthAddedFractionAtEnd")
-    private double contrailWidthAddedFractionAtEnd;
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @JsonSerialize(using = BaseNumberSerializer.class)
+    private Double contrailWidthAddedFractionAtEnd;
 
     @JsonProperty("contrailMinSeg")
-    private double contrailMinSeg;
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @JsonSerialize(using = BaseNumberSerializer.class)
+    private Double contrailMinSeg;
 
     @JsonProperty("contrailParticleSizeMult")
-    private double contrailParticleSizeMult;
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @JsonSerialize(using = BaseNumberSerializer.class)
+    private Double contrailParticleSizeMult;
 
     @JsonProperty("contrailParticleFinalSizeMult")
-    private double contrailParticleFinalSizeMult;
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @JsonSerialize(using = BaseNumberSerializer.class)
+    private Double contrailParticleFinalSizeMult;
 
     @JsonProperty("contrailMaxSpeedMult")
-    private double contrailMaxSpeedMult;
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @JsonSerialize(using = BaseNumberSerializer.class)
+    private Double contrailMaxSpeedMult;
 
     @JsonProperty("contrailAngularVelocityMult")
-    private double contrailAngularVelocityMult;
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @JsonSerialize(using = BaseNumberSerializer.class)
+    private Double contrailAngularVelocityMult;
 
     @JsonProperty("contrailSpawnDistMult")
-    private double contrailSpawnDistMult;
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @JsonSerialize(using = BaseNumberSerializer.class)
+    private Double contrailSpawnDistMult;
 
     @JsonProperty("contrailParticleDuration")
-    private double contrailParticleDuration;
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @JsonSerialize(using = BaseNumberSerializer.class)
+    private Double contrailParticleDuration;
 
     @JsonProperty("glowSprite")
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     private String glowSprite;
 
     @JsonProperty("glowShape")
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     private String glowShape;
 
     @JsonProperty("glowOutline")
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     private String glowOutline;
 
     @JsonProperty("omegaMode")
-    private boolean omegaMode;
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private Boolean omegaMode;
 
     @JsonProperty("glowSizeMult")
-    private double glowSizeMult;
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @JsonSerialize(using = BaseNumberSerializer.class)
+    private Double glowSizeMult;
 
     @JsonProperty("engineGlowGlowMult")
-    private double engineGlowGlowMult;
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @JsonSerialize(using = BaseNumberSerializer.class)
+    private Double engineGlowGlowMult;
 
     @JsonDeserialize(using = ColorArrayRGBADeserializer.class)
     @JsonSerialize(using = ColorArrayRGBASerializer.class)
     @JsonProperty("glowAlternateColor")
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     private Color glowAlternateColor;
 
     @Override
