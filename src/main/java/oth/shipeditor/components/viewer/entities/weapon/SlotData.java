@@ -34,4 +34,8 @@ public interface SlotData {
 
     void setAngle(double degrees);
 
+    int getRenderOrderMod();
+
+    void setRenderOrderMod(int orderMod);
+
 }

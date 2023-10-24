@@ -4,7 +4,7 @@ import oth.shipeditor.communication.BusEventListener;
 import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.BusEvent;
 import oth.shipeditor.communication.events.Events;
-import oth.shipeditor.communication.events.viewer.control.ModuleAnchorChangeConcluded;
+import oth.shipeditor.communication.events.viewer.control.TimedEditConcluded;
 import oth.shipeditor.communication.events.viewer.control.ViewerMouseReleased;
 import oth.shipeditor.communication.events.viewer.layers.ActiveLayerUpdated;
 import oth.shipeditor.components.datafiles.entities.HullmodCSVEntry;
@@ -39,6 +39,7 @@ import oth.shipeditor.undo.edits.points.slots.*;
 import oth.shipeditor.utility.objects.Size2D;
 import oth.shipeditor.utility.overseers.StaticController;
 
+import javax.swing.*;
 import java.awt.geom.Point2D;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -53,7 +54,30 @@ import java.util.function.Consumer;
 @SuppressWarnings({"OverlyCoupledClass", "ClassWithTooManyMethods"})
 public final class EditDispatch {
 
+    private static boolean editCommenced;
+
+    static {
+        var anchorChangeFinisher = new SwingWorker<>() {
+            @SuppressWarnings({"InfiniteLoopStatement", "BusyWait"})
+            @Override
+            protected Void doInBackground() throws InterruptedException {
+                while (true) {
+                    Thread.sleep(1000);
+                    if (editCommenced) {
+                        EventBus.publish(new TimedEditConcluded());
+                        editCommenced = false;
+                    }
+                }
+            }
+        };
+        anchorChangeFinisher.execute();
+    }
+
     private EditDispatch() {
+    }
+
+    public static void setEditCommenced() {
+        editCommenced = true;
     }
 
     private static void handleContinuousEdit(Edit edit) {
@@ -155,7 +179,7 @@ public final class EditDispatch {
         BusEventListener finishListener = new BusEventListener() {
             @Override
             public void handleEvent(BusEvent event) {
-                if (event instanceof ModuleAnchorChangeConcluded && !offsetChangeEdit.isFinished()) {
+                if (event instanceof TimedEditConcluded && !offsetChangeEdit.isFinished()) {
                     offsetChangeEdit.setFinished(true);
                     EventBus.unsubscribe(this);
                 }
@@ -223,6 +247,27 @@ public final class EditDispatch {
         Edit arcEdit = new SlotArcSet(slotPoint, old, updated);
         EditDispatch.handleContinuousEdit(arcEdit);
         slotPoint.setArc(updated);
+        var repainter = StaticController.getRepainter();
+        repainter.queueViewerRepaint();
+        repainter.queueSlotControlRepaint();
+        repainter.queueBaysPanelRepaint();
+    }
+
+    public static void postRenderOrderChanged(SlotData slotPoint, int old, int updated ) {
+        Edit renderOrderChangeEdit = new RenderOrderChangeEdit(slotPoint, old, updated);
+
+        BusEventListener finishListener = new BusEventListener() {
+            @Override
+            public void handleEvent(BusEvent event) {
+                if (event instanceof TimedEditConcluded && !renderOrderChangeEdit.isFinished()) {
+                    renderOrderChangeEdit.setFinished(true);
+                    EventBus.unsubscribe(this);
+                }
+            }
+        };
+
+        EditDispatch.handleContinuousEdit(renderOrderChangeEdit, finishListener);
+        slotPoint.setRenderOrderMod(updated);
         var repainter = StaticController.getRepainter();
         repainter.queueViewerRepaint();
         repainter.queueSlotControlRepaint();

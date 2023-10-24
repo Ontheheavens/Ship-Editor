@@ -2,6 +2,7 @@ package oth.shipeditor.components.viewer.entities.bays;
 
 import lombok.Getter;
 import lombok.Setter;
+import oth.shipeditor.components.viewer.entities.weapon.SlotData;
 import oth.shipeditor.components.viewer.painters.points.ship.LaunchBayPainter;
 import oth.shipeditor.representation.weapon.WeaponMount;
 import oth.shipeditor.representation.weapon.WeaponSize;
@@ -15,7 +16,7 @@ import java.util.List;
  * @since 13.08.2023
  */
 @Getter
-public class LaunchBay {
+public class LaunchBay implements SlotData {
 
     @Setter
     private String id;
@@ -45,6 +46,16 @@ public class LaunchBay {
         this.id = inputID;
         this.bayPainter = painter;
         this.portPoints = new ArrayList<>();
+    }
+
+    @Override
+    public void changeSlotID(String newId) {
+        // Irrelevant for launch bays, since interaction applies to child port point, and result gets mapped to bay.
+    }
+
+    @Override
+    public void setWeaponType(WeaponType newType) {
+        // Is a constant for launch bays.
     }
 
 }

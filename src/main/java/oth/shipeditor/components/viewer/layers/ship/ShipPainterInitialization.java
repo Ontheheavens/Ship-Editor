@@ -90,6 +90,7 @@ public final class ShipPainterInitialization {
         Stream<WeaponSlot> slotStream = Arrays.stream(weaponSlots);
 
         slotStream.forEach(weaponSlot -> {
+            Integer renderOrderMod = weaponSlot.getRenderOrderMod();
             if (Objects.equals(weaponSlot.getType(), StringConstants.LAUNCH_BAY)) {
                 LaunchBayPainter bayPainter = shipPainter.getBayPainter();
 
@@ -99,7 +100,10 @@ public final class ShipPainterInitialization {
 
                 bay.setAngle(weaponSlot.getAngle());
                 bay.setArc(weaponSlot.getArc());
-                bay.setRenderOrderMod((int) weaponSlot.getRenderOrderMod());
+
+                if (renderOrderMod != null) {
+                    bay.setRenderOrderMod(renderOrderMod);
+                }
 
                 String weaponSize = weaponSlot.getSize();
                 WeaponSize sizeInstance = WeaponSize.valueOf(weaponSize);
@@ -128,7 +132,10 @@ public final class ShipPainterInitialization {
 
                 slotPoint.setAngle(weaponSlot.getAngle());
                 slotPoint.setArc(weaponSlot.getArc());
-                slotPoint.setRenderOrderMod((int) weaponSlot.getRenderOrderMod());
+
+                if (renderOrderMod != null) {
+                    slotPoint.setRenderOrderMod(renderOrderMod);
+                }
 
                 String weaponType = weaponSlot.getType();
                 WeaponType typeInstance = WeaponType.valueOf(weaponType);

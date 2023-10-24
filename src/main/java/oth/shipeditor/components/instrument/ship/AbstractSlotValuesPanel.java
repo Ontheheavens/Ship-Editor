@@ -52,6 +52,8 @@ public abstract class AbstractSlotValuesPanel extends JPanel {
 
         this.addAngleController();
         this.addArcController();
+
+        this.addRenderOrderController();
     }
 
     protected abstract String getNextUniqueID(ShipPainter shipPainter);
@@ -68,6 +70,10 @@ public abstract class AbstractSlotValuesPanel extends JPanel {
 
     protected abstract ChangeListener getArcChangeListener(JSpinner spinner,
                                                              SpinnerNumberModel spinnerNumberModel,
+                                                           SlotData slotPoint);
+
+    protected abstract ChangeListener getRenderOrderChangeListener(JSpinner spinner,
+                                                           SpinnerNumberModel spinnerNumberModel,
                                                            SlotData slotPoint);
 
     protected void addIDPanel() {
@@ -289,6 +295,52 @@ public abstract class AbstractSlotValuesPanel extends JPanel {
         }
 
         ComponentUtilities.addLabelAndComponent(this, selectorLabel, spinner, 5);
+    }
+
+    protected void addRenderOrderController() {
+        JLabel selectorLabel = new JLabel("Render order:");
+
+        String tooltip;
+        if (multiSelectionAllowed) {
+            tooltip = Utility.getWithLinebreaks(StringValues.CHANGE_APPLIES_TO_FIRST_SELECTED_SLOT, StringValues.MOUSEWHEEL_TO_CHANGE);
+        } else {
+            tooltip = StringValues.MOUSEWHEEL_TO_CHANGE;
+        }
+        selectorLabel.setToolTipText(tooltip);
+
+        if (selected == null) {
+            ComponentUtilities.addLabelAndComponent(this, selectorLabel, ComponentUtilities.getNoSelected(), 6);
+            return;
+        }
+
+        int minValue = Integer.MIN_VALUE + 1;
+        int maxValue = Integer.MAX_VALUE - 1;
+        SpinnerNumberModel spinnerNumberModel = new SpinnerNumberModel(selected.getRenderOrderMod(),
+                minValue, maxValue, 1);
+        JSpinner spinner = new JSpinner(spinnerNumberModel);
+
+        WeaponSlotOverride skinOverride = null;
+        if (selected instanceof SlotPoint checked) {
+            skinOverride = checked.getSkinOverride();
+        }
+
+        if (skinOverride != null && skinOverride.getRenderOrderModBoxed() != null) {
+            spinner.setToolTipText("Locked: slot render order overridden by skin");
+            spinner.setEnabled(false);
+        } else {
+            spinner.addChangeListener(this.getRenderOrderChangeListener(spinner, spinnerNumberModel, selected));
+            spinner.addMouseWheelListener(e -> {
+                if (e.getScrollType() != MouseWheelEvent.WHEEL_UNIT_SCROLL) {
+                    return;
+                }
+                int value = (Integer) spinner.getValue();
+                int newValue = value - e.getUnitsToScroll();
+                newValue = Math.min(maxValue, Math.max(minValue, newValue));
+                spinner.setValue(newValue);
+            });
+        }
+
+        ComponentUtilities.addLabelAndComponent(this, selectorLabel, spinner, 6);
     }
 
 }

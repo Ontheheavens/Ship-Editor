@@ -176,6 +176,8 @@ public class EnginePoint extends AngledPoint {
     public void setStyle(EngineStyle engineStyle) {
         this.style = engineStyle;
 
+        this.styleIsCustom = false;
+
         if (engineStyle != null) {
             this.setStyleID(engineStyle.getEngineStyleID());
         }

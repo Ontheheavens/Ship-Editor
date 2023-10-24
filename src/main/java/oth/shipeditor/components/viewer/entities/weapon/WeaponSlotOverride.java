@@ -56,6 +56,19 @@ public final class WeaponSlotOverride implements SlotData {
         this.angle = degrees;
     }
 
+    @Override
+    public void setRenderOrderMod(int orderMod) {
+        this.renderOrderMod = orderMod;
+    }
+
+    public Integer getRenderOrderModBoxed() {
+        return renderOrderMod;
+    }
+
+    public int getRenderOrderMod() {
+        return renderOrderMod;
+    }
+
     public double getAngle() {
         return angle;
     }

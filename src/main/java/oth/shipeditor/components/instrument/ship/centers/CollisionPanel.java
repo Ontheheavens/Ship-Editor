@@ -5,7 +5,7 @@ import oth.shipeditor.communication.BusEventListener;
 import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.BusEvent;
 import oth.shipeditor.communication.events.components.CenterPanelsRepaintQueued;
-import oth.shipeditor.communication.events.viewer.control.ModuleAnchorChangeConcluded;
+import oth.shipeditor.communication.events.viewer.control.TimedEditConcluded;
 import oth.shipeditor.communication.events.viewer.layers.LayerWasSelected;
 import oth.shipeditor.communication.events.viewer.layers.PainterOpacityChangeQueued;
 import oth.shipeditor.components.viewer.entities.ShipCenterPoint;
@@ -14,6 +14,7 @@ import oth.shipeditor.components.viewer.layers.ship.ShipLayer;
 import oth.shipeditor.components.viewer.layers.ship.ShipPainter;
 import oth.shipeditor.components.viewer.painters.PainterVisibility;
 import oth.shipeditor.components.viewer.painters.points.ship.CenterPointPainter;
+import oth.shipeditor.undo.EditDispatch;
 import oth.shipeditor.utility.objects.Pair;
 import oth.shipeditor.utility.Utility;
 import oth.shipeditor.utility.components.ComponentUtilities;
@@ -50,26 +51,6 @@ public final class CollisionPanel extends JPanel {
     private JPopupMenu shipCenterMenu;
     private JPopupMenu collisionRadiusMenu;
     private JPanel anchorWrapper;
-
-    private static boolean anchorEditCommenced;
-
-    static {
-        var anchorChangeFinisher = new SwingWorker<>() {
-            @SuppressWarnings({"InfiniteLoopStatement", "BusyWait"})
-            @Override
-            protected Void doInBackground() throws InterruptedException {
-                while (true) {
-                    Thread.sleep(1000);
-                    if (anchorEditCommenced) {
-                        EventBus.publish(new ModuleAnchorChangeConcluded());
-                        anchorEditCommenced = false;
-                    }
-                }
-            }
-
-        };
-        anchorChangeFinisher.execute();
-    }
 
     public CollisionPanel() {
         LayoutManager layout = new BorderLayout();
@@ -281,7 +262,7 @@ public final class CollisionPanel extends JPanel {
             if (centerPainter != null) {
                 defineAnchor.addActionListener(e -> {
                     centerPainter.changeModuleAnchor(new Point2D.Double());
-                    EventBus.publish(new ModuleAnchorChangeConcluded());
+                    EventBus.publish(new TimedEditConcluded());
                     panelRefresh.run();
                 });
             } else {
@@ -337,7 +318,7 @@ public final class CollisionPanel extends JPanel {
         JButton removeAnchor = new JButton("Clear anchor");
         removeAnchor.addActionListener(e -> {
             centerPainter.changeModuleAnchor(null);
-            EventBus.publish(new ModuleAnchorChangeConcluded());
+            EventBus.publish(new TimedEditConcluded());
             panelRefresh.run();
         });
         constraints.gridy = 3;
@@ -345,7 +326,7 @@ public final class CollisionPanel extends JPanel {
     }
 
     private static void startEditFinishCountdown() {
-        anchorEditCommenced = true;
+        EditDispatch.setEditCommenced();
     }
 
     private JPanel createModuleAnchorPanel() {

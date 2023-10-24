@@ -91,6 +91,10 @@ public class WeaponSlotPoint extends AngledPoint implements SlotPoint {
         } else return weaponMount;
     }
 
+    public WeaponMount getBaseMount() {
+        return weaponMount;
+    }
+
     public WeaponSize getWeaponSize() {
         if (skinOverride != null && skinOverride.getWeaponSize() != null) {
             return skinOverride.getWeaponSize();
@@ -99,12 +103,20 @@ public class WeaponSlotPoint extends AngledPoint implements SlotPoint {
         }
     }
 
+    public WeaponSize getBaseSize() {
+        return weaponSize;
+    }
+
     public WeaponType getWeaponType() {
         if (skinOverride != null && skinOverride.getWeaponType() != null) {
             return skinOverride.getWeaponType();
         } else {
             return weaponType;
         }
+    }
+
+    public WeaponType getBaseType() {
+        return weaponType;
     }
 
     public double getArc() {
@@ -163,6 +175,10 @@ public class WeaponSlotPoint extends AngledPoint implements SlotPoint {
 
     public void changeSlotArc(double degrees) {
         EditDispatch.postSlotArcSet(this,this.arc,degrees);
+    }
+
+    public void changeRenderOrder(int renderOrder) {
+        EditDispatch.postRenderOrderChanged(this,this.renderOrderMod,renderOrder);
     }
 
     @Override

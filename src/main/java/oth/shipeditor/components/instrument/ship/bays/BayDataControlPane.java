@@ -39,6 +39,8 @@ public class BayDataControlPane extends AbstractSlotValuesPanel {
 
         super.addAngleController();
         super.addArcController();
+
+        super.addRenderOrderController();
     }
 
     @Override
@@ -90,6 +92,22 @@ public class BayDataControlPane extends AbstractSlotValuesPanel {
                 double current = modelNumber.doubleValue();
 
                 EditDispatch.postSlotArcSet(slotPoint,slotPoint.getArc(),current);
+                spinner.removeChangeListener(this);
+            }
+        };
+    }
+
+    @Override
+    protected ChangeListener getRenderOrderChangeListener(JSpinner spinner,
+                                                          SpinnerNumberModel spinnerNumberModel,
+                                                          SlotData slotPoint) {
+        return new ChangeListener() {
+            @Override
+            public void stateChanged(ChangeEvent e) {
+                Number modelNumber = spinnerNumberModel.getNumber();
+                int current = modelNumber.intValue();
+
+                EditDispatch.postRenderOrderChanged(slotPoint,slotPoint.getRenderOrderMod(),current);
                 spinner.removeChangeListener(this);
             }
         };

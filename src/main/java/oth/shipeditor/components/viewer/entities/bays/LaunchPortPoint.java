@@ -108,6 +108,16 @@ public class LaunchPortPoint extends BaseWorldPoint implements SlotPoint {
     }
 
     @Override
+    public int getRenderOrderMod() {
+        return parentBay.getRenderOrderMod();
+    }
+
+    @Override
+    public void setRenderOrderMod(int orderMod) {
+        parentBay.setRenderOrderMod(orderMod);
+    }
+
+    @Override
     public WeaponSlotOverride getSkinOverride() {
         return null;
     }

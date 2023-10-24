@@ -107,6 +107,26 @@ public class SlotDataControlPane extends AbstractSlotValuesPanel {
         };
     }
 
+    @Override
+    protected ChangeListener getRenderOrderChangeListener(JSpinner spinner,
+                                                          SpinnerNumberModel spinnerNumberModel,
+                                                          SlotData slotPoint) {
+        return new ChangeListener() {
+            @Override
+            public void stateChanged(ChangeEvent e) {
+                WeaponSlotPoint weaponSlotPoint = (WeaponSlotPoint) slotPoint;
+
+                Number modelNumber = spinnerNumberModel.getNumber();
+                int current = modelNumber.intValue();
+                ShipPainter slotParent = weaponSlotPoint.getParent();
+                WeaponSlotPainter weaponSlotPainter = slotParent.getWeaponSlotPainter();
+                weaponSlotPainter.changeRenderOrderWithMirrorCheck(weaponSlotPoint, current);
+
+                spinner.removeChangeListener(this);
+            }
+        };
+    }
+
     private void actOnSelectedValues(BiConsumer<WeaponSlotPainter, List<WeaponSlotPoint>> action) {
         WeaponSlotPoint selectedValue = slotList.getSelectedValue();
         if (selectedValue == null) return;

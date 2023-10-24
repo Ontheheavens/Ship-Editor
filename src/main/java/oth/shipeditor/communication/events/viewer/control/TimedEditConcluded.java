@@ -6,6 +6,6 @@ import oth.shipeditor.communication.events.viewer.ViewerEvent;
  * @author Ontheheavens
  * @since 09.10.2023
  */
-public record ModuleAnchorChangeConcluded() implements ViewerEvent {
+public record TimedEditConcluded() implements ViewerEvent {
 
 }

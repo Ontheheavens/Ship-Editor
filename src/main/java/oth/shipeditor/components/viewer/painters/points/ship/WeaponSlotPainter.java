@@ -268,6 +268,11 @@ public class WeaponSlotPainter extends AngledPointPainter {
         actOnCounterpart(point -> point.changeSlotArc(arcExtentDegrees), slotPoint);
     }
 
+    public void changeRenderOrderWithMirrorCheck(WeaponSlotPoint slotPoint, int renderOrder) {
+        slotPoint.changeRenderOrder(renderOrder);
+        actOnCounterpart(point -> point.changeRenderOrder(renderOrder), slotPoint);
+    }
+
     public void insertPoint(BaseWorldPoint toInsert, int precedingIndex) {
         if (!(toInsert instanceof WeaponSlotPoint checked)) {
             throw new IllegalStateException("Attempted to insert incompatible point to WeaponSlotPainter!");
