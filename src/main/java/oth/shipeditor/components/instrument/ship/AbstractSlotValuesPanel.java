@@ -337,6 +337,8 @@ public abstract class AbstractSlotValuesPanel extends JPanel {
                 int newValue = value - e.getUnitsToScroll();
                 newValue = Math.min(maxValue, Math.max(minValue, newValue));
                 spinner.setValue(newValue);
+
+                EditDispatch.setEditCommenced();
             });
         }
 

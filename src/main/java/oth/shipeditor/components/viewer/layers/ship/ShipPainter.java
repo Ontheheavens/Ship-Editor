@@ -3,6 +3,7 @@ package oth.shipeditor.components.viewer.layers.ship;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
+import org.apache.commons.collections4.map.ListOrderedMap;
 import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.Events;
 import oth.shipeditor.communication.events.components.SkinPanelRepaintQueued;
@@ -220,7 +221,7 @@ public class ShipPainter extends LayerPainter {
         this.enginePainter = new EngineSlotPainter(this);
 
         this.installablesPainter = new InstalledFeaturePainter();
-        this.builtInWeapons = new LinkedHashMap<>();
+        this.builtInWeapons = new ListOrderedMap<>();
 
         List<AbstractPointPainter> allPainters = getAllPainters();
         allPainters.add(centerPointPainter);

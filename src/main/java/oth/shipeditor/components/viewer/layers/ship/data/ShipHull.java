@@ -10,7 +10,9 @@ import oth.shipeditor.representation.GameDataRepository;
 import oth.shipeditor.representation.HullSize;
 import oth.shipeditor.representation.HullSpecFile;
 import oth.shipeditor.representation.HullStyle;
+import oth.shipeditor.utility.graphics.ColorUtilities;
 
+import java.awt.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -36,6 +38,10 @@ public class ShipHull {
 
     private List<WingCSVEntry> builtInWings;
 
+    private Color coversColor;
+
+    private int viewOffset;
+
     private String hullFileName;
 
     public void initialize(HullSpecFile specFile) {
@@ -43,6 +49,13 @@ public class ShipHull {
         this.hullID = specFile.getHullId();
         this.hullSize = HullSize.valueOf(specFile.getHullSize());
         this.loadHullStyle(specFile);
+
+        var deserializedCoversColor = specFile.getCoversColor();
+        if (deserializedCoversColor != null && !deserializedCoversColor.isEmpty()) {
+            this.coversColor = ColorUtilities.convertStringToColor(deserializedCoversColor);
+        }
+
+        this.viewOffset = specFile.getViewOffset();
 
         var dataRepository = SettingsManager.getGameData();
         if (dataRepository.isHullmodDataLoaded()) {

@@ -36,7 +36,7 @@ public class ShieldPointPainter extends SinglePointPainter {
     @Getter
     private ShieldCenterPoint shieldCenterPoint;
 
-    private final int dragShieldRadiusHotkey = KeyEvent.VK_S;
+    private static final int dragShieldRadiusHotkey = KeyEvent.VK_S;
 
     private boolean shieldRadiusHotkeyPressed;
 
@@ -60,8 +60,9 @@ public class ShieldPointPainter extends SinglePointPainter {
         if (style == null) {
             style = new HullStyle();
         }
+        double shieldRadius = hullSpecFile.getShieldRadius();
         this.shieldCenterPoint = new ShieldCenterPoint(translated,
-                (float) hullSpecFile.getShieldRadius(), this.getParentLayer(), style, this);
+                (float) shieldRadius, this.getParentLayer(), style, this);
         this.addPoint(shieldCenterPoint);
         Color shieldInnerColor = style.getShieldInnerColor();
         float styleInnerColorOpacity = ColorUtilities.getOpacityFromAlpha(shieldInnerColor.getAlpha());

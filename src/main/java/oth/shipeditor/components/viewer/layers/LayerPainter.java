@@ -193,12 +193,12 @@ public abstract class LayerPainter implements Painter {
         return transform;
     }
 
-    private int getSpriteWidth() {
+    public int getSpriteWidth() {
         var spriteImage = getSprite();
         return spriteImage.getWidth();
     }
 
-    private int getSpriteHeight() {
+    public int getSpriteHeight() {
         var spriteImage = getSprite();
         return spriteImage.getHeight();
     }

@@ -1,7 +1,5 @@
 package oth.shipeditor.menubar;
 
-import lombok.Getter;
-import lombok.Setter;
 import org.kordamp.ikonli.boxicons.BoxiconsRegular;
 import org.kordamp.ikonli.fluentui.FluentUiRegularAL;
 import org.kordamp.ikonli.fluentui.FluentUiRegularMZ;
@@ -13,14 +11,10 @@ import oth.shipeditor.communication.events.viewer.control.ViewerRotationToggled;
 import oth.shipeditor.communication.events.viewer.control.ViewerTransformsReset;
 import oth.shipeditor.persistence.Settings;
 import oth.shipeditor.persistence.SettingsManager;
+import oth.shipeditor.utility.graphics.ColorUtilities;
 
 import javax.swing.*;
-import javax.swing.colorchooser.AbstractColorChooserPanel;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.ComponentAdapter;
-import java.awt.event.ComponentEvent;
 
 /**
  * @author Ontheheavens
@@ -43,7 +37,7 @@ class ViewMenu extends JMenu {
         JMenuItem changeBackground = PrimaryMenuBar.createMenuOption("Change background color",
                 FluentUiRegularAL.COLOR_BACKGROUND_20,
                 event -> {
-                    Color chosen = ViewMenu.showColorChooser();
+                    Color chosen = ColorUtilities.showColorChooser();
                     Settings settings = SettingsManager.getSettings();
                     settings.setBackgroundColor(chosen);
                     EventBus.publish(new ViewerBackgroundChanged(chosen));
@@ -104,49 +98,6 @@ class ViewMenu extends JMenu {
         guidesSubmenu.add(toggleAxes);
 
         return guidesSubmenu;
-    }
-
-    /**
-     * This method is employed to get rid of some chooser panels and tweak cancel behaviour.
-     * @return Color instance that was selected in chooser dialogue.
-     */
-    private static Color showColorChooser() {
-        Color initial = Color.GRAY;
-        JColorChooser chooser = new JColorChooser(initial);
-        AbstractColorChooserPanel[] chooserPanels = chooser.getChooserPanels();
-        for (AbstractColorChooserPanel chooserPanel : chooserPanels) {
-            Class<? extends AbstractColorChooserPanel> panelClass = chooserPanel.getClass();
-            String clsName = panelClass.getName();
-            if ("javax.swing.colorchooser.DefaultSwatchChooserPanel".equals(clsName)) {
-                chooser.removeChooserPanel(chooserPanel);
-            }
-        }
-        for (AbstractColorChooserPanel ccPanel : chooserPanels) {
-            ccPanel.setColorTransparencySelectionEnabled(false);
-        }
-        final class ColorListener implements ActionListener {
-            private final JColorChooser chooser;
-            @Getter @Setter
-            private Color color;
-            private ColorListener(JColorChooser colorChooser) {
-                this.chooser = colorChooser;
-            }
-            public void actionPerformed(ActionEvent e) {
-                color = chooser.getColor();
-            }
-        }
-        ColorListener colorTracker = new ColorListener(chooser);
-        class DisposeChooserOnClose extends ComponentAdapter {
-            public void componentHidden(ComponentEvent e) {
-                Window window = (Window) e.getComponent();
-                window.dispose();
-            }
-        }
-        JDialog dialog = JColorChooser.createDialog(null, "Choose Background",
-                true, chooser, colorTracker, e -> colorTracker.setColor(initial));
-        dialog.addComponentListener(new DisposeChooserOnClose());
-        dialog.setVisible(true);
-        return colorTracker.getColor();
     }
 
 }

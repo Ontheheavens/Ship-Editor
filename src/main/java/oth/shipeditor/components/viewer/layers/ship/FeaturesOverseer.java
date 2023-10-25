@@ -1,6 +1,7 @@
 package oth.shipeditor.components.viewer.layers.ship;
 
 import lombok.Getter;
+import org.apache.commons.collections4.map.ListOrderedMap;
 import oth.shipeditor.communication.BusEventListener;
 import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.components.DeleteButtonPressed;
@@ -140,7 +141,7 @@ public class FeaturesOverseer {
         var slotPainter = painter.getWeaponSlotPainter();
         if (slotPainter == null) return null;
 
-        Map<String, InstalledFeature> result = new LinkedHashMap<>();
+        Map<String, InstalledFeature> result = new ListOrderedMap<>();
         Set<Map.Entry<String, InstalledFeature>> entries = installedFeatureMap.entrySet();
         Stream<Map.Entry<String, InstalledFeature>> stream = entries.stream();
         stream.forEach(featureEntry -> {
@@ -155,8 +156,9 @@ public class FeaturesOverseer {
     // However, the alternative is a lot of quite tricky generics; so let's leave this be.
 
     public void setBaseBuiltInsWithNewNormal(Map<String, InstalledFeature> rearrangedNormal) {
-        Map<String, InstalledFeature> combined = new LinkedHashMap<>(rearrangedNormal);
+        Map<String, InstalledFeature> combined = new ListOrderedMap<>();
         var decoratives = this.getDecorativesFromBaseHull();
+        combined.putAll(rearrangedNormal);
         combined.putAll(decoratives);
         ShipPainter shipPainter = parent.getPainter();
 
@@ -167,7 +169,8 @@ public class FeaturesOverseer {
     }
 
     public void setSkinBuiltInsWithNewNormal(Map<String, InstalledFeature> rearrangedNormal) {
-        Map<String, InstalledFeature> combined = new LinkedHashMap<>(rearrangedNormal);
+        Map<String, InstalledFeature> combined = new ListOrderedMap<>();
+        combined.putAll(rearrangedNormal);
         var decoratives = this.getDecorativesFromSkin();
         combined.putAll(decoratives);
         ShipPainter shipPainter = parent.getPainter();
@@ -181,9 +184,10 @@ public class FeaturesOverseer {
     }
 
     public void setBaseBuiltInsWithNewDecos(Map<String, InstalledFeature> rearrangedDecos) {
-        Map<String, InstalledFeature> combined = new LinkedHashMap<>(rearrangedDecos);
+        Map<String, InstalledFeature> combined = new ListOrderedMap<>();
         var normal = this.getBuiltInsFromBaseHull();
         combined.putAll(normal);
+        combined.putAll(rearrangedDecos);
         ShipPainter shipPainter = parent.getPainter();
 
         var oldCollection = shipPainter.getBuiltInWeapons();
@@ -191,9 +195,10 @@ public class FeaturesOverseer {
     }
 
     public void setSkinBuiltInsWithNewDecos(Map<String, InstalledFeature> rearrangedDecos) {
-        Map<String, InstalledFeature> combined = new LinkedHashMap<>(rearrangedDecos);
+        Map<String, InstalledFeature> combined = new ListOrderedMap<>();
         var normal = this.getBuiltInsFromSkin();
         combined.putAll(normal);
+        combined.putAll(rearrangedDecos);
         ShipPainter shipPainter = parent.getPainter();
 
         ShipSkin activeSkin = shipPainter.getActiveSkin();
@@ -394,6 +399,7 @@ public class FeaturesOverseer {
             FeaturesOverseer.commenceInstall(slotID, forInstall, skinBuiltIns,
                     activeSkin::invalidateBuiltIns);
         } else {
+            // Currently this adds a new entry to the built-ins map without any sorting; perhaps refactor later.
             var baseBuiltIns = shipPainter.getBuiltInWeapons();
             WeaponSpecFile specFile = forInstall.getSpecFile();
             WeaponPainter weaponPainter = forInstall.createPainterFromEntry(null, specFile);

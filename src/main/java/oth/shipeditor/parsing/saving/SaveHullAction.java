@@ -2,28 +2,31 @@ package oth.shipeditor.parsing.saving;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.log4j.Log4j2;
+import org.apache.commons.collections4.map.ListOrderedMap;
 import oth.shipeditor.components.CoordsDisplayMode;
 import oth.shipeditor.components.viewer.entities.BoundPoint;
+import oth.shipeditor.components.viewer.entities.ShieldCenterPoint;
+import oth.shipeditor.components.viewer.entities.ShipCenterPoint;
 import oth.shipeditor.components.viewer.entities.bays.LaunchBay;
 import oth.shipeditor.components.viewer.entities.bays.LaunchPortPoint;
 import oth.shipeditor.components.viewer.entities.engine.EnginePoint;
 import oth.shipeditor.components.viewer.entities.weapon.SlotData;
 import oth.shipeditor.components.viewer.entities.weapon.WeaponSlotPoint;
+import oth.shipeditor.components.viewer.layers.ship.FeaturesOverseer;
 import oth.shipeditor.components.viewer.layers.ship.ShipLayer;
 import oth.shipeditor.components.viewer.layers.ship.ShipPainter;
 import oth.shipeditor.components.viewer.layers.ship.data.ShipHull;
-import oth.shipeditor.components.viewer.painters.points.ship.BoundPointsPainter;
-import oth.shipeditor.components.viewer.painters.points.ship.EngineSlotPainter;
-import oth.shipeditor.components.viewer.painters.points.ship.LaunchBayPainter;
-import oth.shipeditor.components.viewer.painters.points.ship.WeaponSlotPainter;
+import oth.shipeditor.components.viewer.painters.points.ship.*;
 import oth.shipeditor.parsing.FileUtilities;
 import oth.shipeditor.representation.EngineSlot;
 import oth.shipeditor.representation.HullSpecFile;
+import oth.shipeditor.representation.HullStyle;
 import oth.shipeditor.representation.weapon.WeaponMount;
 import oth.shipeditor.representation.weapon.WeaponSize;
 import oth.shipeditor.representation.weapon.WeaponSlot;
 import oth.shipeditor.representation.weapon.WeaponType;
 import oth.shipeditor.utility.Utility;
+import oth.shipeditor.utility.graphics.ColorUtilities;
 import oth.shipeditor.utility.text.StringConstants;
 import oth.shipeditor.utility.text.StringValues;
 
@@ -34,6 +37,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Stream;
 
 /**
@@ -74,6 +78,7 @@ final class SaveHullAction {
         }
     }
 
+    @SuppressWarnings("OverlyCoupledMethod")
     private static HullSpecFile rebuildHullFile(ShipLayer shipLayer) {
         HullSpecFile result = new HullSpecFile();
 
@@ -98,10 +103,67 @@ final class SaveHullAction {
         WeaponSlot[] serializableWeaponSlots = SaveHullAction.rebuildWeaponSlots(shipPainter);
         result.setWeaponSlots(serializableWeaponSlots);
 
-        String[] serializableBuiltInWings = SaveHullAction.rebuildBuiltInWings(shipLayer.getHull());
+        ShipHull shipHull = shipLayer.getHull();
+        String[] serializableBuiltInWings = SaveHullAction.rebuildBuiltInWings(shipHull);
         if (serializableBuiltInWings != null) {
             result.setBuiltInWings(serializableBuiltInWings);
         }
+
+        @SuppressWarnings("LocalVariableNamingConvention")
+        Map<String, String> serializableBuiltInWeapons = SaveHullAction.rebuildBuiltInWeapons(shipLayer);
+        if (serializableBuiltInWeapons != null) {
+            result.setBuiltInWeapons(serializableBuiltInWeapons);
+        }
+
+        String[] serializableBuiltInMods = SaveHullAction.rebuildBuiltInMods(shipHull);
+        if (serializableBuiltInMods != null) {
+            result.setBuiltInMods(serializableBuiltInMods);
+        }
+
+        var runtimeCoversColor = shipHull.getCoversColor();
+        if (runtimeCoversColor != null) {
+            String serializableCoversColor = ColorUtilities.convertColorToString(runtimeCoversColor);
+            result.setCoversColor(serializableCoversColor);
+        } else {
+            result.setCoversColor("");
+        }
+
+        result.setViewOffset(shipHull.getViewOffset());
+
+        ShieldPointPainter shieldPointPainter = shipPainter.getShieldPointPainter();
+        ShieldCenterPoint shieldCenterPoint = shieldPointPainter.getShieldCenterPoint();
+        float shieldRadius = shieldCenterPoint.getShieldRadius();
+
+        result.setShieldRadius(shieldRadius);
+
+        Point2D shieldPosition = Utility.getPointCoordinatesForDisplay(shieldCenterPoint.getPosition(),
+                shipPainter, CoordsDisplayMode.SHIP_CENTER);
+        result.setShieldCenter((Point2D.Double) shieldPosition);
+
+        CenterPointPainter centerPointPainter = shipPainter.getCenterPointPainter();
+        ShipCenterPoint shipCenterPoint = centerPointPainter.getCenterPoint();
+        float collisionRadius = shipCenterPoint.getCollisionRadius();
+        result.setCollisionRadius(collisionRadius);
+
+        Point2D centerPosition = Utility.getPointCoordinatesForDisplay(shipCenterPoint.getPosition(),
+                shipPainter, CoordsDisplayMode.SHIPCENTER_ANCHOR);
+        result.setCenter((Point2D.Double) centerPosition);
+
+        Point2D moduleAnchor = centerPointPainter.getModuleAnchorOffset();
+        if (moduleAnchor != null) {
+            result.setModuleAnchor((Point2D.Double) moduleAnchor);
+        }
+
+        // TODO: implement proper dimension editing and serializing later.
+        result.setHeight(shipPainter.getSpriteHeight());
+        result.setWidth(shipPainter.getSpriteWidth());
+
+        // TODO: all of this needs UI.
+
+        HullStyle hullStyle = shipHull.getHullStyle();
+        result.setStyle(hullStyle.getHullStyleID());
+
+        result.setSpriteName(shipLayer.getRelativeSpritePath());
 
         return result;
     }
@@ -280,6 +342,44 @@ final class SaveHullAction {
             }
 
             return serializableWings;
+        }
+    }
+
+    private static Map<String, String> rebuildBuiltInWeapons(ShipLayer shipLayer) {
+        ShipPainter shipPainter = shipLayer.getPainter();
+
+        // Quick and hacky way of sorting entries: built-ins first, decoratives last.
+        FeaturesOverseer featuresOverseer = shipLayer.getFeaturesOverseer();
+        var builtInsFromBaseHull = featuresOverseer.getBuiltInsFromBaseHull();
+        featuresOverseer.setBaseBuiltInsWithNewNormal(builtInsFromBaseHull);
+
+        var runtimeWeapons = shipPainter.getBuiltInWeapons();
+
+        if (runtimeWeapons == null || runtimeWeapons.isEmpty()) {
+            return null;
+        } else {
+
+            Map<String, String> serializableWeapons = new ListOrderedMap<>();
+
+            runtimeWeapons.forEach((slotID, feature) -> serializableWeapons.put(slotID, feature.getID()));
+
+            return serializableWeapons;
+        }
+    }
+
+    private static String[] rebuildBuiltInMods(ShipHull shipHull) {
+        var runtimeMods = shipHull.getBuiltInMods();
+        if (runtimeMods == null || runtimeMods.isEmpty()) {
+            return null;
+        } else {
+            String[] serializableMods = new String[runtimeMods.size()];
+
+            for (int i = 0; i < runtimeMods.size(); i++) {
+                var modEntry = runtimeMods.get(i);
+                serializableMods[i] = modEntry.getHullmodID();
+            }
+
+            return serializableMods;
         }
     }
 

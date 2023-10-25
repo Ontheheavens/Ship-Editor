@@ -80,19 +80,7 @@ public class WeaponFilterPanel extends JPanel {
 
         allFilterBoxes = new HashSet<>();
 
-        JButton selectAll = new JButton();
-        selectAll.setText("Select all");
-        selectAll.addActionListener(e -> WeaponFilterPanel.toggleAll(true));
-
-        JButton deselectAll = new JButton();
-        deselectAll.setText("Deselect all");
-        deselectAll.addActionListener(e -> WeaponFilterPanel.toggleAll(false));
-
-        JPanel buttonContainer = new JPanel();
-        buttonContainer.setLayout(new BoxLayout(buttonContainer, BoxLayout.LINE_AXIS));
-        buttonContainer.setBorder(new EmptyBorder(6, 6, 2, 0));
-        buttonContainer.add(selectAll);
-        buttonContainer.add(deselectAll);
+        JPanel buttonContainer = WeaponFilterPanel.getSelectionButtonsPanel();
 
         filtersPane.add(buttonContainer);
 
@@ -115,6 +103,23 @@ public class WeaponFilterPanel extends JPanel {
         verticalScrollBar.setUnitIncrement(12);
 
         this.add(scrollContainer, BorderLayout.CENTER);
+    }
+
+    private static JPanel getSelectionButtonsPanel() {
+        JButton selectAll = new JButton();
+        selectAll.setText("Select all");
+        selectAll.addActionListener(e -> WeaponFilterPanel.toggleAll(true));
+
+        JButton deselectAll = new JButton();
+        deselectAll.setText("Deselect all");
+        deselectAll.addActionListener(e -> WeaponFilterPanel.toggleAll(false));
+
+        JPanel buttonContainer = new JPanel();
+        buttonContainer.setLayout(new BoxLayout(buttonContainer, BoxLayout.LINE_AXIS));
+        buttonContainer.setBorder(new EmptyBorder(6, 6, 2, 0));
+        buttonContainer.add(selectAll);
+        buttonContainer.add(deselectAll);
+        return buttonContainer;
     }
 
     private static void toggleAll(boolean enable) {
