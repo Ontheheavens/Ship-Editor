@@ -69,6 +69,14 @@ public class ShieldPointPainter extends SinglePointPainter {
         this.setPaintOpacity(styleInnerColorOpacity);
     }
 
+    public void setShieldStyle(HullStyle style) {
+        Color shieldInnerColor = style.getShieldInnerColor();
+        float styleInnerColorOpacity = ColorUtilities.getOpacityFromAlpha(shieldInnerColor.getAlpha());
+        this.setPaintOpacity(styleInnerColorOpacity);
+
+        this.shieldCenterPoint.setAssociatedStyle(style);
+    }
+
     private void initModeListening() {
         List<BusEventListener> listeners = getListeners();
         BusEventListener modeListener = event -> {

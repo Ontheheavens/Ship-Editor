@@ -370,13 +370,22 @@ public final class ComponentUtilities {
         return new Pair<>(topContainer, loadButton);
     }
 
+    public static JComponent addLabelAndComponent(JPanel parent, JLabel label, JComponent component, int y) {
+        int leftPad = 6;
+        int rightPad = 6;
+        int labelPad = 3;
+        return ComponentUtilities.addLabelAndComponent(parent, label, component, leftPad, rightPad, labelPad, y);
+    }
+
     /**
      * @param parent assumes that JPanel instance has GridBagLayout set as component layout.
      */
-    public static JComponent addLabelAndComponent(JPanel parent, JLabel label, JComponent component, int y) {
+    @SuppressWarnings("MethodWithTooManyParameters")
+    public static JComponent addLabelAndComponent(JPanel parent, JLabel label, JComponent component,
+                                                  int leftPad, int rightPad, int labelPad, int y) {
         GridBagConstraints constraints = new GridBagConstraints();
 
-        constraints.insets = new Insets(3, 6, 0, 3);
+        constraints.insets = new Insets(3, leftPad, 0, 3);
         constraints.gridx = 0;
         constraints.gridy = y;
         constraints.weightx = 0.0;
@@ -388,10 +397,10 @@ public final class ComponentUtilities {
         constraints.gridy = y;
         if (component instanceof JLabel) {
             constraints.fill = GridBagConstraints.NONE;
-            constraints.insets = new Insets(3, 3, 0, 9);
+            constraints.insets = new Insets(3, 3, 0, rightPad + labelPad);
         } else {
             constraints.fill = GridBagConstraints.HORIZONTAL;
-            constraints.insets = new Insets(3, 3, 0, 6);
+            constraints.insets = new Insets(3, 3, 0, rightPad);
         }
         constraints.anchor = GridBagConstraints.LINE_END;
         parent.add(component, constraints);

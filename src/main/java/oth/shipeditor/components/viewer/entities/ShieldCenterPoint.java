@@ -28,12 +28,12 @@ public class ShieldCenterPoint extends BaseWorldPoint {
 
     private final ShieldPointPainter parentPainter;
 
-    @Getter
-    private final HullStyle associatedStyle;
+    @Getter @Setter
+    private HullStyle associatedStyle;
 
-    public ShieldCenterPoint(Point2D position, float radius, ShipPainter layer, HullStyle style,
+    public ShieldCenterPoint(Point2D pointPosition, float radius, ShipPainter layer, HullStyle style,
                              ShieldPointPainter parent) {
-        super(position, layer);
+        super(pointPosition, layer);
         this.shieldRadius = radius;
         this.associatedStyle = style;
         this.parentPainter = parent;

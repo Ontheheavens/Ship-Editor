@@ -41,6 +41,7 @@ public class ViewerLayerWidgetsPanel extends JPanel {
     @SuppressWarnings("ThisEscapedInObjectConstruction")
     public ViewerLayerWidgetsPanel() {
         this.setLayout(new BoxLayout(this, BoxLayout.PAGE_AXIS));
+        this.setBorder(new EmptyBorder(0, 0, 4, 0));
 
         JPanel opacityWidget = this.createOpacityWidget();
         this.add(opacityWidget);

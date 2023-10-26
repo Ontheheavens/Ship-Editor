@@ -7,9 +7,11 @@ import oth.shipeditor.components.viewer.layers.ViewerLayer;
 import oth.shipeditor.components.viewer.layers.ship.data.ShipHull;
 import oth.shipeditor.components.viewer.layers.ship.data.ShipSkin;
 import oth.shipeditor.components.viewer.layers.ship.data.ShipVariant;
+import oth.shipeditor.components.viewer.painters.points.ship.ShieldPointPainter;
 import oth.shipeditor.persistence.SettingsManager;
 import oth.shipeditor.representation.GameDataRepository;
 import oth.shipeditor.representation.HullSpecFile;
+import oth.shipeditor.representation.HullStyle;
 import oth.shipeditor.representation.SkinSpecFile;
 import oth.shipeditor.utility.graphics.Sprite;
 
@@ -56,6 +58,14 @@ public class ShipLayer extends ViewerLayer {
             return activeSkin.getSkinHullId();
         }
         return hull.getHullID();
+    }
+
+    public void setHullStyle(HullStyle style) {
+        ShipHull shipHull = this.getHull();
+        shipHull.setHullStyle(style);
+        ShipPainter shipPainter = this.getPainter();
+        ShieldPointPainter shieldPointPainter = shipPainter.getShieldPointPainter();
+        shieldPointPainter.setShieldStyle(style);
     }
 
     public String getHullFileName() {
