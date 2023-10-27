@@ -199,21 +199,7 @@ public class LayerManager {
                 if (activeLayer != null && activeLayer instanceof ShipLayer checkedLayer) {
                     ShipHull data = checkedLayer.getHull();
                     if (data != null) {
-                        String hullID = data.getHullID();
-                        if (!hullID.equals(skinSpecFile.getBaseHullId())) {
-                            Path skinFilePath = skinSpecFile.getFilePath();
-                            JOptionPane.showMessageDialog(null,
-                                    "Hull ID of active layer does not equal base hull ID of skin: " +
-                                            Optional.of(skinFilePath.toString()).orElse(skinSpecFile.toString()),
-                                    "Ship ID mismatch!",
-                                    JOptionPane.ERROR_MESSAGE);
-                            throw new IllegalStateException("Illegal skin file opening operation!");
-                        }
-                        ShipSkin created = checkedLayer.addSkin(skinSpecFile);
-                        if (checked.setAsActive()) {
-                            ShipPainter shipPainter = checkedLayer.getPainter();
-                            shipPainter.setActiveSpec(ActiveShipSpec.SKIN, created);
-                        }
+                        LayerManager.openSkinFile(checked, checkedLayer, data, skinSpecFile);
                     } else {
                         throw new IllegalStateException("Skin file loaded onto a null ship data!");
                     }
@@ -223,6 +209,25 @@ public class LayerManager {
                 }
             }
         });
+    }
+
+    private static void openSkinFile(SkinFileOpened checkedEvent, ShipLayer checkedLayer,
+                                     ShipHull data, SkinSpecFile skinSpecFile) {
+        String hullID = data.getHullID();
+        if (!hullID.equals(skinSpecFile.getBaseHullId())) {
+            Path skinFilePath = skinSpecFile.getFilePath();
+            JOptionPane.showMessageDialog(null,
+                    "Hull ID of active layer does not equal base hull ID of skin: " +
+                            Optional.of(skinFilePath.toString()).orElse(skinSpecFile.toString()),
+                    "Ship ID mismatch!",
+                    JOptionPane.ERROR_MESSAGE);
+            throw new IllegalStateException("Illegal skin file opening operation!");
+        }
+        ShipSkin created = checkedLayer.addSkin(skinSpecFile);
+        if (checkedEvent.setAsActive()) {
+            ShipPainter shipPainter = checkedLayer.getPainter();
+            shipPainter.setActiveSpec(ActiveShipSpec.SKIN, created);
+        }
     }
 
 }

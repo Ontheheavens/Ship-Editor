@@ -5,10 +5,12 @@ import oth.shipeditor.components.viewer.layers.ship.ShipLayer;
 import oth.shipeditor.components.viewer.layers.ship.data.ShipHull;
 import oth.shipeditor.persistence.SettingsManager;
 import oth.shipeditor.representation.GameDataRepository;
+import oth.shipeditor.representation.HullSize;
 import oth.shipeditor.representation.HullStyle;
 import oth.shipeditor.utility.components.ComponentUtilities;
 import oth.shipeditor.utility.components.MouseoverLabelListener;
 import oth.shipeditor.utility.graphics.ColorUtilities;
+import oth.shipeditor.utility.overseers.ComponentRepaint;
 import oth.shipeditor.utility.overseers.StaticController;
 import oth.shipeditor.utility.text.StringValues;
 
@@ -32,12 +34,15 @@ public class HullDataControlPanel extends JPanel {
 
     private JComboBox<HullStyle> styleSelector;
 
+    private JComboBox<HullSize> sizeSelector;
+
     @SuppressWarnings("ThisEscapedInObjectConstruction")
     HullDataControlPanel() {
         this.setLayout(new GridBagLayout());
         ComponentUtilities.outfitPanelWithTitle(this,
                 new Insets(1, 0, 0, 0), "Hull data");
 
+        addSizeSelector();
         addStyleSelector();
         addCoversColorChooser();
         addSpriteNameLabel();
@@ -49,7 +54,7 @@ public class HullDataControlPanel extends JPanel {
         spriteNameLabel.setBorder(new EmptyBorder(2, 0, 4, 0));
 
         ComponentUtilities.addLabelAndComponent(this, spriteNameLabel,
-                spriteNameValue, 2, 4, 0, 4);
+                spriteNameValue, 2, 4, 0, 5);
     }
 
     private void addCoversColorChooser() {
@@ -65,7 +70,7 @@ public class HullDataControlPanel extends JPanel {
         coversColorLabel.setBorder(ComponentUtilities.createLabelSimpleBorder(insets));
 
         ComponentUtilities.addLabelAndComponent(this, coversColorLabel,
-                coversColorValue, 0, 2, 0, 5);
+                coversColorValue, 0, 2, 0, 6);
     }
 
     private void addStyleSelector() {
@@ -93,18 +98,60 @@ public class HullDataControlPanel extends JPanel {
 
             if (cachedLayer != null) {
                 cachedLayer.setHullStyle(selectedValue);
-                StaticController.reselectCurrentLayer();
+                processChange();
             }
         });
 
         ComponentUtilities.addLabelAndComponent(this, selectorLabel, styleSelector,
+                2, 0, 0, 4);
+    }
+
+    private void addSizeSelector() {
+        JLabel selectorLabel = new JLabel("Hull size:");
+        ComboBoxModel<HullSize> sizeModel = new DefaultComboBoxModel<>(HullSize.values());
+        sizeSelector  = new JComboBox<>(sizeModel);
+        sizeSelector.setRenderer(new DefaultListCellRenderer() {
+            @Override
+            public Component getListCellRendererComponent(JList<?> list, Object value,
+                                                          int index, boolean isSelected,
+                                                          boolean cellHasFocus) {
+                super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+                HullSize size = (HullSize) value;
+                if (size != null) {
+                    setText(size.getDisplayedName());
+                } else {
+                    setText(StringValues.NOT_INITIALIZED);
+                }
+                return this;
+            }
+        });
+
+        sizeSelector.addActionListener(e -> {
+            HullSize selectedValue = (HullSize) sizeSelector.getSelectedItem();
+
+            if (cachedLayer != null) {
+                ShipHull shipHull = cachedLayer.getHull();
+                shipHull.setHullSize(selectedValue);
+
+                processChange();
+            }
+        });
+
+        ComponentUtilities.addLabelAndComponent(this, selectorLabel, sizeSelector,
                 2, 0, 0, 3);
+    }
+
+    private void processChange() {
+        this.refreshData(cachedLayer);
+        ComponentRepaint repainter = StaticController.getRepainter();
+        repainter.queueViewerRepaint();
     }
 
     void clearData() {
         cachedLayer = null;
 
         spriteNameValue.setText(StringValues.NOT_INITIALIZED);
+        spriteNameValue.setToolTipText(StringValues.NOT_INITIALIZED);
 
         coversColorValue.setIcon(null);
         coversColorValue.setOpaque(false);
@@ -115,6 +162,9 @@ public class HullDataControlPanel extends JPanel {
 
         styleSelector.setSelectedItem(null);
         styleSelector.setEnabled(false);
+
+        sizeSelector.setSelectedItem(null);
+        sizeSelector.setEnabled(false);
     }
 
     void refreshData(ShipLayer layer) {
@@ -134,7 +184,9 @@ public class HullDataControlPanel extends JPanel {
             coversColorValue.setText("Not defined");
         }
 
-        spriteNameValue.setText(layer.getRelativeSpritePath());
+        String relativeSpritePath = layer.getRelativeSpritePath();
+        spriteNameValue.setText(relativeSpritePath);
+        spriteNameValue.setToolTipText(relativeSpritePath);
 
         GameDataRepository gameData = SettingsManager.getGameData();
         Map<String, HullStyle> allHullStyles = gameData.getAllHullStyles();
@@ -148,6 +200,9 @@ public class HullDataControlPanel extends JPanel {
             styleSelector.setModel(styleModel);
             styleSelector.setSelectedItem(shipHull.getHullStyle());
         }
+
+        sizeSelector.setEnabled(true);
+        sizeSelector.setSelectedItem(shipHull.getHullSize());
     }
 
     @SuppressWarnings("ExtractMethodRecommender")

@@ -41,7 +41,7 @@ import java.util.List;
 import java.util.Locale;
 
 /**
- * Despite being a bit of a God-class, this one is justified in its coupling as a conceptual root of the whole app.
+ * This one is a conceptual root of the whole app.
  * It is responsible for the foundation of editing workflow - visual display of ships and its point features.
  * @author Ontheheavens
  * @since 29.04.2023

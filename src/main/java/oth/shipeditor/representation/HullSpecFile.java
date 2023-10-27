@@ -47,11 +47,11 @@ public class HullSpecFile implements ShipSpecFile {
     @JsonProperty("hullSize")
     private String hullSize;
 
-    @JsonProperty(StringConstants.SPRITE_NAME)
-    private String spriteName;
-
     @JsonProperty(StringConstants.STYLE)
     private String style;
+
+    @JsonProperty(StringConstants.SPRITE_NAME)
+    private String spriteName;
 
     @JsonProperty("height")
     private int height;

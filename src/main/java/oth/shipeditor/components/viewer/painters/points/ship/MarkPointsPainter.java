@@ -17,10 +17,10 @@ import java.util.List;
  * @author Ontheheavens
  * @since 30.04.2023
  */
+@Getter
 @Log4j2
 public final class MarkPointsPainter extends AbstractPointPainter {
 
-    @Getter
     private final List<MarkPoint> markPoints;
 
     private MarkPointsPainter() {
