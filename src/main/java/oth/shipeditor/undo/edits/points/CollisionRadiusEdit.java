@@ -1,6 +1,5 @@
 package oth.shipeditor.undo.edits.points;
 
-import oth.shipeditor.communication.events.Events;
 import oth.shipeditor.components.viewer.entities.ShipCenterPoint;
 import oth.shipeditor.undo.AbstractEdit;
 import oth.shipeditor.utility.overseers.StaticController;
@@ -28,7 +27,7 @@ public final class CollisionRadiusEdit extends AbstractEdit {
     public void undo() {
         undoSubEdits();
         parentPoint.setCollisionRadius(oldRadius);
-        var repainter = StaticController.getRepainter();
+        var repainter = StaticController.getScheduler();
         repainter.queueViewerRepaint();
         repainter.queueCenterPanelsRepaint();
     }
@@ -37,7 +36,7 @@ public final class CollisionRadiusEdit extends AbstractEdit {
     public void redo() {
         redoSubEdits();
         parentPoint.setCollisionRadius(newRadius);
-        var repainter = StaticController.getRepainter();
+        var repainter = StaticController.getScheduler();
         repainter.queueViewerRepaint();
         repainter.queueCenterPanelsRepaint();
     }

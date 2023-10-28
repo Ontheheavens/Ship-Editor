@@ -35,7 +35,7 @@ public class FeatureInstallEdit<T extends InstallableEntry> extends AbstractEdit
         if (afterAction != null) {
             afterAction.run();
         }
-        var repainter = StaticController.getRepainter();
+        var repainter = StaticController.getScheduler();
         repainter.queueViewerRepaint();
         if (feature instanceof InstalledFeature installed && installed.getDataEntry() instanceof ShipCSVEntry) {
             repainter.queueModulesRepaint();
@@ -51,7 +51,7 @@ public class FeatureInstallEdit<T extends InstallableEntry> extends AbstractEdit
         if (afterAction != null) {
             afterAction.run();
         }
-        var repainter = StaticController.getRepainter();
+        var repainter = StaticController.getScheduler();
         repainter.queueViewerRepaint();
         if (feature instanceof InstalledFeature installed && installed.getDataEntry() instanceof ShipCSVEntry) {
             repainter.queueModulesRepaint();

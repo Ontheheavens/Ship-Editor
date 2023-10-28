@@ -36,7 +36,7 @@ public class FeatureUninstallEdit<T extends InstallableEntry> extends AbstractEd
         if (invalidator != null) {
             invalidator.run();
         }
-        var repainter = StaticController.getRepainter();
+        var repainter = StaticController.getScheduler();
         repainter.queueViewerRepaint();
         if (isModule) {
             repainter.queueModulesRepaint();
@@ -53,7 +53,7 @@ public class FeatureUninstallEdit<T extends InstallableEntry> extends AbstractEd
         if (invalidator != null) {
             invalidator.run();
         }
-        var repainter = StaticController.getRepainter();
+        var repainter = StaticController.getScheduler();
         repainter.queueViewerRepaint();
         if (isModule) {
             repainter.queueModulesRepaint();

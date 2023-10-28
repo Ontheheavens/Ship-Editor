@@ -83,7 +83,7 @@ public class InstalledFeatureList extends SortableList<InstalledFeature> {
             var slotPoint = slotPainter.getSlotByID(feature.getSlotID());
             if (slotPoint == null) return;
             EventBus.publish(new PointSelectQueued(slotPoint));
-            var repainter = StaticController.getRepainter();
+            var repainter = StaticController.getScheduler();
             repainter.queueViewerRepaint();
         }
     }

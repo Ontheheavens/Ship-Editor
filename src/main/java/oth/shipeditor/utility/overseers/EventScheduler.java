@@ -3,6 +3,7 @@ package oth.shipeditor.utility.overseers;
 import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.components.*;
 import oth.shipeditor.communication.events.viewer.ViewerRepaintQueued;
+import oth.shipeditor.communication.events.viewer.layers.ActiveLayerUpdated;
 
 import javax.swing.*;
 
@@ -11,7 +12,7 @@ import javax.swing.*;
  * @since 04.09.2023
  */
 @SuppressWarnings("ClassWithTooManyFields")
-public class ComponentRepaint {
+public class EventScheduler {
 
     private boolean viewerRepaintQueued;
 
@@ -37,9 +38,11 @@ public class ComponentRepaint {
 
     private boolean moduleControlRepaintQueued;
 
+    private boolean activeLayerUpdateQueued;
+
     @SuppressWarnings({"OverlyCoupledMethod", "OverlyComplexMethod"})
-    ComponentRepaint() {
-        Timer repaintTimer = new Timer(2, e -> {
+    EventScheduler() {
+        Timer repaintTimer = new Timer(8, e -> {
             if (viewerRepaintQueued) {
                 EventBus.publish(new ViewerRepaintQueued());
                 viewerRepaintQueued = false;
@@ -87,6 +90,10 @@ public class ComponentRepaint {
             if (moduleControlRepaintQueued) {
                 EventBus.publish(new ModuleControlRefreshQueued());
                 moduleControlRepaintQueued = false;
+            }
+            if (activeLayerUpdateQueued) {
+                EventBus.publish(new ActiveLayerUpdated(StaticController.getActiveLayer()));
+                activeLayerUpdateQueued = false;
             }
         });
         repaintTimer.setRepeats(true);
@@ -141,6 +148,10 @@ public class ComponentRepaint {
 
     public void queueModuleControlRepaint() {
         this.moduleControlRepaintQueued = true;
+    }
+
+    public void queueActiveLayerUpdate() {
+        this.activeLayerUpdateQueued = true;
     }
 
 }

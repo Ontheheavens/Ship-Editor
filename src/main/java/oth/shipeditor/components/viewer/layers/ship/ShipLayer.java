@@ -9,10 +9,7 @@ import oth.shipeditor.components.viewer.layers.ship.data.ShipSkin;
 import oth.shipeditor.components.viewer.layers.ship.data.ShipVariant;
 import oth.shipeditor.components.viewer.painters.points.ship.ShieldPointPainter;
 import oth.shipeditor.persistence.SettingsManager;
-import oth.shipeditor.representation.GameDataRepository;
-import oth.shipeditor.representation.HullSpecFile;
-import oth.shipeditor.representation.HullStyle;
-import oth.shipeditor.representation.SkinSpecFile;
+import oth.shipeditor.representation.*;
 import oth.shipeditor.utility.graphics.Sprite;
 
 import java.util.*;
@@ -186,6 +183,13 @@ public class ShipLayer extends ViewerLayer {
         this.hull = shipHull;
         ShipPainter shipPainter = getPainter();
         shipPainter.initFromHullSpec(hullSpecFile);
+
+        this.loadedVariants.clear();
+        this.skins.clear();
+        this.skins.add(ShipSkin.EMPTY);
+
+        shipPainter.activateEmptySkin();
+        shipPainter.selectVariant(VariantFile.empty());
     }
 
     @Override

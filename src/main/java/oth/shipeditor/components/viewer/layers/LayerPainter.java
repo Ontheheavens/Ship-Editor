@@ -118,11 +118,17 @@ public abstract class LayerPainter implements Painter {
     }
 
     public void cleanupForRemoval() {
-        for (AbstractPointPainter pointPainter : this.getAllPainters()) {
-            pointPainter.cleanupPointPainter();
-        }
+        cleanupPointPainters();
         listeners.forEach(EventBus::unsubscribe);
         UndoOverseer.cleanupRemovedLayer(this);
+    }
+
+    public void cleanupPointPainters() {
+        List<AbstractPointPainter> painters = this.getAllPainters();
+        for (AbstractPointPainter pointPainter : painters) {
+            pointPainter.cleanupPointPainter();
+        }
+        this.allPainters.clear();
     }
 
     public void setSpriteOpacity(float opacity) {

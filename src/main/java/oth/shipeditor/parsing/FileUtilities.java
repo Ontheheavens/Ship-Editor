@@ -112,10 +112,13 @@ public final class FileUtilities {
         Sprite sprite = FileLoading.loadSprite(spriteFile);
 
         var manager = StaticController.getLayerManager();
-        var layer = manager.createShipLayer();
-        manager.setActiveLayer(layer);
-        var viewer = StaticController.getViewer();
-        viewer.loadLayer(layer, sprite);
+        ShipLayer layer = null;
+        if (manager != null) {
+            layer = manager.createShipLayer();
+            manager.setActiveLayer(layer);
+            var viewer = StaticController.getViewer();
+            viewer.loadLayer(layer, sprite);
+        }
 
         return layer;
     }
@@ -175,6 +178,21 @@ public final class FileUtilities {
             result = new File(selectedFile + "." + extension);
         }
         return result;
+    }
+
+    public static boolean isFileWithinGamePackages(File file) {
+        Path filePath = file.toPath();
+
+        if (filePath.startsWith(SettingsManager.getCoreFolderPath())) {
+            return true;
+        }
+        for (Path modFolder : SettingsManager.getAllModFolders()) {
+            if (filePath.startsWith(modFolder)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
 }

@@ -14,7 +14,7 @@ import oth.shipeditor.representation.weapon.WeaponMount;
 import oth.shipeditor.representation.weapon.WeaponSize;
 import oth.shipeditor.representation.weapon.WeaponType;
 import oth.shipeditor.undo.EditDispatch;
-import oth.shipeditor.utility.overseers.ComponentRepaint;
+import oth.shipeditor.utility.overseers.EventScheduler;
 import oth.shipeditor.utility.overseers.StaticController;
 import oth.shipeditor.utility.Utility;
 import oth.shipeditor.utility.graphics.ColorUtilities;
@@ -139,7 +139,7 @@ public class WeaponSlotPoint extends AngledPoint implements SlotPoint {
     public void changeSlotID(String newId) {
         ShipPainter parent = this.getParent();
         if (!parent.isGeneratedIDUnassigned(newId)) {
-            ComponentRepaint repainter = StaticController.getRepainter();
+            EventScheduler repainter = StaticController.getScheduler();
             repainter.queueViewerRepaint();
             repainter.queueSlotControlRepaint();
             repainter.queueBuiltInsRepaint();
@@ -148,7 +148,7 @@ public class WeaponSlotPoint extends AngledPoint implements SlotPoint {
 
         this.setId(newId);
         WeaponSlotPainter.setSlotOverrideFromSkin(this, parent.getActiveSkin());
-        ComponentRepaint repainter = StaticController.getRepainter();
+        EventScheduler repainter = StaticController.getScheduler();
         repainter.queueViewerRepaint();
         repainter.queueSlotControlRepaint();
         repainter.queueBuiltInsRepaint();

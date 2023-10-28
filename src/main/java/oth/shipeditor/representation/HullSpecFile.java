@@ -39,16 +39,16 @@ public class HullSpecFile implements ShipSpecFile {
     Path tableFilePath;
 
     @JsonProperty(StringConstants.HULL_NAME)
-    String hullName;
+    String hullName = "New Hull";
 
     @JsonProperty(StringConstants.HULL_ID)
-    private String hullId;
+    private String hullId = "new_hull";
 
     @JsonProperty("hullSize")
-    private String hullSize;
+    private String hullSize = StringConstants.DEFAULT_ID;
 
     @JsonProperty(StringConstants.STYLE)
-    private String style;
+    private String style = StringConstants.LOW_TECH;
 
     @JsonProperty(StringConstants.SPRITE_NAME)
     private String spriteName;
@@ -100,17 +100,17 @@ public class HullSpecFile implements ShipSpecFile {
 
     @JsonProperty(StringConstants.BUILT_IN_WINGS)
     @JsonInclude(JsonInclude.Include.NON_NULL)
-    private String[] builtInWings;
+    private String[] builtInWings = new String[0];
 
     @JsonProperty("weaponSlots")
-    private WeaponSlot[] weaponSlots;
+    private WeaponSlot[] weaponSlots = new WeaponSlot[0];
 
     @JsonProperty("engineSlots")
-    private EngineSlot[] engineSlots;
+    private EngineSlot[] engineSlots = new EngineSlot[0];
 
     @JsonProperty("bounds")
     @JsonDeserialize(using = Point2DArrayDeserializer.class)
     @JsonSerialize(using = Point2DArraySerializer.class)
-    Point2D.Double[] bounds;
+    Point2D.Double[] bounds = new Point2D.Double[0];
 
 }

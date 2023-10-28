@@ -26,7 +26,7 @@ public class SlotSizeChangeEdit extends AbstractEdit {
     @Override
     public void undo() {
         slot.setWeaponSize(old);
-        var repainter = StaticController.getRepainter();
+        var repainter = StaticController.getScheduler();
         repainter.queueViewerRepaint();
         repainter.queueSlotControlRepaint();
         repainter.queueBaysPanelRepaint();
@@ -37,7 +37,7 @@ public class SlotSizeChangeEdit extends AbstractEdit {
     @Override
     public void redo() {
         slot.setWeaponSize(updated);
-        var repainter = StaticController.getRepainter();
+        var repainter = StaticController.getScheduler();
         repainter.queueViewerRepaint();
         repainter.queueSlotControlRepaint();
         repainter.queueBaysPanelRepaint();

@@ -259,15 +259,18 @@ public final class PrimaryViewer extends Viewer implements LayerViewer {
                 Iterable<File> droppedFiles = (Iterable<File>) transferable.getTransferData(DataFlavor.javaFileListFlavor);
                 File firstEligible = null;
                 for (File file : droppedFiles) {
-                    if (file.getName().toLowerCase(Locale.ROOT).endsWith(".png")) {
+                    boolean correctExtension = file.getName().toLowerCase(Locale.ROOT).endsWith(".png");
+                    boolean correctLocation = FileUtilities.isFileWithinGamePackages(file);
+                    if (correctExtension && correctLocation) {
                         firstEligible = file;
                         break;
                     }
                 }
                 if (firstEligible == null) {
-                    log.error("Drag-and-drop sprite loading unsuccessful: wrong file extension.");
+                    log.error("Drag-and-drop sprite loading unsuccessful: requires PNG file located in game packages.");
                     JOptionPane.showMessageDialog(null,
-                            "Failed to load file as sprite or initialize layer with it: invalid file extension.",
+                            "Failed to load file as sprite or initialize layer with it:" +
+                                    " requires PNG file located in game packages.",
                             "Drag-and-drop layer initialization unsuccessful!",
                             JOptionPane.INFORMATION_MESSAGE);
                     dtde.dropComplete(false);

@@ -28,7 +28,7 @@ public class EngineSizeSet extends AbstractEdit {
     public void undo() {
         undoSubEdits();
         enginePoint.setSize(oldSize);
-        var repainter = StaticController.getRepainter();
+        var repainter = StaticController.getScheduler();
         repainter.queueViewerRepaint();
         repainter.queueEnginesPanelRepaint();
     }
@@ -37,7 +37,7 @@ public class EngineSizeSet extends AbstractEdit {
     public void redo() {
         enginePoint.setSize(updatedSize);
         redoSubEdits();
-        var repainter = StaticController.getRepainter();
+        var repainter = StaticController.getScheduler();
         repainter.queueViewerRepaint();
         repainter.queueEnginesPanelRepaint();
     }

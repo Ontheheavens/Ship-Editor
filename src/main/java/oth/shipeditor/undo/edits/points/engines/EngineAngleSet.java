@@ -27,7 +27,7 @@ public class EngineAngleSet extends AbstractEdit {
     public void undo() {
         undoSubEdits();
         enginePoint.setAngle(oldAngle);
-        var repainter = StaticController.getRepainter();
+        var repainter = StaticController.getScheduler();
         repainter.queueViewerRepaint();
         repainter.queueEnginesPanelRepaint();
     }
@@ -36,7 +36,7 @@ public class EngineAngleSet extends AbstractEdit {
     public void redo() {
         enginePoint.setAngle(updatedAngle);
         redoSubEdits();
-        var repainter = StaticController.getRepainter();
+        var repainter = StaticController.getScheduler();
         repainter.queueViewerRepaint();
         repainter.queueEnginesPanelRepaint();
     }

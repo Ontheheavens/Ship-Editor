@@ -28,7 +28,7 @@ public class EnginesSortEdit extends AbstractEdit {
     @Override
     public void undo() {
         pointPainter.setEnginePoints(oldList);
-        var repainter = StaticController.getRepainter();
+        var repainter = StaticController.getScheduler();
         repainter.queueViewerRepaint();
         repainter.queueEnginesPanelRepaint();
     }
@@ -36,7 +36,7 @@ public class EnginesSortEdit extends AbstractEdit {
     @Override
     public void redo() {
         pointPainter.setEnginePoints(newList);
-        var repainter = StaticController.getRepainter();
+        var repainter = StaticController.getScheduler();
         repainter.queueViewerRepaint();
         repainter.queueEnginesPanelRepaint();
     }

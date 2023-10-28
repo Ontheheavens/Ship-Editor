@@ -33,7 +33,7 @@ public class AnchorOffsetEdit extends AbstractEdit implements LayerEdit {
     public void undo() {
         undoSubEdits();
         layerPainter.setAnchor(oldOffset);
-        var repainter = StaticController.getRepainter();
+        var repainter = StaticController.getScheduler();
         repainter.queueViewerRepaint();
         repainter.queueBoundsPanelRepaint();
         repainter.queueCenterPanelsRepaint();
@@ -44,7 +44,7 @@ public class AnchorOffsetEdit extends AbstractEdit implements LayerEdit {
     public void redo() {
         layerPainter.setAnchor(updatedOffset);
         redoSubEdits();
-        var repainter = StaticController.getRepainter();
+        var repainter = StaticController.getScheduler();
         repainter.queueViewerRepaint();
         repainter.queueBoundsPanelRepaint();
         repainter.queueCenterPanelsRepaint();

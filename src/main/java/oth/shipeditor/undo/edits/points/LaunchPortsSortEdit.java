@@ -65,7 +65,7 @@ public class LaunchPortsSortEdit extends AbstractEdit {
             // This is not optimal from performance standpoint, since the reselection triggers a very broad response;
             // Can be refactored later to only target specific bays tree refresh.
             StaticController.reselectCurrentLayer();
-            var repainter = StaticController.getRepainter();
+            var repainter = StaticController.getScheduler();
             repainter.queueViewerRepaint();
             repainter.queueBaysPanelRepaint();
         }

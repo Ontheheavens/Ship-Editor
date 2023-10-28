@@ -14,7 +14,8 @@ import oth.shipeditor.components.instrument.ship.builtins.weapons.DecorativesPan
 import oth.shipeditor.components.instrument.ship.centers.CollisionPanel;
 import oth.shipeditor.components.instrument.ship.centers.ShieldPanel;
 import oth.shipeditor.components.instrument.ship.engines.EnginesPanel;
-import oth.shipeditor.components.instrument.ship.skins.SkinPanel;
+import oth.shipeditor.components.instrument.ship.skins.SkinDataPanel;
+import oth.shipeditor.components.instrument.ship.skins.SkinSlotOverridesPanel;
 import oth.shipeditor.components.instrument.ship.slots.WeaponSlotsPanel;
 import oth.shipeditor.components.instrument.ship.variant.VariantDataPanel;
 import oth.shipeditor.components.instrument.ship.variant.VariantModulesPanel;
@@ -57,12 +58,17 @@ public final class ShipInstrumentsPane extends AbstractInstrumentsPane {
         this.createTab(new BuiltInWingsPanel(), EditorInstrument.BUILT_IN_WINGS);
         this.createTab(new BuiltInWeaponsPanel(), EditorInstrument.BUILT_IN_WEAPONS);
         this.createTab(new DecorativesPanel(), EditorInstrument.DECORATIVES);
-        this.createTab(new SkinPanel(), EditorInstrument.SKIN_DATA);
-        this.createTab(new JPanel(), EditorInstrument.SKIN_SLOTS);
+        this.createTab(new SkinDataPanel(), EditorInstrument.SKIN_DATA);
+        this.createTab(new SkinSlotOverridesPanel(), EditorInstrument.SKIN_SLOTS);
         this.createTab(new VariantDataPanel(), EditorInstrument.VARIANT_DATA);
         this.createTab(new VariantWeaponsPanel(), EditorInstrument.VARIANT_WEAPONS);
         this.createTab(new VariantModulesPanel(), EditorInstrument.VARIANT_MODULES);
         updateTooltipText();
+
+        // Temporary until skin editing is implemented.
+        String skinSlotsTitle = EditorInstrument.SKIN_SLOTS.getTitle();
+        int skinSlotsIndex = this.indexOfTab(skinSlotsTitle);
+        this.setEnabledAt(skinSlotsIndex, false);
     }
 
     private void createTab(JPanel panel, EditorInstrument mode) {

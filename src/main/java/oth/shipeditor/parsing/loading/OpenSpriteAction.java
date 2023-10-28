@@ -36,7 +36,7 @@ public class OpenSpriteAction extends AbstractAction {
         if (returnVal == JFileChooser.APPROVE_OPTION) {
             File file = spriteChooser.getSelectedFile();
 
-            if (OpenSpriteAction.isFileWithinPackages(file)) {
+            if (FileUtilities.isFileWithinGamePackages(file)) {
                 Sprite sprite = FileLoading.loadSprite(file);
                 EventBus.publish(new SpriteOpened(sprite));
             } else {
@@ -50,22 +50,6 @@ public class OpenSpriteAction extends AbstractAction {
         else {
             log.info(FileUtilities.OPEN_COMMAND_CANCELLED_BY_USER);
         }
-    }
-
-    private static boolean isFileWithinPackages(File file) {
-        Path filePath = file.toPath();
-
-        if (filePath.startsWith(SettingsManager.getCoreFolderPath())) {
-            return true;
-        }
-
-        for (Path modFolder : SettingsManager.getAllModFolders()) {
-            if (filePath.startsWith(modFolder)) {
-                return true;
-            }
-        }
-
-        return false;
     }
 
 }

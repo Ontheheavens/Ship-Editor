@@ -125,6 +125,9 @@ public class CenterPointPainter extends SinglePointPainter {
     }
 
     public void initCenterPoint(Point2D translatedCenter, HullSpecFile hullSpecFile) {
+        if (this.centerPoint != null) {
+            this.removePoint(centerPoint);
+        }
         this.centerPoint = new ShipCenterPoint(translatedCenter,
                 (float) hullSpecFile.getCollisionRadius(), this.getParentLayer(), this);
         this.addPoint(centerPoint);
@@ -168,7 +171,6 @@ public class CenterPointPainter extends SinglePointPainter {
 
     @Override
     public void removePoint(BaseWorldPoint point) {
-        if (point instanceof ShipCenterPoint) return;
         super.removePoint(point);
     }
 

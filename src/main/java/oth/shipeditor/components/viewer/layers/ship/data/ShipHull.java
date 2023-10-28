@@ -13,6 +13,7 @@ import oth.shipeditor.representation.HullStyle;
 import oth.shipeditor.utility.graphics.ColorUtilities;
 
 import java.awt.*;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -65,7 +66,13 @@ public class ShipHull {
             this.loadBuiltInWings(specFile);
         }
 
-        this.hullFileName = String.valueOf(specFile.getFilePath().getFileName());
+        Path specFilePath = specFile.getFilePath();
+        if (specFilePath != null) {
+            this.hullFileName = String.valueOf(specFilePath.getFileName());
+        } else {
+            this.hullFileName = "Not saved";
+        }
+
     }
 
     private void loadHullStyle(HullSpecFile specFile) {

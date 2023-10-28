@@ -34,7 +34,7 @@ public class ModuleAnchorEdit extends AbstractEdit implements LayerEdit {
     public void undo() {
         undoSubEdits();
         centersPainter.setModuleAnchorOffset(oldAnchor);
-        var repainter = StaticController.getRepainter();
+        var repainter = StaticController.getScheduler();
         repainter.queueViewerRepaint();
         repainter.queueCenterPanelsRepaint();
         repainter.queueModuleControlRepaint();
@@ -44,7 +44,7 @@ public class ModuleAnchorEdit extends AbstractEdit implements LayerEdit {
     public void redo() {
         centersPainter.setModuleAnchorOffset(updatedAnchor);
         redoSubEdits();
-        var repainter = StaticController.getRepainter();
+        var repainter = StaticController.getScheduler();
         repainter.queueViewerRepaint();
         repainter.queueCenterPanelsRepaint();
         repainter.queueModuleControlRepaint();

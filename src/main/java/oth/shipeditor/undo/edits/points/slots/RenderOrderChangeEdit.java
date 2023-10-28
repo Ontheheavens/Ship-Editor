@@ -27,7 +27,7 @@ public class RenderOrderChangeEdit extends AbstractEdit {
     public void undo() {
         undoSubEdits();
         slotPoint.setRenderOrderMod(oldOrder);
-        var repainter = StaticController.getRepainter();
+        var repainter = StaticController.getScheduler();
         repainter.queueViewerRepaint();
         repainter.queueSlotControlRepaint();
         repainter.queueBaysPanelRepaint();
@@ -37,7 +37,7 @@ public class RenderOrderChangeEdit extends AbstractEdit {
     public void redo() {
         slotPoint.setRenderOrderMod(updatedOrder);
         redoSubEdits();
-        var repainter = StaticController.getRepainter();
+        var repainter = StaticController.getScheduler();
         repainter.queueViewerRepaint();
         repainter.queueSlotControlRepaint();
         repainter.queueBaysPanelRepaint();

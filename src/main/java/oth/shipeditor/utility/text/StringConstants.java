@@ -144,4 +144,6 @@ public interface StringConstants {
 
     String CUSTOM = "CUSTOM";
 
+    String LOW_TECH = "LOW_TECH";
+
 }

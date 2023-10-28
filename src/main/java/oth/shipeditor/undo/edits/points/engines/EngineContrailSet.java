@@ -27,7 +27,7 @@ public class EngineContrailSet extends AbstractEdit {
     public void undo() {
         undoSubEdits();
         enginePoint.setContrailSize(oldContrail);
-        var repainter = StaticController.getRepainter();
+        var repainter = StaticController.getScheduler();
         repainter.queueViewerRepaint();
         repainter.queueEnginesPanelRepaint();
     }
@@ -36,7 +36,7 @@ public class EngineContrailSet extends AbstractEdit {
     public void redo() {
         enginePoint.setContrailSize(updatedContrail);
         redoSubEdits();
-        var repainter = StaticController.getRepainter();
+        var repainter = StaticController.getScheduler();
         repainter.queueViewerRepaint();
         repainter.queueEnginesPanelRepaint();
     }

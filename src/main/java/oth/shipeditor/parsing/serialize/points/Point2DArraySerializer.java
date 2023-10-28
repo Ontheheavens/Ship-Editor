@@ -21,6 +21,10 @@ public class Point2DArraySerializer extends JsonSerializer<Point2D.Double[]> {
     public void serialize(Point2D.Double[] value, JsonGenerator gen,
                           SerializerProvider serializers) throws IOException {
         gen.writeStartArray();
+        if (value.length == 0) {
+            gen.writeEndArray();
+            return;
+        }
         PrettyPrinter prettyPrinter = gen.getPrettyPrinter();
         prettyPrinter.beforeArrayValues(gen);
 
@@ -46,6 +50,8 @@ public class Point2DArraySerializer extends JsonSerializer<Point2D.Double[]> {
             }
         }
         gen.writeEndArray();
+
+        Locale.setDefault(defaultLocale);
     }
 
     protected void writeClosure(JsonGenerator gen, int length) throws IOException {

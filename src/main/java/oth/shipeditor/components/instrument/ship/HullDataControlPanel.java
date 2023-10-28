@@ -10,7 +10,7 @@ import oth.shipeditor.representation.HullStyle;
 import oth.shipeditor.utility.components.ComponentUtilities;
 import oth.shipeditor.utility.components.MouseoverLabelListener;
 import oth.shipeditor.utility.graphics.ColorUtilities;
-import oth.shipeditor.utility.overseers.ComponentRepaint;
+import oth.shipeditor.utility.overseers.EventScheduler;
 import oth.shipeditor.utility.overseers.StaticController;
 import oth.shipeditor.utility.text.StringValues;
 
@@ -176,7 +176,7 @@ public class HullDataControlPanel extends JPanel {
     private void addSpriteNameLabel() {
         spriteNameValue = new JLabel();
         JLabel spriteNameLabel = new JLabel("Sprite name:");
-        spriteNameLabel.setBorder(new EmptyBorder(2, 0, 4, 0));
+        spriteNameLabel.setBorder(new EmptyBorder(2, 0, 6, 0));
 
         ComponentUtilities.addLabelAndComponent(this, spriteNameLabel,
                 spriteNameValue, 2, 4, 0, 5);
@@ -200,8 +200,9 @@ public class HullDataControlPanel extends JPanel {
 
     private void processChange() {
         this.refreshData(cachedLayer);
-        ComponentRepaint repainter = StaticController.getRepainter();
+        EventScheduler repainter = StaticController.getScheduler();
         repainter.queueViewerRepaint();
+        repainter.queueActiveLayerUpdate();
     }
 
     void clearData() {

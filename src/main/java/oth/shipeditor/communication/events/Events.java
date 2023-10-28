@@ -13,7 +13,7 @@ public final class Events {
     }
 
     public static void repaintShipView() {
-        var repainter = StaticController.getRepainter();
+        var repainter = StaticController.getScheduler();
         repainter.queueViewerRepaint();
         repainter.queueBoundsPanelRepaint();
         repainter.queueCenterPanelsRepaint();

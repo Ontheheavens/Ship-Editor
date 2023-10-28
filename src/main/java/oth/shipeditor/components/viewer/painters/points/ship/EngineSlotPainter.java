@@ -21,6 +21,7 @@ import oth.shipeditor.undo.EditDispatch;
 import oth.shipeditor.utility.objects.Size2D;
 import oth.shipeditor.utility.overseers.StaticController;
 import oth.shipeditor.utility.Utility;
+import oth.shipeditor.utility.text.StringConstants;
 
 import java.awt.*;
 import java.awt.event.KeyEvent;
@@ -187,7 +188,7 @@ public class EngineSlotPainter extends AngledPointPainter {
         EnginePoint created;
         EnginePoint counterpart = null;
 
-        String lowTech = "LOW_TECH";
+        String lowTech = StringConstants.LOW_TECH;
         if (enginePoints.isEmpty()) {
             created = new EnginePoint(position, parentLayer);
 

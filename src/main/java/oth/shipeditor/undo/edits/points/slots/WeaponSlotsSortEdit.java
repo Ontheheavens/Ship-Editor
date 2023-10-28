@@ -28,7 +28,7 @@ public class WeaponSlotsSortEdit extends AbstractEdit {
     @Override
     public void undo() {
         pointPainter.setSlotPoints(oldList);
-        var repainter = StaticController.getRepainter();
+        var repainter = StaticController.getScheduler();
         repainter.queueViewerRepaint();
         repainter.queueSlotControlRepaint();
     }
@@ -36,7 +36,7 @@ public class WeaponSlotsSortEdit extends AbstractEdit {
     @Override
     public void redo() {
         pointPainter.setSlotPoints(newList);
-        var repainter = StaticController.getRepainter();
+        var repainter = StaticController.getScheduler();
         repainter.queueViewerRepaint();
         repainter.queueSlotControlRepaint();
     }

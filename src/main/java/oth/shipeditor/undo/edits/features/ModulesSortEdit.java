@@ -30,7 +30,7 @@ public class ModulesSortEdit extends AbstractEdit {
     @Override
     public void undo() {
         setter.accept(oldCollection);
-        var repainter = StaticController.getRepainter();
+        var repainter = StaticController.getScheduler();
         repainter.queueViewerRepaint();
         repainter.queueModulesRepaint();
     }
@@ -38,7 +38,7 @@ public class ModulesSortEdit extends AbstractEdit {
     @Override
     public void redo() {
         setter.accept(newCollection);
-        var repainter = StaticController.getRepainter();
+        var repainter = StaticController.getScheduler();
         repainter.queueViewerRepaint();
         repainter.queueModulesRepaint();
     }

@@ -129,7 +129,7 @@ public final class EditDispatch {
         Edit rearrangeEdit = new WeaponSlotsSortEdit(pointPainter, old, changed);
         UndoOverseer.post(rearrangeEdit);
         pointPainter.setSlotPoints(changed);
-        var repainter = StaticController.getRepainter();
+        var repainter = StaticController.getScheduler();
         repainter.queueSlotControlRepaint();
     }
 
@@ -139,7 +139,7 @@ public final class EditDispatch {
         Edit rearrangeEdit = new EnginesSortEdit(pointPainter, old, changed);
         UndoOverseer.post(rearrangeEdit);
         pointPainter.setEnginePoints(changed);
-        var repainter = StaticController.getRepainter();
+        var repainter = StaticController.getScheduler();
         repainter.queueEnginesPanelRepaint();
     }
 
@@ -165,7 +165,7 @@ public final class EditDispatch {
 
         EditDispatch.handleContinuousEdit(offsetChangeEdit);
         layerPainter.setAnchor(updated);
-        var repainter = StaticController.getRepainter();
+        var repainter = StaticController.getScheduler();
         repainter.queueViewerRepaint();
         repainter.queueBoundsPanelRepaint();
         repainter.queueCenterPanelsRepaint();
@@ -188,7 +188,7 @@ public final class EditDispatch {
 
         EditDispatch.handleContinuousEdit(offsetChangeEdit, finishListener);
         centersPainter.setModuleAnchorOffset(updated);
-        var repainter = StaticController.getRepainter();
+        var repainter = StaticController.getScheduler();
         repainter.queueViewerRepaint();
         repainter.queueCenterPanelsRepaint();
         repainter.queueModuleControlRepaint();
@@ -198,7 +198,7 @@ public final class EditDispatch {
         Edit angleEdit = new SlotAngleSet(slotPoint, old, updated);
         EditDispatch.handleContinuousEdit(angleEdit);
         slotPoint.setAngle(updated);
-        var repainter = StaticController.getRepainter();
+        var repainter = StaticController.getScheduler();
         repainter.queueViewerRepaint();
         repainter.queueSlotControlRepaint();
         repainter.queueBaysPanelRepaint();
@@ -208,7 +208,7 @@ public final class EditDispatch {
         Edit angleEdit = new EngineAngleSet(enginePoint, old, updated);
         EditDispatch.handleContinuousEdit(angleEdit);
         enginePoint.setAngle(updated);
-        var repainter = StaticController.getRepainter();
+        var repainter = StaticController.getScheduler();
         repainter.queueViewerRepaint();
         repainter.queueEnginesPanelRepaint();
     }
@@ -218,7 +218,7 @@ public final class EditDispatch {
         Edit sizeEdit = new EngineSizeSet(enginePoint, oldSize, updated);
         EditDispatch.handleContinuousEdit(sizeEdit);
         enginePoint.setSize(updated);
-        var repainter = StaticController.getRepainter();
+        var repainter = StaticController.getScheduler();
         repainter.queueViewerRepaint();
         repainter.queueEnginesPanelRepaint();
     }
@@ -228,7 +228,7 @@ public final class EditDispatch {
         Edit contrailEdit = new EngineContrailSet(enginePoint, oldContrail, updated);
         EditDispatch.handleContinuousEdit(contrailEdit);
         enginePoint.setContrailSize(updated);
-        var repainter = StaticController.getRepainter();
+        var repainter = StaticController.getScheduler();
         repainter.queueViewerRepaint();
         repainter.queueEnginesPanelRepaint();
     }
@@ -238,7 +238,7 @@ public final class EditDispatch {
         Edit styleEdit = new EngineStyleSet(enginePoint, oldStyle, updated);
         UndoOverseer.post(styleEdit);
         enginePoint.setStyle(updated);
-        var repainter = StaticController.getRepainter();
+        var repainter = StaticController.getScheduler();
         repainter.queueViewerRepaint();
         repainter.queueEnginesPanelRepaint();
     }
@@ -247,7 +247,7 @@ public final class EditDispatch {
         Edit arcEdit = new SlotArcSet(slotPoint, old, updated);
         EditDispatch.handleContinuousEdit(arcEdit);
         slotPoint.setArc(updated);
-        var repainter = StaticController.getRepainter();
+        var repainter = StaticController.getScheduler();
         repainter.queueViewerRepaint();
         repainter.queueSlotControlRepaint();
         repainter.queueBaysPanelRepaint();
@@ -268,7 +268,7 @@ public final class EditDispatch {
 
         EditDispatch.handleContinuousEdit(renderOrderChangeEdit, finishListener);
         slotPoint.setRenderOrderMod(updated);
-        var repainter = StaticController.getRepainter();
+        var repainter = StaticController.getScheduler();
         repainter.queueViewerRepaint();
         repainter.queueSlotControlRepaint();
         repainter.queueBaysPanelRepaint();
@@ -278,7 +278,7 @@ public final class EditDispatch {
         Edit rotationEdit = new LayerRotationEdit(painter, old, updated);
         EditDispatch.handleContinuousEdit(rotationEdit);
         painter.setRotationRadians(updated);
-        var repainter = StaticController.getRepainter();
+        var repainter = StaticController.getScheduler();
         repainter.queueViewerRepaint();
         repainter.queueBoundsPanelRepaint();
         repainter.queueCenterPanelsRepaint();
@@ -300,7 +300,7 @@ public final class EditDispatch {
         Edit radiusEdit = new CollisionRadiusEdit(point, oldRadius, radius);
         EditDispatch.handleContinuousEdit(radiusEdit);
         point.setCollisionRadius(radius);
-        var repainter = StaticController.getRepainter();
+        var repainter = StaticController.getScheduler();
         repainter.queueViewerRepaint();
         repainter.queueCenterPanelsRepaint();
     }
@@ -310,7 +310,7 @@ public final class EditDispatch {
         Edit radiusEdit = new ShieldRadiusEdit(point, oldRadius, radius);
         EditDispatch.handleContinuousEdit(radiusEdit);
         point.setShieldRadius(radius);
-        var repainter = StaticController.getRepainter();
+        var repainter = StaticController.getScheduler();
         repainter.queueViewerRepaint();
         repainter.queueCenterPanelsRepaint();
     }
@@ -320,7 +320,7 @@ public final class EditDispatch {
         Edit renameEdit = new SlotIDChangeEdit(point, newID, oldID);
         UndoOverseer.post(renameEdit);
         point.changeSlotID(newID);
-        var repainter = StaticController.getRepainter();
+        var repainter = StaticController.getScheduler();
         repainter.queueSlotControlRepaint();
         repainter.queueBuiltInsRepaint();
     }
@@ -330,7 +330,7 @@ public final class EditDispatch {
         Edit typeChangeEdit = new SlotTypeChangeEdit(point, oldType, newType);
         UndoOverseer.post(typeChangeEdit);
         point.setWeaponType(newType);
-        var repainter = StaticController.getRepainter();
+        var repainter = StaticController.getScheduler();
         repainter.queueViewerRepaint();
         repainter.queueSlotControlRepaint();
         repainter.queueBuiltInsRepaint();
@@ -341,7 +341,7 @@ public final class EditDispatch {
         Edit mountChangeEdit = new SlotMountChangeEdit(point, oldMount, newMount);
         UndoOverseer.post(mountChangeEdit);
         point.setWeaponMount(newMount);
-        var repainter = StaticController.getRepainter();
+        var repainter = StaticController.getScheduler();
         repainter.queueViewerRepaint();
         repainter.queueSlotControlRepaint();
     }
@@ -351,7 +351,7 @@ public final class EditDispatch {
         Edit sizeChangeEdit = new SlotSizeChangeEdit(point, oldSize, newSize);
         UndoOverseer.post(sizeChangeEdit);
         point.setWeaponSize(newSize);
-        var repainter = StaticController.getRepainter();
+        var repainter = StaticController.getScheduler();
         repainter.queueViewerRepaint();
         repainter.queueSlotControlRepaint();
         repainter.queueBuiltInsRepaint();
@@ -425,7 +425,7 @@ public final class EditDispatch {
         if (afterAction != null) {
             afterAction.run();
         }
-        var repainter = StaticController.getRepainter();
+        var repainter = StaticController.getScheduler();
         repainter.queueViewerRepaint();
         if (feature instanceof InstalledFeature installed && installed.getDataEntry() instanceof ShipCSVEntry) {
             repainter.queueModulesRepaint();
@@ -451,7 +451,7 @@ public final class EditDispatch {
         if (invalidator != null) {
             invalidator.run();
         }
-        var repainter = StaticController.getRepainter();
+        var repainter = StaticController.getScheduler();
         repainter.queueViewerRepaint();
         if (isModule) {
             repainter.queueModulesRepaint();
@@ -467,7 +467,7 @@ public final class EditDispatch {
         Edit sortEdit = new FeatureSortEdit<>(consumer, oldMap, newMap);
         UndoOverseer.post(sortEdit);
         consumer.accept(newMap);
-        var repainter = StaticController.getRepainter();
+        var repainter = StaticController.getScheduler();
         repainter.queueViewerRepaint();
         repainter.queueBuiltInsRepaint();
     }
@@ -492,7 +492,7 @@ public final class EditDispatch {
         Edit sortEdit = new ModulesSortEdit(moduleSetter, oldMap, newMap);
         UndoOverseer.post(sortEdit);
         moduleSetter.accept(newMap);
-        var repainter = StaticController.getRepainter();
+        var repainter = StaticController.getScheduler();
         repainter.queueViewerRepaint();
         repainter.queueModulesRepaint();
     }

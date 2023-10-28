@@ -61,6 +61,11 @@ public class ShieldPointPainter extends SinglePointPainter {
             style = new HullStyle();
         }
         double shieldRadius = hullSpecFile.getShieldRadius();
+
+        if (this.shieldCenterPoint != null) {
+            this.removePoint(shieldCenterPoint);
+        }
+
         this.shieldCenterPoint = new ShieldCenterPoint(translated,
                 (float) shieldRadius, this.getParentLayer(), style, this);
         this.addPoint(shieldCenterPoint);

@@ -27,7 +27,7 @@ public class SlotArcSet extends AbstractEdit {
     public void undo() {
         undoSubEdits();
         slotPoint.setArc(oldArc);
-        var repainter = StaticController.getRepainter();
+        var repainter = StaticController.getScheduler();
         repainter.queueViewerRepaint();
         repainter.queueSlotControlRepaint();
         repainter.queueBaysPanelRepaint();
@@ -37,7 +37,7 @@ public class SlotArcSet extends AbstractEdit {
     public void redo() {
         slotPoint.setArc(updatedArc);
         redoSubEdits();
-        var repainter = StaticController.getRepainter();
+        var repainter = StaticController.getScheduler();
         repainter.queueViewerRepaint();
         repainter.queueSlotControlRepaint();
         repainter.queueBaysPanelRepaint();

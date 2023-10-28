@@ -26,7 +26,7 @@ public class SlotMountChangeEdit extends AbstractEdit {
     @Override
     public void undo() {
         slot.setWeaponMount(old);
-        var repainter = StaticController.getRepainter();
+        var repainter = StaticController.getScheduler();
         repainter.queueViewerRepaint();
         repainter.queueSlotControlRepaint();
         repainter.queueBaysPanelRepaint();
@@ -35,7 +35,7 @@ public class SlotMountChangeEdit extends AbstractEdit {
     @Override
     public void redo() {
         slot.setWeaponMount(updated);
-        var repainter = StaticController.getRepainter();
+        var repainter = StaticController.getScheduler();
         repainter.queueViewerRepaint();
         repainter.queueSlotControlRepaint();
         repainter.queueBaysPanelRepaint();

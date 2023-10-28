@@ -41,7 +41,12 @@ public final class ShipPainterInitialization {
 
         shipPainter.setBaseHullId(hullSpecFile.getHullId());
 
-        Point2D translatedCenter = ShipPainterInitialization.rotateCenter(hullCenter, anchor);
+        Point2D translatedCenter;
+        if (hullCenter != null) {
+            translatedCenter = ShipPainterInitialization.rotateCenter(hullCenter, anchor);
+        } else {
+            translatedCenter = shipPainter.getSpriteCenter();
+        }
 
         ShipPainterInitialization.initCentroids(shipPainter, hullSpecFile, translatedCenter);
 
@@ -66,8 +71,13 @@ public final class ShipPainterInitialization {
         }
 
         Point2D shieldCenter = hullSpecFile.getShieldCenter();
+        Point2D shieldCenterTranslated;
+        if (shieldCenter != null) {
+            shieldCenterTranslated = ShipPainterInitialization.rotatePointByCenter(shieldCenter, translatedCenter);
+        } else {
+            shieldCenterTranslated = translatedCenter;
+        }
 
-        Point2D shieldCenterTranslated = ShipPainterInitialization.rotatePointByCenter(shieldCenter, translatedCenter);
         ShieldPointPainter shieldPointPainter = shipPainter.getShieldPointPainter();
         shieldPointPainter.initShieldPoint(shieldCenterTranslated, hullSpecFile);
     }
@@ -76,6 +86,7 @@ public final class ShipPainterInitialization {
         Point2D.Double[] bounds = hullSpecFile.getBounds();
         Stream<Point2D> boundStream = Arrays.stream(bounds);
         BoundPointsPainter boundsPainter = shipPainter.getBoundsPainter();
+        boundsPainter.clearPoints();
         boundStream.forEach(bound -> {
             Point2D rotatedPosition = ShipPainterInitialization.rotatePointByCenter(bound, translatedCenter);
             BoundPoint boundPoint = new BoundPoint(rotatedPosition, shipPainter);
@@ -89,10 +100,15 @@ public final class ShipPainterInitialization {
         if (weaponSlots == null || weaponSlots.length == 0) return;
         Stream<WeaponSlot> slotStream = Arrays.stream(weaponSlots);
 
+        LaunchBayPainter bayPainter = shipPainter.getBayPainter();
+        WeaponSlotPainter slotPainter = shipPainter.getWeaponSlotPainter();
+        bayPainter.clearPoints();
+        slotPainter.clearPoints();
+
         slotStream.forEach(weaponSlot -> {
             Integer renderOrderMod = weaponSlot.getRenderOrderMod();
             if (Objects.equals(weaponSlot.getType(), StringConstants.LAUNCH_BAY)) {
-                LaunchBayPainter bayPainter = shipPainter.getBayPainter();
+
 
                 Point2D[] locations = weaponSlot.getLocations();
 
@@ -122,7 +138,6 @@ public final class ShipPainterInitialization {
                     bayPainter.addPoint(portPoint);
                 }
             } else {
-                WeaponSlotPainter slotPainter = shipPainter.getWeaponSlotPainter();
 
                 Point2D location = weaponSlot.getLocations()[0];
                 Point2D rotatedPosition = ShipPainterInitialization.rotatePointByCenter(location, translatedCenter);
@@ -157,6 +172,8 @@ public final class ShipPainterInitialization {
 
     private static void initEngines(ShipPainter shipPainter, HullSpecFile hullSpecFile, Point2D translatedCenter) {
         EngineSlotPainter engineSlotPainter = shipPainter.getEnginePainter();
+        engineSlotPainter.clearPoints();
+
         EngineSlot[] engineSlots = hullSpecFile.getEngineSlots();
         if (engineSlots == null) return;
         Stream<EngineSlot> engineSlotStream = Arrays.stream(engineSlots);
@@ -195,6 +212,7 @@ public final class ShipPainterInitialization {
         if (specBuiltIns == null || specBuiltIns.isEmpty()) return;
 
         var runtimeBuiltIns = shipPainter.getBuiltInWeapons();
+        runtimeBuiltIns.clear();
 
         specBuiltIns.forEach((slotID, weaponID) -> {
             WeaponCSVEntry weaponEntry = GameDataRepository.getWeaponByID(weaponID);

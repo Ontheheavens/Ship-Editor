@@ -52,6 +52,10 @@ public class LayerManager {
         this.initOpenHullListener();
     }
 
+    public boolean isEmpty() {
+        return layers.isEmpty();
+    }
+
     private void activateLastLayer() {
         ViewerLayer next = layers.get(layers.size() - 1);
         this.setActiveLayer(next);

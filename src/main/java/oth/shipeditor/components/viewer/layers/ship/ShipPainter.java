@@ -133,7 +133,7 @@ public class ShipPainter extends LayerPainter {
         }
     }
 
-    private void activateEmptySkin() {
+    void activateEmptySkin() {
         this.setActiveSkin(ShipSkin.EMPTY);
     }
 
@@ -213,6 +213,9 @@ public class ShipPainter extends LayerPainter {
     }
 
     private void createPointPainters() {
+        if (!isUninitialized()) {
+            cleanupPointPainters();
+        }
         this.centerPointPainter = new CenterPointPainter(this);
         this.shieldPointPainter = new ShieldPointPainter(this);
         this.boundsPainter = new BoundPointsPainter(this);

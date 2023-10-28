@@ -65,7 +65,7 @@ public final class PointDragEdit extends AbstractEdit implements PointEdit {
     public static void repaintByPointType(WorldPoint point) {
         EventBus.publish(new ViewerRepaintQueued());
         if (point == null) return;
-        var repainter = StaticController.getRepainter();
+        var repainter = StaticController.getScheduler();
         switch (point.getAssociatedMode()) {
             case BOUNDS -> repainter.queueBoundsPanelRepaint();
             case COLLISION, SHIELD -> repainter.queueCenterPanelsRepaint();

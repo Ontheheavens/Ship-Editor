@@ -75,7 +75,7 @@ public class WeaponGroupsSortEdit extends AbstractEdit {
 
         if (StaticController.getEditorMode() == EditorInstrument.VARIANT_WEAPONS) {
             StaticController.reselectCurrentLayer();
-            var repainter = StaticController.getRepainter();
+            var repainter = StaticController.getScheduler();
             repainter.queueViewerRepaint();
         }
     }

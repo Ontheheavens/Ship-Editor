@@ -26,7 +26,7 @@ public class EngineStyleSet extends AbstractEdit {
     @Override
     public void undo() {
         enginePoint.setStyle(oldStyle);
-        var repainter = StaticController.getRepainter();
+        var repainter = StaticController.getScheduler();
         repainter.queueViewerRepaint();
         repainter.queueEnginesPanelRepaint();
     }
@@ -34,7 +34,7 @@ public class EngineStyleSet extends AbstractEdit {
     @Override
     public void redo() {
         enginePoint.setStyle(updatedStyle);
-        var repainter = StaticController.getRepainter();
+        var repainter = StaticController.getScheduler();
         repainter.queueViewerRepaint();
         repainter.queueEnginesPanelRepaint();
     }

@@ -32,7 +32,7 @@ public class FeatureSortEdit<T extends InstallableEntry> extends AbstractEdit {
     @Override
     public void undo() {
         setter.accept(oldCollection);
-        var repainter = StaticController.getRepainter();
+        var repainter = StaticController.getScheduler();
         repainter.queueViewerRepaint();
         repainter.queueBuiltInsRepaint();
     }
@@ -40,7 +40,7 @@ public class FeatureSortEdit<T extends InstallableEntry> extends AbstractEdit {
     @Override
     public void redo() {
         setter.accept(newCollection);
-        var repainter = StaticController.getRepainter();
+        var repainter = StaticController.getScheduler();
         repainter.queueViewerRepaint();
         repainter.queueBuiltInsRepaint();
     }

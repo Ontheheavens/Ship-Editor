@@ -21,11 +21,11 @@ import java.util.Vector;
  * @author Ontheheavens
  * @since 30.07.2023
  */
-public class SkinListPanel extends JPanel {
+public class SkinDataPanel extends JPanel {
 
     private final JPanel chooserContainer;
 
-    SkinListPanel() {
+    public SkinDataPanel() {
         this.setLayout(new BorderLayout());
         chooserContainer = new JPanel();
         chooserContainer.setLayout(new BoxLayout(chooserContainer, BoxLayout.PAGE_AXIS));
@@ -39,16 +39,16 @@ public class SkinListPanel extends JPanel {
 
         ViewerLayer selected = StaticController.getActiveLayer();
         if (!(selected instanceof ShipLayer checkedLayer)) {
-            chooserContainer.add(SkinListPanel.createDisabledChooser());
+            chooserContainer.add(SkinDataPanel.createDisabledChooser());
             return;
         }
 
         ShipHull shipData = checkedLayer.getHull();
         if (shipData == null)  {
-            chooserContainer.add(SkinListPanel.createDisabledChooser());
+            chooserContainer.add(SkinDataPanel.createDisabledChooser());
             return;
         }
-        JComboBox<ShipSkin> skinChooser = SkinListPanel.getShipSkinComboBox(checkedLayer);
+        JComboBox<ShipSkin> skinChooser = SkinDataPanel.getShipSkinComboBox(checkedLayer);
 
         chooserContainer.add(skinChooser);
         chooserContainer.add(Box.createVerticalGlue());
