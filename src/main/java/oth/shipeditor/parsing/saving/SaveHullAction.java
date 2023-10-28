@@ -19,6 +19,7 @@ import oth.shipeditor.components.viewer.layers.ship.data.ShipHull;
 import oth.shipeditor.components.viewer.painters.points.ship.*;
 import oth.shipeditor.parsing.FileUtilities;
 import oth.shipeditor.representation.EngineSlot;
+import oth.shipeditor.representation.HullSize;
 import oth.shipeditor.representation.HullSpecFile;
 import oth.shipeditor.representation.HullStyle;
 import oth.shipeditor.representation.weapon.WeaponMount;
@@ -158,12 +159,15 @@ final class SaveHullAction {
         result.setHeight(shipPainter.getSpriteHeight());
         result.setWidth(shipPainter.getSpriteWidth());
 
-        // TODO: all of this needs UI.
-
         HullStyle hullStyle = shipHull.getHullStyle();
         result.setStyle(hullStyle.getHullStyleID());
+        HullSize hullSize = shipHull.getHullSize();
+        result.setHullSize(hullSize.toString());
 
         result.setSpriteName(shipLayer.getRelativeSpritePath());
+
+        result.setHullId(shipHull.getHullID());
+        result.setHullName(shipHull.getHullName());
 
         return result;
     }

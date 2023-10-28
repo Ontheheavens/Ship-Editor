@@ -265,6 +265,10 @@ public class WeaponSlotPoint extends AngledPoint implements SlotPoint {
         Point2D locationRelativeToCenter = Utility.getPointCoordinatesForDisplay(this.getPosition(),
                 shipPainter, CoordsDisplayMode.SHIP_CENTER);
 
+        if (hints == null) {
+            return Math.abs(locationRelativeToCenter.getY() / 10000) + Math.abs(locationRelativeToCenter.getX() / 10000000);
+        }
+
         if (hints.contains(ShipTypeHints.WEAPONS_FRONT_TO_BACK)) {
             result = Math.abs(locationRelativeToCenter.getY() / 50000)
                     + (locationRelativeToCenter.getX() / 10000);
@@ -275,6 +279,7 @@ public class WeaponSlotPoint extends AngledPoint implements SlotPoint {
             result = Math.abs(locationRelativeToCenter.getY() / 10000)
                     + Math.abs(locationRelativeToCenter.getX() / 10000000);
         }
+
         return result;
     }
 

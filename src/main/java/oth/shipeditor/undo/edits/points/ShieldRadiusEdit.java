@@ -3,6 +3,7 @@ package oth.shipeditor.undo.edits.points;
 import oth.shipeditor.communication.events.Events;
 import oth.shipeditor.components.viewer.entities.ShieldCenterPoint;
 import oth.shipeditor.undo.AbstractEdit;
+import oth.shipeditor.utility.overseers.StaticController;
 
 /**
  * @author Ontheheavens
@@ -27,14 +28,18 @@ public class ShieldRadiusEdit extends AbstractEdit {
     public void undo() {
         undoSubEdits();
         parentPoint.setShieldRadius(oldRadius);
-        Events.repaintShipView();
+        var repainter = StaticController.getRepainter();
+        repainter.queueViewerRepaint();
+        repainter.queueCenterPanelsRepaint();
     }
 
     @Override
     public void redo() {
         redoSubEdits();
         parentPoint.setShieldRadius(newRadius);
-        Events.repaintShipView();
+        var repainter = StaticController.getRepainter();
+        repainter.queueViewerRepaint();
+        repainter.queueCenterPanelsRepaint();
     }
 
     @Override

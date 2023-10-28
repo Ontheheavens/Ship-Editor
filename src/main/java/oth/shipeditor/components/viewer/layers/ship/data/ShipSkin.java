@@ -164,6 +164,7 @@ public final class ShipSkin {
 
     public List<ShipTypeHints> getHintsModifiedBySkin() {
         ShipCSVEntry dataEntry = GameDataRepository.retrieveShipCSVEntryByID(this.baseHullId);
+        if (dataEntry == null) return null;
         var fromBaseHull = dataEntry.getBaseHullHints();
         var toRemove = this.getRemoveHints();
         if (toRemove != null && !toRemove.isEmpty()) {

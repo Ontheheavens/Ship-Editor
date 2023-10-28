@@ -19,8 +19,8 @@ public class HullStylesPanel extends AbstractStylesPanel {
 
     @Override
     protected JPanel createTopPanel() {
-        Pair<JPanel, JButton> singleButtonPanel = ComponentUtilities.createSingleButtonPanel("Hullstyle data:",
-                FileLoading.getLoadHullStyleDataAction());
+        Action buttonAction = FileLoading.loadDataAsync(FileLoading.getLoadHullStyles());
+        Pair<JPanel, JButton> singleButtonPanel = ComponentUtilities.createLoaderButtonPanel("Hullstyle data:", buttonAction);
         JButton button = singleButtonPanel.getSecond();
         button.setText("Reload hullstyle data");
         return singleButtonPanel.getFirst();

@@ -68,25 +68,25 @@ public final class FileUtilities {
             if (currentlySelected != null) {
                 LayerPainter painter = currentlySelected.getPainter();
                 if (painter == null) {
-                    FileLoading.openSpriteAction.setEnabled(true);
+                    FileLoading.openSprite.setEnabled(true);
                 } else {
-                    FileLoading.openSpriteAction.setEnabled(painter.getSprite() == null);
+                    FileLoading.openSprite.setEnabled(painter.getSprite() == null);
                 }
             } else {
-                FileLoading.openSpriteAction.setEnabled(false);
+                FileLoading.openSprite.setEnabled(false);
             }
-            FileLoading.openShipDataAction.setEnabled(false);
+            FileLoading.openShip.setEnabled(false);
             return;
         }
         ShipPainter painter = layer.getPainter();
         if (painter == null) {
-            FileLoading.openSpriteAction.setEnabled(true);
-            FileLoading.openShipDataAction.setEnabled(false);
+            FileLoading.openSprite.setEnabled(true);
+            FileLoading.openShip.setEnabled(false);
         } else {
             boolean spriteState = painter.getSprite() == null && layer.getHull() == null;
             boolean hullState = painter.getSprite() != null && layer.getHull() == null;
-            FileLoading.openSpriteAction.setEnabled(spriteState);
-            FileLoading.openShipDataAction.setEnabled(hullState);
+            FileLoading.openSprite.setEnabled(spriteState);
+            FileLoading.openShip.setEnabled(hullState);
         }
     }
 

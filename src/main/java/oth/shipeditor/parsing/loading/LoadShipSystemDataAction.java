@@ -17,7 +17,7 @@ import java.util.Map;
 @Log4j2
 public class LoadShipSystemDataAction extends LoadCSVDataAction<ShipSystemCSVEntry> {
 
-    public LoadShipSystemDataAction() {
+    LoadShipSystemDataAction() {
         super(Paths.get("data", "shipsystems", "ship_systems.csv"));
     }
 

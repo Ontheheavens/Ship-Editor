@@ -62,6 +62,7 @@ public final class StringValues {
     public static final String SHIP_HULL_DATA_NOT_FOUND_FOR_LAYER = "Ship hull data not found for layer: ";
     public static final String JSON_SHIP_FILES = "JSON ship files";
     public static final String FILE_SAVING_ERROR = "File saving error!";
+    public static final String ENTER_TO_SAVE_CHANGES = "Enter to save changes";
 
     private StringValues() {
     }

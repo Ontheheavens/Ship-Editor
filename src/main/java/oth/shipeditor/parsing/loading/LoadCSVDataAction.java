@@ -4,8 +4,6 @@ import lombok.extern.log4j.Log4j2;
 import oth.shipeditor.components.datafiles.entities.CSVEntry;
 import oth.shipeditor.parsing.FileUtilities;
 
-import javax.swing.*;
-import java.awt.event.ActionEvent;
 import java.io.File;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -18,7 +16,7 @@ import java.util.Map;
  * @since 03.08.2023
  */
 @Log4j2
-abstract class LoadCSVDataAction<T extends CSVEntry> extends AbstractAction {
+abstract class LoadCSVDataAction<T extends CSVEntry> extends DataLoadingAction {
 
     private final Path targetFile;
 
@@ -27,7 +25,7 @@ abstract class LoadCSVDataAction<T extends CSVEntry> extends AbstractAction {
     }
 
     @Override
-    public void actionPerformed(ActionEvent e) {
+    public Runnable perform() {
         log.info("Commencing CSV data fetching...");
         Map<Path, File> tableWithPackage = FileUtilities.getFileFromPackages(targetFile);
         Map<String, List<T>> entriesByPackage = new HashMap<>();
@@ -37,7 +35,7 @@ abstract class LoadCSVDataAction<T extends CSVEntry> extends AbstractAction {
                     folder.getValue());
             entriesByPackage.putIfAbsent(String.valueOf(folder.getKey()), systemsList);
         }
-        this.publishResult(entriesByPackage);
+        return () -> publishResult(entriesByPackage);
     }
 
     protected abstract void publishResult(Map<String, List<T>> entriesByPackage);

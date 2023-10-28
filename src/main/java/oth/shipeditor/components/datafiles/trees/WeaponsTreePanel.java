@@ -55,7 +55,7 @@ public class WeaponsTreePanel extends CSVDataTreePanel<WeaponCSVEntry>{
 
     @Override
     protected Action getLoadDataAction() {
-        return FileLoading.getLoadWeaponDataAction();
+        return FileLoading.loadDataAsync(FileLoading.getLoadWeapons());
     }
 
     @Override

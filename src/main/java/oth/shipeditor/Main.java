@@ -36,7 +36,9 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;
 
 /**
@@ -58,11 +60,10 @@ public final class Main {
             Main.configureLaf();
             PrimaryWindow window = PrimaryWindow.create();
             Initializations.updateStateFromSettings(window);
-            Initializations.loadGameData(window);
+            CompletableFuture<List<Runnable>> gameDataLoading = FileLoading.loadGameData();
 
-            Main.testFilesNew();
-
-            window.showGUI();
+            CompletableFuture<Void> testing = gameDataLoading.thenRun(Main::testFilesNew);
+            testing.thenRun(() -> SwingUtilities.invokeLater(window::showGUI));
         });
     }
 
@@ -96,29 +97,31 @@ public final class Main {
     }
 
     private static void testFilesNew() {
-        var gameData = SettingsManager.getGameData();
-        var allShips = gameData.getAllShipEntries();
+        SwingUtilities.invokeLater(() -> {
+            var gameData = SettingsManager.getGameData();
+            var allShips = gameData.getAllShipEntries();
 
-        ShipCSVEntry crigEntry = allShips.get("crig");
-        crigEntry.loadLayerFromEntry();
+            ShipCSVEntry crigEntry = allShips.get("crig");
+            crigEntry.loadLayerFromEntry();
 
-        ShipCSVEntry legionEntry = allShips.get("legion");
-        var legionSkins = legionEntry.getSkins();
-        SkinSpecFile legionXIV = legionSkins.get("legion_xiv.skin");
-        legionEntry.setActiveSkinSpecFile(legionXIV);
-        legionEntry.loadLayerFromEntry();
+            ShipCSVEntry legionEntry = allShips.get("legion");
+            var legionSkins = legionEntry.getSkins();
+            SkinSpecFile legionXIV = legionSkins.get("legion_xiv.skin");
+            legionEntry.setActiveSkinSpecFile(legionXIV);
+            legionEntry.loadLayerFromEntry();
 
-        ViewerLayer activeLayer = StaticController.getActiveLayer();
-        LayerPainter painter = activeLayer.getPainter();
-        painter.updateAnchorOffset(new Point2D.Double(-400, 0));
-        UndoOverseer.finishAllEdits();
-        EventBus.publish(new ViewerTransformsReset());
+            ViewerLayer activeLayer = StaticController.getActiveLayer();
+            LayerPainter painter = activeLayer.getPainter();
+            painter.updateAnchorOffset(new Point2D.Double(-400, 0));
+            UndoOverseer.finishAllEdits();
+            EventBus.publish(new ViewerTransformsReset());
 
-        if (activeLayer instanceof ShipLayer shipLayer) {
-            Variant legionXIVVariant = GameDataRepository.getVariantByID("legion_xiv_Elite");
-            ShipPainter shipPainter = shipLayer.getPainter();
-            shipPainter.selectVariant(legionXIVVariant);
-        }
+            if (activeLayer instanceof ShipLayer shipLayer) {
+                Variant legionXIVVariant = GameDataRepository.getVariantByID("legion_xiv_Elite");
+                ShipPainter shipPainter = shipLayer.getPainter();
+                shipPainter.selectVariant(legionXIVVariant);
+            }
+        });
     }
 
     @SuppressWarnings("unused")

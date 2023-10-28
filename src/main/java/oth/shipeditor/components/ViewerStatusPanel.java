@@ -65,11 +65,17 @@ final class ViewerStatusPanel extends JPanel {
         JPanel rightPanel = new JPanel(new GridBagLayout());
 
         GridBagConstraints gbcRight = new GridBagConstraints();
-        gbcRight.gridx = 1;
+        gbcRight.gridx = 0;
         gbcRight.gridy = 0;
         gbcRight.weightx = 1;
         gbcRight.insets = new Insets(0, 0, 0, 10);
         gbcRight.anchor = GridBagConstraints.LINE_END;
+
+        ProgressBarPanel progressBarContainer = new ProgressBarPanel();
+        rightPanel.add(progressBarContainer, gbcRight);
+
+        gbcRight.gridx = 1;
+        gbcRight.weightx = 0;
 
         rightPanel.add(ViewerStatusPanel.createMirrorModePanel(), gbcRight);
 

@@ -35,7 +35,7 @@ public class WingsTreePanel extends CSVDataTreePanel<WingCSVEntry>{
 
     @Override
     protected Action getLoadDataAction() {
-        return FileLoading.getLoadWingDataAction();
+        return FileLoading.loadDataAsync(FileLoading.getLoadWings());
     }
 
     @Override

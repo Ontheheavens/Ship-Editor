@@ -44,7 +44,7 @@ class HullmodsTreePanel extends CSVDataTreePanel<HullmodCSVEntry>{
 
     @Override
     protected Action getLoadDataAction() {
-        return FileLoading.getLoadHullmodDataAction();
+        return FileLoading.loadDataAsync(FileLoading.getLoadHullmods());
     }
 
     @Override

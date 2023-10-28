@@ -6,11 +6,11 @@ import org.kordamp.ikonli.fluentui.FluentUiRegularAL;
 import org.kordamp.ikonli.swing.FontIcon;
 import oth.shipeditor.communication.BusEventListener;
 import oth.shipeditor.communication.EventBus;
+import oth.shipeditor.communication.events.components.LoadingActionFired;
 import oth.shipeditor.components.viewer.painters.PainterVisibility;
 import oth.shipeditor.components.viewer.painters.points.AbstractPointPainter;
 import oth.shipeditor.parsing.FileUtilities;
 import oth.shipeditor.parsing.loading.FileLoading;
-import oth.shipeditor.utility.Utility;
 import oth.shipeditor.utility.components.containers.SortableList;
 import oth.shipeditor.utility.components.containers.TextScrollPanel;
 import oth.shipeditor.utility.graphics.ColorUtilities;
@@ -353,19 +353,16 @@ public final class ComponentUtilities {
         panel.setBorder(titledBorder);
     }
 
-    public static Pair<JPanel, JButton> createSingleButtonPanel(String labelText, Action buttonAction) {
+    public static Pair<JPanel, JButton> createLoaderButtonPanel(String labelText, Action buttonAction) {
         JPanel topContainer = new JPanel();
         topContainer.add(new JLabel(labelText));
         JButton loadButton = new JButton(buttonAction);
-        loadButton.addActionListener(Utility.scheduleTask(3000,
-                e1 -> {
-                    loadButton.setEnabled(false);
-                    topContainer.repaint();
-                },
-                e1 -> {
-                    loadButton.setEnabled(true);
-                    topContainer.repaint();
-                }));
+        EventBus.subscribe(event -> {
+            if (event instanceof LoadingActionFired(boolean started)) {
+                loadButton.setEnabled(!started);
+                loadButton.repaint();
+            }
+        });
         topContainer.add(loadButton);
         return new Pair<>(topContainer, loadButton);
     }

@@ -11,22 +11,36 @@ import oth.shipeditor.representation.weapon.ProjectileSpecFile;
 import oth.shipeditor.representation.weapon.WeaponSpecFile;
 import oth.shipeditor.utility.text.StringConstants;
 
-import javax.swing.*;
-import java.awt.event.ActionEvent;
 import java.io.File;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
 
 /**
  * @author Ontheheavens
  * @since 05.08.2023
  */
 @Log4j2
-public class LoadWeaponsDataAction extends AbstractAction {
+public class LoadWeaponsDataAction extends DataLoadingAction {
 
     @Override
-    public void actionPerformed(ActionEvent e) {
+    public Runnable perform() {
+        CompletableFuture<Runnable> weaponData = CompletableFuture.supplyAsync(LoadWeaponsDataAction::collectWeapons);
+        CompletableFuture<Runnable> projectileData = CompletableFuture.supplyAsync(LoadWeaponsDataAction::collectProjectiles);
+
+        CompletableFuture<Runnable> combinedResult = weaponData.thenCombine(projectileData,
+                (weaponsRunnable, projectilesRunnable) ->
+                        () -> {
+                            weaponsRunnable.run();
+                            projectilesRunnable.run();
+                        }
+        );
+
+        return combinedResult.join();
+    }
+
+    private static Runnable collectWeapons() {
         Path weaponsFolderTarget = Paths.get("data", StringConstants.WEAPONS);
         Map<Path, File> weaponsPackages = FileUtilities.getFileFromPackages(weaponsFolderTarget);
         Collection<Path> modsWithWeaponFolder = weaponsPackages.keySet();
@@ -41,14 +55,38 @@ public class LoadWeaponsDataAction extends AbstractAction {
             List<WeaponCSVEntry> entries = new ArrayList<>(weaponsFromPackage.values());
             entryListsByPackage.put(folder, entries);
         }
-        gameData.setWeaponsDataLoaded(true);
-        gameData.setWeaponEntriesByPackage(entryListsByPackage);
 
-        EventBus.publish(new WeaponTreeReloadQueued());
+        return () -> {
+            gameData.setWeaponsDataLoaded(true);
+            gameData.setWeaponEntriesByPackage(entryListsByPackage);
+        };
+    }
 
+    private static Runnable collectProjectiles() {
+        String proj = "proj";
+        Path projectileFolderTarget = Paths.get("data", StringConstants.WEAPONS, proj);
+        Map<Path, File> packagesWithProjectiles = FileUtilities.getFileFromPackages(projectileFolderTarget);
+        Collection<Path> projectileFolders = packagesWithProjectiles.keySet();
 
-        Map<String, ProjectileSpecFile> projectiles = LoadWeaponsDataAction.collectProjectiles();
-        gameData.setAllProjectiles(projectiles);
+        Map<String, ProjectileSpecFile> allProjectiles = new HashMap<>();
+        for (Path directory : projectileFolders) {
+            log.info("Projectile folder found in mod directory: {}", directory);
+
+            List<File> projectileFiles = FileLoading.fetchFilesWithExtension(directory, proj);
+
+            for (File projectileFile : projectileFiles) {
+                ProjectileSpecFile mapped = FileLoading.loadProjectileFile(projectileFile);
+                mapped.setContainingPackage(directory);
+                allProjectiles.put(mapped.getId(), mapped);
+            }
+        }
+
+        return () -> {
+            GameDataRepository gameData = SettingsManager.getGameData();
+            gameData.setAllProjectiles(allProjectiles);
+
+            EventBus.publish(new WeaponTreeReloadQueued());
+        };
     }
 
     private static Map<String, WeaponCSVEntry> walkWeaponsFolder(Path folder) {
@@ -86,28 +124,6 @@ public class LoadWeaponsDataAction extends AbstractAction {
         }
 
         return weaponEntries;
-    }
-
-    private static Map<String, ProjectileSpecFile> collectProjectiles() {
-        String proj = "proj";
-        Path projectileFolderTarget = Paths.get("data", StringConstants.WEAPONS, proj);
-        Map<Path, File> packagesWithProjectiles = FileUtilities.getFileFromPackages(projectileFolderTarget);
-        Collection<Path> projectileFolders = packagesWithProjectiles.keySet();
-
-        Map<String, ProjectileSpecFile> allProjectiles = new HashMap<>();
-        for (Path directory : projectileFolders) {
-            log.info("Projectile folder found in mod directory: {}", directory);
-
-            List<File> projectileFiles = FileLoading.fetchFilesWithExtension(directory, proj);
-
-            for (File projectileFile : projectileFiles) {
-                ProjectileSpecFile mapped = FileLoading.loadProjectileFile(projectileFile);
-                mapped.setContainingPackage(directory);
-                allProjectiles.put(mapped.getId(), mapped);
-            }
-        }
-
-        return allProjectiles;
     }
 
 }

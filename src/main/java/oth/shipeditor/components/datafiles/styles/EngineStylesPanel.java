@@ -19,8 +19,8 @@ public class EngineStylesPanel extends AbstractStylesPanel {
 
     @Override
     protected JPanel createTopPanel() {
-        Pair<JPanel, JButton> singleButtonPanel = ComponentUtilities.createSingleButtonPanel("Engine styles data:",
-                FileLoading.getLoadEngineStyleDataAction());
+        Action buttonAction = FileLoading.loadDataAsync(FileLoading.getLoadEngineStyles());
+        Pair<JPanel, JButton> singleButtonPanel = ComponentUtilities.createLoaderButtonPanel("Engine styles data:", buttonAction);
         JButton button = singleButtonPanel.getSecond();
         button.setText("Reload engine styles data");
         return singleButtonPanel.getFirst();

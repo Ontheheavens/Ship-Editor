@@ -11,12 +11,11 @@ import oth.shipeditor.representation.*;
 import oth.shipeditor.utility.objects.Pair;
 import oth.shipeditor.utility.text.StringConstants;
 
-import javax.swing.*;
-import java.awt.event.ActionEvent;
 import java.io.File;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
 
 /**
  * @author Ontheheavens
@@ -24,10 +23,25 @@ import java.util.*;
  */
 @Log4j2
 public
-class LoadShipDataAction extends AbstractAction {
+class LoadShipDataAction extends DataLoadingAction {
 
     @Override
-    public void actionPerformed(ActionEvent e) {
+    public Runnable perform() {
+        CompletableFuture<Runnable> shipData = CompletableFuture.supplyAsync(LoadShipDataAction::collectShips);
+        CompletableFuture<Runnable> variantData = CompletableFuture.supplyAsync(LoadShipDataAction::collectVariants);
+
+        CompletableFuture<Runnable> combinedResult = shipData.thenCombine(variantData,
+                (shipRunnable, variantRunnable) ->
+                () -> {
+                    shipRunnable.run();
+                    variantRunnable.run();
+                }
+        );
+
+        return combinedResult.join();
+    }
+
+    private static Runnable collectShips() {
         Path hullTableTarget = Paths.get("data", StringConstants.HULLS, StringConstants.SHIP_DATA_CSV);
         Map<Path, File> hullsPackages = FileUtilities.getFileFromPackages(hullTableTarget);
         Collection<Path> modsWithShipData = hullsPackages.keySet();
@@ -46,6 +60,7 @@ class LoadShipDataAction extends AbstractAction {
         GameDataRepository gameData = SettingsManager.getGameData();
         Map<String, ShipCSVEntry> allShipEntries = gameData.getAllShipEntries();
         allShipEntries.clear();
+
         Map<Path, List<ShipCSVEntry>> allEntriesByPackage = new HashMap<>();
 
         for (Path folder : modsWithShipData) {
@@ -53,15 +68,37 @@ class LoadShipDataAction extends AbstractAction {
             allEntriesByPackage.put(packageShipData.getFirst(), packageShipData.getSecond());
         }
 
-        gameData.setShipEntriesByPackage(allEntriesByPackage);
-        gameData.setShipDataLoaded(true);
-        EventBus.publish(new HullTreeEntryCleared());
-        EventBus.publish(new HullTreeReloadQueued());
-
-        Map<String, VariantFile> variants = LoadShipDataAction.collectVariants();
-        gameData.setAllVariants(variants);
+        return () -> {
+            gameData.setShipEntriesByPackage(allEntriesByPackage);
+            gameData.setShipDataLoaded(true);
+            EventBus.publish(new HullTreeEntryCleared());
+            EventBus.publish(new HullTreeReloadQueued());
+        };
     }
 
+    private static Runnable collectVariants() {
+        Path variantFolderTarget = Paths.get("data", "variants");
+        Map<Path, File> packagesWithVariants = FileUtilities.getFileFromPackages(variantFolderTarget);
+        Collection<Path> variantFolders = packagesWithVariants.keySet();
+
+        Map<String, VariantFile> allVariants = new HashMap<>();
+        for (Path directory : variantFolders) {
+            log.info("Variant folder found in mod directory: {}", directory);
+
+            List<File> variantFiles = FileLoading.fetchFilesWithExtension(directory, StringConstants.VARIANT);
+
+            for (File variantFile : variantFiles) {
+                VariantFile mapped = FileLoading.loadVariantFile(variantFile);
+                mapped.setContainingPackage(directory);
+                allVariants.put(mapped.getVariantId(), mapped);
+            }
+        }
+
+        return () -> {
+            GameDataRepository gameData = SettingsManager.getGameData();
+            gameData.setAllVariants(allVariants);
+        };
+    }
     private static Pair<Path, List<ShipCSVEntry>> walkHullFolder(String folderPath, Map<String, SkinSpecFile> skins) {
         Path shipTablePath = Paths.get(folderPath, "data", StringConstants.HULLS, StringConstants.SHIP_DATA_CSV);
 
@@ -136,27 +173,6 @@ class LoadShipDataAction extends AbstractAction {
         }
         log.info("Fetched and mapped {} skin files.", mappedSkins.size());
         return mappedSkins;
-    }
-
-    private static Map<String, VariantFile> collectVariants() {
-        Path variantFolderTarget = Paths.get("data", "variants");
-        Map<Path, File> packagesWithVariants = FileUtilities.getFileFromPackages(variantFolderTarget);
-        Collection<Path> variantFolders = packagesWithVariants.keySet();
-
-        Map<String, VariantFile> allVariants = new HashMap<>();
-        for (Path directory : variantFolders) {
-            log.info("Variant folder found in mod directory: {}", directory);
-
-            List<File> variantFiles = FileLoading.fetchFilesWithExtension(directory, StringConstants.VARIANT);
-
-            for (File variantFile : variantFiles) {
-                VariantFile mapped = FileLoading.loadVariantFile(variantFile);
-                mapped.setContainingPackage(directory);
-                allVariants.put(mapped.getVariantId(), mapped);
-            }
-        }
-
-        return allVariants;
     }
 
 }

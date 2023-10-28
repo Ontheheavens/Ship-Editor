@@ -8,7 +8,7 @@ import oth.shipeditor.communication.events.components.SelectWeaponDataEntry;
 import oth.shipeditor.components.layering.ViewerLayersPanel;
 import oth.shipeditor.components.viewer.LayerViewer;
 import oth.shipeditor.components.viewer.PrimaryViewer;
-import oth.shipeditor.persistence.Initializations;
+import oth.shipeditor.parsing.loading.FileLoading;
 
 import javax.swing.*;
 import java.awt.*;
@@ -104,7 +104,7 @@ public final class WindowContentPanes {
                 if (tabIndex == 0) {
                     JPopupMenu menu = new JPopupMenu();
                     JMenuItem reloadAllGameData = new JMenuItem("Reload all game data");
-                    reloadAllGameData.addActionListener(e1 -> Initializations.loadGameData(westTabsPane));
+                    reloadAllGameData.addActionListener(event -> FileLoading.loadGameData());
 
                     menu.add(reloadAllGameData);
                     menu.show(westTabsPane, e.getPoint().x, e.getPoint().y);

@@ -11,8 +11,6 @@ import oth.shipeditor.representation.GameDataRepository;
 import oth.shipeditor.representation.HullStyle;
 import oth.shipeditor.utility.text.StringConstants;
 
-import javax.swing.*;
-import java.awt.event.ActionEvent;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
@@ -26,10 +24,10 @@ import java.util.Map;
  * @since 01.08.2023
  */
 @Log4j2
-public class LoadHullStyleDataAction extends AbstractAction {
+public class LoadHullStyleDataAction extends DataLoadingAction {
 
     @Override
-    public void actionPerformed(ActionEvent e) {
+    public Runnable perform() {
         Path targetFile = Paths.get("data", StringConstants.CONFIG, "hull_styles.json");
 
         Map<Path, File> hullStyleFiles = FileUtilities.getFileFromPackages(targetFile);
@@ -44,10 +42,14 @@ public class LoadHullStyleDataAction extends AbstractAction {
             }
             collectedHullStyles.putAll(stylesFromFile);
         }
-        GameDataRepository gameData = SettingsManager.getGameData();
-        gameData.setAllHullStyles(collectedHullStyles);
-        EventBus.publish(new HullStylesLoaded(collectedHullStyles));
+
+        return () -> {
+            GameDataRepository gameData = SettingsManager.getGameData();
+            gameData.setAllHullStyles(collectedHullStyles);
+            EventBus.publish(new HullStylesLoaded(collectedHullStyles));
+        };
     }
+
 
     private static Map<String, HullStyle> loadHullStyleFile(File styleFile) {
         ObjectMapper mapper = FileUtilities.getConfigured();

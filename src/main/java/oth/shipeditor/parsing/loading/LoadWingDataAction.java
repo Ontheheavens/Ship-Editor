@@ -16,7 +16,7 @@ import java.util.Map;
  */
 public class LoadWingDataAction extends LoadCSVDataAction<WingCSVEntry>{
 
-    public LoadWingDataAction() {
+    LoadWingDataAction() {
         super(Paths.get("data", StringConstants.HULLS, "wing_data.csv"));
     }
 

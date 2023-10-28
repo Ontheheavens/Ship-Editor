@@ -12,6 +12,7 @@ import com.fasterxml.jackson.dataformat.csv.CsvSchema;
 import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
 import oth.shipeditor.communication.EventBus;
+import oth.shipeditor.communication.events.components.LoadingActionFired;
 import oth.shipeditor.communication.events.files.HullFileOpened;
 import oth.shipeditor.parsing.FileUtilities;
 import oth.shipeditor.parsing.JsonProcessor;
@@ -41,10 +42,8 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
+import java.util.concurrent.CompletableFuture;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
@@ -52,38 +51,77 @@ import java.util.stream.Stream;
  * @author Ontheheavens
  * @since 16.07.2023
  */
-@SuppressWarnings({"CallToPrintStackTrace", "ClassWithTooManyFields"})
+@SuppressWarnings({"CallToPrintStackTrace", "ClassWithTooManyFields", "ClassWithTooManyMethods", "OverlyCoupledClass"})
 @Log4j2
 public final class FileLoading {
 
-    // TODO: loading actions should be performed in a separate thread.
+    @Getter
+    private static final DataLoadingAction loadShips = new LoadShipDataAction();
+    @Getter
+    private static final DataLoadingAction loadHullmods = new LoadHullmodDataAction();
+    @Getter
+    private static final DataLoadingAction loadHullStyles = new LoadHullStyleDataAction();
+    @Getter
+    private static final DataLoadingAction loadEngineStyles = new LoadEngineStyleDataAction();
+    @Getter
+    private static final DataLoadingAction loadShipSystems = new LoadShipSystemDataAction();
+    @Getter
+    private static final DataLoadingAction loadWings = new LoadWingDataAction();
+    @Getter
+    private static final DataLoadingAction loadWeapons = new LoadWeaponsDataAction();
+    @Getter
+    public static final Action openSprite = new OpenSpriteAction();
+    @Getter
+    public static final Action openShip = new OpenHullAction();
+    @Getter
+    private static final Action loadHullAsLayer = new LoadHullAsLayer();
 
-    @Getter
-    private static final Action loadShipDataAction = new LoadShipDataAction();
-    @Getter
-    private static final Action loadHullmodDataAction = new LoadHullmodDataAction();
-    @Getter
-    private static final Action loadHullStyleDataAction = new LoadHullStyleDataAction();
-    @Getter
-    private static final Action loadEngineStyleDataAction = new LoadEngineStyleDataAction();
-    @Getter
-    private static final Action loadShipSystemDataAction = new LoadShipSystemDataAction();
-    @Getter
-    private static final Action loadWingDataAction = new LoadWingDataAction();
-    @Getter
-    private static final Action loadWeaponDataAction = new LoadWeaponsDataAction();
-    @Getter
-    public static final Action openSpriteAction = new OpenSpriteAction();
-    @Getter
-    public static final Action openShipDataAction = new OpenHullAction();
-    @Getter
-    private static final Action loadHullAsLayerAction = new LoadHullAsLayer();
+    private FileLoading() {}
 
-    @SuppressWarnings("StaticCollection")
-    @Getter
-    private static final List<Action> loadDataActions = FileLoading.initLoadActions();
+    /**
+     * To be called only after all components and settings have been initialized.
+     */
+    public static CompletableFuture<List<Runnable>> loadGameData() {
+        EventBus.publish(new LoadingActionFired(true));
+        Collection<DataLoadingAction> loadActions = new ArrayList<>();
+        loadActions.add(loadShips);
+        loadActions.add(loadHullmods);
+        loadActions.add(loadHullStyles);
+        loadActions.add(loadEngineStyles);
+        loadActions.add(loadShipSystems);
+        loadActions.add(loadWings);
+        loadActions.add(loadWeapons);
 
-    private FileLoading() {
+        List<CompletableFuture<Runnable>> futures = new ArrayList<>();
+        for (DataLoadingAction action : loadActions) {
+            CompletableFuture<Runnable> future = CompletableFuture.supplyAsync(action::perform);
+            futures.add(future);
+        }
+
+        CompletableFuture<Void> allOf = CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]));
+        CompletableFuture<List<Runnable>> allResults = allOf.thenApply(v ->
+                futures.stream().map(CompletableFuture::join).toList()
+        );
+
+        allResults.thenAccept(runnables -> runnables.forEach(Runnable::run));
+        allResults.thenRun(() -> EventBus.publish(new LoadingActionFired(false)));
+
+        return allResults;
+    }
+
+    /**
+     * @param loadAction executed with a separate GUI callback.
+     */
+    public static Action loadDataAsync(DataLoadingAction loadAction) {
+        return new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                EventBus.publish(new LoadingActionFired(true));
+                CompletableFuture<Runnable> loadResult = CompletableFuture.supplyAsync(loadAction::perform);
+                CompletableFuture<Void> publishResult = loadResult.thenAccept(Runnable::run);
+                publishResult.thenRun(() -> EventBus.publish(new LoadingActionFired(false)));
+            }
+        };
     }
 
     private static Path searchFileInFolder(Path filePath, Path folderPath) {
@@ -360,18 +398,6 @@ public final class FileLoading {
             boolean validID = id != null && !id.isEmpty();
             return validID && !id.startsWith("#");
         };
-    }
-
-    private static List<Action> initLoadActions() {
-        List<Action> actions = new ArrayList<>();
-        actions.add(loadShipDataAction);
-        actions.add(loadHullmodDataAction);
-        actions.add(loadHullStyleDataAction);
-        actions.add(loadEngineStyleDataAction);
-        actions.add(loadShipSystemDataAction);
-        actions.add(loadWingDataAction);
-        actions.add(loadWeaponDataAction);
-        return actions;
     }
 
     private static class OpenHullAction extends AbstractAction {

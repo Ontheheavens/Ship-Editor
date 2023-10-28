@@ -7,12 +7,10 @@ import oth.shipeditor.PrimaryWindow;
 import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.viewer.ViewerBackgroundChanged;
 import oth.shipeditor.parsing.FileUtilities;
-import oth.shipeditor.parsing.loading.FileLoading;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
@@ -25,7 +23,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 import java.util.Objects;
 import java.util.function.Function;
 
@@ -44,15 +41,6 @@ public final class Initializations {
     private static boolean folderHasMods;
 
     private Initializations() {
-    }
-
-    /**
-     * To be called only after all components and settings have been initialized.
-     */
-    public static void loadGameData(Component source) {
-        ActionEvent initEvent = new ActionEvent(source, ActionEvent.ACTION_PERFORMED, null);
-        List<Action> loadActions = FileLoading.getLoadDataActions();
-        loadActions.forEach(action -> action.actionPerformed(initEvent));
     }
 
     @SuppressWarnings({"ProhibitedExceptionThrown", "CallToPrintStackTrace"})

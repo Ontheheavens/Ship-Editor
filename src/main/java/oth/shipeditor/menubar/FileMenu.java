@@ -24,7 +24,7 @@ class FileMenu extends JMenu {
         JMenu openSubmenu = FileMenu.createOpenSubmenu();
         this.add(openSubmenu);
 
-        JMenuItem loadHullAsLayer = new JMenuItem(FileLoading.getLoadHullAsLayerAction());
+        JMenuItem loadHullAsLayer = new JMenuItem(FileLoading.getLoadHullAsLayer());
         loadHullAsLayer.setIcon(FontIcon.of(BoxiconsRegular.LAYER, 16));
         loadHullAsLayer.setText("Load ship file as layer");
         this.add(loadHullAsLayer);
@@ -34,12 +34,12 @@ class FileMenu extends JMenu {
         JMenu newSubmenu = new JMenu("Open");
         newSubmenu.setIcon(FontIcon.of(FluentUiRegularAL.FOLDER_OPEN_20, 16));
 
-        JMenuItem openSprite = new JMenuItem(FileLoading.getOpenSpriteAction());
+        JMenuItem openSprite = new JMenuItem(FileLoading.getOpenSprite());
         openSprite.setIcon(FontIcon.of(FluentUiRegularAL.IMAGE_20, 16));
         openSprite.setText("Open sprite to layer");
         newSubmenu.add(openSprite);
 
-        JMenuItem openShipData = new JMenuItem(FileLoading.getOpenShipDataAction());
+        JMenuItem openShipData = new JMenuItem(FileLoading.getOpenShip());
         openShipData.setIcon(FontIcon.of(FluentUiRegularAL.CLIPBOARD_TEXT_20, 16));
         openShipData.setText("Open ship file to layer");
         newSubmenu.add(openShipData);

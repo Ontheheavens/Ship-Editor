@@ -28,34 +28,30 @@ import java.util.List;
  * @author Ontheheavens
  * @since 28.07.2023
  */
+@Getter
 @SuppressWarnings("ClassWithTooManyMethods")
 public abstract class LayerPainter implements Painter {
 
-    @Getter
     private final List<AbstractPointPainter> allPainters;
 
-    @Getter
     private Point2D anchor = new Point2D.Double(0, 0);
 
-    @Getter
     private float spriteOpacity = 1.0f;
 
-    @Getter @Setter
+    @Setter
     private double rotationRadians;
 
-    @Getter
     private final ViewerLayer parentLayer;
 
-    @Getter @Setter
+    @Setter
     private BufferedImage sprite;
 
-    @Getter @Setter(AccessLevel.PROTECTED)
+    @Setter(AccessLevel.PROTECTED)
     private boolean uninitialized = true;
 
-    @Getter @Setter
+    @Setter
     private boolean shouldDrawPainter = true;
 
-    @Getter
     private final List<BusEventListener> listeners;
 
     protected LayerPainter(ViewerLayer layer) {

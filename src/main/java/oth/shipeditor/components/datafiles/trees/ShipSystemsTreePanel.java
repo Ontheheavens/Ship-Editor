@@ -27,7 +27,7 @@ class ShipSystemsTreePanel extends CSVDataTreePanel<ShipSystemCSVEntry>{
 
     @Override
     protected Action getLoadDataAction() {
-        return FileLoading.getLoadShipSystemDataAction();
+        return FileLoading.loadDataAsync(FileLoading.getLoadShipSystems());
     }
 
     @Override

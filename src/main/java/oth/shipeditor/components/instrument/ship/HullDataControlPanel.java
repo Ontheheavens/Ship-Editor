@@ -36,16 +36,141 @@ public class HullDataControlPanel extends JPanel {
 
     private JComboBox<HullSize> sizeSelector;
 
+    private JTextField hullIDEditor;
+
+    /**
+     * Is needed to prevent recursive refresh calls from action listeners.
+     */
+    private boolean readyForInput;
+    private JTextField hullNameEditor;
+
     @SuppressWarnings("ThisEscapedInObjectConstruction")
     HullDataControlPanel() {
         this.setLayout(new GridBagLayout());
         ComponentUtilities.outfitPanelWithTitle(this,
                 new Insets(1, 0, 0, 0), "Hull data");
 
+        addHullNamePanel();
+        addHullIDPanel();
+
         addSizeSelector();
         addStyleSelector();
         addCoversColorChooser();
         addSpriteNameLabel();
+    }
+
+    private void addHullNamePanel() {
+        JLabel label = new JLabel("Hull name:");
+
+        hullNameEditor = new JTextField();
+        hullNameEditor.setToolTipText(StringValues.ENTER_TO_SAVE_CHANGES);
+        hullNameEditor.setColumns(10);
+        hullNameEditor.addActionListener(e -> {
+            if (readyForInput) {
+                String currentText = hullNameEditor.getText();
+
+                ShipHull shipHull = cachedLayer.getHull();
+                shipHull.setHullName(currentText);
+
+                processChange();
+            }
+        });
+
+        ComponentUtilities.addLabelAndComponent(this, label, hullNameEditor,
+                2, 0, 0, 1);
+    }
+
+    private void addHullIDPanel() {
+        JLabel label = new JLabel("Hull ID:");
+
+        hullIDEditor = new JTextField();
+        hullIDEditor.setToolTipText(StringValues.ENTER_TO_SAVE_CHANGES);
+        hullIDEditor.setColumns(10);
+        hullIDEditor.addActionListener(e -> {
+            if (readyForInput) {
+                String currentText = hullIDEditor.getText();
+
+                ShipHull shipHull = cachedLayer.getHull();
+                shipHull.setHullID(currentText);
+
+                processChange();
+            }
+        });
+
+        ComponentUtilities.addLabelAndComponent(this, label, hullIDEditor,
+                2, 0, 0, 2);
+    }
+
+    private void addSizeSelector() {
+        JLabel selectorLabel = new JLabel("Hull size:");
+        ComboBoxModel<HullSize> sizeModel = new DefaultComboBoxModel<>(HullSize.values());
+        sizeSelector  = new JComboBox<>(sizeModel);
+        sizeSelector.setRenderer(new DefaultListCellRenderer() {
+            @Override
+            public Component getListCellRendererComponent(JList<?> list, Object value,
+                                                          int index, boolean isSelected,
+                                                          boolean cellHasFocus) {
+                super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+                HullSize size = (HullSize) value;
+                if (size != null) {
+                    setText(size.getDisplayedName());
+                } else {
+                    setText(StringValues.NOT_INITIALIZED);
+                }
+                return this;
+            }
+        });
+
+        sizeSelector.addActionListener(e -> {
+            if (readyForInput) {
+                HullSize selectedValue = (HullSize) sizeSelector.getSelectedItem();
+
+                if (cachedLayer != null) {
+                    ShipHull shipHull = cachedLayer.getHull();
+                    shipHull.setHullSize(selectedValue);
+
+                    processChange();
+                }
+            }
+        });
+
+        ComponentUtilities.addLabelAndComponent(this, selectorLabel, sizeSelector,
+                2, 0, 0, 3);
+    }
+
+    private void addStyleSelector() {
+        JLabel selectorLabel = new JLabel("Hull style:");
+        styleSelector  = new JComboBox<>();
+        styleSelector.setRenderer(new DefaultListCellRenderer() {
+            @Override
+            public Component getListCellRendererComponent(JList<?> list, Object value,
+                                                          int index, boolean isSelected,
+                                                          boolean cellHasFocus) {
+                super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+                HullStyle style = (HullStyle) value;
+                if (style != null) {
+                    setText(style.getHullStyleID());
+                } else {
+                    setText(StringValues.NOT_INITIALIZED);
+                }
+
+                return this;
+            }
+        });
+
+        styleSelector.addActionListener(e -> {
+            if (readyForInput) {
+                HullStyle selectedValue = (HullStyle) styleSelector.getSelectedItem();
+
+                if (cachedLayer != null) {
+                    cachedLayer.setHullStyle(selectedValue);
+                    processChange();
+                }
+            }
+        });
+
+        ComponentUtilities.addLabelAndComponent(this, selectorLabel, styleSelector,
+                2, 0, 0, 4);
     }
 
     private void addSpriteNameLabel() {
@@ -73,74 +198,6 @@ public class HullDataControlPanel extends JPanel {
                 coversColorValue, 0, 2, 0, 6);
     }
 
-    private void addStyleSelector() {
-        JLabel selectorLabel = new JLabel("Hull style:");
-        styleSelector  = new JComboBox<>();
-        styleSelector.setRenderer(new DefaultListCellRenderer() {
-            @Override
-            public Component getListCellRendererComponent(JList<?> list, Object value,
-                                                          int index, boolean isSelected,
-                                                          boolean cellHasFocus) {
-                super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
-                HullStyle style = (HullStyle) value;
-                if (style != null) {
-                    setText(style.getHullStyleID());
-                } else {
-                    setText(StringValues.NOT_INITIALIZED);
-                }
-
-                return this;
-            }
-        });
-
-        styleSelector.addActionListener(e -> {
-            HullStyle selectedValue = (HullStyle) styleSelector.getSelectedItem();
-
-            if (cachedLayer != null) {
-                cachedLayer.setHullStyle(selectedValue);
-                processChange();
-            }
-        });
-
-        ComponentUtilities.addLabelAndComponent(this, selectorLabel, styleSelector,
-                2, 0, 0, 4);
-    }
-
-    private void addSizeSelector() {
-        JLabel selectorLabel = new JLabel("Hull size:");
-        ComboBoxModel<HullSize> sizeModel = new DefaultComboBoxModel<>(HullSize.values());
-        sizeSelector  = new JComboBox<>(sizeModel);
-        sizeSelector.setRenderer(new DefaultListCellRenderer() {
-            @Override
-            public Component getListCellRendererComponent(JList<?> list, Object value,
-                                                          int index, boolean isSelected,
-                                                          boolean cellHasFocus) {
-                super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
-                HullSize size = (HullSize) value;
-                if (size != null) {
-                    setText(size.getDisplayedName());
-                } else {
-                    setText(StringValues.NOT_INITIALIZED);
-                }
-                return this;
-            }
-        });
-
-        sizeSelector.addActionListener(e -> {
-            HullSize selectedValue = (HullSize) sizeSelector.getSelectedItem();
-
-            if (cachedLayer != null) {
-                ShipHull shipHull = cachedLayer.getHull();
-                shipHull.setHullSize(selectedValue);
-
-                processChange();
-            }
-        });
-
-        ComponentUtilities.addLabelAndComponent(this, selectorLabel, sizeSelector,
-                2, 0, 0, 3);
-    }
-
     private void processChange() {
         this.refreshData(cachedLayer);
         ComponentRepaint repainter = StaticController.getRepainter();
@@ -149,6 +206,8 @@ public class HullDataControlPanel extends JPanel {
 
     void clearData() {
         cachedLayer = null;
+
+        readyForInput = false;
 
         spriteNameValue.setText(StringValues.NOT_INITIALIZED);
         spriteNameValue.setToolTipText(StringValues.NOT_INITIALIZED);
@@ -165,10 +224,18 @@ public class HullDataControlPanel extends JPanel {
 
         sizeSelector.setSelectedItem(null);
         sizeSelector.setEnabled(false);
+
+        hullIDEditor.setText(StringValues.NOT_INITIALIZED);
+        hullIDEditor.setEnabled(false);
+
+        hullNameEditor.setText(StringValues.NOT_INITIALIZED);
+        hullNameEditor.setEnabled(false);
     }
 
     void refreshData(ShipLayer layer) {
         cachedLayer = layer;
+
+        readyForInput = false;
 
         ShipHull shipHull = layer.getHull();
         var coversColor = shipHull.getCoversColor();
@@ -203,6 +270,14 @@ public class HullDataControlPanel extends JPanel {
 
         sizeSelector.setEnabled(true);
         sizeSelector.setSelectedItem(shipHull.getHullSize());
+
+        hullIDEditor.setEnabled(true);
+        hullIDEditor.setText(shipHull.getHullID());
+
+        hullNameEditor.setEnabled(true);
+        hullNameEditor.setText(shipHull.getHullName());
+
+        readyForInput = true;
     }
 
     @SuppressWarnings("ExtractMethodRecommender")

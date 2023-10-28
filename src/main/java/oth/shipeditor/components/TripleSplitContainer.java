@@ -279,7 +279,6 @@ final class TripleSplitContainer extends JSplitPane {
     void loadContentPanes(LayerViewer shipView) {
         this.shipInstrumentsPane = new ShipInstrumentsPane();
         this.weaponInstrumentsPane = new WeaponInstrumentsPane();
-        shipInstrumentsPane.setOpaque(true);
         secondaryLevel = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
         secondaryLevel.setLeftComponent((Component) shipView);
         secondaryLevel.setRightComponent(shipInstrumentsPane);

@@ -14,7 +14,6 @@ import oth.shipeditor.utility.text.StringConstants;
 import oth.shipeditor.utility.text.StringValues;
 
 import javax.swing.*;
-import java.awt.event.ActionEvent;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
@@ -28,10 +27,10 @@ import java.util.Map;
  * @since 19.08.2023
  */
 @Log4j2
-public class LoadEngineStyleDataAction extends AbstractAction {
+public class LoadEngineStyleDataAction extends DataLoadingAction {
 
     @Override
-    public void actionPerformed(ActionEvent e) {
+    public Runnable perform() {
         Path targetFile = Paths.get("data", StringConstants.CONFIG, "engine_styles.json");
 
         Map<Path, File> engineStyleFiles = FileUtilities.getFileFromPackages(targetFile);
@@ -46,9 +45,12 @@ public class LoadEngineStyleDataAction extends AbstractAction {
             }
             collectedEngineStyles.putAll(stylesFromFile);
         }
-        GameDataRepository gameData = SettingsManager.getGameData();
-        gameData.setAllEngineStyles(collectedEngineStyles);
-        EventBus.publish(new EngineStylesLoaded(collectedEngineStyles));
+
+        return () -> {
+            GameDataRepository gameData = SettingsManager.getGameData();
+            gameData.setAllEngineStyles(collectedEngineStyles);
+            EventBus.publish(new EngineStylesLoaded(collectedEngineStyles));
+        };
     }
 
     private static Map<String, EngineStyle> loadEngineStyleFile(File styleFile) {

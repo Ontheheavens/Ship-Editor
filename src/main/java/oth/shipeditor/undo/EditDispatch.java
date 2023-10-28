@@ -300,7 +300,9 @@ public final class EditDispatch {
         Edit radiusEdit = new CollisionRadiusEdit(point, oldRadius, radius);
         EditDispatch.handleContinuousEdit(radiusEdit);
         point.setCollisionRadius(radius);
-        Events.repaintShipView();
+        var repainter = StaticController.getRepainter();
+        repainter.queueViewerRepaint();
+        repainter.queueCenterPanelsRepaint();
     }
 
     public static void postShieldRadiusChanged(ShieldCenterPoint point, float radius) {
@@ -308,7 +310,9 @@ public final class EditDispatch {
         Edit radiusEdit = new ShieldRadiusEdit(point, oldRadius, radius);
         EditDispatch.handleContinuousEdit(radiusEdit);
         point.setShieldRadius(radius);
-        Events.repaintShipView();
+        var repainter = StaticController.getRepainter();
+        repainter.queueViewerRepaint();
+        repainter.queueCenterPanelsRepaint();
     }
 
     public static void postSlotIDChanged(SlotData point, String newID) {
