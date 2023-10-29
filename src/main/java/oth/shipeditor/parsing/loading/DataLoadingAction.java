@@ -9,6 +9,9 @@ import lombok.extern.log4j.Log4j2;
 @Log4j2
 public abstract class DataLoadingAction {
 
+    /**
+     * @return code that is expected to publish the results of loading process.
+     */
     public abstract Runnable perform();
 
 }

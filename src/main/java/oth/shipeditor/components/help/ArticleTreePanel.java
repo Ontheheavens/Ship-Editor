@@ -4,6 +4,7 @@ import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.components.GameDataPanelResized;
 import oth.shipeditor.components.datafiles.trees.DataTreePanel;
 import oth.shipeditor.components.datafiles.OpenDataTarget;
+import oth.shipeditor.components.help.parts.ArticlePart;
 import oth.shipeditor.utility.components.containers.TextScrollPanel;
 
 import javax.swing.*;
@@ -32,6 +33,10 @@ class ArticleTreePanel extends DataTreePanel {
         this.initComponentListeners();
     }
 
+    @Override
+    protected float getSplitterResizeWeight() {
+        return 0;
+    }
 
     private void initComponentListeners() {
         JTree tree = getTree();
@@ -54,12 +59,14 @@ class ArticleTreePanel extends DataTreePanel {
         JPanel contentContainer = new TextScrollPanel(new FlowLayout());
         contentContainer.setLayout(new BoxLayout(contentContainer, BoxLayout.PAGE_AXIS));
 
-        List<JPanel> articleParts = selected.getArticleParts();
-        for (JPanel articlePart : articleParts) {
-            contentContainer.add(articlePart);
+        List<ArticlePart> articleParts = selected.getArticleParts();
+        for (ArticlePart articlePart : articleParts) {
+            contentContainer.add(articlePart.createContent());
         }
         JScrollPane scrollContainer = new JScrollPane(contentContainer);
         scrollContainer.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
+        JScrollBar verticalScrollBar = scrollContainer.getVerticalScrollBar();
+        verticalScrollBar.setUnitIncrement(24);
 
         rightPanel.add(scrollContainer);
         rightPanel.revalidate();

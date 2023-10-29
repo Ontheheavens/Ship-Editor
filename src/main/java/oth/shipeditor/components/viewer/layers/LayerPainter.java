@@ -11,9 +11,11 @@ import oth.shipeditor.communication.events.viewer.layers.LayerRotationQueued;
 import oth.shipeditor.communication.events.viewer.layers.ViewerLayerRemovalConfirmed;
 import oth.shipeditor.communication.events.viewer.points.AnchorOffsetQueued;
 import oth.shipeditor.components.viewer.control.ControlPredicates;
+import oth.shipeditor.components.viewer.entities.BaseWorldPoint;
 import oth.shipeditor.components.viewer.painters.points.AbstractPointPainter;
 import oth.shipeditor.undo.EditDispatch;
 import oth.shipeditor.undo.UndoOverseer;
+import oth.shipeditor.utility.graphics.Sprite;
 import oth.shipeditor.utility.overseers.StaticController;
 
 import java.awt.*;
@@ -23,6 +25,7 @@ import java.awt.geom.Point2D;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Consumer;
 
 /**
  * @author Ontheheavens
@@ -44,7 +47,7 @@ public abstract class LayerPainter implements Painter {
     private final ViewerLayer parentLayer;
 
     @Setter
-    private BufferedImage sprite;
+    private Sprite sprite;
 
     @Setter(AccessLevel.PROTECTED)
     private boolean uninitialized = true;
@@ -62,8 +65,13 @@ public abstract class LayerPainter implements Painter {
     }
 
     public Dimension getSpriteSize() {
-        var spriteImage = getSprite();
+        Sprite spriteContainer = getSprite();
+        var spriteImage = spriteContainer.getImage();
         return new Dimension(spriteImage.getWidth(), spriteImage.getHeight());
+    }
+
+    public BufferedImage getSpriteImage() {
+        return sprite.getImage();
     }
 
     private void initLayerListeners() {
@@ -111,6 +119,27 @@ public abstract class LayerPainter implements Painter {
         this.anchor = inputAnchor;
     }
 
+    public void reconfigureSpriteCircumstance(Sprite updated) {
+        BufferedImage previous = this.getSpriteImage();
+        var spriteHeight = previous.getHeight();
+
+        BufferedImage updatedImage = updated.getImage();
+        var updatedHeight = updatedImage.getHeight();
+
+        int heightDifference = spriteHeight - updatedHeight;
+
+        var painterList = this.getAllPainters();
+        painterList.forEach(abstractPointPainter -> {
+            List<? extends BaseWorldPoint> pointsIndex = abstractPointPainter.getPointsIndex();
+            pointsIndex.forEach((Consumer<BaseWorldPoint>) baseWorldPoint -> {
+                Point2D oldPosition = baseWorldPoint.getPosition();
+                baseWorldPoint.setPosition(oldPosition.getX(), oldPosition.getY() - heightDifference);
+            });
+        });
+
+        this.setSprite(updated);
+    }
+
     public boolean isLayerActive() {
         ViewerLayer layer = this.getParentLayer();
         if (layer == null) return false;
@@ -123,7 +152,7 @@ public abstract class LayerPainter implements Painter {
         UndoOverseer.cleanupRemovedLayer(this);
     }
 
-    public void cleanupPointPainters() {
+    protected void cleanupPointPainters() {
         List<AbstractPointPainter> painters = this.getAllPainters();
         for (AbstractPointPainter pointPainter : painters) {
             pointPainter.cleanupPointPainter();
@@ -196,12 +225,14 @@ public abstract class LayerPainter implements Painter {
     }
 
     public int getSpriteWidth() {
-        var spriteImage = getSprite();
+        Sprite spriteContainer = getSprite();
+        var spriteImage = spriteContainer.getImage();
         return spriteImage.getWidth();
     }
 
     public int getSpriteHeight() {
-        var spriteImage = getSprite();
+        Sprite spriteContainer = getSprite();
+        var spriteImage = spriteContainer.getImage();
         return spriteImage.getHeight();
     }
 
@@ -223,7 +254,8 @@ public abstract class LayerPainter implements Painter {
     protected void paintContent(Graphics2D g, AffineTransform worldToScreen, double w, double h) {
         int width = this.getSpriteWidth();
         int height = this.getSpriteHeight();
-        g.drawImage(getSprite(), (int) anchor.getX(), (int) anchor.getY(), width, height, null);
+        Sprite spriteContainer = getSprite();
+        g.drawImage(spriteContainer.getImage(), (int) anchor.getX(), (int) anchor.getY(), width, height, null);
 
     }
 

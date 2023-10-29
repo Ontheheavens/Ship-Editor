@@ -87,7 +87,7 @@ public final class GuidesPainters {
             if (!drawGuides) return;
             LayerPainter layer = parent.getSelectedLayer();
             if (layer == null || layer.getSprite() == null) return;
-            RenderedImage shipSprite = layer.getSprite();
+            RenderedImage shipSprite = layer.getSpriteImage();
 
             Point2D adjustedCursor = StaticController.getAdjustedCursor();
 
@@ -261,7 +261,7 @@ public final class GuidesPainters {
 
             LayerPainter layer = parent.getSelectedLayer();
             if (layer == null || layer.getSprite() == null) return;
-            RenderedImage shipSprite = layer.getSprite();
+            RenderedImage shipSprite = layer.getSpriteImage();
             int width = shipSprite.getWidth();
             int height = shipSprite.getHeight();
             Point2D layerAnchor = layer.getAnchor();

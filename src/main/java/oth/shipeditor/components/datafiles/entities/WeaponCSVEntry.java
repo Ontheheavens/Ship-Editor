@@ -261,7 +261,7 @@ public class WeaponCSVEntry implements CSVEntry, InstallableEntry {
 
         Sprite loadedTurretSprite = spriteHolder.getTurretSprite();
         if (loadedTurretSprite != null) {
-            weaponPainter.setSprite(loadedTurretSprite.getImage());
+            weaponPainter.setSprite(loadedTurretSprite);
         }
         return weaponPainter;
     }

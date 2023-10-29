@@ -30,6 +30,7 @@ public class SkinSpecFile implements ShipSpecFile {
     @JsonIgnore
     private static final SkinSpecFile NO_SKIN_DATA_SPEC_FILE = new SkinSpecFile(true);
 
+    @SuppressWarnings("StaticMethodOnlyUsedInOneClass")
     public static final String DEFAULT = StringConstants.DEFAULT_ID;
 
     @JsonCreator
@@ -79,28 +80,28 @@ public class SkinSpecFile implements ShipSpecFile {
     private String manufacturer;
 
     @JsonProperty(StringConstants.RESTORE_TO_BASE_HULL)
-    private boolean restoreToBaseHull;
+    private Boolean restoreToBaseHull;
 
     @JsonProperty(StringConstants.INCOMPATIBLE_WITH_BASE_HULL)
-    private boolean incompatibleWithBaseHull;
+    private Boolean incompatibleWithBaseHull;
 
     @JsonProperty(StringConstants.FLEET_POINTS)
-    private int fleetPoints;
+    private Integer fleetPoints;
 
     @JsonProperty(StringConstants.ORDNANCE_POINTS)
-    private int ordnancePoints;
+    private Integer ordnancePoints;
 
     @JsonProperty(StringConstants.BASE_VALUE)
-    private int baseValue;
+    private Integer baseValue;
 
     @JsonProperty("fpMod")
-    private int fpMod;
+    private Integer fpMod;
 
     @JsonProperty(StringConstants.SUPPLIES_PER_MONTH)
-    private double suppliesPerMonth;
+    private Double suppliesPerMonth;
 
     @JsonProperty(StringConstants.SUPPLIES_TO_RECOVER)
-    private double suppliesToRecover;
+    private Double suppliesToRecover;
 
     @JsonProperty(StringConstants.DESCRIPTION_ID)
     private String descriptionId;
@@ -122,16 +123,16 @@ public class SkinSpecFile implements ShipSpecFile {
     private List<String> builtInWings;
 
     @JsonProperty(StringConstants.FIGHTER_BAYS)
-    private int fighterBays;
+    private Integer fighterBays;
 
     @JsonProperty(StringConstants.SPRITE_NAME)
     private String spriteName;
 
     @JsonProperty(StringConstants.BASE_VALUE_MULT)
-    private double baseValueMult;
+    private Double baseValueMult;
 
     @JsonProperty("rarity")
-    private double rarity;
+    private Double rarity;
 
     @JsonDeserialize(using = ShipTypeHintsDeserializer.class)
     @JsonProperty(StringConstants.REMOVE_HINTS)

@@ -11,16 +11,6 @@ import lombok.Setter;
 @Getter @Setter
 public abstract class ViewerLayer {
 
-    private String spriteFileName = "";
-
     private LayerPainter painter;
-
-    @Override
-    public String toString() {
-        if (!spriteFileName.isEmpty()) {
-            return spriteFileName;
-        }
-        return super.toString();
-    }
 
 }

@@ -1,6 +1,7 @@
 package oth.shipeditor.components.viewer.layers.ship.data;
 
 import lombok.Getter;
+import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
 import oth.shipeditor.components.datafiles.entities.*;
 import oth.shipeditor.components.viewer.entities.engine.EngineDataOverride;
@@ -22,9 +23,9 @@ import java.util.*;
  * @author Ontheheavens
  * @since 31.07.2023
  */
-@SuppressWarnings("ClassWithTooManyFields")
+@SuppressWarnings({"ClassWithTooManyFields", "ClassWithTooManyMethods", "OverlyComplexClass"})
 @Log4j2
-@Getter
+@Getter @Setter
 public final class ShipSkin {
 
     private final boolean base;
@@ -62,19 +63,19 @@ public final class ShipSkin {
 
     private HullStyle hullStyle;
 
-    private boolean restoreToBaseHull;
+    private Boolean restoreToBaseHull;
 
-    private boolean incompatibleWithBaseHull;
+    private Boolean incompatibleWithBaseHull;
 
-    private int fleetPoints;
+    private Integer fleetPoints;
 
-    private int ordnancePoints;
+    private Integer ordnancePoints;
 
-    private int baseValue;
+    private Integer baseValue;
 
-    private double suppliesPerMonth;
+    private Double suppliesPerMonth;
 
-    private double suppliesToRecover;
+    private Double suppliesToRecover;
 
     private String descriptionId;
 
@@ -88,11 +89,11 @@ public final class ShipSkin {
 
     private List<WingCSVEntry> builtInWings = new ArrayList<>();
 
-    private int fighterBays;
+    private Integer fighterBays;
 
     private String spriteName;
 
-    private double baseValueMult;
+    private Double baseValueMult;
 
     private List<ShipTypeHints> removeHints = new ArrayList<>();
 
@@ -109,7 +110,6 @@ public final class ShipSkin {
     private List<HullmodCSVEntry> builtInMods;
 
     private Map<String, WeaponCSVEntry> builtInWeapons;
-
 
     /**
      * For runtime usage in viewer.
@@ -192,7 +192,7 @@ public final class ShipSkin {
     }
 
     @SuppressWarnings({"PublicInnerClass", "ClassWithTooManyMethods",
-            "unused", "BooleanParameter", "MethodParameterNamingConvention", "WeakerAccess"})
+            "unused", "MethodParameterNamingConvention", "WeakerAccess"})
     public static class Builder {
         private ShipSkin skin;
 
@@ -250,37 +250,37 @@ public final class ShipSkin {
             return this;
         }
 
-        public Builder withRestoreToBaseHull(boolean restoreToBaseHull) {
+        public Builder withRestoreToBaseHull(Boolean restoreToBaseHull) {
             skin.restoreToBaseHull = restoreToBaseHull;
             return this;
         }
 
-        public Builder withIncompatibleWithBaseHull(boolean incompatibleWithBaseHull) {
+        public Builder withIncompatibleWithBaseHull(Boolean incompatibleWithBaseHull) {
             skin.incompatibleWithBaseHull = incompatibleWithBaseHull;
             return this;
         }
 
-        public Builder withFleetPoints(int fleetPoints) {
+        public Builder withFleetPoints(Integer fleetPoints) {
             skin.fleetPoints = fleetPoints;
             return this;
         }
 
-        public Builder withOrdnancePoints(int ordnancePoints) {
+        public Builder withOrdnancePoints(Integer ordnancePoints) {
             skin.ordnancePoints = ordnancePoints;
             return this;
         }
 
-        public Builder withBaseValue(int baseValue) {
+        public Builder withBaseValue(Integer baseValue) {
             skin.baseValue = baseValue;
             return this;
         }
 
-        public Builder withSuppliesPerMonth(double suppliesPerMonth) {
+        public Builder withSuppliesPerMonth(Double suppliesPerMonth) {
             skin.suppliesPerMonth = suppliesPerMonth;
             return this;
         }
 
-        public Builder withSuppliesToRecover(double suppliesToRecover) {
+        public Builder withSuppliesToRecover(Double suppliesToRecover) {
             skin.suppliesToRecover = suppliesToRecover;
             return this;
         }
@@ -326,7 +326,7 @@ public final class ShipSkin {
             return this;
         }
 
-        public Builder withFighterBays(int fighterBays) {
+        public Builder withFighterBays(Integer fighterBays) {
             skin.fighterBays = fighterBays;
             return this;
         }
@@ -336,7 +336,7 @@ public final class ShipSkin {
             return this;
         }
 
-        public Builder withBaseValueMult(double baseValueMult) {
+        public Builder withBaseValueMult(Double baseValueMult) {
             skin.baseValueMult = baseValueMult;
             return this;
         }
@@ -490,8 +490,8 @@ public final class ShipSkin {
                 .withHullName(skinSpecFile.getHullName())
                 .withHullDesignation(skinSpecFile.getHullDesignation())
                 .withHullStyle(skinSpecFile.getHullStyle())
-                .withRestoreToBaseHull(skinSpecFile.isRestoreToBaseHull())
-                .withIncompatibleWithBaseHull(skinSpecFile.isIncompatibleWithBaseHull())
+                .withRestoreToBaseHull(skinSpecFile.getRestoreToBaseHull())
+                .withIncompatibleWithBaseHull(skinSpecFile.getIncompatibleWithBaseHull())
                 .withFleetPoints(skinSpecFile.getFleetPoints())
                 .withOrdnancePoints(skinSpecFile.getOrdnancePoints())
                 .withBaseValue(skinSpecFile.getBaseValue())

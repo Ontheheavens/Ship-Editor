@@ -205,7 +205,7 @@ public class ShipCSVEntry implements CSVEntry, InstallableEntry {
         Path spriteFilePath = Path.of(spriteName);
         File spriteFile = FileLoading.fetchDataFile(spriteFilePath, this.packageFolderPath);
         Sprite sprite = FileLoading.loadSprite(spriteFile);
-        shipPainter.setSprite(sprite.getImage());
+        shipPainter.setSprite(sprite);
         shipPainter.setBaseHullSprite(sprite);
 
         shipPainter.initFromHullSpec(this.getHullSpecFile());

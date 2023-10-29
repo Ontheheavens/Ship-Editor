@@ -81,9 +81,8 @@ public class WeaponPainter extends LayerPainter {
     }
 
     @Override
-    public BufferedImage getSprite() {
-        var mainSprite = weaponSprites.getMainSprite(mount);
-        return mainSprite.getImage();
+    public Sprite getSprite() {
+        return weaponSprites.getMainSprite(mount);
     }
 
     @SuppressWarnings("SameParameterValue")

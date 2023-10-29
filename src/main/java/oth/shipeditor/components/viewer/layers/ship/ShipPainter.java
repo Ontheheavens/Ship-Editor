@@ -143,10 +143,9 @@ public class ShipPainter extends LayerPainter {
     public void setActiveSpec(ActiveShipSpec type, ShipSkin skin) {
         ShipLayer parentLayer = this.getParentLayer();
         if (type == ActiveShipSpec.HULL) {
-            this.setSprite(baseHullSprite.getImage());
+            this.setSprite(baseHullSprite);
 
             if (parentLayer != null) {
-                parentLayer.setSpriteFileName(baseHullSprite.getFilename());
                 parentLayer.setActiveSkinFileName(StringValues.NOT_LOADED);
             }
 
@@ -160,9 +159,9 @@ public class ShipPainter extends LayerPainter {
             }
             Sprite loadedSkinSprite = skin.getLoadedSkinSprite();
             if (loadedSkinSprite != null) {
-                this.setSprite(loadedSkinSprite.getImage());
+                this.setSprite(loadedSkinSprite);
             } else {
-                this.setSprite(baseHullSprite.getImage());
+                this.setSprite(baseHullSprite);
             }
 
             if (skin.getWeaponSlotChanges() != null) {
@@ -178,11 +177,6 @@ public class ShipPainter extends LayerPainter {
             }
 
             if (parentLayer != null) {
-                if (loadedSkinSprite != null) {
-                    parentLayer.setSpriteFileName(loadedSkinSprite.getFilename());
-                } else {
-                    parentLayer.setSpriteFileName(baseHullSprite.getFilename());
-                }
                 String skinFileName = skin.getSkinFilePath().getFileName().toString();
                 parentLayer.setActiveSkinFileName(skinFileName);
             }
@@ -284,7 +278,7 @@ public class ShipPainter extends LayerPainter {
 
     public Point2D getCenterAnchor() {
         Point2D anchor = getAnchor();
-        BufferedImage sprite = getSprite();
+        BufferedImage sprite = getSpriteImage();
         return new Point2D.Double( anchor.getX(), anchor.getY() + sprite.getHeight());
     }
 

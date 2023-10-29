@@ -31,6 +31,9 @@ public final class SettingsManager {
     @Getter
     private static final GameDataRepository gameData = new GameDataRepository();
 
+    @Getter
+    private static Path applicationDirectory;
+
     private SettingsManager() {}
 
     static Settings createDefault() {
@@ -69,6 +72,9 @@ public final class SettingsManager {
             log.error("Error while initializing settings: default directory has wrong filename.");
         }
         Path settingsPath = workingDirectory.resolve("ship_editor_settings.json");
+
+        applicationDirectory = settingsPath.getParent();
+
         return settingsPath.toFile();
     }
 

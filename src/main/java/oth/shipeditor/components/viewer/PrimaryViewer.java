@@ -136,10 +136,17 @@ public final class PrimaryViewer extends Viewer implements LayerViewer {
     private void initLayerListening() {
         EventBus.subscribe(event -> {
             if (event instanceof LayerSpriteLoadQueued checked) {
-                ViewerLayer newLayer = checked.updated();
+                ViewerLayer layer = checked.updated();
                 Sprite sprite = checked.sprite();
-                if (newLayer.getPainter() == null && sprite != null) {
-                    this.loadLayer(newLayer, sprite);
+                if (layer.getPainter() == null && sprite != null) {
+                    this.loadLayer(layer, sprite);
+                } else if (sprite != null) {
+                    LayerPainter painter = layer.getPainter();
+                    painter.reconfigureSpriteCircumstance(sprite);
+                    if (painter instanceof ShipPainter shipPainter) {
+                        shipPainter.setBaseHullSprite(sprite);
+                    }
+                    EventBus.publish(new ActiveLayerUpdated(layer));
                 }
             }
         });
@@ -186,7 +193,9 @@ public final class PrimaryViewer extends Viewer implements LayerViewer {
                 newPainter = weaponPainter;
             }
             layer.setPainter(newPainter);
-            painterCreated = true;
+            if (newPainter != null) {
+                newPainter.setSprite(sprite);
+            }
         } else {
             newPainter = layer.getPainter();
         }
@@ -194,10 +203,6 @@ public final class PrimaryViewer extends Viewer implements LayerViewer {
         layerManager.setActiveLayer(layer);
 
         if (newPainter != null) {
-            if (painterCreated) {
-                newPainter.setSprite(sprite.getImage());
-            }
-
             List<ViewerLayer> layers = layerManager.getLayers();
 
             if (layers.size() > 1) {
@@ -214,8 +219,6 @@ public final class PrimaryViewer extends Viewer implements LayerViewer {
                 }
             }
         }
-
-        layer.setSpriteFileName(sprite.getFilename());
 
         EventBus.publish(new LayerSpriteLoadConfirmed(layer, sprite));
         EventBus.publish(new ActiveLayerUpdated(layer));

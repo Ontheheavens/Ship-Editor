@@ -13,7 +13,6 @@ import java.awt.*;
  */
 public class WeaponInstrumentsPane extends AbstractInstrumentsPane {
 
-
     public WeaponInstrumentsPane() {
         createTabs();
         this.dispatchModeChange((JPanel) getSelectedComponent());
@@ -27,8 +26,13 @@ public class WeaponInstrumentsPane extends AbstractInstrumentsPane {
         this.addTab(StringValues.LAYER,layerPanel);
 
         // TODO: not implemented.
-        JPanel testPanel = new JPanel();
-        this.addTab("Test",testPanel);
+        JPanel offsetPanel = new JPanel();
+        String offsets = "Offsets";
+        this.addTab(offsets,offsetPanel);
+
+        // Temporary until weapon editing is implemented.
+        int offsetsIndex = this.indexOfTab(offsets);
+        this.setEnabledAt(offsetsIndex, false);
     }
 
     @Override

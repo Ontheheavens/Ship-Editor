@@ -3,7 +3,9 @@ package oth.shipeditor.components.layering;
 import lombok.Getter;
 import lombok.Setter;
 import oth.shipeditor.components.viewer.layers.ship.ShipLayer;
+import oth.shipeditor.components.viewer.layers.ship.ShipPainter;
 import oth.shipeditor.utility.Utility;
+import oth.shipeditor.utility.graphics.Sprite;
 import oth.shipeditor.utility.text.StringValues;
 
 import java.util.ArrayList;
@@ -14,27 +16,31 @@ import java.util.Objects;
 /**
  * Empty marker component, only serves to track tabs and their layers.
  */
+@Getter
 final class ShipLayerTab extends LayerTab {
 
-    @Getter
     @Setter
     private String spriteFileName;
 
-    @Getter
     @Setter
     private String hullFileName;
 
-    @Getter
     @Setter
     private List<String> skinFileNames;
 
-    @Getter
     @Setter
     private String activeSkinFileName;
 
     ShipLayerTab(ShipLayer layer) {
         super(layer);
-        this.spriteFileName = layer.getSpriteFileName();
+        ShipPainter shipPainter = layer.getPainter();
+        if (shipPainter != null) {
+            Sprite sprite = shipPainter.getSprite();
+            this.spriteFileName = sprite.getFilename();
+        } else {
+            this.spriteFileName = StringValues.NOT_LOADED;
+        }
+
         this.hullFileName = layer.getHullFileName();
         this.skinFileNames = layer.getSkinFileNames();
     }

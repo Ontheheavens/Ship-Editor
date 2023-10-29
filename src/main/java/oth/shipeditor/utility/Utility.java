@@ -23,6 +23,7 @@ import java.io.FileNotFoundException;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.nio.file.Path;
+import java.text.DecimalFormat;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
@@ -35,6 +36,7 @@ import java.util.stream.Stream;
  * @author Ontheheavens
  * @since 01.05.2023
  */
+@SuppressWarnings("ClassWithTooManyMethods")
 @Log4j2
 public final class Utility {
 
@@ -264,6 +266,16 @@ public final class Utility {
             return relativePath.toString().replace("\\", "/");
         }
         return null;
+    }
+
+    public static String formatDouble(double value) {
+        if (value % 1 == 0) {
+            return String.format("%8d", (int) value);
+        } else {
+            DecimalFormat decimalFormat = new DecimalFormat("0.###");
+            String formattedValue = decimalFormat.format(value);
+            return String.format("%8s", formattedValue);
+        }
     }
 
 }

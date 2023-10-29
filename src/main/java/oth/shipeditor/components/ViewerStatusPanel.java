@@ -248,7 +248,7 @@ final class ViewerStatusPanel extends JPanel {
                 if (layer == null) return;
                 LayerPainter layerPainter = layer.getPainter();
                 if (layerPainter != null) {
-                    BufferedImage layerSprite = layerPainter.getSprite();
+                    BufferedImage layerSprite = layerPainter.getSpriteImage();
                     this.setDimensionsLabel(layerSprite);
                 } else {
                     this.setDimensionsLabel(null);

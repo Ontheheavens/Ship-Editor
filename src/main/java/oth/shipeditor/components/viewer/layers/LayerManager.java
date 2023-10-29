@@ -177,11 +177,7 @@ public class LayerManager {
             if (event instanceof SpriteOpened checked) {
                 Sprite sprite = checked.sprite();
                 if (activeLayer == null) return;
-                if (activeLayer.getPainter() != null) {
-                    throw new IllegalStateException("Sprite loaded onto existing sprite!");
-                } else {
-                    EventBus.publish(new LayerSpriteLoadQueued(activeLayer, sprite));
-                }
+                EventBus.publish(new LayerSpriteLoadQueued(activeLayer, sprite));
             }
         });
     }

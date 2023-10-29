@@ -8,7 +8,6 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
-import oth.shipeditor.components.viewer.layers.LayerPainter;
 import oth.shipeditor.components.viewer.layers.ViewerLayer;
 import oth.shipeditor.components.viewer.layers.ship.ShipLayer;
 import oth.shipeditor.components.viewer.layers.ship.ShipPainter;
@@ -65,16 +64,7 @@ public final class FileUtilities {
 
     public static void updateActionStates(ViewerLayer currentlySelected) {
         if (!(currentlySelected instanceof ShipLayer layer)) {
-            if (currentlySelected != null) {
-                LayerPainter painter = currentlySelected.getPainter();
-                if (painter == null) {
-                    FileLoading.openSprite.setEnabled(true);
-                } else {
-                    FileLoading.openSprite.setEnabled(painter.getSprite() == null);
-                }
-            } else {
-                FileLoading.openSprite.setEnabled(false);
-            }
+            FileLoading.openSprite.setEnabled(true);
             FileLoading.openShip.setEnabled(false);
             return;
         }
@@ -83,9 +73,8 @@ public final class FileUtilities {
             FileLoading.openSprite.setEnabled(true);
             FileLoading.openShip.setEnabled(false);
         } else {
-            boolean spriteState = painter.getSprite() == null && layer.getHull() == null;
-            boolean hullState = painter.getSprite() != null && layer.getHull() == null;
-            FileLoading.openSprite.setEnabled(spriteState);
+            boolean hullState = painter.getSprite() != null;
+            FileLoading.openSprite.setEnabled(true);
             FileLoading.openShip.setEnabled(hullState);
         }
     }

@@ -175,10 +175,15 @@ public abstract class DataTreePanel extends JPanel {
         rightPanel.add(new JLabel(StringValues.NO_ENTRY_SELECTED));
         JSplitPane treeSplitter = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
         treeSplitter.setOneTouchExpandable(true);
-        treeSplitter.setResizeWeight(0.4f);
+        float resizeWeight = getSplitterResizeWeight();
+        treeSplitter.setResizeWeight(resizeWeight);
         treeSplitter.setLeftComponent(treeContainer);
         treeSplitter.setRightComponent(rightPanel);
         return treeSplitter;
+    }
+
+    protected float getSplitterResizeWeight() {
+        return 0.4f;
     }
 
     private JPanel createTreePanel(String rootName) {

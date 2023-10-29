@@ -10,7 +10,6 @@ import oth.shipeditor.components.viewer.layers.ship.ShipPainter;
 import oth.shipeditor.components.viewer.layers.ship.data.ActiveShipSpec;
 import oth.shipeditor.components.viewer.layers.ship.data.ShipHull;
 import oth.shipeditor.components.viewer.layers.ship.data.ShipSkin;
-import oth.shipeditor.utility.overseers.StaticController;
 
 import javax.swing.*;
 import java.awt.*;
@@ -25,19 +24,24 @@ public class SkinDataPanel extends JPanel {
 
     private final JPanel chooserContainer;
 
+    private final SkinInfoPanel infoPanel;
+
     public SkinDataPanel() {
         this.setLayout(new BorderLayout());
         chooserContainer = new JPanel();
         chooserContainer.setLayout(new BoxLayout(chooserContainer, BoxLayout.PAGE_AXIS));
-        this.add(chooserContainer, BorderLayout.CENTER);
+        this.add(chooserContainer, BorderLayout.PAGE_START);
+
+        infoPanel = new SkinInfoPanel();
+        this.add(infoPanel, BorderLayout.CENTER);
+
         this.initLayerListeners();
-        this.recreateSkinChooser();
+        this.recreateSkinChooser(null);
     }
 
-    private void recreateSkinChooser() {
+    private void recreateSkinChooser(ViewerLayer selected) {
         chooserContainer.removeAll();
 
-        ViewerLayer selected = StaticController.getActiveLayer();
         if (!(selected instanceof ShipLayer checkedLayer)) {
             chooserContainer.add(SkinDataPanel.createDisabledChooser());
             return;
@@ -52,7 +56,6 @@ public class SkinDataPanel extends JPanel {
 
         chooserContainer.add(skinChooser);
         chooserContainer.add(Box.createVerticalGlue());
-
     }
 
     private static JComboBox<ShipSkin> getShipSkinComboBox(ShipLayer checkedLayer) {
@@ -78,6 +81,11 @@ public class SkinDataPanel extends JPanel {
         return skinChooser;
     }
 
+    private void refreshPanel(ViewerLayer layer) {
+        this.recreateSkinChooser(layer);
+        infoPanel.refresh(layer);
+    }
+
     private static JComboBox<ShipSkin> createDisabledChooser() {
         ShipSkin[] skinSpecFileArray = {new ShipSkin()};
         JComboBox<ShipSkin> skinChooser = new JComboBox<>(skinSpecFileArray);
@@ -89,10 +97,10 @@ public class SkinDataPanel extends JPanel {
     @SuppressWarnings("ChainOfInstanceofChecks")
     private void initLayerListeners() {
         EventBus.subscribe(event -> {
-            if (event instanceof LayerWasSelected) {
-                this.recreateSkinChooser();
-            } else if (event instanceof ActiveLayerUpdated) {
-                this.recreateSkinChooser();
+            if (event instanceof LayerWasSelected(ViewerLayer old, ViewerLayer selected)) {
+                this.refreshPanel(selected);
+            } else if (event instanceof ActiveLayerUpdated(ViewerLayer updated)) {
+                this.refreshPanel(updated);
             }
         });
         EventBus.subscribe(event -> {

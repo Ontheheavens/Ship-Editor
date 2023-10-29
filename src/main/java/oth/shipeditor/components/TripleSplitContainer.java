@@ -222,9 +222,9 @@ final class TripleSplitContainer extends JSplitPane {
         if (rightComp instanceof AbstractInstrumentsPane instrumentsPane) {
             minimized = instrumentsPane.isInstrumentPaneMinimized();
         }
-        int remainder = 120;
+        int remainder = 125;
         if (rightComp instanceof WeaponInstrumentsPane) {
-            remainder = 60;
+            remainder = 70;
         }
         if (minimized) {
             secondaryLevel.setDividerLocation(secondaryLevel.getWidth() - remainder);

@@ -37,7 +37,6 @@ import javax.swing.plaf.TabbedPaneUI;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.awt.image.BufferedImage;
 import java.util.List;
 import java.util.*;
 import java.util.function.IntConsumer;
@@ -146,9 +145,9 @@ public final class ViewerLayersPanel extends SortableTabbedPane {
     private void updateShipTab(ShipLayerTab tab, ShipLayer layer) {
         LayerPainter painter = layer.getPainter();
         if (painter == null) return;
-        BufferedImage sprite = painter.getSprite();
+        Sprite sprite = painter.getSprite();
         if (sprite != null) {
-            tab.setSpriteFileName(layer.getSpriteFileName());
+            tab.setSpriteFileName(sprite.getFilename());
             this.setToolTipTextAt(indexOfComponent(tab), tab.getTabTooltip());
         }
 

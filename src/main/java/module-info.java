@@ -93,5 +93,9 @@ module oth.shipeditor {
     opens oth.shipeditor.components.logging;
     exports oth.shipeditor.parsing.serialize.points;
     opens oth.shipeditor.parsing.serialize.points;
+    opens oth.shipeditor.components.help;
+    exports oth.shipeditor.components.help;
+    opens oth.shipeditor.components.help.parts;
+    exports oth.shipeditor.components.help.parts;
 
 }
