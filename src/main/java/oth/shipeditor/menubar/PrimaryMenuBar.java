@@ -10,6 +10,7 @@ import oth.shipeditor.communication.events.viewer.control.CursorSnappingToggled;
 import oth.shipeditor.communication.events.viewer.control.PointSelectionModeChange;
 import oth.shipeditor.communication.events.viewer.control.RotationRoundingToggled;
 import oth.shipeditor.components.viewer.control.PointSelectionMode;
+import oth.shipeditor.persistence.SettingsManager;
 import oth.shipeditor.undo.UndoOverseer;
 
 import javax.swing.*;
@@ -34,6 +35,24 @@ public final class PrimaryMenuBar extends JMenuBar {
         this.add(this.createEditMenu());
         this.add(PrimaryMenuBar.createViewMenu());
         this.add(PrimaryMenuBar.createLayersMenu());
+
+        JMenu about = new JMenu("About");
+
+        String infoText = "Project info";
+        JMenuItem projectInfo = new JMenuItem(infoText);
+
+        JPanel aboutInfoPanel = new JPanel();
+        aboutInfoPanel.setLayout(new BoxLayout(aboutInfoPanel, BoxLayout.PAGE_AXIS));
+        aboutInfoPanel.add(new JLabel("Made by: Ontheheavens & Xenoargh"));
+        aboutInfoPanel.add(new JLabel("Started: March 2023"));
+        String projectVersion = SettingsManager.getProjectVersion();
+        aboutInfoPanel.add(new JLabel("Current version: " + projectVersion));
+
+        projectInfo.addActionListener(e -> JOptionPane.showMessageDialog(null, aboutInfoPanel,
+                infoText, JOptionPane.INFORMATION_MESSAGE));
+        about.add(projectInfo);
+
+        this.add(about);
     }
 
     private static JMenu createFileMenu() {

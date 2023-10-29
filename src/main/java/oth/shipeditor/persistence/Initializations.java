@@ -49,6 +49,7 @@ public final class Initializations {
         EventBus.publish(new ViewerBackgroundChanged(settings.getBackgroundColor()));
         try {
             Initializations.installGameFolderShortcut(window);
+            Initializations.installWindowIcon(window);
         } catch (URISyntaxException | IOException e) {
             e.printStackTrace();
             throw new RuntimeException("Customization of file chooser failed!", e);
@@ -101,6 +102,33 @@ public final class Initializations {
             }
             return null;
         } );
+    }
+
+    private static void installWindowIcon(PrimaryWindow window) throws URISyntaxException, IOException {
+        Class<? extends PrimaryWindow> windowClass = window.getClass();
+        ClassLoader classLoader = windowClass.getClassLoader();
+        String iconName = "icon.png";
+
+        File iconFile;
+        BufferedImage iconImage;
+        URL iconPath = Objects.requireNonNull(classLoader.getResource(iconName));
+        URI checked = iconPath.toURI();
+        if (checked.isOpaque()) {
+            try ( InputStream inputStream = Initializations.class.getResourceAsStream("/" + iconName)) {
+                if (inputStream != null) {
+                    iconImage = ImageIO.read(inputStream);
+                } else {
+                    throw new RuntimeException("Window icon not found!");
+                }
+            }
+        } else {
+            iconFile = new File(checked);
+            log.info("Loading window icon...");
+            iconImage = ImageIO.read(iconFile);
+        }
+
+        ImageIcon icon = new ImageIcon(iconImage);
+        window.setIconImage(icon.getImage());
     }
 
     private static class GameFolderIcon extends FlatAbstractIcon {

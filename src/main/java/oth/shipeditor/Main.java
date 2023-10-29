@@ -3,15 +3,9 @@ package oth.shipeditor;
 import com.formdev.flatlaf.FlatIntelliJLaf;
 import lombok.extern.log4j.Log4j2;
 import oth.shipeditor.communication.EventBus;
-import oth.shipeditor.communication.events.files.HullFileOpened;
-import oth.shipeditor.communication.events.files.SpriteOpened;
 import oth.shipeditor.communication.events.viewer.control.ViewerTransformsReset;
-import oth.shipeditor.communication.events.viewer.layers.LastLayerSelectQueued;
-import oth.shipeditor.communication.events.viewer.layers.ships.ShipLayerCreationQueued;
 import oth.shipeditor.components.datafiles.entities.ShipCSVEntry;
 import oth.shipeditor.components.logging.StandardOutputRedirector;
-import oth.shipeditor.components.viewer.LayerViewer;
-import oth.shipeditor.components.viewer.layers.LayerManager;
 import oth.shipeditor.components.viewer.layers.LayerPainter;
 import oth.shipeditor.components.viewer.layers.ViewerLayer;
 import oth.shipeditor.components.viewer.layers.ship.ShipLayer;
@@ -19,25 +13,20 @@ import oth.shipeditor.components.viewer.layers.ship.ShipPainter;
 import oth.shipeditor.components.viewer.layers.ship.data.Variant;
 import oth.shipeditor.parsing.loading.FileLoading;
 import oth.shipeditor.persistence.Initializations;
+import oth.shipeditor.persistence.Settings;
 import oth.shipeditor.persistence.SettingsManager;
 import oth.shipeditor.representation.GameDataRepository;
-import oth.shipeditor.representation.HullSpecFile;
 import oth.shipeditor.representation.SkinSpecFile;
 import oth.shipeditor.undo.UndoOverseer;
-import oth.shipeditor.utility.graphics.Sprite;
 import oth.shipeditor.utility.overseers.StaticController;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.geom.Point2D;
 import java.io.File;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;
 
@@ -45,7 +34,6 @@ import java.util.function.Function;
  * @author Ontheheavens
  * @since 08.05.2023
  */
-@SuppressWarnings("OverlyCoupledClass")
 @Log4j2
 public final class Main {
 
@@ -60,10 +48,17 @@ public final class Main {
             Main.configureLaf();
             PrimaryWindow window = PrimaryWindow.create();
             Initializations.updateStateFromSettings(window);
-            CompletableFuture<List<Runnable>> gameDataLoading = FileLoading.loadGameData();
 
-            CompletableFuture<Void> testing = gameDataLoading.thenRun(Main::testFilesNew);
-            testing.thenRun(() -> SwingUtilities.invokeLater(window::showGUI));
+            window.showGUI();
+
+            Settings settings = SettingsManager.getSettings();
+
+            if (settings.isLoadDataAtStart()) {
+                CompletableFuture<List<Runnable>> gameDataLoading = FileLoading.loadGameData();
+                if (settings.isLoadTestFiles()) {
+                    CompletableFuture<Void> testing = gameDataLoading.thenRun(Main::testFiles);
+                }
+            }
         });
     }
 
@@ -96,7 +91,7 @@ public final class Main {
         } );
     }
 
-    private static void testFilesNew() {
+    private static void testFiles() {
         SwingUtilities.invokeLater(() -> {
             var gameData = SettingsManager.getGameData();
             var allShips = gameData.getAllShipEntries();
@@ -122,49 +117,6 @@ public final class Main {
                 shipPainter.selectVariant(legionXIVVariant);
             }
         });
-    }
-
-    @SuppressWarnings("unused")
-    private static void testFilesOld(PrimaryWindow window) {
-        String legionSprite = "legion_xiv.png";
-        String crigSprite = "salvage_rig.png";
-        String legionHull = "legion.ship";
-        String crigHull = "constructionrig.ship";
-        Main.loadShip(window, crigSprite, crigHull);
-        Main.loadShip(window, legionSprite, legionHull);
-        LayerViewer shipView = window.getShipView();
-        LayerManager layerManager = shipView.getLayerManager();
-        ViewerLayer activeLayer = layerManager.getActiveLayer();
-        LayerPainter painter = activeLayer.getPainter();
-        painter.updateAnchorOffset(new Point2D.Double(-400, 0));
-        UndoOverseer.finishAllEdits();
-        shipView.centerViewpoint();
-    }
-
-    @SuppressWarnings("CallToPrintStackTrace")
-    private static void loadShip(PrimaryWindow window, String spriteFilePath, String hullFilePath) {
-        EventBus.publish(new ShipLayerCreationQueued());
-        EventBus.publish(new LastLayerSelectQueued());
-        Class<? extends PrimaryWindow> windowClass = window.getClass();
-        ClassLoader classLoader = windowClass.getClassLoader();
-        URL spritePath = Objects.requireNonNull(classLoader.getResource(spriteFilePath));
-        File spriteFile;
-        try {
-            spriteFile = new File(spritePath.toURI());
-            Sprite sprite = FileLoading.loadSprite(spriteFile);
-            EventBus.publish(new SpriteOpened(sprite));
-        } catch (URISyntaxException e) {
-            e.printStackTrace();
-        }
-        URL dataPath = Objects.requireNonNull(classLoader.getResource(hullFilePath));
-        try {
-            URI url = dataPath.toURI();
-            File hullFile = new File(url);
-            HullSpecFile hullSpecFile = FileLoading.loadHullFile(hullFile);
-            EventBus.publish(new HullFileOpened(hullSpecFile, hullFile.getName()));
-        } catch (URISyntaxException e) {
-            e.printStackTrace();
-        }
     }
 
 }

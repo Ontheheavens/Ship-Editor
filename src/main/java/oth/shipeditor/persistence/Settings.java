@@ -34,6 +34,12 @@ public class Settings {
     @JsonProperty("modFolderPath")
     String modFolderPath;
 
+    @JsonProperty("loadDataAtStart")
+    boolean loadDataAtStart = true;
+
+    @JsonProperty("loadTestFiles")
+    boolean loadTestFiles;
+
     public void setBackgroundColor(Color color) {
         if (color != null) {
             this.backgroundColor = color;

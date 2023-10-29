@@ -34,6 +34,9 @@ public final class SettingsManager {
     @Getter
     private static Path applicationDirectory;
 
+    @Getter
+    private static final String projectVersion = "0.7";
+
     private SettingsManager() {}
 
     static Settings createDefault() {

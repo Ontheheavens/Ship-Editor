@@ -155,7 +155,9 @@ public class ShipLayer extends ViewerLayer {
             return -1;
         }
         var wings = layerHull.getBuiltInWings();
-        result += wings.size();
+        if (wings != null) {
+            result += wings.size();
+        }
 
         ShipPainter shipPainter = getPainter();
         ShipSkin activeSkin = shipPainter.getActiveSkin();
