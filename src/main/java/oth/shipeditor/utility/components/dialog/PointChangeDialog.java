@@ -45,25 +45,15 @@ class PointChangeDialog extends JPanel {
         double min = Double.NEGATIVE_INFINITY;
         double max = Double.POSITIVE_INFINITY;
         double step = 0.005;
+
         spinnerModelX = new SpinnerNumberModel(originalPosition.getX(), min, max, step);
         spinnerModelY = new SpinnerNumberModel(originalPosition.getY(), min, max, step);
 
         JLabel labelX = new JLabel("X coordinate (World):");
         JLabel labelY = new JLabel("Y coordinate (World):");
 
-        JSpinner spinnerX = new JSpinner(spinnerModelX);
-        JSpinner spinnerY = new JSpinner(spinnerModelY);
-
-        GridLayout gridLayout = new GridLayout(2, 2);
-        gridLayout.setHgap(4);
-        gridLayout.setVgap(6);
-        JPanel container = new JPanel(gridLayout);
-        container.setBorder(new EmptyBorder(4, 0, 0, 0));
-        container.add(labelX);
-        container.add(spinnerX);
-        container.add(labelY);
-        container.add(spinnerY);
-        return container;
+        return ComponentUtilities.createTwinSpinnerPanel(spinnerModelX, spinnerModelY,
+                labelX, labelY);
     }
 
     Point2D getUpdatedPosition() {

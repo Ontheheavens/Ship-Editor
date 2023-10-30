@@ -15,6 +15,7 @@ import oth.shipeditor.communication.events.viewer.layers.ViewerLayerRemovalConfi
 import oth.shipeditor.communication.events.viewer.layers.ships.ShipLayerCreated;
 import oth.shipeditor.communication.events.viewer.layers.weapons.WeaponLayerCreated;
 import oth.shipeditor.components.datafiles.entities.ShipCSVEntry;
+import oth.shipeditor.components.viewer.PaintOrderController;
 import oth.shipeditor.components.viewer.layers.LayerManager;
 import oth.shipeditor.components.viewer.layers.LayerPainter;
 import oth.shipeditor.components.viewer.layers.ViewerLayer;
@@ -25,18 +26,29 @@ import oth.shipeditor.components.viewer.layers.ship.data.ShipSkin;
 import oth.shipeditor.components.viewer.layers.weapon.WeaponLayer;
 import oth.shipeditor.components.viewer.layers.weapon.WeaponPainter;
 import oth.shipeditor.components.viewer.layers.weapon.WeaponSprites;
+import oth.shipeditor.parsing.FileUtilities;
 import oth.shipeditor.representation.GameDataRepository;
 import oth.shipeditor.representation.weapon.WeaponMount;
 import oth.shipeditor.representation.weapon.WeaponSpecFile;
+import oth.shipeditor.utility.components.ComponentUtilities;
 import oth.shipeditor.utility.components.containers.SortableTabbedPane;
+import oth.shipeditor.utility.graphics.ColorUtilities;
 import oth.shipeditor.utility.graphics.Sprite;
 import oth.shipeditor.utility.text.StringValues;
 
 import javax.swing.*;
+import javax.swing.border.Border;
+import javax.swing.border.EmptyBorder;
+import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.plaf.TabbedPaneUI;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.geom.AffineTransform;
+import java.awt.geom.Point2D;
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
 import java.util.List;
 import java.util.*;
 import java.util.function.IntConsumer;
@@ -305,7 +317,82 @@ public final class ViewerLayersPanel extends SortableTabbedPane {
             }
             menu.add(saveActiveVariant);
 
+            menu.add(TabContextListener.createPrintLayerOption(shipLayer));
+
             return menu;
+        }
+
+        @SuppressWarnings("CallToPrintStackTrace")
+        private static JMenuItem createPrintLayerOption(ViewerLayer layer) {
+            JMenuItem printLayer = new JMenuItem("Print layer to image");
+            printLayer.setIcon(FontIcon.of(BoxiconsRegular.IMAGE_ADD, 16));
+
+            printLayer.addActionListener(event -> {
+                var chooser = FileUtilities.getImageSaver();
+
+                SpinnerNumberModel widthModel = new SpinnerNumberModel(100.0d,
+                        10.0d, 4000.0d, 1.0d);
+                SpinnerNumberModel heightModel = new SpinnerNumberModel(100.0d,
+                        10.0d, 4000.0d, 1.0d);
+
+                JLabel widthLabel = new JLabel("Image width:");
+                Border border = new EmptyBorder(0, 16, 0, 0);
+                widthLabel.setBorder(border);
+                JLabel heightLabel = new JLabel("Image height:");
+                heightLabel.setBorder(border);
+
+                JPanel dimensionsController = ComponentUtilities.createTwinSpinnerPanel(widthModel, heightModel,
+                        widthLabel, heightLabel);
+                JPanel container = new JPanel();
+                container.setLayout(new BoxLayout(container, BoxLayout.PAGE_AXIS));
+                container.add(Box.createVerticalGlue());
+                container.add(dimensionsController);
+                container.add(Box.createVerticalGlue());
+                chooser.setAccessory(container);
+
+                chooser.setDialogTitle("Print layer to image file");
+
+                int returnVal = chooser.showSaveDialog(null);
+                FileUtilities.setLastDirectory(chooser.getCurrentDirectory());
+
+                if (returnVal == JFileChooser.APPROVE_OPTION) {
+                    String extension = ((FileNameExtensionFilter) chooser.getFileFilter()).getExtensions()[0];
+                    File result = FileUtilities.ensureFileExtension(chooser, extension);
+                    log.info("Commencing layer printing: {}", result);
+
+                    Number widthModelNumber = widthModel.getNumber();
+                    int width = widthModelNumber.intValue();
+                    Number heightModelNumber = heightModel.getNumber();
+                    int height = heightModelNumber.intValue();
+
+                    BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+                    BufferedImage toWrite = ColorUtilities.clearToTransparent(image);
+                    Graphics2D g2d = toWrite.createGraphics();
+
+                    AffineTransform transform = new AffineTransform();
+
+                    LayerPainter painter = layer.getPainter();
+                    Point2D spriteCenter = painter.getSpriteCenter();
+                    Point2D midpoint = new Point2D.Double((double) width / 2, (double) height / 2);
+                    double dx = midpoint.getX() - spriteCenter.getX();
+                    double dy = midpoint.getY() - spriteCenter.getY();
+                    transform.translate(dx, dy);
+                    PaintOrderController.paintLayer(g2d, transform, width, height, layer);
+
+                    g2d.dispose();
+                    try {
+                        javax.imageio.ImageIO.write(toWrite , extension, result);
+                    } catch (IOException e) {
+                        log.error("Layer printing failed: {}", result.getName());
+                        JOptionPane.showMessageDialog(null,
+                                "Layer printing failed, exception thrown at: " + result,
+                                StringValues.FILE_SAVING_ERROR,
+                                JOptionPane.ERROR_MESSAGE);
+                        e.printStackTrace();
+                    }
+                }
+            });
+            return printLayer;
         }
 
     }

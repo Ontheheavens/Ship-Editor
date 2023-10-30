@@ -97,9 +97,7 @@ class LayersMenu extends JMenu {
         printViewer.setIcon(FontIcon.of(BoxiconsRegular.IMAGE_ADD, 16));
 
         printViewer.addActionListener(event -> {
-            FileNameExtensionFilter pngFilter = new FileNameExtensionFilter(
-                    "PNG Image", "png");
-            var chooser = FileUtilities.getFileChooser(pngFilter);
+            var chooser = FileUtilities.getImageSaver();
             chooser.setDialogTitle("Print viewer content to image file");
 
             int returnVal = chooser.showSaveDialog(null);
@@ -113,7 +111,7 @@ class LayersMenu extends JMenu {
                 var viewer = StaticController.getViewer();
                 int width = viewer.getWidth();
                 int height = viewer.getHeight();
-                BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
+                BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
                 Graphics2D g2d = image.createGraphics();
 
                 viewer.print(g2d);

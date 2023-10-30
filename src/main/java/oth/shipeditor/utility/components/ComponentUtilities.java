@@ -560,4 +560,36 @@ public final class ComponentUtilities {
         return hintPanel;
     }
 
+    public static JPanel createTwinSpinnerPanel(SpinnerNumberModel first, SpinnerNumberModel second,
+                                                JLabel firstLabel, JLabel secondLabel) {
+        JSpinner firstSpinner = ComponentUtilities.createWheelable(first);
+        JSpinner secondSpinner = ComponentUtilities.createWheelable(second);
+        GridLayout gridLayout = new GridLayout(2, 2);
+        gridLayout.setHgap(4);
+        gridLayout.setVgap(6);
+        JPanel container = new JPanel(gridLayout);
+        container.setBorder(new EmptyBorder(4, 0, 0, 0));
+        container.add(firstLabel);
+        container.add(firstSpinner);
+        container.add(secondLabel);
+        container.add(secondSpinner);
+
+        return container;
+    }
+
+    private static JSpinner createWheelable(SpinnerNumberModel second) {
+        JSpinner spinner = new JSpinner(second);
+
+        spinner.addMouseWheelListener(e -> {
+            if (e.getScrollType() != MouseWheelEvent.WHEEL_UNIT_SCROLL) {
+                return;
+            }
+            double value = (Double) spinner.getValue();
+            double newValue = value - e.getUnitsToScroll();
+            newValue = Math.min((Double) second.getMaximum(), Math.max((Double) second.getMinimum(), newValue));
+            spinner.setValue(newValue);
+        });
+        return spinner;
+    }
+
 }

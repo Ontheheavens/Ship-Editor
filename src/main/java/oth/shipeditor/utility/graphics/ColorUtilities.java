@@ -10,6 +10,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
+import java.awt.image.*;
 
 /**
  * @author Ontheheavens
@@ -205,5 +206,44 @@ public final class ColorUtilities {
         dialog.setVisible(true);
         return colorTracker.getColor();
     }
+
+    public static BufferedImage clearToTransparent(BufferedImage image) {
+        Color color = Color.GRAY;
+        Graphics2D graphics = image.createGraphics();
+        graphics.setColor(color);
+        graphics.fillRect(0, 0, image.getWidth(), image.getHeight());
+
+        Image transparent = ColorUtilities.makeColorTransparent(image, color);
+
+        return ColorUtilities.imageToBufferedImage(transparent);
+    }
+
+    public static Image makeColorTransparent(BufferedImage image,  Color color) {
+        ImageFilter filter = new RGBImageFilter() {
+            final int markerRGB = color.getRGB() | 0xFF000000;
+
+            public int filterRGB(int x, int y, int rgb) {
+                if ((rgb | 0xFF000000) == markerRGB) {
+                    return 0x00FFFFFF & rgb;
+                } else {
+                    return rgb;
+                }
+            }
+        };
+
+        ImageProducer imageProducer = new FilteredImageSource(image.getSource(), filter);
+        return Toolkit.getDefaultToolkit().createImage(imageProducer);
+    }
+
+    public static BufferedImage imageToBufferedImage(Image image) {
+        BufferedImage bufferedImage = new BufferedImage(image.getWidth(null),
+                image.getHeight(null), BufferedImage.TYPE_INT_ARGB);
+        Graphics2D g2 = bufferedImage.createGraphics();
+        g2.drawImage(image, 0, 0, null);
+        g2.dispose();
+
+        return bufferedImage;
+    }
+
 
 }

@@ -20,6 +20,7 @@ import oth.shipeditor.utility.overseers.StaticController;
 
 import javax.swing.*;
 import javax.swing.filechooser.FileFilter;
+import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.*;
 import java.io.File;
 import java.io.IOException;
@@ -153,6 +154,12 @@ public final class FileUtilities {
         }
         fileChooser.setFileFilter(fileFilter);
         return fileChooser;
+    }
+
+    public static JFileChooser getImageSaver() {
+        FileNameExtensionFilter pngFilter = new FileNameExtensionFilter(
+                "PNG Image", "png");
+        return FileUtilities.getFileChooser(pngFilter);
     }
 
     public static File ensureFileExtension(JFileChooser fileChooser, String extension) {

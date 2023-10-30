@@ -86,7 +86,7 @@ public class PaintOrderController implements Painter {
         }
     }
 
-    private static void paintLayer(Graphics2D g, AffineTransform worldToScreen,
+    public static void paintLayer(Graphics2D g, AffineTransform worldToScreen,
                                    double w, double h, ViewerLayer layer) {
         LayerPainter layerPainter = layer.getPainter();
         if (layerPainter == null) return;
