@@ -38,8 +38,6 @@ import java.util.stream.Stream;
 @Log4j2
 public final class FileUtilities {
 
-    public static final String STARSECTOR_CORE = "starsector-core";
-
     private static final ObjectMapper mapper;
 
     public static final String OPEN_COMMAND_CANCELLED_BY_USER = "Open command cancelled by user.";

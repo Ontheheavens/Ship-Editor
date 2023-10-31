@@ -28,14 +28,14 @@ public final class EventBus {
     @SuppressWarnings("UnusedReturnValue")
     public static BusEventListener subscribe(BusEventListener listener) {
         bus.subscribers.add(listener);
-        log.info("Added listener {}, bus size: {}",
+        log.trace("Added listener {}, bus size: {}",
                 EventBus.getListenerName(listener), bus.subscribers.size());
         return listener;
     }
 
     public static void unsubscribe(BusEventListener listener) {
         bus.subscribers.remove(listener);
-        log.info("Removed listener {}, bus size: {}",
+        log.trace("Removed listener {}, bus size: {}",
                 EventBus.getListenerName(listener), bus.subscribers.size());
     }
 

@@ -6,7 +6,6 @@ import lombok.extern.log4j.Log4j2;
 import oth.shipeditor.PrimaryWindow;
 import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.viewer.ViewerBackgroundChanged;
-import oth.shipeditor.parsing.FileUtilities;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
@@ -216,10 +215,10 @@ public final class Initializations {
 
     @SuppressWarnings("NonBooleanMethodNameMayNotStartWithQuestion")
     private static void checkGameFolderEligibility(Path filePath, Settings settings) {
-        try (var stream = Files.walk(filePath, 1)) {
+        try (var stream = Files.walk(filePath, 5)) {
             stream.filter(Files::isDirectory).forEach(path -> {
                 String folderName = path.getFileName().toString();
-                if (FileUtilities.STARSECTOR_CORE.equals(folderName)) {
+                if (Initializations.isCoreFolder(path)) {
                     settings.setCoreFolderPath(path.toString());
                     folderHasCore = true;
                 }
@@ -231,6 +230,38 @@ public final class Initializations {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    private static boolean isCoreFolder(Path folderPath) {
+        if (!Files.isDirectory(folderPath)) {
+            return false;
+        }
+
+        String[] validParentFolderNames = {"starsector-core", "Java", "starsector"};
+        String parentFolderName = folderPath.getFileName().toString();
+        boolean isValidParentFolder = false;
+
+        for (String validName : validParentFolderNames) {
+            if (parentFolderName.equals(validName)) {
+                isValidParentFolder = true;
+                break;
+            }
+        }
+
+        if (!isValidParentFolder) {
+            return false;
+        }
+
+        String[] childFolderNames = {"data", "graphics"};
+
+        for (String childFolderName : childFolderNames) {
+            Path childFolderPath = folderPath.resolve(childFolderName);
+            if (!Files.isDirectory(childFolderPath)) {
+                return false;
+            }
+        }
+
+        return true;
     }
 
 }

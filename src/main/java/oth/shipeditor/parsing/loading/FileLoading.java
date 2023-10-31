@@ -230,7 +230,7 @@ public final class FileLoading {
         return null;
     }
 
-    public static HullSpecFile loadHullFile(File file) {
+    static HullSpecFile loadHullFile(File file) {
         HullSpecFile hullSpecFile = FileLoading.loadDataFile(file, ".ship", HullSpecFile.class);
         hullSpecFile.setFilePath(file.toPath());
         GameDataRepository.putSpec(hullSpecFile);
@@ -271,7 +271,7 @@ public final class FileLoading {
         T dataFile;
         try {
             ObjectMapper objectMapper = FileUtilities.getConfigured();
-            log.info("Opening data file: {}", file.getName());
+            log.trace("Opening data file: {}", file.getName());
             dataFile = objectMapper.readValue(file, dataClass);
         } catch (IOException e) {
             log.error("Data file parsing failed, retrying with correction: {}", file.getName());
