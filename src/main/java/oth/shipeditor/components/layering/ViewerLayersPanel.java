@@ -330,10 +330,10 @@ public final class ViewerLayersPanel extends SortableTabbedPane {
             printLayer.addActionListener(event -> {
                 var chooser = FileUtilities.getImageSaver();
 
-                SpinnerNumberModel widthModel = new SpinnerNumberModel(100.0d,
-                        10.0d, 4000.0d, 1.0d);
-                SpinnerNumberModel heightModel = new SpinnerNumberModel(100.0d,
-                        10.0d, 4000.0d, 1.0d);
+                SpinnerNumberModel widthModel = new SpinnerNumberModel(1000.0d,
+                        100.0d, 4000.0d, 1.0d);
+                SpinnerNumberModel heightModel = new SpinnerNumberModel(1000.0d,
+                        100.0d, 4000.0d, 1.0d);
 
                 JLabel widthLabel = new JLabel("Image width:");
                 Border border = new EmptyBorder(0, 16, 0, 0);

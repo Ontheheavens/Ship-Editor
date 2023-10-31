@@ -49,10 +49,7 @@ public final class GUIAppender extends AbstractAppender {
 
     @Override
     public void append(LogEvent event) {
-        var textArea = LogsPanel.getLogger();
-        if (textArea != null) {
-            String formattedMessage = patternLayout.toSerializable(event);
-            textArea.append(formattedMessage);
-        }
+        String formattedMessage = patternLayout.toSerializable(event);
+        LogsPanel.append(formattedMessage);
     }
 }
