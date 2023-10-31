@@ -35,7 +35,7 @@ public class Settings {
     String modFolderPath;
 
     @JsonProperty("loadDataAtStart")
-    boolean loadDataAtStart = true;
+    boolean loadDataAtStart;
 
     @JsonProperty("loadTestFiles")
     boolean loadTestFiles;

@@ -88,6 +88,10 @@ public class SkinSpecFile implements ShipSpecFile {
     @JsonProperty(StringConstants.FLEET_POINTS)
     private Integer fleetPoints;
 
+    // TODO: implement later.
+    @JsonProperty("maxSpeed")
+    private Integer maxSpeed;
+
     @JsonProperty(StringConstants.ORDNANCE_POINTS)
     private Integer ordnancePoints;
 
@@ -96,6 +100,9 @@ public class SkinSpecFile implements ShipSpecFile {
 
     @JsonProperty("fpMod")
     private Integer fpMod;
+
+    @JsonProperty("shieldEfficiency")
+    private Double shieldEfficiency;
 
     @JsonProperty(StringConstants.SUPPLIES_PER_MONTH)
     private Double suppliesPerMonth;

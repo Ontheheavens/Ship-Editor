@@ -84,6 +84,10 @@ public class VariantFile implements Variant {
     @JsonProperty(StringConstants.S_MODS)
     private List<String> sMods;
 
+    // TODO: Implement functionality for this one!. Apparently removes built-ins, is a list of hullmod IDs.
+    @JsonProperty("suppressedMods")
+    private List<String> suppressedMods;
+
     /**
      * Is somewhat obscure; some sources claim the value contract is 1 being the best and 3 the worst quality.
      * However, my own (Ontheheavens) impression on the usage in vanilla is that 0.0 is the worst and 1.0 is best.
