@@ -239,7 +239,9 @@ public final class FileLoading {
 
     static WeaponSpecFile loadWeaponFile(File file) {
         WeaponSpecFile weaponSpecFile = FileLoading.loadDataFile(file, ".wpn", WeaponSpecFile.class);
-        weaponSpecFile.setWeaponSpecFilePath(file.toPath());
+        if (weaponSpecFile != null) {
+            weaponSpecFile.setWeaponSpecFilePath(file.toPath());
+        }
         return weaponSpecFile;
     }
 
@@ -258,7 +260,9 @@ public final class FileLoading {
 
     static ProjectileSpecFile loadProjectileFile(File file) {
         ProjectileSpecFile projectileFile = FileLoading.loadDataFile(file, ".proj", ProjectileSpecFile.class);
-        projectileFile.setProjectileSpecFilePath(file.toPath());
+        if (projectileFile != null) {
+            projectileFile.setProjectileSpecFilePath(file.toPath());
+        }
         return projectileFile;
     }
 
@@ -279,12 +283,11 @@ public final class FileLoading {
             dataFile = FileLoading.parseCorrectableJSON(file, dataClass);
             if (dataFile == null) {
                 log.error("Data file parsing failed conclusively: {}", file.getName());
+                e.printStackTrace();
                 JOptionPane.showMessageDialog(null,
                         "Data file parsing failed, exception thrown at: " + file,
                         StringValues.FILE_LOADING_ERROR,
                         JOptionPane.ERROR_MESSAGE);
-                e.printStackTrace();
-                throw new RuntimeException("Data file parsing failed conclusively!", e);
             }
         }
         return dataFile;
@@ -300,6 +303,7 @@ public final class FileLoading {
         return FileLoading.parseCorrectableJSON(file, javaType);
     }
 
+    @SuppressWarnings("AssignmentToNull")
     static <T> T parseCorrectableJSON(File file, JavaType targetType) {
         T result = null;
         ObjectMapper objectMapper = FileUtilities.getConfigured();
@@ -310,6 +314,7 @@ public final class FileLoading {
             result = objectMapper.readValue(parser, targetType);
         } catch (IOException e) {
             log.error("Corrected JSON parsing failed: {}", file.getName());
+            result = null;
             e.printStackTrace();
         }
         return result;

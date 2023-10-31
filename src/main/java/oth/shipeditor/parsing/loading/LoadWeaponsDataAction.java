@@ -76,8 +76,13 @@ public class LoadWeaponsDataAction extends DataLoadingAction {
 
             for (File projectileFile : projectileFiles) {
                 ProjectileSpecFile mapped = FileLoading.loadProjectileFile(projectileFile);
-                mapped.setContainingPackage(directory);
-                allProjectiles.put(mapped.getId(), mapped);
+                if (mapped != null) {
+                    mapped.setContainingPackage(directory);
+                    allProjectiles.put(mapped.getId(), mapped);
+                } else {
+                    log.error("Failure to load spec, omitting from result data: {}", projectileFile);
+                }
+
             }
         }
 
@@ -101,9 +106,11 @@ public class LoadWeaponsDataAction extends DataLoadingAction {
 
         for (File weaponFile : weaponFiles) {
             WeaponSpecFile mapped = FileLoading.loadWeaponFile(weaponFile);
-            mapped.setTableFilePath(weaponTablePath);
-            mapped.setContainingPackage(folder);
-            mappedWeaponSpecs.put(mapped.getId(), mapped);
+            if (mapped != null) {
+                mapped.setTableFilePath(weaponTablePath);
+                mapped.setContainingPackage(folder);
+                mappedWeaponSpecs.put(mapped.getId(), mapped);
+            }
         }
         log.info("Fetched and mapped {} weapon files.", mappedWeaponSpecs.size());
 

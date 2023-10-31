@@ -26,8 +26,7 @@ public final class StandardOutputRedirector {
         return new PrintStream(realPrintStream) {
             public void print(final String s) {
                 realPrintStream.print(s);
-                var textArea = LogsPanel.getLogger();
-                textArea.append(s + System.lineSeparator());
+                LogsPanel.append(s + System.lineSeparator());
             }
         };
     }
