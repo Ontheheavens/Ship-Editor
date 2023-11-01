@@ -89,8 +89,13 @@ class LoadShipDataAction extends DataLoadingAction {
 
             for (File variantFile : variantFiles) {
                 VariantFile mapped = FileLoading.loadVariantFile(variantFile);
-                mapped.setContainingPackage(directory);
-                allVariants.put(mapped.getVariantId(), mapped);
+                if (mapped != null) {
+                    mapped.setContainingPackage(directory);
+                    allVariants.put(mapped.getVariantId(), mapped);
+                } else {
+                    log.error("Failure to load variant, omitting from result data: {}", variantFile);
+                }
+
             }
         }
 
@@ -112,8 +117,12 @@ class LoadShipDataAction extends DataLoadingAction {
 
         for (File hullFile : shipFiles) {
             HullSpecFile mapped = FileLoading.loadHullFile(hullFile);
-            mapped.setTableFilePath(shipTablePath);
-            mappedHulls.put(hullFile.getName(), mapped);
+            if (mapped != null) {
+                mapped.setTableFilePath(shipTablePath);
+                mappedHulls.put(hullFile.getName(), mapped);
+            }  else {
+                log.error("Failure to load hull, omitting from result data: {}", hullFile);
+            }
         }
         log.info("Fetched and mapped {} hull files.", mappedHulls.size());
 
@@ -168,8 +177,13 @@ class LoadShipDataAction extends DataLoadingAction {
         Map<String, SkinSpecFile> mappedSkins = new HashMap<>();
         for (File skinFile : skinFiles) {
             SkinSpecFile mapped = FileLoading.loadSkinFile(skinFile);
-            mapped.setContainingPackage(skinFolder);
-            mappedSkins.put(skinFile.getName(), mapped);
+            if (mapped != null) {
+                mapped.setContainingPackage(skinFolder);
+                mappedSkins.put(skinFile.getName(), mapped);
+            } else {
+                log.error("Failure to load skin, omitting from result data: {}", skinFile);
+            }
+
         }
         log.info("Fetched and mapped {} skin files.", mappedSkins.size());
         return mappedSkins;

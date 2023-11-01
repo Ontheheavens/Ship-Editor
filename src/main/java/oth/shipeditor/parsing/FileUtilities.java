@@ -52,6 +52,7 @@ public final class FileUtilities {
         mapper.configure(JsonReadFeature.ALLOW_TRAILING_COMMA.mappedFeature(), true);
         mapper.configure(JsonReadFeature.ALLOW_LEADING_DECIMAL_POINT_FOR_NUMBERS.mappedFeature(), true);
         mapper.configure(JsonReadFeature.ALLOW_UNESCAPED_CONTROL_CHARS.mappedFeature(), true);
+        mapper.configure(JsonReadFeature.ALLOW_LEADING_PLUS_SIGN_FOR_NUMBERS.mappedFeature(), true);
 
         DefaultPrettyPrinter prettyPrinter = new BasicPrettyPrinter().createInstance();
         mapper.setDefaultPrettyPrinter(prettyPrinter);

@@ -171,7 +171,7 @@ public final class FileLoading {
                     "Image resource loading failed, exception thrown at: " + spritePath,
                     StringValues.FILE_LOADING_ERROR,
                     JOptionPane.ERROR_MESSAGE);
-            throw new RuntimeException(e);
+            return null;
         }
         return FileLoading.loadSpriteAsImage(spriteFile);
     }
@@ -232,8 +232,10 @@ public final class FileLoading {
 
     static HullSpecFile loadHullFile(File file) {
         HullSpecFile hullSpecFile = FileLoading.loadDataFile(file, ".ship", HullSpecFile.class);
-        hullSpecFile.setFilePath(file.toPath());
-        GameDataRepository.putSpec(hullSpecFile);
+        if (hullSpecFile != null) {
+            hullSpecFile.setFilePath(file.toPath());
+            GameDataRepository.putSpec(hullSpecFile);
+        }
         return hullSpecFile;
     }
 
@@ -247,14 +249,18 @@ public final class FileLoading {
 
     static SkinSpecFile loadSkinFile(File file) {
         SkinSpecFile skinSpecFile = FileLoading.loadDataFile(file, ".skin", SkinSpecFile.class);
-        skinSpecFile.setFilePath(file.toPath());
-        GameDataRepository.putSpec(skinSpecFile);
+        if (skinSpecFile != null) {
+            skinSpecFile.setFilePath(file.toPath());
+            GameDataRepository.putSpec(skinSpecFile);
+        }
         return skinSpecFile;
     }
 
     static VariantFile loadVariantFile(File file) {
         VariantFile variantFile = FileLoading.loadDataFile(file, StringConstants.VARIANT_EXTENSION, VariantFile.class);
-        variantFile.setVariantFilePath(file.toPath());
+        if (variantFile != null) {
+            variantFile.setVariantFilePath(file.toPath());
+        }
         return variantFile;
     }
 
@@ -305,7 +311,7 @@ public final class FileLoading {
 
     @SuppressWarnings("AssignmentToNull")
     static <T> T parseCorrectableJSON(File file, JavaType targetType) {
-        T result = null;
+        T result;
         ObjectMapper objectMapper = FileUtilities.getConfigured();
         objectMapper.configure(JsonReadFeature.ALLOW_LEADING_ZEROS_FOR_NUMBERS.mappedFeature(), true);
 
@@ -381,9 +387,15 @@ public final class FileLoading {
                     csvData.add(row);
                 }
             }
-        } catch (IOException exception) {
+        } catch (Exception exception) {
             log.error("Data CSV loading failed!");
             exception.printStackTrace();
+            JOptionPane.showMessageDialog(null,
+                    "Failed to parse CSV table (likely due to semantic errors), " +
+                            "returning incomplete table: " + csvFile,
+                    StringValues.FILE_LOADING_ERROR,
+                    JOptionPane.ERROR_MESSAGE);
+            return csvData;
         }
         return csvData;
     }
@@ -412,7 +424,15 @@ public final class FileLoading {
                     JFileChooser shipDataChooser = (JFileChooser) event.getSource();
                     File file = shipDataChooser.getSelectedFile();
                     HullSpecFile hullSpecFile = FileLoading.loadHullFile(file);
-                    EventBus.publish(new HullFileOpened(hullSpecFile, file.getName()));
+                    if (hullSpecFile != null) {
+                        EventBus.publish(new HullFileOpened(hullSpecFile, file.getName()));
+                    } else {
+                        log.error(StringValues.FAILURE_TO_LOAD_HULL_CANCELLING_ACTION, file);
+                        JOptionPane.showMessageDialog(null,
+                                StringValues.FAILURE_TO_LOAD_HULL_CANCELLING_ACTION_ALT + file,
+                                StringValues.FILE_LOADING_ERROR,
+                                JOptionPane.ERROR_MESSAGE);
+                    }
             });
         }
     }

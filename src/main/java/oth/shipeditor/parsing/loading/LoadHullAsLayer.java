@@ -8,6 +8,7 @@ import oth.shipeditor.communication.events.viewer.layers.LastLayerSelectQueued;
 import oth.shipeditor.communication.events.viewer.layers.ships.ShipLayerCreationQueued;
 import oth.shipeditor.representation.HullSpecFile;
 import oth.shipeditor.utility.graphics.Sprite;
+import oth.shipeditor.utility.text.StringValues;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;
@@ -27,6 +28,14 @@ public class LoadHullAsLayer extends AbstractAction {
             JFileChooser shipDataChooser = (JFileChooser) e1.getSource();
             File file = shipDataChooser.getSelectedFile();
             HullSpecFile hullSpecFile = FileLoading.loadHullFile(file);
+            if (hullSpecFile == null) {
+                log.error(StringValues.FAILURE_TO_LOAD_HULL_CANCELLING_ACTION, file);
+                JOptionPane.showMessageDialog(null,
+                        StringValues.FAILURE_TO_LOAD_HULL_CANCELLING_ACTION_ALT + file,
+                        StringValues.FILE_LOADING_ERROR,
+                        JOptionPane.ERROR_MESSAGE);
+                return;
+            }
 
             String spriteName = hullSpecFile.getSpriteName();
 

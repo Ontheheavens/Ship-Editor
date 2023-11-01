@@ -31,8 +31,7 @@ abstract class LoadCSVDataAction<T extends CSVEntry> extends DataLoadingAction {
         Map<String, List<T>> entriesByPackage = new HashMap<>();
         for (Map.Entry<Path, File> folder : tableWithPackage.entrySet()) {
             log.info("Loading CSV table from package: {}", folder.getKey());
-            List<T> systemsList = loadPackage(folder.getKey(),
-                    folder.getValue());
+            List<T> systemsList = loadPackage(folder.getKey(), folder.getValue());
             entriesByPackage.putIfAbsent(String.valueOf(folder.getKey()), systemsList);
         }
         return () -> publishResult(entriesByPackage);
@@ -51,15 +50,19 @@ abstract class LoadCSVDataAction<T extends CSVEntry> extends DataLoadingAction {
 
         List<Map<String, String>> csvData = parseTable(dataFilePath);
 
-        List<T> shipSystemList = new ArrayList<>(csvData.size());
+        List<T> entryList = new ArrayList<>(csvData.size());
         for (Map<String, String> row : csvData) {
             String rowId = row.get("id");
             if (rowId != null && !rowId.isEmpty()) {
                 T newEntry = instantiateEntry(row, folderPath, dataFilePath);
-                shipSystemList.add(newEntry);
+                if (newEntry != null) {
+                    entryList.add(newEntry);
+                } else {
+                    log.error("Failure to load data entry from table, omitting from result data: {}", table);
+                }
             }
         }
-        return shipSystemList;
+        return entryList;
     }
 
 }

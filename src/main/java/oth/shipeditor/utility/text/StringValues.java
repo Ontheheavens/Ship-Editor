@@ -63,6 +63,8 @@ public final class StringValues {
     public static final String JSON_SHIP_FILES = "JSON ship files";
     public static final String FILE_SAVING_ERROR = "File saving error!";
     public static final String ENTER_TO_SAVE_CHANGES = "Enter to save changes";
+    public static final String FAILURE_TO_LOAD_HULL_CANCELLING_ACTION = "Failure to load hull, cancelling action: {}";
+    public static final String FAILURE_TO_LOAD_HULL_CANCELLING_ACTION_ALT = "Failure to load hull, cancelling action: ";
 
     private StringValues() {
     }
