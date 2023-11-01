@@ -167,16 +167,22 @@ public final class BoundPointsPainter extends MirrorablePointPainter {
                     EditDispatch.postPointInserted(this, wrappedCounterpart,
                             boundPoints.indexOf(precedingCounterpart));
                 }
+            } else {
+                commencePointAppend(position, parentLayer, mirrorMode);
             }
         } else if (appendBoundHotkeyPressed) {
-            BoundPoint wrapped = new BoundPoint(position, parentLayer);
-            EditDispatch.postPointAdded(this, wrapped);
-            if (mirrorMode) {
-                if (getMirroredCounterpart(wrapped) == null) {
-                    Point2D counterpartPosition = createCounterpartPosition(position);
-                    BoundPoint wrappedCounterpart = new BoundPoint(counterpartPosition, parentLayer);
-                    EditDispatch.postPointInserted(this, wrappedCounterpart, 0);
-                }
+            commencePointAppend(position, parentLayer, mirrorMode);
+        }
+    }
+
+    private void commencePointAppend(Point2D position, ShipPainter parentLayer, boolean mirrorMode) {
+        BoundPoint wrapped = new BoundPoint(position, parentLayer);
+        EditDispatch.postPointAdded(this, wrapped);
+        if (mirrorMode) {
+            if (getMirroredCounterpart(wrapped) == null) {
+                Point2D counterpartPosition = createCounterpartPosition(position);
+                BoundPoint wrappedCounterpart = new BoundPoint(counterpartPosition, parentLayer);
+                EditDispatch.postPointInserted(this, wrappedCounterpart, 0);
             }
         }
     }

@@ -69,12 +69,12 @@ public class HotkeyHelpPainter implements Painter {
                 hints.add(radiusHint);
             }
             case BOUNDS -> {
+                String appendHint = "Add: Z+LMB";
                 String insertHint = "Insert: X+LMB";
-                String appendHint = "Append: Z+LMB";
                 String removeHint = "Remove: Del";
                 hints.add(removeHint);
-                hints.add(appendHint);
                 hints.add(insertHint);
+                hints.add(appendHint);
             }
             case WEAPON_SLOTS -> {
                 String angleHint = "Alter angle: A+LMB";
