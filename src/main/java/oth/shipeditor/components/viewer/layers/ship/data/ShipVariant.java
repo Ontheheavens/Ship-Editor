@@ -244,22 +244,31 @@ public class ShipVariant implements Variant {
         weaponGroups = new ArrayList<>();
 
         List<SpecWeaponGroup> specWeaponGroups = file.getWeaponGroups();
-        specWeaponGroups.forEach(weaponGroup -> {
+        for (SpecWeaponGroup weaponGroup : specWeaponGroups) {
             String weaponGroupMode = weaponGroup.getMode();
             FireMode mode = FireMode.valueOf(weaponGroupMode);
             FittedWeaponGroup initialized = new FittedWeaponGroup(this, weaponGroup.isAutofire(), mode);
             var fitted = initialized.getWeapons();
             Map<String, String> specGroupWeapons = weaponGroup.getWeapons();
-            specGroupWeapons.forEach((slotID, weaponID) -> {
+            for (Map.Entry<String, String> entry : specGroupWeapons.entrySet()) {
+                String slotID = entry.getKey();
+                String weaponID = entry.getValue();
                 WeaponCSVEntry weaponEntry = GameDataRepository.getWeaponByID(weaponID);
+                if (weaponEntry == null) {
+                    JOptionPane.showMessageDialog(null,
+                            "Failed to locate weapon entry for variant, weapon ID: " + weaponID,
+                            StringValues.VARIANT_INITIALIZATION_ERROR,
+                            JOptionPane.ERROR_MESSAGE);
+                    continue;
+                }
                 WeaponSpecFile specFile = weaponEntry.getSpecFile();
                 WeaponPainter weaponPainter = weaponEntry.createPainterFromEntry(null, specFile);
                 InstalledFeature feature = InstalledFeature.of(slotID, weaponID, weaponPainter, weaponEntry);
                 feature.setParentGroup(initialized);
                 fitted.put(slotID, feature);
-            });
+            }
             weaponGroups.add(initialized);
-        });
+        }
 
         var installedModules = file.getModules();
         if (installedModules != null) {

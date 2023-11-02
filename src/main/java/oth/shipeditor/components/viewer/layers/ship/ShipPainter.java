@@ -24,6 +24,7 @@ import oth.shipeditor.components.viewer.painters.points.AbstractPointPainter;
 import oth.shipeditor.components.viewer.painters.points.ship.*;
 import oth.shipeditor.components.viewer.painters.points.ship.features.InstalledFeature;
 import oth.shipeditor.components.viewer.painters.points.ship.features.InstalledFeaturePainter;
+import oth.shipeditor.persistence.SettingsManager;
 import oth.shipeditor.representation.GameDataRepository;
 import oth.shipeditor.representation.HullSpecFile;
 import oth.shipeditor.representation.ShipTypeHints;
@@ -102,6 +103,18 @@ public class ShipPainter extends LayerPainter {
 
     private void installVariant(VariantFile file) {
         boolean empty = file.isEmpty();
+
+        if (!empty) {
+            GameDataRepository gameData = SettingsManager.getGameData();
+            if (!gameData.isWeaponsDataLoaded() || !gameData.isHullmodDataLoaded()) {
+                JOptionPane.showMessageDialog(null,
+                        "Weapon or hullmod data is not loaded to the editor, aborting variant initialization.",
+                        StringValues.VARIANT_INITIALIZATION_ERROR,
+                        JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+        }
+
         activeVariant = new ShipVariant(empty);
         if (!empty) {
             String variantId = file.getVariantId();

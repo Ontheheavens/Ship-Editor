@@ -94,6 +94,9 @@ public abstract class AngledPointPainter extends MirrorablePointPainter {
         if (ControlPredicates.isRotationRoundingEnabled()) {
             result = Math.round(rotationDegrees * 2.0d) / 2.0d;
         }
+        if (Utility.areDoublesEqual(result, 360)) {
+            result = 0.0d;
+        }
         return result;
     }
 

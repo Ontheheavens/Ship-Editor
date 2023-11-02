@@ -116,14 +116,8 @@ public abstract class AbstractPointPainter implements Painter {
                 if (!this.isInteractionEnabled()) return;
                 if (getSelected() == null) return;
                 AffineTransform screenToWorld = checked.screenToWorld();
-                Point2D translated = screenToWorld.transform(checked.target(), null);
-                double x = translated.getX();
-                double y = translated.getY();
-                if (ControlPredicates.isCursorSnappingEnabled()) {
-                    x = Math.round(x * 2) / 2.0;
-                    y = Math.round(y * 2) / 2.0;
-                }
-                Point2D changedPosition = new Point2D.Double(x, y);
+                Point2D target = checked.target();
+                Point2D changedPosition = Utility.correctAdjustedCursor(target, screenToWorld);
 
                 WorldPoint counterpart = null;
                 Point2D counterpartNewPosition = null;

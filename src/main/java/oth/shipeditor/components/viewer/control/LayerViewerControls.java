@@ -233,7 +233,11 @@ public final class LayerViewerControls implements ViewerControl {
             }
         } else if (ControlPredicates.changeAnglePredicate.test(e)) {
             if (selected instanceof ShipPainter) {
-                Point2D worldTarget = rotatedTransform.transform(e.getPoint(), null);
+                Point2D angleRotateTarget = e.getPoint();
+                if (ControlPredicates.isRotationRoundingEnabled()) {
+                    angleRotateTarget = this.getAdjustedCursor();
+                }
+                Point2D worldTarget = rotatedTransform.transform(angleRotateTarget, null);
                 EventBus.publish(new SlotAngleChangeQueued(worldTarget));
                 EventBus.publish(new EngineAngleChangeQueued(worldTarget));
             }

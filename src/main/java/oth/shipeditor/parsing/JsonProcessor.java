@@ -19,20 +19,18 @@ public final class JsonProcessor {
 
     private static final char QUOTES = '"';
 
-    @SuppressWarnings("RegExpSimplifiable")
     private static final Pattern LETTERS_AFTER_DIGIT = Pattern.compile("(?<=[0-9])f|(?<=[0-9])d");
 
     /**
      * Pattern to match unquoted values (non-numeric and non-boolean) excluding already quoted values.
      */
-    private static final Pattern UNQUOTED_VALUES = Pattern.compile("(?<![\"])\\b(?!true|false|null|\\d+(?:\\.\\d+)?)([a-zA-Z_][\\w]*)\\b(?![\"])(?![^\"]*\"(?:[^\"]*\"[^\"]*\")*[^\"]*$)");
+    private static final Pattern UNQUOTED_VALUES = Pattern.compile("(?<!\")\\b(?!true|false|null|\\d+(?:\\.\\d+)?)([a-zA-Z_]\\w*)\\b(?!\")(?![^\"]*\"(?:[^\"]*\"[^\"]*\")*[^\"]*$)");
 
 
     /**
      * Pattern to match semicolons used for object separation outside quoted string values.
      */
-    @SuppressWarnings("RegExpSimplifiable")
-    private static final Pattern SEPARATORS = Pattern.compile("(?<![\"])\\s*;\\s*(?![^\"]*\"(?:[^\"]*\"[^\"]*\")*[^\"]*$)");
+    private static final Pattern SEPARATORS = Pattern.compile("(?<!\")\\s*;\\s*(?![^\"]*\"(?:[^\"]*\"[^\"]*\")*[^\"]*$)");
 
     private JsonProcessor() {
     }

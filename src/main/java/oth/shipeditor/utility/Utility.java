@@ -278,4 +278,8 @@ public final class Utility {
         }
     }
 
+    public static boolean areDoublesEqual(double first, double second) {
+        return Math.abs(first - second) < 0.005;
+    }
+
 }

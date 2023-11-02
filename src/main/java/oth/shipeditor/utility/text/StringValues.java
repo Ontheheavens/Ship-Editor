@@ -65,6 +65,7 @@ public final class StringValues {
     public static final String ENTER_TO_SAVE_CHANGES = "Enter to save changes";
     public static final String FAILURE_TO_LOAD_HULL_CANCELLING_ACTION = "Failure to load hull, cancelling action: {}";
     public static final String FAILURE_TO_LOAD_HULL_CANCELLING_ACTION_ALT = "Failure to load hull, cancelling action: ";
+    public static final String VARIANT_INITIALIZATION_ERROR = "Variant initialization error!";
 
     private StringValues() {
     }
