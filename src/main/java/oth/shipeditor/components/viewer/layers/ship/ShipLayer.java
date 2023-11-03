@@ -80,6 +80,14 @@ public class ShipLayer extends ViewerLayer {
         } else return null;
     }
 
+    public String getSpriteName() {
+        ShipPainter shipPainter = getPainter();
+        if (shipPainter != null) {
+            Sprite baseHullSprite = shipPainter.getBaseHullSprite();
+            return baseHullSprite.getFilename();
+        } else return null;
+    }
+
     @Override
     public void setPainter(LayerPainter painter) {
         if (!(painter instanceof ShipPainter)) {

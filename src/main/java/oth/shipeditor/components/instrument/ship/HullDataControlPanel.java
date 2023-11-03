@@ -30,6 +30,8 @@ public class HullDataControlPanel extends JPanel {
 
     private JLabel coversColorValue;
 
+    private JLabel spritePathValue;
+
     private JLabel spriteNameValue;
 
     private JComboBox<HullStyle> styleSelector;
@@ -174,12 +176,19 @@ public class HullDataControlPanel extends JPanel {
     }
 
     private void addSpriteNameLabel() {
+        spritePathValue = new JLabel();
+        JLabel spritePathLabel = new JLabel("Sprite path:");
+        spritePathLabel.setBorder(new EmptyBorder(3, 0, 2, 0));
+
+        ComponentUtilities.addLabelAndComponent(this, spritePathLabel,
+                spritePathValue, 2, 4, 0, 5);
+
         spriteNameValue = new JLabel();
         JLabel spriteNameLabel = new JLabel("Sprite name:");
-        spriteNameLabel.setBorder(new EmptyBorder(2, 0, 6, 0));
+        spriteNameLabel.setBorder(new EmptyBorder(5, 0, 6, 0));
 
         ComponentUtilities.addLabelAndComponent(this, spriteNameLabel,
-                spriteNameValue, 2, 4, 0, 5);
+                spriteNameValue, 2, 4, 0, 6);
     }
 
     private void addCoversColorChooser() {
@@ -195,7 +204,7 @@ public class HullDataControlPanel extends JPanel {
         coversColorLabel.setBorder(ComponentUtilities.createLabelSimpleBorder(insets));
 
         ComponentUtilities.addLabelAndComponent(this, coversColorLabel,
-                coversColorValue, 0, 2, 0, 6);
+                coversColorValue, 0, 2, 0, 7);
     }
 
     private void processChange() {
@@ -209,6 +218,9 @@ public class HullDataControlPanel extends JPanel {
         cachedLayer = null;
 
         readyForInput = false;
+
+        spritePathValue.setText(StringValues.NOT_INITIALIZED);
+        spritePathValue.setToolTipText(StringValues.NOT_INITIALIZED);
 
         spriteNameValue.setText(StringValues.NOT_INITIALIZED);
         spriteNameValue.setToolTipText(StringValues.NOT_INITIALIZED);
@@ -253,8 +265,12 @@ public class HullDataControlPanel extends JPanel {
         }
 
         String relativeSpritePath = layer.getRelativeSpritePath();
-        spriteNameValue.setText(relativeSpritePath);
-        spriteNameValue.setToolTipText(relativeSpritePath);
+        spritePathValue.setText(relativeSpritePath);
+        spritePathValue.setToolTipText(relativeSpritePath);
+
+        String spriteName = layer.getSpriteName();
+        spriteNameValue.setText(spriteName);
+        spriteNameValue.setToolTipText(spriteName);
 
         GameDataRepository gameData = SettingsManager.getGameData();
         Map<String, HullStyle> allHullStyles = gameData.getAllHullStyles();
