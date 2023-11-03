@@ -31,40 +31,55 @@ public final class JsonProcessor {
      * Pattern to match semicolons used for object separation outside quoted string values.
      */
     private static final Pattern SEPARATORS = Pattern.compile("(?<!\")\\s*;\\s*(?![^\"]*\"(?:[^\"]*\"[^\"]*\")*[^\"]*$)");
+    private static final Pattern COMMENTS = Pattern.compile("#[^" + System.lineSeparator() + "]*");
 
     private JsonProcessor() {
     }
 
     public static String straightenMalformed(File input) {
-        String preprocessed = JsonProcessor.correctJSONUnquotedValues(input);
+        String text = JsonProcessor.readFile(input);
+
+        String preprocessed = JsonProcessor.removeComments(text);
+        preprocessed = JsonProcessor.correctJSONUnquotedValues(preprocessed);
         preprocessed = JsonProcessor.correctSpuriousSeparators(preprocessed);
         preprocessed = JsonProcessor.correctNumberLetterSignums(preprocessed);
+
         return preprocessed;
     }
 
-    @SuppressWarnings({"NestedAssignment", "RegExpSimplifiable", "CallToPrintStackTrace"})
-    private static String correctJSONUnquotedValues(File malformed) {
-        StringBuilder jsonString = new StringBuilder();
-        try (BufferedReader reader = new BufferedReader(new FileReader(malformed, StandardCharsets.UTF_8))) {
+    @SuppressWarnings({"ReassignedVariable", "CallToPrintStackTrace", "NestedAssignment"})
+    private static String readFile(File input) {
+        StringBuilder text = new StringBuilder();
+        try (BufferedReader reader = new BufferedReader(new FileReader(input, StandardCharsets.UTF_8))) {
             String line;
             while ((line = reader.readLine()) != null) {
-                jsonString.append(line).append(System.lineSeparator());
+                text.append(line).append(System.lineSeparator());
             }
         } catch (IOException e) {
             e.printStackTrace();
         }
-        Matcher matcher = UNQUOTED_VALUES.matcher(jsonString);
+        return text.toString();
+    }
+
+    private static String removeComments(CharSequence jsonText) {
+        Matcher matcher = COMMENTS.matcher(jsonText);
+        return matcher.replaceAll("");
+    }
+
+    @SuppressWarnings("RegExpSimplifiable")
+    private static String correctJSONUnquotedValues(String input) {
+        Matcher matcher = UNQUOTED_VALUES.matcher(input);
         StringBuilder preprocessedJson = new StringBuilder();
         int previousEnd = 0;
         while (matcher.find()) {
             // Append the part before the match.
-            preprocessedJson.append(jsonString, previousEnd, matcher.start());
+            preprocessedJson.append(input, previousEnd, matcher.start());
             // Append the quoted value.
             preprocessedJson.append(QUOTES).append(matcher.group()).append(QUOTES);
             // Update the previous end position.
             previousEnd = matcher.end();
         }
-        preprocessedJson.append(jsonString.substring(previousEnd));
+        preprocessedJson.append(input.substring(previousEnd));
 
         return preprocessedJson.toString();
     }
@@ -75,11 +90,8 @@ public final class JsonProcessor {
         StringBuilder preprocessedJson = new StringBuilder();
         int previousEnd = 0;
         while (matcher.find()) {
-            // Append the part before the match.
             preprocessedJson.append(inputJSON, previousEnd, matcher.start());
-            // Append a comma to replace the semicolon.
             preprocessedJson.append(",");
-            // Update the previous end position.
             previousEnd = matcher.end();
         }
         preprocessedJson.append(inputJSON.substring(previousEnd));

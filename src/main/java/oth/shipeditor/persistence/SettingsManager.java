@@ -68,6 +68,10 @@ public final class SettingsManager {
         return Path.of(settings.getCoreFolderPath());
     }
 
+    public static boolean areFileErrorPopupsEnabled() {
+        return settings.showLoadingErrors;
+    }
+
     static File getSettingsPath() {
         Path workingDirectory = Paths.get("").toAbsolutePath();
         log.info("Default working directory: {}", workingDirectory);

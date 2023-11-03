@@ -23,12 +23,14 @@ import java.io.FileNotFoundException;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.text.DecimalFormat;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
@@ -42,6 +44,7 @@ public final class Utility {
 
     @SuppressWarnings("RegExpSimplifiable")
     public static final Pattern SPLIT_BY_COMMA = Pattern.compile(",[ ]*");
+    private static final Pattern FILE_EXTENSION = Pattern.compile("[.][^.]+$");
 
     /**
      * Private constructor prevents instantiation of utility class.
@@ -280,6 +283,12 @@ public final class Utility {
 
     public static boolean areDoublesEqual(double first, double second) {
         return Math.abs(first - second) < 0.005;
+    }
+
+    public static String getFilenameWithoutExtension(String filename) {
+        Path path = Paths.get(filename);
+        Matcher matcher = FILE_EXTENSION.matcher(path.getFileName().toString());
+        return matcher.replaceFirst("");
     }
 
 }

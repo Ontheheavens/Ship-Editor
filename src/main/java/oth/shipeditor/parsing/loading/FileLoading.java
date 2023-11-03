@@ -23,6 +23,7 @@ import oth.shipeditor.representation.SkinSpecFile;
 import oth.shipeditor.representation.VariantFile;
 import oth.shipeditor.representation.weapon.ProjectileSpecFile;
 import oth.shipeditor.representation.weapon.WeaponSpecFile;
+import oth.shipeditor.utility.Errors;
 import oth.shipeditor.utility.graphics.Sprite;
 import oth.shipeditor.utility.overseers.ImageCache;
 import oth.shipeditor.utility.text.StringConstants;
@@ -30,7 +31,6 @@ import oth.shipeditor.utility.text.StringValues;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
-import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
@@ -290,10 +290,9 @@ public final class FileLoading {
             if (dataFile == null) {
                 log.error("Data file parsing failed conclusively: {}", file.getName());
                 e.printStackTrace();
-                JOptionPane.showMessageDialog(null,
-                        "Data file parsing failed, exception thrown at: " + file,
-                        StringValues.FILE_LOADING_ERROR,
-                        JOptionPane.ERROR_MESSAGE);
+                if (SettingsManager.areFileErrorPopupsEnabled()) {
+                    Errors.showFileError("Data file parsing failed, exception thrown at: " + file);
+                }
             }
         }
         return dataFile;
@@ -327,14 +326,7 @@ public final class FileLoading {
     }
 
     static void openHullAndDo(ActionListener action) {
-        Path coreFolderPath = SettingsManager.getCoreFolderPath();
-        JFileChooser shipDataChooser = new JFileChooser(coreFolderPath.toString());
-        if (FileUtilities.lastDirectory != null) {
-            shipDataChooser.setCurrentDirectory(FileUtilities.lastDirectory);
-        }
-        FileNameExtensionFilter shipDataFilter = new FileNameExtensionFilter(
-                StringValues.JSON_SHIP_FILES, "ship");
-        shipDataChooser.setFileFilter(shipDataFilter);
+        JFileChooser shipDataChooser = FileUtilities.getHullFileChooser();
         int returnVal = shipDataChooser.showOpenDialog(null);
         FileUtilities.lastDirectory = shipDataChooser.getCurrentDirectory();
         if (returnVal == JFileChooser.APPROVE_OPTION) {
@@ -390,11 +382,10 @@ public final class FileLoading {
         } catch (Exception exception) {
             log.error("Data CSV loading failed!");
             exception.printStackTrace();
-            JOptionPane.showMessageDialog(null,
-                    "Failed to parse CSV table (likely due to semantic errors), " +
-                            "returning incomplete table: " + csvFile,
-                    StringValues.FILE_LOADING_ERROR,
-                    JOptionPane.ERROR_MESSAGE);
+            if (SettingsManager.areFileErrorPopupsEnabled()) {
+                Errors.showFileError("Failed to parse CSV table (likely semantic errors), " +
+                        "loading incomplete: " + csvFile);
+            }
             return csvData;
         }
         return csvData;

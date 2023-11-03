@@ -97,7 +97,7 @@ class LayersMenu extends JMenu {
         printViewer.setIcon(FontIcon.of(BoxiconsRegular.IMAGE_ADD, 16));
 
         printViewer.addActionListener(event -> {
-            var chooser = FileUtilities.getImageSaver();
+            var chooser = FileUtilities.getImageChooser();
             chooser.setDialogTitle("Print viewer content to image file");
 
             int returnVal = chooser.showSaveDialog(null);

@@ -102,7 +102,14 @@ public class ShipCSVEntry implements CSVEntry, InstallableEntry {
 
     public int getBaseTotalOP() {
         String ordnancePoints = rowData.get(StringConstants.ORDNANCE_POINTS_SPACED);
-        return Integer.parseInt(ordnancePoints);
+        if (ordnancePoints == null || ordnancePoints.isEmpty()) return -1;
+        int result;
+        try {
+            result = Integer.parseInt(ordnancePoints);
+        } catch (NumberFormatException exception) {
+            return -1;
+        }
+        return result;
     }
 
     public int getBayCount() {

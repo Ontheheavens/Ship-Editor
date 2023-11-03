@@ -17,6 +17,7 @@ import oth.shipeditor.persistence.Settings;
 import oth.shipeditor.persistence.SettingsManager;
 import oth.shipeditor.utility.graphics.Sprite;
 import oth.shipeditor.utility.overseers.StaticController;
+import oth.shipeditor.utility.text.StringValues;
 
 import javax.swing.*;
 import javax.swing.filechooser.FileFilter;
@@ -143,6 +144,10 @@ public final class FileUtilities {
         return mapper;
     }
 
+    public static JFileChooser getFileChooser() {
+        return FileUtilities.getFileChooser(null);
+    }
+
     public static JFileChooser getFileChooser(FileFilter fileFilter) {
         Path coreFolderPath = SettingsManager.getCoreFolderPath();
         JFileChooser fileChooser = new JFileChooser(coreFolderPath.toString());
@@ -151,13 +156,21 @@ public final class FileUtilities {
         if (directory != null) {
             fileChooser.setCurrentDirectory(directory);
         }
-        fileChooser.setFileFilter(fileFilter);
+        if (fileFilter != null) {
+            fileChooser.setFileFilter(fileFilter);
+        }
         return fileChooser;
     }
 
-    public static JFileChooser getImageSaver() {
+    public static JFileChooser getImageChooser() {
         FileNameExtensionFilter pngFilter = new FileNameExtensionFilter(
                 "PNG Image", "png");
+        return FileUtilities.getFileChooser(pngFilter);
+    }
+
+    public static JFileChooser getHullFileChooser() {
+        FileNameExtensionFilter pngFilter = new FileNameExtensionFilter(
+                StringValues.JSON_SHIP_FILES, "ship");
         return FileUtilities.getFileChooser(pngFilter);
     }
 

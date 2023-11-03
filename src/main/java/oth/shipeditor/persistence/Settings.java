@@ -34,6 +34,9 @@ public class Settings {
     @JsonProperty("modFolderPath")
     String modFolderPath;
 
+    @JsonProperty("showLoadingErrors")
+    boolean showLoadingErrors = true;
+
     @JsonProperty("loadDataAtStart")
     boolean loadDataAtStart;
 
@@ -61,6 +64,21 @@ public class Settings {
 
     void setModFolderPath(String path) {
         this.modFolderPath = path;
+        SettingsManager.updateFileFromRuntime();
+    }
+
+    public void setShowLoadingErrors(boolean showErrors) {
+        this.showLoadingErrors = showErrors;
+        SettingsManager.updateFileFromRuntime();
+    }
+
+    public void setLoadDataAtStart(boolean loadData) {
+        this.loadDataAtStart = loadData;
+        SettingsManager.updateFileFromRuntime();
+    }
+
+    public void setLoadTestFiles(boolean loadTests) {
+        this.loadTestFiles = loadTests;
         SettingsManager.updateFileFromRuntime();
     }
 

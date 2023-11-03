@@ -172,6 +172,8 @@ public final class LayerViewerControls implements ViewerControl {
         }
         if (ControlPredicates.removePointPredicate.test(e)) {
             EventBus.publish(new PointRemoveQueued(null, false));
+        } else if (ControlPredicates.changeAnglePredicate.test(e)) {
+            publishAngleRotation(e);
         }
         if (!ControlPredicates.selectPointPredicate.test(e)) return;
         if (ControlPredicates.getSelectionMode() == PointSelectionMode.STRICT) {
@@ -232,15 +234,7 @@ public final class LayerViewerControls implements ViewerControl {
                 EventBus.publish(new LayerRotationQueued(selected, worldTarget));
             }
         } else if (ControlPredicates.changeAnglePredicate.test(e)) {
-            if (selected instanceof ShipPainter) {
-                Point2D angleRotateTarget = e.getPoint();
-                if (ControlPredicates.isRotationRoundingEnabled()) {
-                    angleRotateTarget = this.getAdjustedCursor();
-                }
-                Point2D worldTarget = rotatedTransform.transform(angleRotateTarget, null);
-                EventBus.publish(new SlotAngleChangeQueued(worldTarget));
-                EventBus.publish(new EngineAngleChangeQueued(worldTarget));
-            }
+            publishAngleRotation(e);
         } else if (ControlPredicates.changeArcOrSizePredicate.test(e)) {
             if (selected instanceof ShipPainter) {
                 Point2D worldTarget = rotatedTransform.transform(e.getPoint(), null);
@@ -250,6 +244,20 @@ public final class LayerViewerControls implements ViewerControl {
         }
         this.previousPoint.setLocation(x, y);
         this.refreshCursorPosition(e);
+    }
+
+    private void publishAngleRotation(MouseEvent event) {
+        LayerPainter selected = this.parentViewer.getSelectedLayer();
+        AffineTransform rotatedTransform = StaticController.getScreenToWorld();
+        if (selected instanceof ShipPainter) {
+            Point2D angleRotateTarget = event.getPoint();
+            if (ControlPredicates.isRotationRoundingEnabled()) {
+                angleRotateTarget = this.getAdjustedCursor();
+            }
+            Point2D worldTarget = rotatedTransform.transform(angleRotateTarget, null);
+            EventBus.publish(new SlotAngleChangeQueued(worldTarget));
+            EventBus.publish(new EngineAngleChangeQueued(worldTarget));
+        }
     }
 
     private void tryRadiusDrag(MouseEvent e) {
@@ -270,6 +278,9 @@ public final class LayerViewerControls implements ViewerControl {
         this.parentViewer.setRepaintQueued();
         if (ControlPredicates.getSelectionMode() == PointSelectionMode.CLOSEST) {
             EventBus.publish(new PointSelectQueued(null));
+        }
+        if (ControlPredicates.changeAnglePredicate.test(e)) {
+            publishAngleRotation(e);
         }
         this.refreshCursorPosition(e);
     }

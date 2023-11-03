@@ -328,7 +328,7 @@ public final class ViewerLayersPanel extends SortableTabbedPane {
             printLayer.setIcon(FontIcon.of(BoxiconsRegular.IMAGE_ADD, 16));
 
             printLayer.addActionListener(event -> {
-                var chooser = FileUtilities.getImageSaver();
+                var chooser = FileUtilities.getImageChooser();
 
                 SpinnerNumberModel widthModel = new SpinnerNumberModel(1000.0d,
                         100.0d, 4000.0d, 1.0d);

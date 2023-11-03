@@ -10,6 +10,7 @@ import oth.shipeditor.components.viewer.entities.weapon.WeaponSlotPoint;
 import oth.shipeditor.components.viewer.layers.weapon.WeaponPainter;
 import oth.shipeditor.components.viewer.painters.points.ship.*;
 import oth.shipeditor.components.viewer.painters.points.ship.features.InstalledFeature;
+import oth.shipeditor.persistence.SettingsManager;
 import oth.shipeditor.representation.EngineSlot;
 import oth.shipeditor.representation.EngineStyle;
 import oth.shipeditor.representation.GameDataRepository;
@@ -223,8 +224,10 @@ public final class ShipPainterInitialization {
                 feature.setContainedInBuiltIns(true);
                 runtimeBuiltIns.put(slotID, feature);
             } else {
-                String message = "Weapon entry for initialized ship (" + shipPainter.getBaseHullId() + ") not found: " + weaponID;
-                Errors.showFileError(message, new NoSuchElementException(message));
+                if (SettingsManager.areFileErrorPopupsEnabled()) {
+                    String message = "Weapon entry for initialized ship (" + shipPainter.getBaseHullId() + ") not found: " + weaponID;
+                    Errors.showFileError(message, new NoSuchElementException(message));
+                }
             }
 
         });

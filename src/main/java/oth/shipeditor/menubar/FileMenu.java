@@ -3,10 +3,18 @@ package oth.shipeditor.menubar;
 import lombok.extern.log4j.Log4j2;
 import org.kordamp.ikonli.boxicons.BoxiconsRegular;
 import org.kordamp.ikonli.fluentui.FluentUiRegularAL;
+import org.kordamp.ikonli.fluentui.FluentUiRegularMZ;
 import org.kordamp.ikonli.swing.FontIcon;
+import oth.shipeditor.parsing.FileUtilities;
+import oth.shipeditor.parsing.JsonProcessor;
 import oth.shipeditor.parsing.loading.FileLoading;
+import oth.shipeditor.utility.Utility;
 
 import javax.swing.*;
+import java.io.File;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.nio.charset.StandardCharsets;
 
 /**
  * @author Ontheheavens
@@ -28,6 +36,10 @@ class FileMenu extends JMenu {
         loadHullAsLayer.setIcon(FontIcon.of(BoxiconsRegular.LAYER, 16));
         loadHullAsLayer.setText("Load ship file as layer");
         this.add(loadHullAsLayer);
+
+        JMenuItem jsonCorrector = FileMenu.getJSONCorrector();
+        jsonCorrector.setIcon(FontIcon.of(FluentUiRegularMZ.TEXT_GRAMMAR_OPTIONS_20, 16));
+        this.add(jsonCorrector);
     }
 
     private static JMenu createOpenSubmenu() {
@@ -45,6 +57,32 @@ class FileMenu extends JMenu {
         newSubmenu.add(openShipData);
 
         return newSubmenu;
+    }
+
+    private static JMenuItem getJSONCorrector() {
+        JMenuItem jsonCorrector = new JMenuItem("Correct non-conforming JSON");
+        jsonCorrector.setToolTipText("Fixes semantically incorrect JSON, then saves it to the same location");
+        jsonCorrector.addActionListener(e -> {
+            JFileChooser fileChooser = FileUtilities.getFileChooser();
+            int returnVal = fileChooser.showOpenDialog(null);
+            File currentDirectory = fileChooser.getCurrentDirectory();
+            FileUtilities.lastDirectory = currentDirectory;
+            if (returnVal == JFileChooser.APPROVE_OPTION) {
+                File file = fileChooser.getSelectedFile();
+
+                String result = JsonProcessor.straightenMalformed(file);
+
+                String fixedFileName = Utility.getFilenameWithoutExtension(file.getName()) + "_corrected.json";
+
+                String path = currentDirectory.getPath();
+                String targetFilePath = path + "\\" + fixedFileName;
+                try (PrintWriter out = new PrintWriter(targetFilePath, StandardCharsets.UTF_8)) {
+                    out.println(result);
+                } catch (IOException ex) {
+                    throw new RuntimeException(ex);
+                }
+            }
+        }); return jsonCorrector;
     }
 
 }
