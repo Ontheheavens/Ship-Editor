@@ -2,6 +2,8 @@ package oth.shipeditor.components;
 
 import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
+import org.kordamp.ikonli.fluentui.FluentUiRegularAL;
+import org.kordamp.ikonli.swing.FontIcon;
 import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.components.SelectShipDataEntry;
 import oth.shipeditor.communication.events.components.SelectWeaponDataEntry;
@@ -9,6 +11,8 @@ import oth.shipeditor.components.layering.ViewerLayersPanel;
 import oth.shipeditor.components.viewer.LayerViewer;
 import oth.shipeditor.components.viewer.PrimaryViewer;
 import oth.shipeditor.parsing.loading.FileLoading;
+import oth.shipeditor.persistence.Settings;
+import oth.shipeditor.persistence.SettingsManager;
 
 import javax.swing.*;
 import java.awt.*;
@@ -103,10 +107,21 @@ public final class WindowContentPanes {
                 int tabIndex = westTabsPane.indexAtLocation(e.getX(), e.getY());
                 if (tabIndex == 0) {
                     JPopupMenu menu = new JPopupMenu();
-                    JMenuItem reloadAllGameData = new JMenuItem("Reload all game data");
-                    reloadAllGameData.addActionListener(event -> FileLoading.loadGameData());
 
+                    JMenuItem reloadAllGameData = new JMenuItem("Reload all game data");
+                    reloadAllGameData.setIcon(FontIcon.of(FluentUiRegularAL.ARROW_DOWNLOAD_20, 16));
+                    reloadAllGameData.addActionListener(event -> FileLoading.loadGameData());
                     menu.add(reloadAllGameData);
+
+                    JMenuItem toggleFileErrorPopups = new JCheckBoxMenuItem("Enable file error pop-ups");
+                    toggleFileErrorPopups.setSelected(SettingsManager.areFileErrorPopupsEnabled());
+                    toggleFileErrorPopups.setIcon(FontIcon.of(FluentUiRegularAL.DOCUMENT_ERROR_20, 16));
+                    Settings settings = SettingsManager.getSettings();
+                    toggleFileErrorPopups.addActionListener(event ->
+                            settings.setShowLoadingErrors(toggleFileErrorPopups.isSelected())
+                    );
+                    menu.add(toggleFileErrorPopups);
+
                     menu.show(westTabsPane, e.getPoint().x, e.getPoint().y);
                 }
             }
