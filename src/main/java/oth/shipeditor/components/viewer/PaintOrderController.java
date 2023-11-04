@@ -73,8 +73,10 @@ public class PaintOrderController implements Painter {
             if (backgroundImage == null) {
                 backgroundImage = PaintOrderController.createCheckerboardImage();
             }
-            g.drawImage(backgroundImage, 0, 0, (int) w, (int) h,
-                    0, 0, (int) w, (int) h, null);
+            int width = (int) w;
+            int height = (int) h;
+            g.drawImage(backgroundImage, 0, 0, width, height,
+                    0, 0, width, height, null);
         }
 
         PaintOrderController.paintIfPresent(g, worldToScreen, w, h, guidesPainters.getAxesPaint());
@@ -136,8 +138,8 @@ public class PaintOrderController implements Painter {
         BufferedImage image = new BufferedImage(imageWidth, imageHeight, BufferedImage.TYPE_INT_ARGB);
         Graphics2D g2d = image.createGraphics();
 
-        int rows = imageWidth / 20;
-        int cols = imageHeight / 20;
+        int rows = imageWidth / cellSize;
+        int cols = imageHeight / cellSize;
 
         for (int row = 0; row < rows; row++) {
             for (int col = 0; col < cols; col++) {

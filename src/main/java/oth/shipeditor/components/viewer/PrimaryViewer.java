@@ -36,7 +36,6 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Point2D;
-import java.awt.image.BufferedImage;
 import java.io.File;
 import java.util.List;
 import java.util.Locale;
@@ -66,6 +65,8 @@ public final class PrimaryViewer extends Viewer implements LayerViewer {
 
         this.layerManager = new LayerManager();
         this.layerManager.initListeners();
+
+        this.setMaintainAspectRatio(false);
     }
 
     @SuppressWarnings("OverlyComplexAnonymousInnerClass")
