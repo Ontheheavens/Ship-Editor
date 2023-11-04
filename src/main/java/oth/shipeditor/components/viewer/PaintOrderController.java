@@ -10,6 +10,7 @@ import oth.shipeditor.components.viewer.painters.GuidesPainters;
 import oth.shipeditor.components.viewer.painters.HotkeyHelpPainter;
 import oth.shipeditor.components.viewer.painters.points.AbstractPointPainter;
 import oth.shipeditor.components.viewer.painters.points.ship.MarkPointsPainter;
+import oth.shipeditor.utility.Utility;
 
 import javax.swing.*;
 import java.awt.*;
@@ -44,8 +45,6 @@ public class PaintOrderController implements Painter {
     @Setter
     private boolean repaintQueued;
 
-    private int framesDrawn;
-
     PaintOrderController(PrimaryViewer viewer) {
         this.parent = viewer;
 
@@ -56,7 +55,6 @@ public class PaintOrderController implements Painter {
         Timer repaintTimer = new Timer(12, e -> {
             if (repaintQueued) {
                 repaintViewer();
-                framesDrawn++;
             }
         });
         repaintTimer.setRepeats(true);
@@ -75,8 +73,14 @@ public class PaintOrderController implements Painter {
             }
             int width = (int) w;
             int height = (int) h;
+
+            float alpha = 0.5f;
+            Composite old = Utility.setAlphaComposite(g, alpha);
+
             g.drawImage(backgroundImage, 0, 0, width, height,
                     0, 0, width, height, null);
+
+            g.setComposite(old);
         }
 
         PaintOrderController.paintIfPresent(g, worldToScreen, w, h, guidesPainters.getAxesPaint());
@@ -92,8 +96,6 @@ public class PaintOrderController implements Painter {
         PaintOrderController.paintIfPresent(g, worldToScreen, w, h, miscPointsPainter);
 
         PaintOrderController.paintIfPresent(g, worldToScreen, w, h, hotkeyPainter);
-
-        g.drawString(String.valueOf(framesDrawn), 10, 20);
     }
 
     private static void paintIfPresent(Graphics2D g, AffineTransform worldToScreen, double w, double h, Painter painter) {

@@ -218,7 +218,7 @@ public final class ColorUtilities {
         return ColorUtilities.imageToBufferedImage(transparent);
     }
 
-    public static Image makeColorTransparent(BufferedImage image,  Color color) {
+    private static Image makeColorTransparent(BufferedImage image, Color color) {
         ImageFilter filter = new RGBImageFilter() {
             final int markerRGB = color.getRGB() | 0xFF000000;
 
@@ -235,7 +235,7 @@ public final class ColorUtilities {
         return Toolkit.getDefaultToolkit().createImage(imageProducer);
     }
 
-    public static BufferedImage imageToBufferedImage(Image image) {
+    private static BufferedImage imageToBufferedImage(Image image) {
         BufferedImage bufferedImage = new BufferedImage(image.getWidth(null),
                 image.getHeight(null), BufferedImage.TYPE_INT_ARGB);
         Graphics2D g2 = bufferedImage.createGraphics();

@@ -148,10 +148,19 @@ public final class WindowContentPanes {
                 reloadAllGameData.addActionListener(event -> FileLoading.loadGameData());
                 menu.add(reloadAllGameData);
 
+                Settings settings = SettingsManager.getSettings();
+
+                JMenuItem autoLoadData = new JCheckBoxMenuItem("Auto-load data at start");
+                autoLoadData.setSelected(SettingsManager.isDataAutoloadEnabled());
+                autoLoadData.setIcon(FontIcon.of(FluentUiRegularAL.DOCUMENT_AUTOSAVE_24, 16));
+                autoLoadData.addActionListener(event ->
+                        settings.setLoadDataAtStart(autoLoadData.isSelected())
+                );
+                menu.add(autoLoadData);
+
                 JMenuItem toggleFileErrorPopups = new JCheckBoxMenuItem("Enable file error pop-ups");
                 toggleFileErrorPopups.setSelected(SettingsManager.areFileErrorPopupsEnabled());
                 toggleFileErrorPopups.setIcon(FontIcon.of(FluentUiRegularAL.DOCUMENT_ERROR_20, 16));
-                Settings settings = SettingsManager.getSettings();
                 toggleFileErrorPopups.addActionListener(event ->
                         settings.setShowLoadingErrors(toggleFileErrorPopups.isSelected())
                 );

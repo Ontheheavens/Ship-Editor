@@ -26,6 +26,7 @@ import oth.shipeditor.representation.weapon.WeaponSpecFile;
 import oth.shipeditor.utility.Errors;
 import oth.shipeditor.utility.graphics.Sprite;
 import oth.shipeditor.utility.overseers.ImageCache;
+import oth.shipeditor.utility.overseers.StaticController;
 import oth.shipeditor.utility.text.StringConstants;
 import oth.shipeditor.utility.text.StringValues;
 
@@ -83,14 +84,9 @@ public final class FileLoading {
      */
     public static CompletableFuture<List<Runnable>> loadGameData() {
         EventBus.publish(new LoadingActionFired(true));
-        Collection<DataLoadingAction> loadActions = new ArrayList<>();
-        loadActions.add(loadShips);
-        loadActions.add(loadHullmods);
-        loadActions.add(loadHullStyles);
-        loadActions.add(loadEngineStyles);
-        loadActions.add(loadShipSystems);
-        loadActions.add(loadWings);
-        loadActions.add(loadWeapons);
+
+        List<DataLoadingAction> loadActions = List.of(loadShips, loadHullmods, loadHullStyles,
+                loadEngineStyles, loadShipSystems, loadWings, loadWeapons);
 
         List<CompletableFuture<Runnable>> futures = new ArrayList<>();
         for (DataLoadingAction action : loadActions) {
@@ -104,7 +100,10 @@ public final class FileLoading {
         );
 
         allResults.thenAccept(runnables -> runnables.forEach(Runnable::run));
-        allResults.thenRun(() -> EventBus.publish(new LoadingActionFired(false)));
+        allResults.thenRun(() -> {
+            EventBus.publish(new LoadingActionFired(false));
+            StaticController.reselectCurrentLayer();
+        });
 
         return allResults;
     }

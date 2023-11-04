@@ -88,6 +88,10 @@ public final class SettingsManager {
         return settings.showLoadingErrors;
     }
 
+    public static boolean isDataAutoloadEnabled() {
+        return settings.loadDataAtStart;
+    }
+
     static File getSettingsPath() {
         if (settingsFilePath != null) {
             return settingsFilePath.toFile();
@@ -155,6 +159,5 @@ public final class SettingsManager {
         }
         SettingsManager.updateFileFromRuntime();
     }
-
 
 }

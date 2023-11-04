@@ -15,6 +15,7 @@ import oth.shipeditor.components.viewer.entities.BaseWorldPoint;
 import oth.shipeditor.components.viewer.painters.points.AbstractPointPainter;
 import oth.shipeditor.undo.EditDispatch;
 import oth.shipeditor.undo.UndoOverseer;
+import oth.shipeditor.utility.Utility;
 import oth.shipeditor.utility.graphics.Sprite;
 import oth.shipeditor.utility.overseers.StaticController;
 
@@ -265,12 +266,12 @@ public abstract class LayerPainter implements Painter {
         if (!shouldDrawPainter) return;
         AffineTransform oldAT = g.getTransform();
         g.transform(worldToScreen);
-        int rule = AlphaComposite.SRC_OVER;
+
         float alpha = this.getSpriteOpacity();
-        Composite old = g.getComposite();
-        Composite opacity = AlphaComposite.getInstance(rule, alpha) ;
-        g.setComposite(opacity);
+        Composite old = Utility.setAlphaComposite(g, alpha);
+
         this.paintContent(g, worldToScreen, w, h);
+
         g.setComposite(old);
         g.setTransform(oldAT);
     }
