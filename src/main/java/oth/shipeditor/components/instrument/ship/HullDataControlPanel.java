@@ -59,6 +59,8 @@ public class HullDataControlPanel extends JPanel {
         addStyleSelector();
         addCoversColorChooser();
         addSpriteNameLabel();
+
+        clearData();
     }
 
     private void addHullNamePanel() {
