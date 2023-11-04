@@ -5,6 +5,7 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
 import oth.shipeditor.PrimaryWindow;
+import oth.shipeditor.components.datafiles.entities.CSVEntry;
 import oth.shipeditor.parsing.FileUtilities;
 import oth.shipeditor.representation.GameDataRepository;
 
@@ -16,6 +17,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Stream;
 
 /**
@@ -34,8 +36,15 @@ public final class SettingsManager {
     @Getter
     private static Path applicationDirectory;
 
+    @Getter @Setter
+    private static String coreFolderName;
+
+    private static Path settingsFilePath;
+
     @Getter
-    private static final String projectVersion = "0.7";
+    private static final String projectVersion = "0.7.2";
+
+    private static GameDataPackage corePackage;
 
     private SettingsManager() {}
 
@@ -73,19 +82,24 @@ public final class SettingsManager {
     }
 
     static File getSettingsPath() {
-        Path workingDirectory = Paths.get("").toAbsolutePath();
-        log.info("Default working directory: {}", workingDirectory);
-        if (!workingDirectory.endsWith(PrimaryWindow.SHIP_EDITOR)) {
-            log.error("Error while initializing settings: default directory has wrong filename.");
+        if (settingsFilePath != null) {
+            return settingsFilePath.toFile();
+        } else {
+            Path workingDirectory = Paths.get("").toAbsolutePath();
+            log.info("Default working directory: {}", workingDirectory);
+            if (!workingDirectory.endsWith(PrimaryWindow.SHIP_EDITOR)) {
+                log.error("Error while initializing settings: default directory has wrong filename.");
+            }
+            Path settingsPath = workingDirectory.resolve("ship_editor_settings.json");
+
+            applicationDirectory = settingsPath.getParent();
+            settingsFilePath = settingsPath;
+
+            return settingsPath.toFile();
         }
-        Path settingsPath = workingDirectory.resolve("ship_editor_settings.json");
-
-        applicationDirectory = settingsPath.getParent();
-
-        return settingsPath.toFile();
     }
 
-    static void updateFileFromRuntime() {
+    public static void updateFileFromRuntime() {
         if (SettingsManager.settings == null) return;
         log.info("Updating settings: getting path and mapper...");
         ObjectMapper mapper = SettingsManager.getMapperForSettingsFile();
@@ -101,5 +115,39 @@ public final class SettingsManager {
             throw new UncheckedIOException("Failed to write settings file!", e);
         }
     }
+
+    public static boolean isCoreFolder(GameDataPackage dataPackage) {
+        String packageFolderName = dataPackage.getFolderName();
+        return SettingsManager.isCoreFolder(packageFolderName);
+    }
+
+    public static boolean isCoreFolder(Path directory) {
+        String folderName = directory.getFileName().toString();
+        return SettingsManager.isCoreFolder(folderName);
+    }
+
+    public static boolean isCoreFolder(String folderName) {
+        return folderName.equals(SettingsManager.getCoreFolderName());
+    }
+
+    @SuppressWarnings("NonThreadSafeLazyInitialization")
+    public static GameDataPackage getCorePackage() {
+        String corePackageName = SettingsManager.getCoreFolderName();
+        if (corePackage == null) {
+            corePackage = new GameDataPackage(corePackageName, false, false);
+        }
+        return corePackage;
+    }
+
+    public static <T extends CSVEntry> void announcePackages(Map<Path, List<T>> packages) {
+        for (Map.Entry<Path, List<T>> entry : packages.entrySet()) {
+            Path path = entry.getKey();
+            if (!SettingsManager.isCoreFolder(path)) {
+                settings.addDataPackage(path);
+            }
+        }
+        SettingsManager.updateFileFromRuntime();
+    }
+
 
 }

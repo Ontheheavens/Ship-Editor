@@ -9,6 +9,7 @@ import oth.shipeditor.components.viewer.layers.ViewerLayer;
 import oth.shipeditor.components.viewer.layers.ship.ShipLayer;
 import oth.shipeditor.components.viewer.layers.ship.data.ShipHull;
 import oth.shipeditor.parsing.loading.FileLoading;
+import oth.shipeditor.persistence.GameDataPackage;
 import oth.shipeditor.persistence.SettingsManager;
 import oth.shipeditor.representation.GameDataRepository;
 import oth.shipeditor.representation.VariantFile;
@@ -19,6 +20,7 @@ import javax.swing.*;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeCellRenderer;
 import java.awt.*;
+import java.nio.file.Path;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -30,7 +32,7 @@ import java.util.Map;
 public class WingsTreePanel extends CSVDataTreePanel<WingCSVEntry>{
 
     public WingsTreePanel() {
-        super("Wing entries");
+        super("Wing entry packages");
     }
 
     @Override
@@ -57,6 +59,12 @@ public class WingsTreePanel extends CSVDataTreePanel<WingCSVEntry>{
     }
 
     @Override
+    protected Map<Path, List<WingCSVEntry>> getPackageList() {
+        GameDataRepository gameData = SettingsManager.getGameData();
+        return gameData.getWingEntriesByPackage();
+    }
+
+    @Override
     protected void setLoadedStatus() {
         GameDataRepository gameData = SettingsManager.getGameData();
         gameData.setWingDataLoaded(true);
@@ -73,6 +81,13 @@ public class WingsTreePanel extends CSVDataTreePanel<WingCSVEntry>{
                 populateEntries(wingsByPackage);
             }
         });
+    }
+
+    @Override
+    void populateEntries(Map<String, List<WingCSVEntry>> entriesByPackage) {
+        GameDataRepository data = SettingsManager.getGameData();
+        if (!data.isShipDataLoaded()) return;
+        super.populateEntries(entriesByPackage);
     }
 
     @Override
@@ -234,12 +249,12 @@ public class WingsTreePanel extends CSVDataTreePanel<WingCSVEntry>{
 
     @Override
     protected String getTooltipForEntry(Object entry) {
-        if(entry instanceof WingCSVEntry checked) {
+        if (entry instanceof WingCSVEntry checked) {
             return "<html>" +
                     "<p>" + "Wing ID: " + checked.getWingID() + "</p>" +
                     "</html>";
         }
-        return null;
+        return super.getTooltipForEntry(entry);
     }
 
     @Override
@@ -249,14 +264,22 @@ public class WingsTreePanel extends CSVDataTreePanel<WingCSVEntry>{
 
     private static class WingsTreeCellRenderer extends DefaultTreeCellRenderer {
 
-        @SuppressWarnings("ParameterHidesMemberVariable")
+        @SuppressWarnings({"ParameterHidesMemberVariable", "ChainOfInstanceofChecks"})
         @Override
         public Component getTreeCellRendererComponent(JTree tree, Object value, boolean sel,
                                                       boolean expanded, boolean leaf, int row, boolean hasFocus) {
             super.getTreeCellRendererComponent(tree, value, sel, expanded, leaf, row, hasFocus);
             Object object = ((DefaultMutableTreeNode) value).getUserObject();
+            setForeground(Color.BLACK);
             if (object instanceof WingCSVEntry checked && leaf) {
                 setText(checked.getEntryName());
+            } else if (object instanceof GameDataPackage dataPackage) {
+                setText(dataPackage.getFolderName());
+                if (SettingsManager.isCoreFolder(dataPackage)) {
+                    setForeground(Color.RED);
+                } else if (dataPackage.isPinned()) {
+                    setForeground(Color.BLUE);
+                }
             }
 
             return this;

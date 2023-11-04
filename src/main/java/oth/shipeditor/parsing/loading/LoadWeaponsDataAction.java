@@ -5,6 +5,8 @@ import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.files.WeaponTreeReloadQueued;
 import oth.shipeditor.components.datafiles.entities.WeaponCSVEntry;
 import oth.shipeditor.parsing.FileUtilities;
+import oth.shipeditor.persistence.GameDataPackage;
+import oth.shipeditor.persistence.Settings;
 import oth.shipeditor.persistence.SettingsManager;
 import oth.shipeditor.representation.GameDataRepository;
 import oth.shipeditor.representation.weapon.ProjectileSpecFile;
@@ -50,6 +52,12 @@ public class LoadWeaponsDataAction extends DataLoadingAction {
         Map<Path, List<WeaponCSVEntry>> entryListsByPackage = new HashMap<>();
 
         for (Path folder : modsWithWeaponFolder) {
+            Settings settings = SettingsManager.getSettings();
+            GameDataPackage dataPackage = settings.getPackage(folder);
+            if (dataPackage != null && dataPackage.isDisabled()) {
+                continue;
+            }
+
             Map<String, WeaponCSVEntry> weaponsFromPackage = LoadWeaponsDataAction.walkWeaponsFolder(folder);
             allWeapons.putAll(weaponsFromPackage);
             List<WeaponCSVEntry> entries = new ArrayList<>(weaponsFromPackage.values());
@@ -70,6 +78,12 @@ public class LoadWeaponsDataAction extends DataLoadingAction {
 
         Map<String, ProjectileSpecFile> allProjectiles = new HashMap<>();
         for (Path directory : projectileFolders) {
+            Settings settings = SettingsManager.getSettings();
+            GameDataPackage dataPackage = settings.getPackage(directory);
+            if (dataPackage != null && dataPackage.isDisabled()) {
+                continue;
+            }
+
             log.info("Projectile folder found in mod directory: {}", directory);
 
             List<File> projectileFiles = FileLoading.fetchFilesWithExtension(directory, proj);

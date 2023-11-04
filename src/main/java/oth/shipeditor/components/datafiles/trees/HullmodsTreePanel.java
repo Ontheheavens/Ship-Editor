@@ -21,6 +21,7 @@ import oth.shipeditor.utility.overseers.StaticController;
 import javax.swing.*;
 import javax.swing.tree.DefaultMutableTreeNode;
 import java.awt.*;
+import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
@@ -34,7 +35,7 @@ public
 class HullmodsTreePanel extends CSVDataTreePanel<HullmodCSVEntry>{
 
     public HullmodsTreePanel() {
-        super("Hullmod files");
+        super("Hullmod file packages");
     }
 
     @Override
@@ -51,6 +52,12 @@ class HullmodsTreePanel extends CSVDataTreePanel<HullmodCSVEntry>{
     protected Map<String, HullmodCSVEntry> getRepository() {
         GameDataRepository gameData = SettingsManager.getGameData();
         return gameData.getAllHullmodEntries();
+    }
+
+    @Override
+    protected Map<Path, List<HullmodCSVEntry>> getPackageList() {
+        GameDataRepository gameData = SettingsManager.getGameData();
+        return gameData.getHullmodEntriesByPackage();
     }
 
     @Override
@@ -103,12 +110,12 @@ class HullmodsTreePanel extends CSVDataTreePanel<HullmodCSVEntry>{
 
     @Override
     protected String getTooltipForEntry(Object entry) {
-        if(entry instanceof HullmodCSVEntry checked) {
+        if (entry instanceof HullmodCSVEntry checked) {
             return "<html>" +
                     "<p>" + "Hullmod ID: " + checked.getHullmodID() + "</p>" +
                     "</html>";
         }
-        return null;
+        return super.getTooltipForEntry(entry);
     }
 
     @Override

@@ -21,7 +21,7 @@ public class HelpMainPanel extends JPanel {
 
     public HelpMainPanel() {
         this.setLayout(new BorderLayout());
-        articlePanel = new ArticleTreePanel();
+        articlePanel = new ArticleTreePanel(this::populateArticles);
 
         this.populateArticles();
 
@@ -32,6 +32,9 @@ public class HelpMainPanel extends JPanel {
     }
 
     private void populateArticles() {
+        DefaultMutableTreeNode rootNode = articlePanel.getRootNode();
+        rootNode.removeAllChildren();
+
         File articlesRoot = SettingsManager.getApplicationDirectory().resolve("help").toFile();
 
         if (!articlesRoot.exists() || !articlesRoot.isDirectory()) return;

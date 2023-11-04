@@ -3,6 +3,9 @@ package oth.shipeditor.parsing.loading;
 import lombok.extern.log4j.Log4j2;
 import oth.shipeditor.components.datafiles.entities.CSVEntry;
 import oth.shipeditor.parsing.FileUtilities;
+import oth.shipeditor.persistence.GameDataPackage;
+import oth.shipeditor.persistence.Settings;
+import oth.shipeditor.persistence.SettingsManager;
 
 import java.io.File;
 import java.nio.file.Path;
@@ -30,6 +33,12 @@ abstract class LoadCSVDataAction<T extends CSVEntry> extends DataLoadingAction {
         Map<Path, File> tableWithPackage = FileUtilities.getFileFromPackages(targetFile);
         Map<String, List<T>> entriesByPackage = new HashMap<>();
         for (Map.Entry<Path, File> folder : tableWithPackage.entrySet()) {
+            Settings settings = SettingsManager.getSettings();
+            GameDataPackage dataPackage = settings.getPackage(folder.getKey());
+            if (dataPackage != null && dataPackage.isDisabled()) {
+                continue;
+            }
+
             log.info("Loading CSV table from package: {}", folder.getKey());
             List<T> systemsList = loadPackage(folder.getKey(), folder.getValue());
             entriesByPackage.putIfAbsent(String.valueOf(folder.getKey()), systemsList);

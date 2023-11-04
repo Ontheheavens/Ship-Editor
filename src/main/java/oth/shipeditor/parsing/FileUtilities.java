@@ -25,6 +25,8 @@ import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.*;
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.FileSystem;
+import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.LinkedHashMap;
@@ -201,6 +203,12 @@ public final class FileUtilities {
         }
 
         return false;
+    }
+
+    public static String extractFolderName(String path) {
+        FileSystem fileSystem = FileSystems.getDefault();
+        Path fullPath = fileSystem.getPath(path);
+        return fullPath.getFileName().toString();
     }
 
 }

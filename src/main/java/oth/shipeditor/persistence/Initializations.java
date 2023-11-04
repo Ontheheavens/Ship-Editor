@@ -6,6 +6,7 @@ import lombok.extern.log4j.Log4j2;
 import oth.shipeditor.PrimaryWindow;
 import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.viewer.ViewerBackgroundChanged;
+import oth.shipeditor.parsing.FileUtilities;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
@@ -157,6 +158,10 @@ public final class Initializations {
                 log.info("Reading existing settings file...");
                 loaded = mapper.readValue(settingsFile, Settings.class);
                 if (loaded != null) {
+                    String coreFolder = loaded.getCoreFolderPath();
+                    if (coreFolder != null && !coreFolder.isEmpty()) {
+                        SettingsManager.setCoreFolderName(FileUtilities.extractFolderName(coreFolder));
+                    }
                     log.info("Settings read successful.");
                 }
             } else {
@@ -173,6 +178,11 @@ public final class Initializations {
             SettingsManager.writeSettingsToFile(mapper, settingsFile, loaded);
         }
         SettingsManager.setSettings(loaded);
+        SettingsManager.getCorePackage();
+    }
+
+    private static void createDefaultSettings() {
+
     }
 
     @SuppressWarnings({"ProhibitedExceptionThrown", "IfStatementWithNegatedCondition"})
@@ -218,12 +228,14 @@ public final class Initializations {
         try (var stream = Files.walk(filePath, 5)) {
             stream.filter(Files::isDirectory).forEach(path -> {
                 String folderName = path.getFileName().toString();
+                String coreFolderPath = path.toString();
                 if (Initializations.isCoreFolder(path)) {
-                    settings.setCoreFolderPath(path.toString());
+                    settings.setCoreFolderPath(coreFolderPath);
+                    SettingsManager.setCoreFolderName(FileUtilities.extractFolderName(coreFolderPath));
                     folderHasCore = true;
                 }
                 if ("mods".equals(folderName)) {
-                    settings.setModFolderPath(path.toString());
+                    settings.setModFolderPath(coreFolderPath);
                     folderHasMods = true;
                 }
             });

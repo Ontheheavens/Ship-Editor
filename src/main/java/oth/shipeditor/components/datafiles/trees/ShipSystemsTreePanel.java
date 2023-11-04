@@ -10,6 +10,7 @@ import oth.shipeditor.representation.GameDataRepository;
 
 import javax.swing.*;
 import javax.swing.tree.DefaultMutableTreeNode;
+import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
 
@@ -22,7 +23,7 @@ public
 class ShipSystemsTreePanel extends CSVDataTreePanel<ShipSystemCSVEntry>{
 
     public ShipSystemsTreePanel() {
-        super("Shipsystem files");
+        super("Shipsystem file packages");
     }
 
     @Override
@@ -39,6 +40,12 @@ class ShipSystemsTreePanel extends CSVDataTreePanel<ShipSystemCSVEntry>{
     protected Map<String, ShipSystemCSVEntry> getRepository() {
         GameDataRepository gameData = SettingsManager.getGameData();
         return gameData.getAllShipsystemEntries();
+    }
+
+    @Override
+    protected Map<Path, List<ShipSystemCSVEntry>> getPackageList() {
+        GameDataRepository gameData = SettingsManager.getGameData();
+        return gameData.getShipsystemEntriesByPackage();
     }
 
     @Override
@@ -79,12 +86,12 @@ class ShipSystemsTreePanel extends CSVDataTreePanel<ShipSystemCSVEntry>{
 
     @Override
     protected String getTooltipForEntry(Object entry) {
-        if(entry instanceof ShipSystemCSVEntry checked) {
+        if (entry instanceof ShipSystemCSVEntry checked) {
             return "<html>" +
                     "<p>" + "Shipsystem ID: " + checked.getShipSystemID() + "</p>" +
                     "</html>";
         }
-        return null;
+        return super.getTooltipForEntry(entry);
     }
 
     @Override

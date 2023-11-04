@@ -10,6 +10,9 @@ import oth.shipeditor.components.datafiles.OpenDataTarget;
 import oth.shipeditor.components.datafiles.entities.ShipCSVEntry;
 import oth.shipeditor.parsing.FileUtilities;
 import oth.shipeditor.parsing.loading.FileLoading;
+import oth.shipeditor.persistence.GameDataPackage;
+import oth.shipeditor.persistence.Settings;
+import oth.shipeditor.persistence.SettingsManager;
 import oth.shipeditor.representation.HullSize;
 import oth.shipeditor.representation.HullSpecFile;
 import oth.shipeditor.representation.SkinSpecFile;
@@ -47,18 +50,21 @@ class HullsTreePanel extends DataTreePanel {
     private boolean filtersOpened;
 
     public HullsTreePanel() {
-        super("Hull files");
+        super("Hull file packages");
     }
 
+    @SuppressWarnings("ChainOfInstanceofChecks")
     @Override
     protected String getTooltipForEntry(Object entry) {
-        if(entry instanceof ShipCSVEntry checked) {
-            HullSpecFile hullSpecFileFile = checked.getHullSpecFile();
+        if (entry instanceof ShipCSVEntry shipEntry) {
+            HullSpecFile hullSpecFileFile = shipEntry.getHullSpecFile();
             return "<html>" +
                     "<p>" + "Hull size: " + hullSpecFileFile.getHullSize() + "</p>" +
-                    "<p>" + "Hull ID: " + checked.getHullID() + "</p>" +
+                    "<p>" + "Hull ID: " + shipEntry.getHullID() + "</p>" +
                     "<p>" + "(Double-click to load as layer)" + "</p>" +
                     "</html>";
+        } else if (entry instanceof GameDataPackage dataPackage) {
+            return DataTreePanel.getTooltipForPackage(dataPackage);
         }
         return null;
     }
@@ -98,6 +104,7 @@ class HullsTreePanel extends DataTreePanel {
     }
 
     @SuppressWarnings("WeakerAccess")
+    @Override
     public void reload() {
         JTree tree = getTree();
         DefaultMutableTreeNode rootNode = getRootNode();
@@ -185,16 +192,43 @@ class HullsTreePanel extends DataTreePanel {
         if (shipEntries == null || shipEntries.isEmpty()) return;
 
         for (Map.Entry<Path, List<ShipCSVEntry>> hullFolder : shipEntries.entrySet()) {
-            String packageName = hullFolder.getKey().getFileName().toString();
-            DefaultMutableTreeNode packageRoot = new DefaultMutableTreeNode(packageName);
-
-            for (ShipCSVEntry entry : hullFolder.getValue()) {
-                MutableTreeNode shipNode = new DefaultMutableTreeNode(entry);
-                packageRoot.add(shipNode);
+            Settings settings = SettingsManager.getSettings();
+            GameDataPackage dataPackage = settings.getPackage(hullFolder.getKey());
+            if (dataPackage == null || dataPackage.isDisabled()) {
+                continue;
             }
+
+            DefaultMutableTreeNode packageRoot = HullsTreePanel.createPackageNode(hullFolder);
             DefaultMutableTreeNode rootNode = getRootNode();
             rootNode.add(packageRoot);
         }
+    }
+
+    private static DefaultMutableTreeNode createPackageNode(Map.Entry<Path, List<ShipCSVEntry>> hullFolder) {
+        Path folderPath = hullFolder.getKey();
+        String packageName = folderPath.getFileName().toString();
+
+        Settings settings = SettingsManager.getSettings();
+
+        DefaultMutableTreeNode result;
+        if (SettingsManager.isCoreFolder(folderPath)) {
+            GameDataPackage corePackage = SettingsManager.getCorePackage();
+            result = new DefaultMutableTreeNode(corePackage);
+            for (ShipCSVEntry entry : hullFolder.getValue()) {
+                MutableTreeNode shipNode = new DefaultMutableTreeNode(entry);
+                result.add(shipNode);
+            }
+        } else {
+            GameDataPackage dataPackage = settings.getPackage(packageName);
+            result = new DefaultMutableTreeNode(dataPackage);
+
+            for (ShipCSVEntry entry : hullFolder.getValue()) {
+                MutableTreeNode shipNode = new DefaultMutableTreeNode(entry);
+                result.add(shipNode);
+            }
+        }
+
+        return result;
     }
 
     @Override
@@ -313,12 +347,13 @@ class HullsTreePanel extends DataTreePanel {
 
     private static class HullsTreeCellRenderer extends DefaultTreeCellRenderer {
 
-        @SuppressWarnings("ParameterHidesMemberVariable")
+        @SuppressWarnings({"ParameterHidesMemberVariable", "ChainOfInstanceofChecks"})
         @Override
         public Component getTreeCellRendererComponent(JTree tree, Object value, boolean sel,
                                                       boolean expanded, boolean leaf, int row, boolean hasFocus) {
             super.getTreeCellRendererComponent(tree, value, sel, expanded, leaf, row, hasFocus);
             Object object = ((DefaultMutableTreeNode) value).getUserObject();
+            setForeground(Color.BLACK);
             if (object instanceof ShipCSVEntry checked && leaf) {
                 HullSize hullSize = checked.getSize();
                 switch (hullSize) {
@@ -329,8 +364,14 @@ class HullsTreePanel extends DataTreePanel {
                     case CAPITAL_SHIP -> setIcon(HullSize.CAPITAL_SHIP.getIcon());
                     default -> {}
                 }
+            } else if (object instanceof GameDataPackage dataPackage) {
+                setText(dataPackage.getFolderName());
+                if (SettingsManager.isCoreFolder(dataPackage)) {
+                    setForeground(Color.RED);
+                } else if (dataPackage.isPinned()) {
+                    setForeground(Color.BLUE);
+                }
             }
-
             return this;
         }
 

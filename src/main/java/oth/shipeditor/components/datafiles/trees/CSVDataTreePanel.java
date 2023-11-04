@@ -4,16 +4,21 @@ import lombok.extern.log4j.Log4j2;
 import oth.shipeditor.components.datafiles.OpenDataTarget;
 import oth.shipeditor.components.datafiles.entities.CSVEntry;
 import oth.shipeditor.parsing.FileUtilities;
+import oth.shipeditor.persistence.GameDataPackage;
+import oth.shipeditor.persistence.Settings;
+import oth.shipeditor.persistence.SettingsManager;
 import oth.shipeditor.utility.Utility;
 import oth.shipeditor.utility.components.ComponentUtilities;
 import oth.shipeditor.utility.objects.Pair;
 
 import javax.swing.*;
 import javax.swing.tree.DefaultMutableTreeNode;
+import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.tree.MutableTreeNode;
 import javax.swing.tree.TreePath;
+import java.awt.*;
 import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -32,6 +37,43 @@ public abstract class CSVDataTreePanel<T extends CSVEntry> extends DataTreePanel
 
     protected abstract String getEntryTypeName();
 
+    @Override
+    protected JTree createCustomTree() {
+        JTree custom = super.createCustomTree();
+        custom.setCellRenderer(new CSVDataCellRenderer());
+        return custom;
+    }
+
+    private static class CSVDataCellRenderer extends DefaultTreeCellRenderer {
+
+        @SuppressWarnings("ParameterHidesMemberVariable")
+        @Override
+        public Component getTreeCellRendererComponent(JTree tree, Object value, boolean sel,
+                                                      boolean expanded, boolean leaf, int row, boolean hasFocus) {
+            super.getTreeCellRendererComponent(tree, value, sel, expanded, leaf, row, hasFocus);
+            Object object = ((DefaultMutableTreeNode) value).getUserObject();
+            setForeground(Color.BLACK);
+            if (object instanceof GameDataPackage dataPackage) {
+                setText(dataPackage.getFolderName());
+                if (SettingsManager.isCoreFolder(dataPackage)) {
+                    setForeground(Color.RED);
+                } else if (dataPackage.isPinned()) {
+                    setForeground(Color.BLUE);
+                }
+            }
+            return this;
+        }
+
+    }
+
+    @Override
+    protected String getTooltipForEntry(Object entry) {
+        if (entry instanceof GameDataPackage dataPackage) {
+            return DataTreePanel.getTooltipForPackage(dataPackage);
+        }
+        return null;
+    }
+
     @SuppressWarnings("unused")
     @Override
     protected JPanel createTopPanel() {
@@ -45,6 +87,21 @@ public abstract class CSVDataTreePanel<T extends CSVEntry> extends DataTreePanel
         return singleButtonPanel.getFirst();
     }
 
+    @Override
+    public void reload() {
+        Map<Path, List<T>> packages = getPackageList();
+
+        Map<String, List<T>> convertedEntries = new LinkedHashMap<>();
+
+        for (Map.Entry<Path, List<T>> entry : packages.entrySet()) {
+            Path path = entry.getKey();
+            String keyAsString = path.toString();
+            convertedEntries.put(keyAsString, entry.getValue());
+        }
+
+        populateEntries(convertedEntries);
+    }
+
     void populateEntries(Map<String, List<T>> entriesByPackage) {
         DefaultMutableTreeNode rootNode = getRootNode();
         rootNode.removeAllChildren();
@@ -55,25 +112,55 @@ public abstract class CSVDataTreePanel<T extends CSVEntry> extends DataTreePanel
 
     protected abstract Map<String, T> getRepository();
 
+    protected abstract Map<Path, List<T>> getPackageList();
+
     protected abstract void setLoadedStatus();
 
     protected void loadAllEntries(Map<String, List<T>> entries) {
         Map<String, T> entriesRepository = getRepository();
         for (Map.Entry<String, List<T>> entry : entries.entrySet()) {
-            Path folderPath = Paths.get(entry.getKey(), "");
-            DefaultMutableTreeNode packageRoot = new DefaultMutableTreeNode(folderPath.getFileName().toString());
-
-            List<T> entriesInPackage = entry.getValue();
-            for (T dataEntry : entriesInPackage) {
-                entriesRepository.putIfAbsent(dataEntry.getID(), dataEntry);
-                MutableTreeNode node = new DefaultMutableTreeNode(dataEntry);
-                packageRoot.add(node);
+            Settings settings = SettingsManager.getSettings();
+            String folderName = FileUtilities.extractFolderName(entry.getKey());
+            GameDataPackage dataPackage = settings.getPackage(folderName);
+            if (dataPackage == null || dataPackage.isDisabled()) {
+                continue;
             }
+
+            DefaultMutableTreeNode packageRoot = createPackageNode(entry, entriesRepository);
             DefaultMutableTreeNode rootNode = getRootNode();
             rootNode.add(packageRoot);
         }
         log.info("Total {} {} entries registered.", entriesRepository.size(), getEntryTypeName());
         setLoadedStatus();
+    }
+
+    private DefaultMutableTreeNode createPackageNode(Map.Entry<String, List<T>> entryFolder,
+                                                     Map<String, T> entriesRepository) {
+        String packagePath = entryFolder.getKey();
+        String folderName = FileUtilities.extractFolderName(packagePath);
+        Settings settings = SettingsManager.getSettings();
+
+        DefaultMutableTreeNode result;
+        if (SettingsManager.isCoreFolder(folderName)) {
+            GameDataPackage corePackage = SettingsManager.getCorePackage();
+            result = new DefaultMutableTreeNode(corePackage);
+            for (T entry : entryFolder.getValue()) {
+                MutableTreeNode entryNode = new DefaultMutableTreeNode(entry);
+                entriesRepository.putIfAbsent(entry.getID(), entry);
+                result.add(entryNode);
+            }
+        } else {
+            GameDataPackage dataPackage = settings.getPackage(folderName);
+            result = new DefaultMutableTreeNode(dataPackage);
+
+            for (T entry : entryFolder.getValue()) {
+                MutableTreeNode entryNode = new DefaultMutableTreeNode(entry);
+                entriesRepository.putIfAbsent(entry.getID(), entry);
+                result.add(entryNode);
+            }
+        }
+
+        return result;
     }
 
     @Override

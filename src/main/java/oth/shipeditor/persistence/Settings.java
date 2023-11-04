@@ -9,6 +9,9 @@ import oth.shipeditor.parsing.deserialize.ColorArrayRGBADeserializer;
 import oth.shipeditor.parsing.serialize.ColorArrayRGBASerializer;
 
 import java.awt.*;
+import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @author Ontheheavens
@@ -18,6 +21,9 @@ import java.awt.*;
 public class Settings {
 
     Settings() {}
+
+    @JsonProperty("editorVersion")
+    String editorVersion = "0.7.2";
 
     @JsonProperty("backgroundColor")
     @JsonDeserialize(using = ColorArrayRGBADeserializer.class)
@@ -42,6 +48,9 @@ public class Settings {
 
     @JsonProperty("loadTestFiles")
     boolean loadTestFiles;
+
+    @JsonProperty("dataPackages")
+    private List<GameDataPackage> dataPackages = new ArrayList<>();
 
     public void setBackgroundColor(Color color) {
         if (color != null) {
@@ -80,6 +89,38 @@ public class Settings {
     public void setLoadTestFiles(boolean loadTests) {
         this.loadTestFiles = loadTests;
         SettingsManager.updateFileFromRuntime();
+    }
+
+    void addDataPackage(Path folder) {
+        String folderName = folder.getFileName().toString();
+        addDataPackage(folderName);
+    }
+
+    private void addDataPackage(String folderName) {
+        if (getPackage(folderName) != null) {
+            return;
+        }
+        GameDataPackage dataPackage = new GameDataPackage(folderName, false, false);
+        dataPackages.add(dataPackage);
+    }
+
+    public GameDataPackage getPackage(Path folder) {
+        String folderName = folder.getFileName().toString();
+        return getPackage(folderName);
+    }
+
+    public GameDataPackage getPackage(String folderName) {
+        if (dataPackages == null) return null;
+        if (SettingsManager.isCoreFolder(folderName)) {
+            return SettingsManager.getCorePackage();
+        }
+        for (GameDataPackage gameDataPackage : dataPackages) {
+            String packageFolderName = gameDataPackage.getFolderName();
+            if (packageFolderName.equals(folderName)) {
+                return gameDataPackage;
+            }
+        }
+        return null;
     }
 
 }

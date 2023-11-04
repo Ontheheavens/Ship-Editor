@@ -7,7 +7,10 @@ import oth.shipeditor.communication.events.files.WeaponTreeReloadQueued;
 import oth.shipeditor.components.datafiles.entities.WeaponCSVEntry;
 import oth.shipeditor.components.viewer.layers.ship.FeaturesOverseer;
 import oth.shipeditor.components.viewer.layers.weapon.WeaponSprites;
+import oth.shipeditor.parsing.FileUtilities;
 import oth.shipeditor.parsing.loading.FileLoading;
+import oth.shipeditor.persistence.GameDataPackage;
+import oth.shipeditor.persistence.Settings;
 import oth.shipeditor.persistence.SettingsManager;
 import oth.shipeditor.representation.GameDataRepository;
 import oth.shipeditor.representation.weapon.ProjectileSpecFile;
@@ -32,7 +35,6 @@ import javax.swing.tree.TreePath;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.List;
 import java.util.Map;
 
@@ -50,7 +52,7 @@ public class WeaponsTreePanel extends CSVDataTreePanel<WeaponCSVEntry>{
     private boolean autoExpandNodes;
 
     public WeaponsTreePanel() {
-        super("Weapon files");
+        super("Weapon file packages");
     }
 
     @Override
@@ -70,6 +72,12 @@ public class WeaponsTreePanel extends CSVDataTreePanel<WeaponCSVEntry>{
     }
 
     @Override
+    protected Map<Path, List<WeaponCSVEntry>> getPackageList() {
+        GameDataRepository gameData = SettingsManager.getGameData();
+        return gameData.getWeaponEntriesByPackage();
+    }
+
+    @Override
     protected JTree createCustomTree() {
         JTree custom = super.createCustomTree();
         custom.setCellRenderer(new WeaponsTreeCellRenderer());
@@ -82,15 +90,23 @@ public class WeaponsTreePanel extends CSVDataTreePanel<WeaponCSVEntry>{
      */
     private static class WeaponsTreeCellRenderer extends DefaultTreeCellRenderer {
 
-        @SuppressWarnings("ParameterHidesMemberVariable")
+        @SuppressWarnings({"ParameterHidesMemberVariable", "ChainOfInstanceofChecks"})
         @Override
         public Component getTreeCellRendererComponent(JTree tree, Object value, boolean sel,
                                                       boolean expanded, boolean leaf, int row, boolean hasFocus) {
             super.getTreeCellRendererComponent(tree, value, sel, expanded, leaf, row, hasFocus);
             Object object = ((DefaultMutableTreeNode) value).getUserObject();
+            setForeground(Color.BLACK);
             if (object instanceof WeaponCSVEntry checked && leaf) {
                 WeaponType hullSize = checked.getType();
                 setIcon(ComponentUtilities.createIconFromColor(hullSize.getColor(), 10, 10));
+            } else if (object instanceof GameDataPackage dataPackage) {
+                setText(dataPackage.getFolderName());
+                if (SettingsManager.isCoreFolder(dataPackage)) {
+                    setForeground(Color.RED);
+                } else if (dataPackage.isPinned()) {
+                    setForeground(Color.BLUE);
+                }
             }
             return this;
         }
@@ -125,6 +141,7 @@ public class WeaponsTreePanel extends CSVDataTreePanel<WeaponCSVEntry>{
     }
 
     @SuppressWarnings("WeakerAccess")
+    @Override
     public void reload() {
         Map<String, List<WeaponCSVEntry>> weaponPackageList = WeaponFilterPanel.getFilteredEntries();
         populateEntries(weaponPackageList);
@@ -235,16 +252,34 @@ public class WeaponsTreePanel extends CSVDataTreePanel<WeaponCSVEntry>{
 
         int nodeCount = 0;
 
-        for (Map.Entry<String, List<WeaponCSVEntry>> entry : entries.entrySet()) {
-            Path folderPath = Paths.get(entry.getKey(), "");
-            DefaultMutableTreeNode packageRoot = new DefaultMutableTreeNode(folderPath.getFileName().toString());
-
-            List<WeaponCSVEntry> entriesInPackage = entry.getValue();
-            for (WeaponCSVEntry dataEntry : entriesInPackage) {
-                MutableTreeNode node = new DefaultMutableTreeNode(dataEntry);
-                nodeCount++;
-                packageRoot.add(node);
+        for (Map.Entry<String, List<WeaponCSVEntry>> entryFolder : entries.entrySet()) {
+            Settings settings = SettingsManager.getSettings();
+            String folderName = FileUtilities.extractFolderName(entryFolder.getKey());
+            GameDataPackage dataPackage = settings.getPackage(folderName);
+            if (dataPackage == null || dataPackage.isDisabled()) {
+                continue;
             }
+
+            DefaultMutableTreeNode packageRoot;
+            if (SettingsManager.isCoreFolder(folderName)) {
+                GameDataPackage corePackage = SettingsManager.getCorePackage();
+                packageRoot = new DefaultMutableTreeNode(corePackage);
+                for (WeaponCSVEntry entry : entryFolder.getValue()) {
+                    MutableTreeNode entryNode = new DefaultMutableTreeNode(entry);
+                    packageRoot.add(entryNode);
+                    nodeCount++;
+                }
+            } else {
+                GameDataPackage modPackage = settings.getPackage(folderName);
+                packageRoot = new DefaultMutableTreeNode(modPackage);
+
+                for (WeaponCSVEntry entry : entryFolder.getValue()) {
+                    MutableTreeNode entryNode = new DefaultMutableTreeNode(entry);
+                    packageRoot.add(entryNode);
+                    nodeCount++;
+                }
+            }
+
             DefaultMutableTreeNode rootNode = getRootNode();
             rootNode.add(packageRoot);
         }
@@ -391,7 +426,7 @@ public class WeaponsTreePanel extends CSVDataTreePanel<WeaponCSVEntry>{
 
     @Override
     protected String getTooltipForEntry(Object entry) {
-        if(entry instanceof WeaponCSVEntry checked) {
+        if (entry instanceof WeaponCSVEntry checked) {
             String weaponID = StringValues.WEAPON_ID + checked.getWeaponID();
             WeaponType weaponType = checked.getType();
             String type =  "Weapon type: " + weaponType.getDisplayName();
@@ -399,7 +434,7 @@ public class WeaponsTreePanel extends CSVDataTreePanel<WeaponCSVEntry>{
             String size =  "Weapon size: " + weaponSize.getDisplayName();
             return Utility.getWithLinebreaks(weaponID, type, size);
         }
-        return null;
+        return super.getTooltipForEntry(entry);
     }
 
     @Override

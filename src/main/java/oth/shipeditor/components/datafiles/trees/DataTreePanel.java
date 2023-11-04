@@ -7,6 +7,8 @@ import oth.shipeditor.components.datafiles.entities.CSVEntry;
 import oth.shipeditor.components.viewer.layers.ship.FeaturesOverseer;
 import oth.shipeditor.components.viewer.layers.ship.ShipLayer;
 import oth.shipeditor.components.viewer.layers.ship.ShipPainter;
+import oth.shipeditor.persistence.GameDataPackage;
+import oth.shipeditor.persistence.SettingsManager;
 import oth.shipeditor.representation.VariantFile;
 import oth.shipeditor.utility.components.ComponentUtilities;
 import oth.shipeditor.utility.components.MouseoverLabelListener;
@@ -301,19 +303,63 @@ public abstract class DataTreePanel extends JPanel {
         tree.scrollPathToVisible(paths[0]);
     }
 
+    public abstract void reload();
+
     void sortAndExpandTree() {
         Enumeration<TreeNode> children = rootNode.children();
+        List<DefaultMutableTreeNode> nodeList = new ArrayList<>();
+
         while (children.hasMoreElements()) {
             TreeNode folder = children.nextElement();
+            if (folder instanceof DefaultMutableTreeNode packageNode) {
+                nodeList.add(packageNode);
+            }
+        }
+
+        nodeList.sort((firstNode, secondNode) -> {
+            Object firstNodeUserObject = firstNode.getUserObject();
+            GameDataPackage firstDataPackage = (GameDataPackage) firstNodeUserObject;
+            Object secondNodeUserObject = secondNode.getUserObject();
+            GameDataPackage secondDataPackage = (GameDataPackage) secondNodeUserObject;
+
+            if (SettingsManager.isCoreFolder(firstDataPackage)) {
+                return -1;
+            }
+            else if (SettingsManager.isCoreFolder(secondDataPackage)) {
+                return 1;
+            }
+
+            if (firstDataPackage.isPinned() && !secondDataPackage.isPinned()) {
+                return -1;
+            }
+            else if (!firstDataPackage.isPinned() && secondDataPackage.isPinned()) {
+                return 1;
+            }
+
+            String name1 = firstNode.toString();
+            String name2 = secondNode.toString();
+            return name1.compareToIgnoreCase(name2);
+        });
+
+        rootNode.removeAllChildren();
+        for (DefaultMutableTreeNode packageNode : nodeList) {
+            rootNode.add(packageNode);
+        }
+
+        Enumeration<TreeNode> updatedPackages = rootNode.children();
+        while (updatedPackages.hasMoreElements()) {
+            TreeNode folder = updatedPackages.nextElement();
             DataTreePanel.sortFolderNode(folder, (node1, node2) -> {
                 String name1 = node1.toString();
                 String name2 = node2.toString();
                 return name1.compareToIgnoreCase(name2);
             });
         }
+
         if (tree.getModel() instanceof DefaultTreeModel checked) {
             checked.nodeStructureChanged(rootNode);
         }
+
         tree.expandPath(new TreePath(rootNode));
         tree.repaint();
     }
@@ -333,6 +379,23 @@ public abstract class DataTreePanel extends JPanel {
         for (MutableTreeNode node : nodeList) {
             casted.add(node);
         }
+    }
+
+    static String getTooltipForPackage(GameDataPackage dataPackage) {
+        String corePackageLine = "";
+        boolean isCoreFolder = SettingsManager.isCoreFolder(dataPackage);
+        if (isCoreFolder) {
+            corePackageLine = "<p>" + "Is a core package" + "</p>";
+        }
+        String pinnedPackageLine = "";
+        boolean isPinned = dataPackage.isPinned();
+        if (isPinned) {
+            pinnedPackageLine = "<p>" + "Is pinned" + "</p>";
+        }
+        if (isCoreFolder || isPinned) {
+            return "<html>" + corePackageLine + pinnedPackageLine + "</html>";
+        }
+        return null;
     }
 
     void createRightPanelDataTable(Map<String, String> data) {
@@ -408,9 +471,40 @@ public abstract class DataTreePanel extends JPanel {
 
         private void showMenuIfMatching(JPopupMenu contextMenu, TreePath pathForLocation, MouseEvent e) {
             Class<?> entryClass = getEntryClass();
-            if (entryClass.isInstance(cachedSelectForMenu.getUserObject())) {
+            Object userObject = cachedSelectForMenu.getUserObject();
+            if (entryClass.isInstance(userObject)) {
                 tree.setSelectionPath(pathForLocation);
                 contextMenu.show(tree, e.getPoint().x, e.getPoint().y);
+            } else if (userObject instanceof GameDataPackage dataPackage && !SettingsManager.isCoreFolder(dataPackage)) {
+                JPopupMenu menu = new JPopupMenu();
+
+                if (dataPackage.isPinned()) {
+                    JMenuItem unpinPackage = new JMenuItem("Unpin package");
+                    unpinPackage.addActionListener(event -> {
+                        dataPackage.setPinned(false);
+                        SettingsManager.updateFileFromRuntime();
+                        reload();
+                    });
+                    menu.add(unpinPackage);
+                } else {
+                    JMenuItem pinPackage = new JMenuItem("Pin package");
+                    pinPackage.addActionListener(event -> {
+                        dataPackage.setPinned(true);
+                        SettingsManager.updateFileFromRuntime();
+                        reload();
+                    });
+                    menu.add(pinPackage);
+                }
+
+                JMenuItem disablePackage = new JMenuItem("Disable package");
+                disablePackage.addActionListener(event -> {
+                    dataPackage.setDisabled(true);
+                    SettingsManager.updateFileFromRuntime();
+                    reload();
+                });
+                menu.add(disablePackage);
+
+                menu.show(tree, e.getPoint().x, e.getPoint().y);
             }
         }
 

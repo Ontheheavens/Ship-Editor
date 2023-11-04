@@ -6,6 +6,8 @@ import oth.shipeditor.communication.events.files.HullTreeEntryCleared;
 import oth.shipeditor.communication.events.files.HullTreeReloadQueued;
 import oth.shipeditor.components.datafiles.entities.ShipCSVEntry;
 import oth.shipeditor.parsing.FileUtilities;
+import oth.shipeditor.persistence.GameDataPackage;
+import oth.shipeditor.persistence.Settings;
 import oth.shipeditor.persistence.SettingsManager;
 import oth.shipeditor.representation.*;
 import oth.shipeditor.utility.objects.Pair;
@@ -52,6 +54,11 @@ class LoadShipDataAction extends DataLoadingAction {
 
         Map<String, SkinSpecFile> allSkins = new HashMap<>();
         for (Path directory : modsWithSkinFolder) {
+            Settings settings = SettingsManager.getSettings();
+            GameDataPackage dataPackage = settings.getPackage(directory);
+            if (dataPackage != null && dataPackage.isDisabled()) {
+                continue;
+            }
             log.info("Skin folder found in mod directory: {}", directory);
             Map<String, SkinSpecFile> containedSkins = LoadShipDataAction.walkSkinFolder(directory);
             allSkins.putAll(containedSkins);
@@ -64,6 +71,11 @@ class LoadShipDataAction extends DataLoadingAction {
         Map<Path, List<ShipCSVEntry>> allEntriesByPackage = new HashMap<>();
 
         for (Path folder : modsWithShipData) {
+            Settings settings = SettingsManager.getSettings();
+            GameDataPackage dataPackage = settings.getPackage(folder);
+            if (dataPackage != null && dataPackage.isDisabled()) {
+                continue;
+            }
             Pair<Path, List<ShipCSVEntry>> packageShipData = LoadShipDataAction.walkHullFolder(folder.toString(), allSkins);
             allEntriesByPackage.put(packageShipData.getFirst(), packageShipData.getSecond());
         }
@@ -83,6 +95,12 @@ class LoadShipDataAction extends DataLoadingAction {
 
         Map<String, VariantFile> allVariants = new HashMap<>();
         for (Path directory : variantFolders) {
+            Settings settings = SettingsManager.getSettings();
+            GameDataPackage dataPackage = settings.getPackage(directory);
+            if (dataPackage != null && dataPackage.isDisabled()) {
+                continue;
+            }
+
             log.info("Variant folder found in mod directory: {}", directory);
 
             List<File> variantFiles = FileLoading.fetchFilesWithExtension(directory, StringConstants.VARIANT);

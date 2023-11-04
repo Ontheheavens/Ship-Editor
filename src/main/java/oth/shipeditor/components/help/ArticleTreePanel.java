@@ -19,8 +19,16 @@ import java.util.List;
  */
 class ArticleTreePanel extends DataTreePanel {
 
-    ArticleTreePanel() {
+    private final Runnable reload;
+
+    ArticleTreePanel(Runnable reloadAction) {
         super("Articles");
+        this.reload = reloadAction;
+    }
+
+    @Override
+    public void reload() {
+        reload.run();
     }
 
     @Override

@@ -35,12 +35,6 @@ public class GameDataRepository {
     private final Map<String, ShipCSVEntry> allShipEntries;
 
     /**
-     * Holds the same instances as id-entry collection, used for quick repopulating of entry tree with filtering.
-     */
-    @Setter
-    private Map<Path, List<ShipCSVEntry>> shipEntriesByPackage;
-
-    /**
      * Base hull and skin entries by their ship hull IDs. Used when layer needs to be loaded from variant ID.
      */
     private final Map<String, ShipSpecFile> allSpecEntries;
@@ -59,7 +53,19 @@ public class GameDataRepository {
 
     private final Map<String, WeaponCSVEntry> allWeaponEntries;
 
+    /**
+     * Holds the same instances as id-entry collection, used for quick repopulating of entry tree with filtering.
+     */
+    private Map<Path, List<ShipCSVEntry>> shipEntriesByPackage;
+
     private Map<Path, List<WeaponCSVEntry>> weaponEntriesByPackage;
+
+    private Map<Path, List<HullmodCSVEntry>> hullmodEntriesByPackage;
+
+    private Map<Path, List<ShipSystemCSVEntry>> shipsystemEntriesByPackage;
+
+    private Map<Path, List<WingCSVEntry>> wingEntriesByPackage;
+
 
     /**
      * Hull styles by their IDs (field names in JSON).
@@ -107,10 +113,17 @@ public class GameDataRepository {
         this.allWeaponEntries = new HashMap<>();
     }
 
+    public void setShipEntriesByPackage(Map<Path, List<ShipCSVEntry>> shipEntries) {
+        this.shipEntriesByPackage = shipEntries;
+        SettingsManager.announcePackages(shipEntries);
+    }
+
     public void setWeaponEntriesByPackage(Map<Path, List<WeaponCSVEntry>> pathListMap) {
         this.weaponEntriesByPackage = pathListMap;
         Map<Path, Boolean> filterEntries = new LinkedHashMap<>();
         pathListMap.forEach((path, weaponCSVEntries) -> filterEntries.put(path, true));
+
+        SettingsManager.announcePackages(pathListMap);
         WeaponFilterPanel.setPackageFilters(filterEntries);
     }
 
