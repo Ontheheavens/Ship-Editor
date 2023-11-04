@@ -8,6 +8,7 @@ import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.components.SelectShipDataEntry;
 import oth.shipeditor.communication.events.components.SelectWeaponDataEntry;
 import oth.shipeditor.components.layering.ViewerLayersPanel;
+import oth.shipeditor.components.logging.LogsPanel;
 import oth.shipeditor.components.viewer.LayerViewer;
 import oth.shipeditor.components.viewer.PrimaryViewer;
 import oth.shipeditor.parsing.loading.FileLoading;
@@ -100,32 +101,7 @@ public final class WindowContentPanes {
         westTabsPane.addTab("Logs", new LeftsidePanelTab(LeftsideTabType.LOG));
 
         westTabsPane.setToolTipTextAt(0, "Right-click to reload data");
-        westTabsPane.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                if (e.getButton() != MouseEvent.BUTTON3) return;
-                int tabIndex = westTabsPane.indexAtLocation(e.getX(), e.getY());
-                if (tabIndex == 0) {
-                    JPopupMenu menu = new JPopupMenu();
-
-                    JMenuItem reloadAllGameData = new JMenuItem("Reload all game data");
-                    reloadAllGameData.setIcon(FontIcon.of(FluentUiRegularAL.ARROW_DOWNLOAD_20, 16));
-                    reloadAllGameData.addActionListener(event -> FileLoading.loadGameData());
-                    menu.add(reloadAllGameData);
-
-                    JMenuItem toggleFileErrorPopups = new JCheckBoxMenuItem("Enable file error pop-ups");
-                    toggleFileErrorPopups.setSelected(SettingsManager.areFileErrorPopupsEnabled());
-                    toggleFileErrorPopups.setIcon(FontIcon.of(FluentUiRegularAL.DOCUMENT_ERROR_20, 16));
-                    Settings settings = SettingsManager.getSettings();
-                    toggleFileErrorPopups.addActionListener(event ->
-                            settings.setShowLoadingErrors(toggleFileErrorPopups.isSelected())
-                    );
-                    menu.add(toggleFileErrorPopups);
-
-                    menu.show(westTabsPane, e.getPoint().x, e.getPoint().y);
-                }
-            }
-        });
+        westTabsPane.addMouseListener(new WestTabsMouseListener());
 
         JPanel quickButtonsPanel = new QuickButtonsPanel();
         westPanelsContainer.add(westTabsPane);
@@ -149,6 +125,42 @@ public final class WindowContentPanes {
             this.setLayout(new BorderLayout());
             this.tabType = type;
         }
+    }
+
+    private class WestTabsMouseListener extends MouseAdapter {
+
+        @Override
+        public void mouseClicked(MouseEvent e) {
+            if (SwingUtilities.isLeftMouseButton(e)) {
+                int tabIndex = westTabsPane.indexAtLocation(e.getX(), e.getY());
+                if (tabIndex == 2) {
+                    LogsPanel.scrollToBottom();
+                }
+            }
+
+            if (!SwingUtilities.isRightMouseButton(e)) return;
+            int tabIndex = westTabsPane.indexAtLocation(e.getX(), e.getY());
+            if (tabIndex == 0) {
+                JPopupMenu menu = new JPopupMenu();
+
+                JMenuItem reloadAllGameData = new JMenuItem("Reload all game data");
+                reloadAllGameData.setIcon(FontIcon.of(FluentUiRegularAL.ARROW_DOWNLOAD_20, 16));
+                reloadAllGameData.addActionListener(event -> FileLoading.loadGameData());
+                menu.add(reloadAllGameData);
+
+                JMenuItem toggleFileErrorPopups = new JCheckBoxMenuItem("Enable file error pop-ups");
+                toggleFileErrorPopups.setSelected(SettingsManager.areFileErrorPopupsEnabled());
+                toggleFileErrorPopups.setIcon(FontIcon.of(FluentUiRegularAL.DOCUMENT_ERROR_20, 16));
+                Settings settings = SettingsManager.getSettings();
+                toggleFileErrorPopups.addActionListener(event ->
+                        settings.setShowLoadingErrors(toggleFileErrorPopups.isSelected())
+                );
+                menu.add(toggleFileErrorPopups);
+
+                menu.show(westTabsPane, e.getPoint().x, e.getPoint().y);
+            }
+        }
+
     }
 
 }

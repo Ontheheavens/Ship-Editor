@@ -30,14 +30,18 @@ public class LogsPanel extends JPanel {
         if (logger != null) {
             logger.append(formattedMessage);
             if (scrollPane != null) {
-                Rectangle visible = logger.getVisibleRect();
-                Rectangle bounds = logger.getBounds();
-
-                visible.y = bounds.height - visible.height;
-                visible.x = 0;
-                logger.scrollRectToVisible(visible);
+                LogsPanel.scrollToBottom();
             }
         }
+    }
+
+    public static void scrollToBottom() {
+        Rectangle visible = logger.getVisibleRect();
+        Rectangle bounds = logger.getBounds();
+
+        visible.y = bounds.height - visible.height;
+        visible.x = 0;
+        logger.scrollRectToVisible(visible);
     }
 
 }
