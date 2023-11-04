@@ -9,6 +9,7 @@ import oth.shipeditor.communication.events.viewer.ViewerBackgroundChanged;
 import oth.shipeditor.communication.events.viewer.control.ViewerGuidesToggled;
 import oth.shipeditor.communication.events.viewer.control.ViewerRotationToggled;
 import oth.shipeditor.communication.events.viewer.control.ViewerTransformsReset;
+import oth.shipeditor.components.viewer.PaintOrderController;
 import oth.shipeditor.persistence.Settings;
 import oth.shipeditor.persistence.SettingsManager;
 import oth.shipeditor.utility.graphics.ColorUtilities;
@@ -43,6 +44,14 @@ class ViewMenu extends JMenu {
                     EventBus.publish(new ViewerBackgroundChanged(chosen));
                 });
         this.add(changeBackground);
+
+        JMenuItem displayBackgroundImage = new JCheckBoxMenuItem("Display background image");
+        displayBackgroundImage.setIcon(FontIcon.of(FluentUiRegularMZ.TABLE_20, 16));
+        displayBackgroundImage.setSelected(true);
+        displayBackgroundImage.addActionListener(e ->
+                PaintOrderController.setShowBackgroundImage(displayBackgroundImage.isSelected()));
+        this.add(displayBackgroundImage);
+
         JMenuItem resetTransform = PrimaryMenuBar.createMenuOption("Center on selected layer",
                 FluentUiRegularMZ.PICTURE_IN_PICTURE_20,
                 event ->

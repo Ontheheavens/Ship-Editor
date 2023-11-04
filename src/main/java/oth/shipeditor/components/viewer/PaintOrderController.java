@@ -14,6 +14,7 @@ import oth.shipeditor.components.viewer.painters.points.ship.MarkPointsPainter;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.geom.AffineTransform;
+import java.awt.image.BufferedImage;
 import java.util.List;
 
 /**
@@ -34,6 +35,11 @@ public class PaintOrderController implements Painter {
 
     @Getter
     private final HotkeyHelpPainter hotkeyPainter;
+
+    private BufferedImage backgroundImage;
+
+    @Getter @Setter
+    private static boolean showBackgroundImage = true;
 
     @Setter
     private boolean repaintQueued;
@@ -63,6 +69,14 @@ public class PaintOrderController implements Painter {
 
     @Override
     public void paint(Graphics2D g, AffineTransform worldToScreen, double w, double h) {
+        if (showBackgroundImage) {
+            if (backgroundImage == null) {
+                backgroundImage = PaintOrderController.createCheckerboardImage();
+            }
+            g.drawImage(backgroundImage, 0, 0, (int) w, (int) h,
+                    0, 0, (int) w, (int) h, null);
+        }
+
         PaintOrderController.paintIfPresent(g, worldToScreen, w, h, guidesPainters.getAxesPaint());
 
         LayerManager layerManager = parent.getLayerManager();
@@ -113,6 +127,34 @@ public class PaintOrderController implements Painter {
         if (parent.isCursorInViewer()) {
             PaintOrderController.paintIfPresent(g, transform, w, h, guidesPainters.getGuidesPaint());
         }
+    }
+
+    private static BufferedImage createCheckerboardImage() {
+        int imageWidth = 3840;
+        int imageHeight = 2160;
+        int cellSize = 10;
+        BufferedImage image = new BufferedImage(imageWidth, imageHeight, BufferedImage.TYPE_INT_ARGB);
+        Graphics2D g2d = image.createGraphics();
+
+        int rows = imageWidth / 20;
+        int cols = imageHeight / 20;
+
+        for (int row = 0; row < rows; row++) {
+            for (int col = 0; col < cols; col++) {
+                if ((row + col) % 2 == 0) {
+                    g2d.setColor(Color.WHITE);
+                } else {
+                    g2d.setColor(Color.LIGHT_GRAY);
+                }
+
+                int x = col * cellSize;
+                int y = row * cellSize;
+
+                g2d.fillRect(x, y, cellSize, cellSize);
+            }
+        }
+        g2d.dispose();
+        return image;
     }
 
 }
