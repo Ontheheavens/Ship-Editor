@@ -36,7 +36,7 @@ public final class SettingsManager {
     @Getter
     private static Path applicationDirectory;
 
-    @Getter @Setter
+    @Getter
     private static String coreFolderName;
 
     private static Path settingsFilePath;
@@ -52,6 +52,13 @@ public final class SettingsManager {
         Settings empty = new Settings();
         empty.setBackgroundColor(null);
         return empty;
+    }
+
+    static void setCoreFolderName(String folderName) {
+        SettingsManager.coreFolderName = folderName;
+        if (corePackage != null) {
+            corePackage.setFolderName(folderName);
+        }
     }
 
     static ObjectMapper getMapperForSettingsFile() {

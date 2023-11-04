@@ -2,27 +2,14 @@ package oth.shipeditor;
 
 import com.formdev.flatlaf.FlatIntelliJLaf;
 import lombok.extern.log4j.Log4j2;
-import oth.shipeditor.communication.EventBus;
-import oth.shipeditor.communication.events.viewer.control.ViewerTransformsReset;
-import oth.shipeditor.components.datafiles.entities.ShipCSVEntry;
 import oth.shipeditor.components.logging.StandardOutputRedirector;
-import oth.shipeditor.components.viewer.layers.LayerPainter;
-import oth.shipeditor.components.viewer.layers.ViewerLayer;
-import oth.shipeditor.components.viewer.layers.ship.ShipLayer;
-import oth.shipeditor.components.viewer.layers.ship.ShipPainter;
-import oth.shipeditor.components.viewer.layers.ship.data.Variant;
 import oth.shipeditor.parsing.loading.FileLoading;
 import oth.shipeditor.persistence.Initializations;
 import oth.shipeditor.persistence.Settings;
 import oth.shipeditor.persistence.SettingsManager;
-import oth.shipeditor.representation.GameDataRepository;
-import oth.shipeditor.representation.SkinSpecFile;
-import oth.shipeditor.undo.UndoOverseer;
-import oth.shipeditor.utility.overseers.StaticController;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.geom.Point2D;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -55,9 +42,6 @@ public final class Main {
 
             if (settings.isLoadDataAtStart()) {
                 CompletableFuture<List<Runnable>> gameDataLoading = FileLoading.loadGameData();
-                if (settings.isLoadTestFiles()) {
-                    CompletableFuture<Void> testing = gameDataLoading.thenRun(Main::testFiles);
-                }
             }
         });
     }
@@ -89,34 +73,6 @@ public final class Main {
             list.removeIf(next -> Initializations.SHELL_FOLDER_0_X_12.equals(next.getPath()));
             return list.toArray(new File[0]);
         } );
-    }
-
-    private static void testFiles() {
-        SwingUtilities.invokeLater(() -> {
-            var gameData = SettingsManager.getGameData();
-            var allShips = gameData.getAllShipEntries();
-
-            ShipCSVEntry crigEntry = allShips.get("crig");
-            crigEntry.loadLayerFromEntry();
-
-            ShipCSVEntry legionEntry = allShips.get("legion");
-            var legionSkins = legionEntry.getSkins();
-            SkinSpecFile legionXIV = legionSkins.get("legion_xiv.skin");
-            legionEntry.setActiveSkinSpecFile(legionXIV);
-            legionEntry.loadLayerFromEntry();
-
-            ViewerLayer activeLayer = StaticController.getActiveLayer();
-            LayerPainter painter = activeLayer.getPainter();
-            painter.updateAnchorOffset(new Point2D.Double(-400, 0));
-            UndoOverseer.finishAllEdits();
-            EventBus.publish(new ViewerTransformsReset());
-
-            if (activeLayer instanceof ShipLayer shipLayer) {
-                Variant legionXIVVariant = GameDataRepository.getVariantByID("legion_xiv_Elite");
-                ShipPainter shipPainter = shipLayer.getPainter();
-                shipPainter.selectVariant(legionXIVVariant);
-            }
-        });
     }
 
 }

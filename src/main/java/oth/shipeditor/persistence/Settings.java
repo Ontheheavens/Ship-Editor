@@ -46,9 +46,6 @@ public class Settings {
     @JsonProperty("loadDataAtStart")
     boolean loadDataAtStart;
 
-    @JsonProperty("loadTestFiles")
-    boolean loadTestFiles;
-
     @JsonProperty("dataPackages")
     private List<GameDataPackage> dataPackages = new ArrayList<>();
 
@@ -83,11 +80,6 @@ public class Settings {
 
     public void setLoadDataAtStart(boolean loadData) {
         this.loadDataAtStart = loadData;
-        SettingsManager.updateFileFromRuntime();
-    }
-
-    public void setLoadTestFiles(boolean loadTests) {
-        this.loadTestFiles = loadTests;
         SettingsManager.updateFileFromRuntime();
     }
 
