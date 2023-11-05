@@ -4,7 +4,6 @@ import lombok.extern.log4j.Log4j2;
 import org.kordamp.ikonli.boxicons.BoxiconsRegular;
 import org.kordamp.ikonli.swing.FontIcon;
 import oth.shipeditor.communication.EventBus;
-import oth.shipeditor.communication.events.files.HullFileOpened;
 import oth.shipeditor.communication.events.viewer.layers.ActiveLayerRemovalQueued;
 import oth.shipeditor.communication.events.viewer.layers.LayerWasSelected;
 import oth.shipeditor.communication.events.viewer.layers.ViewerLayerRemovalConfirmed;
@@ -12,7 +11,6 @@ import oth.shipeditor.communication.events.viewer.layers.ships.ShipLayerCreation
 import oth.shipeditor.communication.events.viewer.layers.weapons.WeaponLayerCreationQueued;
 import oth.shipeditor.components.viewer.layers.LayerManager;
 import oth.shipeditor.parsing.FileUtilities;
-import oth.shipeditor.representation.HullSpecFile;
 import oth.shipeditor.utility.overseers.StaticController;
 import oth.shipeditor.utility.text.StringValues;
 
@@ -28,11 +26,9 @@ import java.io.IOException;
  * @since 28.10.2023
  */
 @Log4j2
-class LayersMenu extends JMenu {
+public class LayersMenu extends JMenu {
 
     private JMenuItem removeLayer;
-
-    private JMenuItem createHullData;
 
     LayersMenu() {
         super("Layers");
@@ -40,24 +36,7 @@ class LayersMenu extends JMenu {
 
     @SuppressWarnings("ChainOfInstanceofChecks")
     void initialize() {
-        JMenuItem createLayer = new JMenuItem("Create new layer");
-        createLayer.setIcon(FontIcon.of(BoxiconsRegular.LAYER_PLUS, 16));
-        createLayer.addActionListener(event -> {
-            Object[] options = {"Ship Layer", "Weapon Layer"};
-            int result = JOptionPane.showOptionDialog(null,
-                    "Select new layer type:",
-                    "Create New Layer",
-                    JOptionPane.YES_NO_CANCEL_OPTION,
-                    JOptionPane.QUESTION_MESSAGE,
-                    null,
-                    options,
-                    options[0]);
-            if (result == 0) {
-                EventBus.publish(new ShipLayerCreationQueued());
-            } else {
-                EventBus.publish(new WeaponLayerCreationQueued());
-            }
-        });
+        JMenuItem createLayer = LayersMenu.createAddLayerOption();
         this.add(createLayer);
 
         removeLayer = new JMenuItem("Remove selected layer");
@@ -80,15 +59,28 @@ class LayersMenu extends JMenu {
 
         JMenuItem printViewer = LayersMenu.getViewerPrintOption();
         this.add(printViewer);
-        this.addSeparator();
+    }
 
-        createHullData = new JMenuItem("Create new ship data");
-        createHullData.setIcon(FontIcon.of(BoxiconsRegular.DETAIL, 16));
-        createHullData.addActionListener(event -> {
-            HullSpecFile created = new HullSpecFile();
-            EventBus.publish(new HullFileOpened(created, null));
+    public static JMenuItem createAddLayerOption() {
+        JMenuItem createLayer = new JMenuItem("Create new layer");
+        createLayer.setIcon(FontIcon.of(BoxiconsRegular.LAYER_PLUS, 16));
+        createLayer.addActionListener(event -> {
+            Object[] options = {"Ship Layer", "Weapon Layer"};
+            int result = JOptionPane.showOptionDialog(null,
+                    "Select new layer type:",
+                    "Create New Layer",
+                    JOptionPane.YES_NO_CANCEL_OPTION,
+                    JOptionPane.QUESTION_MESSAGE,
+                    null,
+                    options,
+                    options[0]);
+            if (result == 0) {
+                EventBus.publish(new ShipLayerCreationQueued());
+            } else {
+                EventBus.publish(new WeaponLayerCreationQueued());
+            }
         });
-        this.add(createHullData);
+        return createLayer;
     }
 
     @SuppressWarnings("CallToPrintStackTrace")

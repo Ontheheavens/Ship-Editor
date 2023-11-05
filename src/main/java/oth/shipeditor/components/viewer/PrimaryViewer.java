@@ -140,16 +140,7 @@ public final class PrimaryViewer extends Viewer implements LayerViewer {
             if (event instanceof LayerSpriteLoadQueued checked) {
                 ViewerLayer layer = checked.updated();
                 Sprite sprite = checked.sprite();
-                if (layer.getPainter() == null && sprite != null) {
-                    this.loadLayer(layer, sprite);
-                } else if (sprite != null) {
-                    LayerPainter painter = layer.getPainter();
-                    painter.reconfigureSpriteCircumstance(sprite);
-                    if (painter instanceof ShipPainter shipPainter) {
-                        shipPainter.setBaseHullSprite(sprite);
-                    }
-                    EventBus.publish(new ActiveLayerUpdated(layer));
-                }
+                this.loadSpriteToLayer(layer, sprite);
             }
         });
         EventBus.subscribe(event -> {
@@ -158,6 +149,19 @@ public final class PrimaryViewer extends Viewer implements LayerViewer {
                 setRepaintQueued();
             }
         });
+    }
+
+    public void loadSpriteToLayer(ViewerLayer layer, Sprite sprite) {
+        if (layer.getPainter() == null && sprite != null) {
+            this.loadLayer(layer, sprite);
+        } else if (sprite != null) {
+            LayerPainter painter = layer.getPainter();
+            painter.reconfigureSpriteCircumstance(sprite);
+            if (painter instanceof ShipPainter shipPainter) {
+                shipPainter.setBaseHullSprite(sprite);
+            }
+            EventBus.publish(new ActiveLayerUpdated(layer));
+        }
     }
 
     @Override

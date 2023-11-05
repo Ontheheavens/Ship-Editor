@@ -153,6 +153,11 @@ public abstract class SortableList<E> extends JList<E> implements DragGestureLis
         @Override
         public void dragOver(DropTargetDragEvent dtde) {
             if (isDragAcceptable(dtde)) {
+                Rectangle rect = getCellBounds(0, 0);
+                if (rect == null) {
+                    dtde.rejectDrag();
+                    return;
+                }
                 dtde.acceptDrag(dtde.getDropAction());
             }
             else {

@@ -24,7 +24,7 @@ public class LoadHullAsLayer extends AbstractAction {
 
     @Override
     public void actionPerformed(ActionEvent e) {
-        FileLoading.openHullAndDo(e1 -> {
+        OpenHullAction.openHullAndDo(e1 -> {
             JFileChooser shipDataChooser = (JFileChooser) e1.getSource();
             File file = shipDataChooser.getSelectedFile();
             HullSpecFile hullSpecFile = FileLoading.loadHullFile(file);

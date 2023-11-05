@@ -2,10 +2,12 @@ package oth.shipeditor.components.layering;
 
 import lombok.extern.log4j.Log4j2;
 import org.kordamp.ikonli.boxicons.BoxiconsRegular;
+import org.kordamp.ikonli.fluentui.FluentUiRegularAL;
 import org.kordamp.ikonli.swing.FontIcon;
 import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.components.SelectShipDataEntry;
 import oth.shipeditor.communication.events.components.WindowRepaintQueued;
+import oth.shipeditor.communication.events.files.HullFileOpened;
 import oth.shipeditor.communication.events.files.saving.HullSaveQueued;
 import oth.shipeditor.communication.events.files.saving.VariantSaveQueued;
 import oth.shipeditor.communication.events.viewer.layers.ActiveLayerUpdated;
@@ -16,6 +18,7 @@ import oth.shipeditor.communication.events.viewer.layers.ships.ShipLayerCreated;
 import oth.shipeditor.communication.events.viewer.layers.weapons.WeaponLayerCreated;
 import oth.shipeditor.components.datafiles.entities.ShipCSVEntry;
 import oth.shipeditor.components.viewer.PaintOrderController;
+import oth.shipeditor.components.viewer.PrimaryViewer;
 import oth.shipeditor.components.viewer.layers.LayerManager;
 import oth.shipeditor.components.viewer.layers.LayerPainter;
 import oth.shipeditor.components.viewer.layers.ViewerLayer;
@@ -26,14 +29,18 @@ import oth.shipeditor.components.viewer.layers.ship.data.ShipSkin;
 import oth.shipeditor.components.viewer.layers.weapon.WeaponLayer;
 import oth.shipeditor.components.viewer.layers.weapon.WeaponPainter;
 import oth.shipeditor.components.viewer.layers.weapon.WeaponSprites;
+import oth.shipeditor.menubar.LayersMenu;
 import oth.shipeditor.parsing.FileUtilities;
+import oth.shipeditor.parsing.loading.OpenSpriteAction;
 import oth.shipeditor.representation.GameDataRepository;
+import oth.shipeditor.representation.HullSpecFile;
 import oth.shipeditor.representation.weapon.WeaponMount;
 import oth.shipeditor.representation.weapon.WeaponSpecFile;
 import oth.shipeditor.utility.components.ComponentUtilities;
 import oth.shipeditor.utility.components.containers.SortableTabbedPane;
 import oth.shipeditor.utility.graphics.ColorUtilities;
 import oth.shipeditor.utility.graphics.Sprite;
+import oth.shipeditor.utility.overseers.StaticController;
 import oth.shipeditor.utility.text.StringValues;
 
 import javax.swing.*;
@@ -267,7 +274,12 @@ public final class ViewerLayersPanel extends SortableTabbedPane {
             if(SwingUtilities.isRightMouseButton(e)){
                 TabbedPaneUI paneUI = getUI();
                 int targetTab = paneUI.tabForCoordinate(ViewerLayersPanel.this, e.getX(), e.getY());
-                if (targetTab < 0) return;
+                if (targetTab < 0) {
+                    JPopupMenu menu = new JPopupMenu();
+                    menu.add(LayersMenu.createAddLayerOption());
+                    menu.show(ViewerLayersPanel.this, e.getPoint().x, e.getPoint().y);
+                    return;
+                }
                 LayerTab tab = (LayerTab) getComponentAt(targetTab);
                 ViewerLayer layer = getLayerByTab(tab);
 
@@ -278,16 +290,39 @@ public final class ViewerLayersPanel extends SortableTabbedPane {
         private void showMenuIfMatching(ViewerLayer layer, MouseEvent e) {
             if (layer instanceof ShipLayer shipLayer) {
                 var menu = TabContextListener.createContextMenu(shipLayer);
-                if (menu != null) {
-                    menu.show(ViewerLayersPanel.this, e.getPoint().x, e.getPoint().y);
-                }
+                menu.show(ViewerLayersPanel.this, e.getPoint().x, e.getPoint().y);
             }
         }
 
+        @SuppressWarnings("OverlyCoupledMethod")
         private static JPopupMenu createContextMenu(ShipLayer shipLayer) {
             ShipPainter shipPainter = shipLayer.getPainter();
-            if (shipPainter == null || shipLayer.getHull() == null) return null;
             JPopupMenu menu = new JPopupMenu();
+
+            JMenuItem openSprite = new JMenuItem("Load new sprite");
+            openSprite.addActionListener(e -> OpenSpriteAction.openSpriteAndDo(sprite -> {
+                PrimaryViewer viewer = StaticController.getViewer();
+                viewer.loadSpriteToLayer(shipLayer, sprite);
+            }));
+            openSprite.setIcon(FontIcon.of(FluentUiRegularAL.IMAGE_20, 16));
+            menu.add(openSprite);
+
+            if (shipPainter == null) {
+                return menu;
+            }
+
+            JMenuItem createHullData = new JMenuItem("Create new ship data");
+            createHullData.setIcon(FontIcon.of(BoxiconsRegular.DETAIL, 16));
+            createHullData.addActionListener(event -> {
+                HullSpecFile created = new HullSpecFile();
+                shipLayer.initializeHullData(created);
+                EventBus.publish(new HullFileOpened(created, null));
+            });
+            menu.add(createHullData);
+
+            if (shipLayer.getHull() == null) {
+                return menu;
+            }
 
             JMenuItem selectEntry = new JMenuItem(StringValues.SELECT_SHIP_ENTRY);
             String baseHullID = GameDataRepository.getBaseHullID(shipLayer.getShipID());

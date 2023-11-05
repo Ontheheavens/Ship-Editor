@@ -13,7 +13,6 @@ import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
 import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.components.LoadingActionFired;
-import oth.shipeditor.communication.events.files.HullFileOpened;
 import oth.shipeditor.parsing.FileUtilities;
 import oth.shipeditor.parsing.JsonProcessor;
 import oth.shipeditor.persistence.SettingsManager;
@@ -33,7 +32,6 @@ import oth.shipeditor.utility.text.StringValues;
 import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
@@ -43,7 +41,10 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
@@ -324,19 +325,6 @@ public final class FileLoading {
         return result;
     }
 
-    static void openHullAndDo(ActionListener action) {
-        JFileChooser shipDataChooser = FileUtilities.getHullFileChooser();
-        int returnVal = shipDataChooser.showOpenDialog(null);
-        FileUtilities.lastDirectory = shipDataChooser.getCurrentDirectory();
-        if (returnVal == JFileChooser.APPROVE_OPTION) {
-            ActionEvent event = new ActionEvent(shipDataChooser, ActionEvent.ACTION_PERFORMED, null);
-            action.actionPerformed(event);
-        }
-        else {
-            log.info(FileUtilities.OPEN_COMMAND_CANCELLED_BY_USER);
-        }
-    }
-
     @SuppressWarnings("WeakerAccess")
     public static List<File> fetchFilesWithExtension(Path target, String dotlessExtension) {
         List<File> files = new ArrayList<>();
@@ -405,26 +393,6 @@ public final class FileLoading {
             boolean validID = id != null && !id.isEmpty();
             return validID && !id.startsWith("#");
         };
-    }
-
-    private static class OpenHullAction extends AbstractAction {
-        @Override
-        public void actionPerformed(ActionEvent e) {
-            FileLoading.openHullAndDo(event -> {
-                    JFileChooser shipDataChooser = (JFileChooser) event.getSource();
-                    File file = shipDataChooser.getSelectedFile();
-                    HullSpecFile hullSpecFile = FileLoading.loadHullFile(file);
-                    if (hullSpecFile != null) {
-                        EventBus.publish(new HullFileOpened(hullSpecFile, file.getName()));
-                    } else {
-                        log.error(StringValues.FAILURE_TO_LOAD_HULL_CANCELLING_ACTION, file);
-                        JOptionPane.showMessageDialog(null,
-                                StringValues.FAILURE_TO_LOAD_HULL_CANCELLING_ACTION_ALT + file,
-                                StringValues.FILE_LOADING_ERROR,
-                                JOptionPane.ERROR_MESSAGE);
-                    }
-            });
-        }
     }
 
 }
