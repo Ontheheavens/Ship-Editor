@@ -53,7 +53,7 @@ import java.util.stream.Stream;
  * @author Ontheheavens
  * @since 16.07.2023
  */
-@SuppressWarnings({"CallToPrintStackTrace", "ClassWithTooManyFields", "ClassWithTooManyMethods", "OverlyCoupledClass"})
+@SuppressWarnings({"CallToPrintStackTrace", "ClassWithTooManyFields", "OverlyCoupledClass"})
 @Log4j2
 public final class FileLoading {
 
@@ -78,6 +78,9 @@ public final class FileLoading {
     @Getter
     private static final Action loadHullAsLayer = new LoadHullAsLayer();
 
+    @Getter
+    private static boolean loadingInProgress;
+
     private FileLoading() {}
 
     /**
@@ -85,6 +88,7 @@ public final class FileLoading {
      */
     public static CompletableFuture<List<Runnable>> loadGameData() {
         EventBus.publish(new LoadingActionFired(true));
+        loadingInProgress = true;
 
         List<DataLoadingAction> loadActions = List.of(loadShips, loadHullmods, loadHullStyles,
                 loadEngineStyles, loadShipSystems, loadWings, loadWeapons);
@@ -103,6 +107,7 @@ public final class FileLoading {
         allResults.thenAccept(runnables -> runnables.forEach(Runnable::run));
         allResults.thenRun(() -> {
             EventBus.publish(new LoadingActionFired(false));
+            loadingInProgress = false;
             StaticController.reselectCurrentLayer();
         });
 
@@ -117,9 +122,13 @@ public final class FileLoading {
             @Override
             public void actionPerformed(ActionEvent e) {
                 EventBus.publish(new LoadingActionFired(true));
+                loadingInProgress = true;
                 CompletableFuture<Runnable> loadResult = CompletableFuture.supplyAsync(loadAction::perform);
                 CompletableFuture<Void> publishResult = loadResult.thenAccept(Runnable::run);
-                publishResult.thenRun(() -> EventBus.publish(new LoadingActionFired(false)));
+                publishResult.thenRun(() -> {
+                    EventBus.publish(new LoadingActionFired(false));
+                    loadingInProgress = false;
+                });
             }
         };
     }

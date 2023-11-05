@@ -194,6 +194,9 @@ public class WeaponCSVEntry implements CSVEntry, InstallableEntry {
         Sprite sprite = FileLoading.loadSprite(spriteFile);
 
         var manager = StaticController.getLayerManager();
+        if (manager == null) {
+            throw new IllegalStateException("Layer manager is not found during runtime!");
+        }
         WeaponLayer newLayer = manager.createWeaponLayer();
         newLayer.setSpecFile(specFile);
 

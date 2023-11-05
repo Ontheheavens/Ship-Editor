@@ -147,6 +147,9 @@ public final class WindowContentPanes {
                 JMenuItem reloadAllGameData = new JMenuItem("Reload all game data");
                 reloadAllGameData.setIcon(FontIcon.of(FluentUiRegularAL.ARROW_DOWNLOAD_20, 16, Themes.getIconColor()));
                 reloadAllGameData.addActionListener(event -> FileLoading.loadGameData());
+                if (FileLoading.isLoadingInProgress()) {
+                    reloadAllGameData.setEnabled(false);
+                }
                 menu.add(reloadAllGameData);
 
                 Settings settings = SettingsManager.getSettings();

@@ -14,6 +14,7 @@ import oth.shipeditor.components.instrument.ship.EditorInstrument;
 import oth.shipeditor.components.viewer.entities.weapon.SlotData;
 import oth.shipeditor.components.viewer.entities.weapon.WeaponSlotPoint;
 import oth.shipeditor.components.viewer.layers.ship.data.ShipSkin;
+import oth.shipeditor.components.viewer.layers.ship.data.Variant;
 import oth.shipeditor.components.viewer.layers.weapon.WeaponPainter;
 import oth.shipeditor.components.viewer.painters.points.ship.WeaponSlotPainter;
 import oth.shipeditor.components.viewer.painters.points.ship.features.FireMode;
@@ -26,7 +27,11 @@ import oth.shipeditor.representation.weapon.WeaponType;
 import oth.shipeditor.undo.EditDispatch;
 import oth.shipeditor.utility.overseers.StaticController;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
@@ -215,50 +220,14 @@ public class FeaturesOverseer {
         }
     }
 
-    @SuppressWarnings("OverlyComplexMethod")
     private void initInstallListeners() {
         BusEventListener installListener = event -> {
             if (event instanceof FeatureInstallQueued) {
                 if (StaticController.getActiveLayer() != parent) return;
-                var shipPainter = parent.getPainter();
-                if (shipPainter == null || shipPainter.isUninitialized()) return;
-                var slotPainter = shipPainter.getWeaponSlotPainter();
-
-                WeaponSlotPoint selected = slotPainter.getSelected();
-                var eligibleSlots = slotPainter.getEligibleForSelection();
-
-                if (selected == null || !eligibleSlots.contains(selected)) return;
-                var mode = StaticController.getEditorMode();
-
-                boolean choseVariant = moduleVariantForInstall != null && !moduleVariantForInstall.isEmpty();
-                if (mode == EditorInstrument.VARIANT_MODULES && choseVariant) {
-                    if (selected.isModule()) {
-                        installModule(selected);
-                    } else {
-                        return;
-                    }
-                }
-
+                if (moduleVariantForInstall == null) return;
+                addModuleToSelectedSlot(moduleVariantForInstall);
                 if (weaponForInstall == null) return;
-                if (!WeaponType.isWeaponFitting(selected, weaponForInstall)) return;
-
-                switch (mode) {
-                    case BUILT_IN_WEAPONS -> {
-                        if (selected.isBuiltIn()) {
-                            installBuiltIn(selected);
-                        }
-                    }
-                    case DECORATIVES -> {
-                        if (selected.isDecorative()) {
-                            installBuiltIn(selected);
-                        }
-                    }
-                    case VARIANT_WEAPONS -> {
-                        if (selected.isFittable()) {
-                            installWeapon(selected);
-                        }
-                    }
-                }
+                addWeaponToSelectedSlot(weaponForInstall);
             }
         };
         listeners.add(installListener);
@@ -282,6 +251,55 @@ public class FeaturesOverseer {
         };
         listeners.add(uninstallListener);
         EventBus.subscribe(uninstallListener);
+    }
+
+    public void addModuleToSelectedSlot(VariantFile moduleVariant) {
+        chooseWeaponPointAndInstall((editorInstrument, slotPoint) -> {
+            boolean choseVariant = moduleVariant != null && !moduleVariant.isEmpty();
+            if (editorInstrument == EditorInstrument.VARIANT_MODULES && choseVariant) {
+                if (slotPoint.isModule()) {
+                    installModule(slotPoint, moduleVariant);
+                }
+            }
+        });
+    }
+
+    public void addWeaponToSelectedSlot(WeaponCSVEntry weaponEntry) {
+        chooseWeaponPointAndInstall((editorInstrument, slotPoint) -> {
+            if (!WeaponType.isWeaponFitting(slotPoint, weaponEntry)) return;
+            switch (editorInstrument) {
+                case BUILT_IN_WEAPONS -> {
+                    if (slotPoint.isBuiltIn()) {
+                        installBuiltIn(slotPoint, weaponEntry);
+                    }
+                }
+                case DECORATIVES -> {
+                    if (slotPoint.isDecorative()) {
+                        installBuiltIn(slotPoint, weaponEntry);
+                    }
+                }
+                case VARIANT_WEAPONS -> {
+                    if (slotPoint.isFittable()) {
+                        installWeapon(slotPoint, weaponEntry);
+                    }
+                }
+            }
+        });
+    }
+
+    private void chooseWeaponPointAndInstall(BiConsumer<EditorInstrument,
+            WeaponSlotPoint> installAction) {
+        var shipPainter = parent.getPainter();
+        if (shipPainter == null || shipPainter.isUninitialized()) return;
+        var slotPainter = shipPainter.getWeaponSlotPainter();
+
+        WeaponSlotPoint selected = slotPainter.getSelected();
+        var eligibleSlots = slotPainter.getEligibleForSelection();
+
+        if (selected == null || !eligibleSlots.contains(selected)) return;
+        var mode = StaticController.getEditorMode();
+
+        installAction.accept(mode, selected);
     }
 
     @SuppressWarnings({"MethodWithMultipleReturnPoints", "OverlyComplexMethod"})
@@ -328,13 +346,12 @@ public class FeaturesOverseer {
         }
     }
 
-    private void installWeapon(SlotData selected) {
+    private void installWeapon(SlotData selected, WeaponCSVEntry forInstall) {
         var shipPainter = parent.getPainter();
         var activeVariant = shipPainter.getActiveVariant();
         if (activeVariant == null || activeVariant.isEmpty()) return;
 
         String slotID = selected.getId();
-        WeaponCSVEntry forInstall = weaponForInstall;
 
         List<FittedWeaponGroup> weaponGroups = activeVariant.getWeaponGroups();
 
@@ -370,16 +387,15 @@ public class FeaturesOverseer {
         FeaturesOverseer.commenceInstall(slotID, feature, groupWeapons, null);
     }
 
-    private void installModule(SlotData selected) {
+    private void installModule(SlotData selected, Variant variantFile) {
         var shipPainter = parent.getPainter();
         var activeVariant = shipPainter.getActiveVariant();
         if (activeVariant == null || activeVariant.isEmpty()) return;
 
         String slotID = selected.getId();
-        VariantFile forInstall = moduleVariantForInstall;
         var modules = activeVariant.getFittedModules();
 
-        InstalledFeature moduleFeature = GameDataRepository.createModuleFromVariant(slotID, forInstall);
+        InstalledFeature moduleFeature = GameDataRepository.createModuleFromVariant(slotID, variantFile);
 
         InstalledFeature existing = modules.get(slotID);
         if (existing != null) {
@@ -389,11 +405,10 @@ public class FeaturesOverseer {
         FeaturesOverseer.commenceInstall(slotID, moduleFeature, modules, null);
     }
 
-    private void installBuiltIn(SlotData selected) {
+    private void installBuiltIn(SlotData selected, WeaponCSVEntry forInstall) {
         var shipPainter = parent.getPainter();
         var activeSkin = shipPainter.getActiveSkin();
         String slotID = selected.getId();
-        WeaponCSVEntry forInstall = weaponForInstall;
         if (activeSkin != null && !activeSkin.isBase()) {
             var skinBuiltIns = activeSkin.getBuiltInWeapons();
             FeaturesOverseer.commenceInstall(slotID, forInstall, skinBuiltIns,

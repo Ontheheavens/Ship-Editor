@@ -100,5 +100,6 @@ module oth.shipeditor {
     exports oth.shipeditor.representation.ship;
     opens oth.shipeditor.representation.ship;
     exports oth.shipeditor.utility.themes;
+    exports oth.shipeditor.components.datafiles.entities.transferable;
 
 }

@@ -382,7 +382,8 @@ public final class LayerViewerControls implements ViewerControl {
         return input;
     }
 
-    private void refreshCursorPosition(MouseEvent event) {
+    @Override
+    public void refreshCursorPosition(MouseEvent event) {
         this.mousePoint = event.getPoint();
         AffineTransform screenToWorld = StaticController.getScreenToWorld();
         Point2D adjusted = this.getAdjustedCursor();
@@ -404,6 +405,21 @@ public final class LayerViewerControls implements ViewerControl {
             }
         }
         this.parentViewer.setRepaintQueued();
+    }
+
+    @Override
+    public void notifyCursorState(Point cursorLocation) {
+        this.mousePoint = cursorLocation;
+        AffineTransform screenToWorld = StaticController.getScreenToWorld();
+        Point2D adjusted = this.getAdjustedCursor();
+        Point2D corrected = Utility.correctAdjustedCursor(adjusted, screenToWorld);
+        EventBus.publish(new ViewerCursorMoved(this.mousePoint, adjusted, corrected));
+
+        boolean dragInProgress = ControlPredicates.isDragToViewerInProgress();
+        boolean closestMode = ControlPredicates.getSelectionMode() == PointSelectionMode.CLOSEST;
+        if (dragInProgress && closestMode) {
+            EventBus.publish(new PointSelectQueued(null));
+        }
     }
 
 }

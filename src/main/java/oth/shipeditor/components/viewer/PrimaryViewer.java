@@ -20,25 +20,16 @@ import oth.shipeditor.components.viewer.layers.ship.ShipPainter;
 import oth.shipeditor.components.viewer.layers.weapon.WeaponLayer;
 import oth.shipeditor.components.viewer.layers.weapon.WeaponPainter;
 import oth.shipeditor.components.viewer.layers.weapon.WeaponSprites;
-import oth.shipeditor.parsing.FileUtilities;
 import oth.shipeditor.undo.UndoOverseer;
 import oth.shipeditor.utility.graphics.Sprite;
 import oth.shipeditor.utility.overseers.StaticController;
 
-import javax.swing.*;
 import java.awt.*;
-import java.awt.datatransfer.DataFlavor;
-import java.awt.datatransfer.Transferable;
-import java.awt.dnd.DnDConstants;
-import java.awt.dnd.DropTarget;
-import java.awt.dnd.DropTargetDropEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Point2D;
-import java.io.File;
 import java.util.List;
-import java.util.Locale;
 
 /**
  * This one is a conceptual root of the whole app.
@@ -58,6 +49,8 @@ public final class PrimaryViewer extends Viewer implements LayerViewer {
     private PaintOrderController paintOrderController;
 
     private boolean cursorInViewer;
+
+    private ViewerControl viewerControls;
 
     public PrimaryViewer() {
         this.setMinimumSize(minimumPanelSize);
@@ -94,11 +87,11 @@ public final class PrimaryViewer extends Viewer implements LayerViewer {
             }
         });
 
-        ViewerControl controls = LayerViewerControls.create(this);
-        this.setMouseControl(controls);
+        viewerControls = LayerViewerControls.create(this);
+        this.setMouseControl(viewerControls);
         this.initViewerStateListeners();
         this.initLayerListening();
-        this.setDropTarget(new SpriteDropReceiver());
+        this.setDropTarget(new ViewerDropReceiver(this));
         StaticController.setViewer(this);
         return this;
     }
@@ -209,7 +202,6 @@ public final class PrimaryViewer extends Viewer implements LayerViewer {
 
         if (newPainter != null) {
             List<ViewerLayer> layers = layerManager.getLayers();
-
             if (layers.size() > 1) {
                 // Ideally, this needs to loop through all layers starting from last, checking if painter is present.
                 // Then get anchor of that and place new painter anchor next to it.
@@ -224,7 +216,6 @@ public final class PrimaryViewer extends Viewer implements LayerViewer {
                 }
             }
         }
-
         EventBus.publish(new LayerSpriteLoadConfirmed(layer, sprite));
         EventBus.publish(new ActiveLayerUpdated(layer));
         this.centerViewpoint();
@@ -256,46 +247,6 @@ public final class PrimaryViewer extends Viewer implements LayerViewer {
         double x = (this.getWidth() / 2.0f);
         double y = (this.getHeight() / 2.0f);
         return new Point2D.Double(x, y);
-    }
-
-    private static class SpriteDropReceiver extends DropTarget {
-        @SuppressWarnings({"unchecked", "AccessToStaticFieldLockedOnInstance", "CallToPrintStackTrace"})
-        public synchronized void drop(DropTargetDropEvent dtde) {
-            try {
-                dtde.acceptDrop(DnDConstants.ACTION_COPY);
-                Transferable transferable = dtde.getTransferable();
-                Iterable<File> droppedFiles = (Iterable<File>) transferable.getTransferData(DataFlavor.javaFileListFlavor);
-                File firstEligible = null;
-                for (File file : droppedFiles) {
-                    boolean correctExtension = file.getName().toLowerCase(Locale.ROOT).endsWith(".png");
-                    boolean correctLocation = FileUtilities.isFileWithinGamePackages(file);
-                    if (correctExtension && correctLocation) {
-                        firstEligible = file;
-                        break;
-                    }
-                }
-                if (firstEligible == null) {
-                    log.error("Drag-and-drop sprite loading unsuccessful: requires PNG file located in game packages.");
-                    JOptionPane.showMessageDialog(null,
-                            "Failed to load file as sprite or initialize layer with it:" +
-                                    " requires PNG file located in game packages.",
-                            "Drag-and-drop layer initialization unsuccessful!",
-                            JOptionPane.INFORMATION_MESSAGE);
-                    dtde.dropComplete(false);
-                    return;
-                }
-                FileUtilities.createShipLayerWithSprite(firstEligible);
-                dtde.dropComplete(true);
-            } catch (Exception ex) {
-                dtde.dropComplete(false);
-                log.error("Drag-and-drop sprite loading failed!");
-                JOptionPane.showMessageDialog(null,
-                        "Failed to load file as sprite or initialize layer with it, exception thrown at: " + dtde,
-                        "Drag-and-drop layer initialization error!",
-                        JOptionPane.ERROR_MESSAGE);
-                ex.printStackTrace();
-            }
-        }
     }
 
 }

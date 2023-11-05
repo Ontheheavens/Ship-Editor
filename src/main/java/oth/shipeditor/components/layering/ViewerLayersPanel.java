@@ -3,6 +3,7 @@ package oth.shipeditor.components.layering;
 import lombok.extern.log4j.Log4j2;
 import org.kordamp.ikonli.boxicons.BoxiconsRegular;
 import org.kordamp.ikonli.fluentui.FluentUiRegularAL;
+import org.kordamp.ikonli.fluentui.FluentUiRegularMZ;
 import org.kordamp.ikonli.swing.FontIcon;
 import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.components.SelectShipDataEntry;
@@ -325,7 +326,10 @@ public final class ViewerLayersPanel extends SortableTabbedPane {
                 return menu;
             }
 
+            menu.addSeparator();
+
             JMenuItem selectEntry = new JMenuItem(StringValues.SELECT_SHIP_ENTRY);
+            selectEntry.setIcon(FontIcon.of(FluentUiRegularMZ.SEARCH_SQUARE_24, 16, Themes.getIconColor()));
             String baseHullID = GameDataRepository.getBaseHullID(shipLayer.getShipID());
             if (baseHullID != null && !baseHullID.isEmpty()) {
                 ShipCSVEntry entry = GameDataRepository.retrieveShipCSVEntryByID(baseHullID);
@@ -339,12 +343,16 @@ public final class ViewerLayersPanel extends SortableTabbedPane {
             }
             menu.add(selectEntry);
 
+            menu.addSeparator();
+
             JMenuItem saveHullData = new JMenuItem("Save hull data");
+            saveHullData.setIcon(FontIcon.of(FluentUiRegularMZ.SAVE_20, 16, Themes.getIconColor()));
             var shipHull = shipLayer.getHull();
             saveHullData.addActionListener(event -> EventBus.publish(new HullSaveQueued(shipLayer)));
             menu.add(saveHullData);
 
             JMenuItem saveActiveVariant = new JMenuItem("Save active variant");
+            saveActiveVariant.setIcon(FontIcon.of(FluentUiRegularMZ.SAVE_20, 16, Themes.getIconColor()));
             var activeVariant = shipPainter.getActiveVariant();
             if (activeVariant != null && !activeVariant.isEmpty()) {
                 saveActiveVariant.addActionListener(event -> EventBus.publish(new VariantSaveQueued(activeVariant)));
@@ -352,6 +360,8 @@ public final class ViewerLayersPanel extends SortableTabbedPane {
                 saveActiveVariant.setEnabled(false);
             }
             menu.add(saveActiveVariant);
+
+            menu.addSeparator();
 
             menu.add(TabContextListener.createPrintLayerOption(shipLayer));
 

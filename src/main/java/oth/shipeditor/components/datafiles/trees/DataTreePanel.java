@@ -21,6 +21,8 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.tree.*;
 import java.awt.*;
+import java.awt.dnd.DnDConstants;
+import java.awt.dnd.DragSource;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -262,7 +264,7 @@ public abstract class DataTreePanel extends JPanel {
     }
 
     JTree createCustomTree() {
-        return new JTree(getRootNode()) {
+        JTree customTree = new JTree(getRootNode()) {
             @Override
             public String getToolTipText(MouseEvent event) {
                 if (getRowForLocation(event.getX(), event.getY()) == -1) return null;
@@ -273,6 +275,10 @@ public abstract class DataTreePanel extends JPanel {
                 return getTooltipForEntry(entry);
             }
         };
+        DragSource dragSource = DragSource.getDefaultDragSource();
+        dragSource.createDefaultDragGestureRecognizer(customTree, DnDConstants.ACTION_COPY,
+                new DataDragGestureListener(customTree));
+        return customTree;
     }
 
     @SuppressWarnings("UnnecessaryLocalVariable")

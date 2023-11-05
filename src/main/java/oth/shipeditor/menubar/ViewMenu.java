@@ -53,12 +53,17 @@ class ViewMenu extends JMenu {
                 PaintOrderController.setShowBackgroundImage(displayBackgroundImage.isSelected()));
         this.add(displayBackgroundImage);
 
+        this.addSeparator();
+
         JMenuItem resetTransform = PrimaryMenuBar.createMenuOption("Center on selected layer",
                 FluentUiRegularMZ.PICTURE_IN_PICTURE_20,
                 event ->
                         EventBus.publish(new ViewerTransformsReset())
         );
         this.add(resetTransform);
+
+        this.addSeparator();
+
         toggleRotate = new JCheckBoxMenuItem("Toggle view rotation");
         toggleRotate.setIcon(FontIcon.of(FluentUiRegularAL.ARROW_ROTATE_CLOCKWISE_20, 16, Themes.getIconColor()));
         toggleRotate.setSelected(true);
