@@ -1,15 +1,15 @@
 package oth.shipeditor;
 
-import com.formdev.flatlaf.FlatIntelliJLaf;
+import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
 import oth.shipeditor.components.logging.StandardOutputRedirector;
 import oth.shipeditor.parsing.loading.FileLoading;
 import oth.shipeditor.persistence.Initializations;
 import oth.shipeditor.persistence.Settings;
 import oth.shipeditor.persistence.SettingsManager;
+import oth.shipeditor.utility.themes.Themes;
 
 import javax.swing.*;
-import java.awt.*;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -26,14 +26,18 @@ public final class Main {
 
     public static final String TREE_PAINT_LINES = "Tree.paintLines";
 
+    @Getter
+    private static PrimaryWindow window;
+
     private Main() {}
 
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> {
             // These method calls are initialization block; the order of calls is important.
             StandardOutputRedirector.redirectStandardStreams();
+            Initializations.initializeSettingsFile();
             Main.configureLaf();
-            PrimaryWindow window = PrimaryWindow.create();
+            window = PrimaryWindow.create();
             Initializations.updateStateFromSettings(window);
 
             window.showGUI();
@@ -47,19 +51,10 @@ public final class Main {
     }
 
     private static void configureLaf() {
-        FlatIntelliJLaf.setup();
-
         UIManager.put("TabbedPane.showTabSeparators", true);
         UIManager.put("TabbedPane.tabSeparatorsFullHeight", true);
-        UIManager.put("TabbedPane.selectedBackground", Color.WHITE);
-
         UIManager.put("SplitPane.dividerSize", 8);
         UIManager.put("SplitPane.oneTouchButtonSize", 10);
-        UIManager.put("SplitPane.background", Color.LIGHT_GRAY);
-        UIManager.put("SplitPaneDivider.gripColor", Color.DARK_GRAY);
-        UIManager.put("SplitPaneDivider.draggingColor", Color.BLACK);
-
-        UIManager.put("TitlePane.background", Color.LIGHT_GRAY);
         UIManager.put("TitlePane.useWindowDecorations", true);
 
         UIManager.put(TREE_PAINT_LINES, true);
@@ -73,6 +68,12 @@ public final class Main {
             list.removeIf(next -> Initializations.SHELL_FOLDER_0_X_12.equals(next.getPath()));
             return list.toArray(new File[0]);
         } );
+
+        Settings settings = SettingsManager.getSettings();
+        switch (settings.getTheme()) {
+            case DARK -> Themes.setDarkTheme();
+            case LIGHT -> Themes.setLightTheme();
+        }
     }
 
 }

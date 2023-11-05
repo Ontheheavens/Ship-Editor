@@ -16,6 +16,7 @@ import oth.shipeditor.utility.components.containers.TextScrollPanel;
 import oth.shipeditor.utility.graphics.ColorUtilities;
 import oth.shipeditor.utility.objects.Pair;
 import oth.shipeditor.utility.text.StringValues;
+import oth.shipeditor.utility.themes.Themes;
 
 import javax.swing.*;
 import javax.swing.border.Border;
@@ -223,7 +224,7 @@ public final class ComponentUtilities {
         openContainingPackage.addActionListener(e -> FileUtilities.openPathInDesktop(packagePath));
         contextMenu.add(openContainingPackage);
 
-        label.addMouseListener(new MouseoverLabelListener(contextMenu, label, Color.GRAY));
+        label.addMouseListener(new MouseoverLabelListener(contextMenu, label, Themes.getPanelHighlightColor()));
         label.setToolTipText(filePath.toString());
 
         JPanel titleContainer = new JPanel();
@@ -236,7 +237,7 @@ public final class ComponentUtilities {
         titleContainer.add(separator);
 
         titleContainer.setBorder(new FlatRoundBorder());
-        titleContainer.setBackground(Color.LIGHT_GRAY);
+        titleContainer.setBackground(Themes.getPanelBackgroundColor());
         return titleContainer;
     }
 

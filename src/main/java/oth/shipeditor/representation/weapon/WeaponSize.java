@@ -3,9 +3,9 @@ package oth.shipeditor.representation.weapon;
 import lombok.Getter;
 import org.kordamp.ikonli.boxicons.BoxiconsRegular;
 import org.kordamp.ikonli.swing.FontIcon;
+import oth.shipeditor.utility.themes.Themes;
 
 import javax.swing.*;
-import java.awt.*;
 
 /**
  * @author Ontheheavens
@@ -16,11 +16,11 @@ public enum WeaponSize {
     // TODO: dynamic getter of icons to account for selection color and size change.
 
     SMALL("SMALL", "Small",
-            FontIcon.of(BoxiconsRegular.DICE_1, 19, Color.DARK_GRAY), 1),
+            FontIcon.of(BoxiconsRegular.DICE_1, 19, Themes.getIconColor()), 1),
     MEDIUM("MEDIUM", "Medium",
-            FontIcon.of(BoxiconsRegular.DICE_2, 19, Color.DARK_GRAY), 2),
+            FontIcon.of(BoxiconsRegular.DICE_2, 19, Themes.getIconColor()), 2),
     LARGE("LARGE", "Large",
-            FontIcon.of(BoxiconsRegular.DICE_3, 19, Color.DARK_GRAY), 3);
+            FontIcon.of(BoxiconsRegular.DICE_3, 19, Themes.getIconColor()), 3);
 
     @Getter
     private final String id;
@@ -40,7 +40,7 @@ public enum WeaponSize {
         this.icon = iconImage;
     }
 
-    public static int getSizeDifference(WeaponSize firstSize, WeaponSize secondSize) {
+    static int getSizeDifference(WeaponSize firstSize, WeaponSize secondSize) {
         if (firstSize == null || secondSize == null) {
             throw new IllegalArgumentException("Both sizes must be non-null");
         }

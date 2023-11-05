@@ -3,12 +3,8 @@ package oth.shipeditor.representation.ship;
 import lombok.Getter;
 import org.kordamp.ikonli.boxicons.BoxiconsRegular;
 import org.kordamp.ikonli.swing.FontIcon;
-import oth.shipeditor.components.viewer.layers.ship.ShipLayer;
-import oth.shipeditor.components.viewer.layers.ship.data.ShipHull;
-import oth.shipeditor.utility.overseers.StaticController;
 import oth.shipeditor.utility.text.StringValues;
-
-import java.awt.*;
+import oth.shipeditor.utility.themes.Themes;
 
 /**
  * @author Ontheheavens
@@ -19,17 +15,17 @@ import java.awt.*;
 public enum HullSize {
 
     DEFAULT(FontIcon.of(BoxiconsRegular.DICE_1,
-            16, Color.DARK_GRAY), 0, StringValues.DEFAULT),
+            16, Themes.getIconColor()), 0, StringValues.DEFAULT),
     FIGHTER(FontIcon.of(BoxiconsRegular.DICE_1,
-            16, Color.DARK_GRAY), 0, "Fighter"),
+            16, Themes.getIconColor()), 0, "Fighter"),
     FRIGATE(FontIcon.of(BoxiconsRegular.DICE_2,
-            16, Color.DARK_GRAY), 10, "Frigate"),
+            16, Themes.getIconColor()), 10, "Frigate"),
     DESTROYER(FontIcon.of(BoxiconsRegular.DICE_3,
-            16, Color.DARK_GRAY), 20, "Destroyer"),
+            16, Themes.getIconColor()), 20, "Destroyer"),
     CRUISER(FontIcon.of(BoxiconsRegular.DICE_4,
-            16, Color.DARK_GRAY), 30, "Cruiser"),
+            16, Themes.getIconColor()), 30, "Cruiser"),
     CAPITAL_SHIP(FontIcon.of(BoxiconsRegular.DICE_5,
-            16, Color.DARK_GRAY), 50, "Capital");
+            16, Themes.getIconColor()), 50, "Capital");
 
     private final FontIcon icon;
 
@@ -41,21 +37,6 @@ public enum HullSize {
         this.icon = fontIcon;
         this.maxFluxRegulators = fluxCap;
         this.displayedName = name;
-    }
-
-    public static HullSize getSizeOfActiveLayer() {
-        HullSize size = null;
-
-        var activeLayer = StaticController.getActiveLayer();
-
-        if (activeLayer instanceof ShipLayer shipLayer) {
-            ShipHull shipHull = shipLayer.getHull();
-            if (shipHull != null) {
-                size = shipHull.getHullSize();
-            }
-        }
-
-        return size;
     }
 
 }

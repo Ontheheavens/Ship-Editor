@@ -13,6 +13,7 @@ import oth.shipeditor.persistence.SettingsManager;
 import oth.shipeditor.undo.EditDispatch;
 import oth.shipeditor.utility.components.ComponentUtilities;
 import oth.shipeditor.utility.text.StringValues;
+import oth.shipeditor.utility.themes.Themes;
 
 import javax.swing.*;
 import java.awt.*;
@@ -93,10 +94,10 @@ public class BuiltInWingsPanel extends CSVEntryBuiltInsPanel<WingCSVEntry> {
         String capacity = wingsSize + " wings / " + bayCount + " bays.";
         if (bayCount < wingsSize) {
             text = "Capacity exceeded: " + capacity;
-            icon = FontIcon.of(FluentUiRegularMZ.WARNING_24, 28, Color.RED);
+            icon = FontIcon.of(FluentUiRegularMZ.WARNING_24, 28, Themes.getReddishFontColor());
         } else {
             text = "Capacity: " + capacity;
-            icon = FontIcon.of(FluentUiRegularAL.INFO_28, 28);
+            icon = FontIcon.of(FluentUiRegularAL.INFO_28, 28, Themes.getIconColor());
         }
         this.bayPanel = ComponentUtilities.createHintPanel(text, icon);
         this.add(bayPanel, BorderLayout.PAGE_END);

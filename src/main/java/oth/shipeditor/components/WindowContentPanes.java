@@ -14,6 +14,7 @@ import oth.shipeditor.components.viewer.PrimaryViewer;
 import oth.shipeditor.parsing.loading.FileLoading;
 import oth.shipeditor.persistence.Settings;
 import oth.shipeditor.persistence.SettingsManager;
+import oth.shipeditor.utility.themes.Themes;
 
 import javax.swing.*;
 import java.awt.*;
@@ -144,7 +145,7 @@ public final class WindowContentPanes {
                 JPopupMenu menu = new JPopupMenu();
 
                 JMenuItem reloadAllGameData = new JMenuItem("Reload all game data");
-                reloadAllGameData.setIcon(FontIcon.of(FluentUiRegularAL.ARROW_DOWNLOAD_20, 16));
+                reloadAllGameData.setIcon(FontIcon.of(FluentUiRegularAL.ARROW_DOWNLOAD_20, 16, Themes.getIconColor()));
                 reloadAllGameData.addActionListener(event -> FileLoading.loadGameData());
                 menu.add(reloadAllGameData);
 
@@ -152,7 +153,7 @@ public final class WindowContentPanes {
 
                 JMenuItem autoLoadData = new JCheckBoxMenuItem("Auto-load data at start");
                 autoLoadData.setSelected(SettingsManager.isDataAutoloadEnabled());
-                autoLoadData.setIcon(FontIcon.of(FluentUiRegularAL.DOCUMENT_AUTOSAVE_24, 16));
+                autoLoadData.setIcon(FontIcon.of(FluentUiRegularAL.DOCUMENT_AUTOSAVE_24, 16, Themes.getIconColor()));
                 autoLoadData.addActionListener(event ->
                         settings.setLoadDataAtStart(autoLoadData.isSelected())
                 );
@@ -160,7 +161,7 @@ public final class WindowContentPanes {
 
                 JMenuItem toggleFileErrorPopups = new JCheckBoxMenuItem("Enable file error pop-ups");
                 toggleFileErrorPopups.setSelected(SettingsManager.areFileErrorPopupsEnabled());
-                toggleFileErrorPopups.setIcon(FontIcon.of(FluentUiRegularAL.DOCUMENT_ERROR_20, 16));
+                toggleFileErrorPopups.setIcon(FontIcon.of(FluentUiRegularAL.DOCUMENT_ERROR_20, 16, Themes.getIconColor()));
                 toggleFileErrorPopups.addActionListener(event ->
                         settings.setShowLoadingErrors(toggleFileErrorPopups.isSelected())
                 );

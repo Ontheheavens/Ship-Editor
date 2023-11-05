@@ -42,6 +42,7 @@ import oth.shipeditor.utility.graphics.ColorUtilities;
 import oth.shipeditor.utility.graphics.Sprite;
 import oth.shipeditor.utility.overseers.StaticController;
 import oth.shipeditor.utility.text.StringValues;
+import oth.shipeditor.utility.themes.Themes;
 
 import javax.swing.*;
 import javax.swing.border.Border;
@@ -103,7 +104,7 @@ public final class ViewerLayersPanel extends SortableTabbedPane {
             }
         });
         this.addMouseListener(new TabContextListener());
-        this.setBorder(BorderFactory.createMatteBorder(1, 0, 0, 0, Color.LIGHT_GRAY));
+        this.setBorder(BorderFactory.createMatteBorder(1, 0, 0, 0,  Themes.getBorderColor()));
     }
 
     @SuppressWarnings({"OverlyCoupledMethod", "ChainOfInstanceofChecks"})
@@ -111,7 +112,7 @@ public final class ViewerLayersPanel extends SortableTabbedPane {
         EventBus.subscribe(event -> {
             if (event instanceof ShipLayerCreated checked) {
                 ShipLayer layer = checked.newLayer();
-                Icon tabIcon = FontIcon.of(BoxiconsRegular.ROCKET, 20);
+                Icon tabIcon = FontIcon.of(BoxiconsRegular.ROCKET, 20, Themes.getIconColor());
                 ShipLayerTab created = new ShipLayerTab(layer);
                 tabIndex.put(layer, created);
                 String tooltip = created.getTabTooltip();
@@ -120,7 +121,7 @@ public final class ViewerLayersPanel extends SortableTabbedPane {
             }
             else if (event instanceof WeaponLayerCreated checked) {
                 WeaponLayer layer = checked.newLayer();
-                Icon tabIcon = FontIcon.of(BoxiconsRegular.TARGET_LOCK, 20);
+                Icon tabIcon = FontIcon.of(BoxiconsRegular.TARGET_LOCK, 20, Themes.getIconColor());
                 WeaponLayerTab created = new WeaponLayerTab(layer);
                 tabIndex.put(layer, created);
                 String tooltip = created.getTabTooltip();
@@ -304,7 +305,7 @@ public final class ViewerLayersPanel extends SortableTabbedPane {
                 PrimaryViewer viewer = StaticController.getViewer();
                 viewer.loadSpriteToLayer(shipLayer, sprite);
             }));
-            openSprite.setIcon(FontIcon.of(FluentUiRegularAL.IMAGE_20, 16));
+            openSprite.setIcon(FontIcon.of(FluentUiRegularAL.IMAGE_20, 16, Themes.getIconColor()));
             menu.add(openSprite);
 
             if (shipPainter == null) {
@@ -312,7 +313,7 @@ public final class ViewerLayersPanel extends SortableTabbedPane {
             }
 
             JMenuItem createHullData = new JMenuItem("Create new ship data");
-            createHullData.setIcon(FontIcon.of(BoxiconsRegular.DETAIL, 16));
+            createHullData.setIcon(FontIcon.of(BoxiconsRegular.DETAIL, 16, Themes.getIconColor()));
             createHullData.addActionListener(event -> {
                 HullSpecFile created = new HullSpecFile();
                 shipLayer.initializeHullData(created);
@@ -360,7 +361,7 @@ public final class ViewerLayersPanel extends SortableTabbedPane {
         @SuppressWarnings("CallToPrintStackTrace")
         private static JMenuItem createPrintLayerOption(ViewerLayer layer) {
             JMenuItem printLayer = new JMenuItem("Print layer to image");
-            printLayer.setIcon(FontIcon.of(BoxiconsRegular.IMAGE_ADD, 16));
+            printLayer.setIcon(FontIcon.of(BoxiconsRegular.IMAGE_ADD, 16, Themes.getIconColor()));
 
             printLayer.addActionListener(event -> {
                 var chooser = FileUtilities.getImageChooser();

@@ -1,5 +1,7 @@
 package oth.shipeditor.utility.components;
 
+import oth.shipeditor.utility.themes.Themes;
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
@@ -20,11 +22,11 @@ public class MouseoverLabelListener extends MouseAdapter {
     private final Runnable action;
 
     public MouseoverLabelListener(Runnable clickAction, JLabel inputLabel) {
-        this(null, clickAction, inputLabel, Color.LIGHT_GRAY);
+        this(null, clickAction, inputLabel, Themes.getPanelHighlightColor());
     }
 
     public MouseoverLabelListener(JPopupMenu menu, JLabel inputLabel) {
-        this(menu, null, inputLabel, Color.LIGHT_GRAY);
+        this(menu, null, inputLabel, Themes.getPanelHighlightColor());
     }
 
     MouseoverLabelListener(JPopupMenu menu, JLabel inputLabel, Color color) {
@@ -51,7 +53,7 @@ public class MouseoverLabelListener extends MouseAdapter {
     @Override
     public void mouseExited(MouseEvent e) {
         super.mouseExited(e);
-        label.setBackground(Color.WHITE);
+        label.setBackground(Themes.getPanelBackgroundColor());
         label.setOpaque(false);
     }
 

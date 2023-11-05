@@ -27,6 +27,7 @@ import oth.shipeditor.undo.EditDispatch;
 import oth.shipeditor.utility.components.ComponentUtilities;
 import oth.shipeditor.utility.overseers.StaticController;
 import oth.shipeditor.utility.text.StringValues;
+import oth.shipeditor.utility.themes.Themes;
 
 import javax.swing.*;
 import javax.swing.border.Border;
@@ -87,7 +88,7 @@ public class VariantModulesPanel extends AbstractVariantPanel{
         JPanel placeholder = this.createContentPlaceholder();
         Border flatBorder = new LineBorder(Color.LIGHT_GRAY);
         placeholder.setBorder(flatBorder);
-        placeholder.setBackground(Color.WHITE);
+        placeholder.setBackground(Themes.getListBackgroundColor());
 
         JPanel container = new JPanel();
         container.setLayout(new BorderLayout());
@@ -140,7 +141,7 @@ public class VariantModulesPanel extends AbstractVariantPanel{
             Insets insets = new Insets(1, 0, 0, 0);
             ComponentUtilities.outfitPanelWithTitle(pickedModulePanel, insets, pickedModule);
         } else {
-            FontIcon hintIcon = FontIcon.of(FluentUiRegularAL.INFO_28, 28);
+            FontIcon hintIcon = FontIcon.of(FluentUiRegularAL.INFO_28, 28, Themes.getIconColor());
             String hint = StringValues.USE_RIGHT_CLICK_CONTEXT_MENU_OF_GAME_DATA_WIDGET_TO_ADD_ENTRIES;
             pickedModulePanel = ComponentUtilities.createHintPanel(hint, hintIcon);
             Insets insets = new Insets(1, 0, 0, 0);

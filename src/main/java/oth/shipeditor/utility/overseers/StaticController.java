@@ -17,8 +17,10 @@ import oth.shipeditor.components.viewer.layers.LayerManager;
 import oth.shipeditor.components.viewer.layers.LayerPainter;
 import oth.shipeditor.components.viewer.layers.ViewerLayer;
 import oth.shipeditor.components.viewer.layers.ship.ShipLayer;
+import oth.shipeditor.components.viewer.layers.ship.data.ShipHull;
 import oth.shipeditor.components.viewer.layers.ship.data.ShipVariant;
 import oth.shipeditor.parsing.FileUtilities;
+import oth.shipeditor.representation.ship.HullSize;
 import oth.shipeditor.utility.Utility;
 
 import java.awt.*;
@@ -151,6 +153,20 @@ public final class StaticController {
 
             action.accept(shipLayer, variant);
         }
+    }
+
+    public static HullSize getSizeOfActiveLayer() {
+        HullSize size = null;
+
+        var layer = StaticController.getActiveLayer();
+        if (layer instanceof ShipLayer shipLayer) {
+            ShipHull shipHull = shipLayer.getHull();
+            if (shipHull != null) {
+                size = shipHull.getHullSize();
+            }
+        }
+
+        return size;
     }
 
 }

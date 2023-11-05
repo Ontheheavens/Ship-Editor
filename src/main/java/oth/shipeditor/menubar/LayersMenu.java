@@ -13,6 +13,7 @@ import oth.shipeditor.components.viewer.layers.LayerManager;
 import oth.shipeditor.parsing.FileUtilities;
 import oth.shipeditor.utility.overseers.StaticController;
 import oth.shipeditor.utility.text.StringValues;
+import oth.shipeditor.utility.themes.Themes;
 
 import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
@@ -40,7 +41,7 @@ public class LayersMenu extends JMenu {
         this.add(createLayer);
 
         removeLayer = new JMenuItem("Remove selected layer");
-        removeLayer.setIcon(FontIcon.of(BoxiconsRegular.LAYER_MINUS, 16));
+        removeLayer.setIcon(FontIcon.of(BoxiconsRegular.LAYER_MINUS, 16, Themes.getIconColor()));
         removeLayer.addActionListener(event -> EventBus.publish(new ActiveLayerRemovalQueued()));
 
         EventBus.subscribe(event -> {
@@ -63,7 +64,7 @@ public class LayersMenu extends JMenu {
 
     public static JMenuItem createAddLayerOption() {
         JMenuItem createLayer = new JMenuItem("Create new layer");
-        createLayer.setIcon(FontIcon.of(BoxiconsRegular.LAYER_PLUS, 16));
+        createLayer.setIcon(FontIcon.of(BoxiconsRegular.LAYER_PLUS, 16, Themes.getIconColor()));
         createLayer.addActionListener(event -> {
             Object[] options = {"Ship Layer", "Weapon Layer"};
             int result = JOptionPane.showOptionDialog(null,
@@ -86,7 +87,7 @@ public class LayersMenu extends JMenu {
     @SuppressWarnings("CallToPrintStackTrace")
     private static JMenuItem getViewerPrintOption() {
         JMenuItem printViewer = new JMenuItem("Print viewer to image");
-        printViewer.setIcon(FontIcon.of(BoxiconsRegular.IMAGE_ADD, 16));
+        printViewer.setIcon(FontIcon.of(BoxiconsRegular.IMAGE_ADD, 16, Themes.getIconColor()));
 
         printViewer.addActionListener(event -> {
             var chooser = FileUtilities.getImageChooser();

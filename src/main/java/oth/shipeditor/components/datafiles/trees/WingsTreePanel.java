@@ -270,16 +270,11 @@ public class WingsTreePanel extends CSVDataTreePanel<WingCSVEntry>{
                                                       boolean expanded, boolean leaf, int row, boolean hasFocus) {
             super.getTreeCellRendererComponent(tree, value, sel, expanded, leaf, row, hasFocus);
             Object object = ((DefaultMutableTreeNode) value).getUserObject();
-            setForeground(Color.BLACK);
+            DataTreePanel.configureCellRendererColors(object, this);
             if (object instanceof WingCSVEntry checked && leaf) {
                 setText(checked.getEntryName());
             } else if (object instanceof GameDataPackage dataPackage) {
                 setText(dataPackage.getFolderName());
-                if (SettingsManager.isCoreFolder(dataPackage)) {
-                    setForeground(Color.RED);
-                } else if (dataPackage.isPinned()) {
-                    setForeground(Color.BLUE);
-                }
             }
 
             return this;

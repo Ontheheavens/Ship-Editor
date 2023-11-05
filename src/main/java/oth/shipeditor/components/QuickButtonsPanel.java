@@ -3,6 +3,7 @@ package oth.shipeditor.components;
 import org.kordamp.ikonli.fluentui.FluentUiRegularAL;
 import org.kordamp.ikonli.swing.FontIcon;
 import oth.shipeditor.undo.UndoOverseer;
+import oth.shipeditor.utility.themes.Themes;
 
 import javax.swing.*;
 import java.awt.*;
@@ -15,7 +16,8 @@ public class QuickButtonsPanel extends JPanel {
 
     QuickButtonsPanel() {
         this.add(QuickButtonsPanel.createUndoRedoButtons());
-        this.setBackground(Color.LIGHT_GRAY);
+        Color background = UIManager.getColor(Themes.TITLE_PANE_BACKGROUND);
+        this.setBackground(background);
     }
 
     private static JPanel createUndoRedoButtons() {
@@ -24,18 +26,18 @@ public class QuickButtonsPanel extends JPanel {
         JButton undo = new JButton();
         undo.setAction(UndoOverseer.getUndoAction());
         undo.setHideActionText(true);
-        Icon undoIcon = FontIcon.of(FluentUiRegularAL.ARROW_UNDO_20, 16);
+        Icon undoIcon = FontIcon.of(FluentUiRegularAL.ARROW_UNDO_20, 16, Themes.getIconColor());
         undo.setIcon(undoIcon);
-        undo.setDisabledIcon(FontIcon.of(FluentUiRegularAL.ARROW_UNDO_20, 16, Color.GRAY));
+        undo.setDisabledIcon(FontIcon.of(FluentUiRegularAL.ARROW_UNDO_20, 16, Themes.getDisabledIconColor()));
 
         buttonsContainer.add(undo);
 
         JButton redo = new JButton();
         redo.setAction(UndoOverseer.getRedoAction());
         redo.setHideActionText(true);
-        Icon redoIcon = FontIcon.of(FluentUiRegularAL.ARROW_REDO_20, 16);
+        Icon redoIcon = FontIcon.of(FluentUiRegularAL.ARROW_REDO_20, 16, Themes.getIconColor());
         redo.setIcon(redoIcon);
-        redo.setDisabledIcon(FontIcon.of(FluentUiRegularAL.ARROW_REDO_20, 16, Color.GRAY));
+        redo.setDisabledIcon(FontIcon.of(FluentUiRegularAL.ARROW_REDO_20, 16, Themes.getDisabledIconColor()));
 
         buttonsContainer.add(redo);
 

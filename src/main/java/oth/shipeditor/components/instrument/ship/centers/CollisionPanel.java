@@ -21,6 +21,7 @@ import oth.shipeditor.utility.components.ComponentUtilities;
 import oth.shipeditor.utility.components.MouseoverLabelListener;
 import oth.shipeditor.utility.components.dialog.DialogUtilities;
 import oth.shipeditor.utility.text.StringValues;
+import oth.shipeditor.utility.themes.Themes;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -108,7 +109,7 @@ public final class CollisionPanel extends JPanel {
         shipCenterMenu.setEnabled(false);
         collisionRadiusMenu.setEnabled(false);
         collisionOpacitySlider.setEnabled(false);
-        Color labelColor = Color.GRAY;
+        Color labelColor = Themes.getDisabledTextColor();
         if (this.centerPainter != null) {
             ShipCenterPoint center = this.centerPainter.getCenterPoint();
             if (center != null) {
@@ -117,7 +118,7 @@ public final class CollisionPanel extends JPanel {
                 shipCenterMenu.setEnabled(true);
                 collisionRadiusMenu.setEnabled(true);
                 collisionOpacitySlider.setEnabled(true);
-                labelColor = Color.BLACK;
+                labelColor = Themes.getTextColor();
             }
         }
         centerCoords.setText(centerPosition);

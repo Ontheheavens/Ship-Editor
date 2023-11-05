@@ -57,7 +57,6 @@ public final class PrimaryWindow extends JFrame {
     }
 
     private static void performStaticInits() {
-        Initializations.initializeSettingsFile();
         Initializations.selectGameFolder();
         SaveCoordinator.init();
         StaticController.init();
@@ -87,7 +86,5 @@ public final class PrimaryWindow extends JFrame {
         this.setVisible(true);
         EventBus.publish(new WindowGUIShowConfirmed());
     }
-
-
 
 }

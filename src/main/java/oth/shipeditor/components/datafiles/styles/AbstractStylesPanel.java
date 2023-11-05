@@ -2,6 +2,7 @@ package oth.shipeditor.components.datafiles.styles;
 
 import lombok.Getter;
 import oth.shipeditor.utility.components.ComponentUtilities;
+import oth.shipeditor.utility.themes.Themes;
 
 import javax.swing.*;
 import javax.swing.border.Border;
@@ -22,7 +23,7 @@ abstract class AbstractStylesPanel extends JPanel {
         this.setLayout(new BorderLayout());
 
         JPanel topContainer = this.createTopPanel();
-        topContainer.setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, Color.LIGHT_GRAY));
+        topContainer.setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, Themes.getBorderColor()));
         this.add(topContainer, BorderLayout.PAGE_START);
 
         this.scrollerContent = new JPanel();

@@ -347,13 +347,13 @@ class HullsTreePanel extends DataTreePanel {
 
     private static class HullsTreeCellRenderer extends DefaultTreeCellRenderer {
 
-        @SuppressWarnings({"ParameterHidesMemberVariable", "ChainOfInstanceofChecks"})
+        @SuppressWarnings("ParameterHidesMemberVariable")
         @Override
         public Component getTreeCellRendererComponent(JTree tree, Object value, boolean sel,
                                                       boolean expanded, boolean leaf, int row, boolean hasFocus) {
             super.getTreeCellRendererComponent(tree, value, sel, expanded, leaf, row, hasFocus);
             Object object = ((DefaultMutableTreeNode) value).getUserObject();
-            setForeground(Color.BLACK);
+            DataTreePanel.configureCellRendererColors(object, this);
             if (object instanceof ShipCSVEntry checked && leaf) {
                 HullSize hullSize = checked.getSize();
                 switch (hullSize) {
@@ -363,13 +363,6 @@ class HullsTreePanel extends DataTreePanel {
                     case CRUISER -> setIcon(HullSize.CRUISER.getIcon());
                     case CAPITAL_SHIP -> setIcon(HullSize.CAPITAL_SHIP.getIcon());
                     default -> {}
-                }
-            } else if (object instanceof GameDataPackage dataPackage) {
-                setText(dataPackage.getFolderName());
-                if (SettingsManager.isCoreFolder(dataPackage)) {
-                    setForeground(Color.RED);
-                } else if (dataPackage.isPinned()) {
-                    setForeground(Color.BLUE);
                 }
             }
             return this;

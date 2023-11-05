@@ -35,6 +35,7 @@ import oth.shipeditor.utility.components.rendering.CustomTreeNode;
 import oth.shipeditor.utility.components.rendering.SortableTreeCellRenderer;
 import oth.shipeditor.utility.overseers.StaticController;
 import oth.shipeditor.utility.text.StringValues;
+import oth.shipeditor.utility.themes.Themes;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -428,15 +429,16 @@ public class VariantWeaponsTree extends DynamicWidthTree {
             JLabel iconLabel = getIconLabel();
             JLabel textLabel = getTextLabel();
 
-            iconLabel.setIcon(FontIcon.of(BoxiconsRegular.CROSSHAIR, 16, Color.DARK_GRAY));
+            Color iconColor = Themes.getIconColor();
+            iconLabel.setIcon(FontIcon.of(BoxiconsRegular.CROSSHAIR, 16, iconColor));
             iconLabel.setBorder(new EmptyBorder(0, 0, 0, 2));
             textLabel.setText("Weapon Group " + weaponGroup.getIndexToDisplay());
 
-            setBackgroundNonSelectionColor(Color.LIGHT_GRAY);
+            setBackgroundNonSelectionColor(Themes.getPanelDarkColor());
 
             if (weaponGroup.isAutofire()) {
                 slotTypeIcon.setIcon(FontIcon.of(FluentUiRegularAL.DEVELOPER_BOARD_24,
-                        18, Color.DARK_GRAY));
+                        18, iconColor));
                 slotTypeIcon.setVisible(true);
 
                 treeNode.setFirstLineTip("Autofire: ON");
@@ -447,10 +449,10 @@ public class VariantWeaponsTree extends DynamicWidthTree {
             }
             Icon mode;
             if (weaponGroup.getMode() == FireMode.ALTERNATING) {
-                mode = FontIcon.of(BoxiconsRegular.SLIDER, 18, Color.DARK_GRAY);
+                mode = FontIcon.of(BoxiconsRegular.SLIDER, 18, iconColor);
                 treeNode.setSecondLineTip("Firing mode: ALTERNATING");
             } else {
-                mode = FontIcon.of(BoxiconsRegular.POLL, 18, Color.DARK_GRAY);
+                mode = FontIcon.of(BoxiconsRegular.POLL, 18, iconColor);
                 treeNode.setSecondLineTip("Firing mode: LINKED");
             }
             builtInIcon.setIcon(mode);
@@ -470,7 +472,7 @@ public class VariantWeaponsTree extends DynamicWidthTree {
             treeNode.setFirstLineTip(StringValues.WEAPON_ID + feature.getFeatureID());
 
             if (feature.isContainedInBuiltIns()) {
-                builtInIcon.setIcon(FontIcon.of(BoxiconsSolid.LOCK_ALT, 16, Color.GRAY));
+                builtInIcon.setIcon(FontIcon.of(BoxiconsSolid.LOCK_ALT, 16, Themes.getIconColor()));
                 builtInIcon.setVisible(true);
 
                 treeNode.setSecondLineTip("Built-in: locked in variant");
@@ -478,7 +480,7 @@ public class VariantWeaponsTree extends DynamicWidthTree {
             }
 
             if (slot == null) {
-                setForeground(Color.RED);
+                setForeground(Themes.getReddishFontColor());
                 iconLabel.setIcon(FontIcon.of(BoxiconsRegular.ERROR, 18, Color.RED));
                 iconLabel.setOpaque(false);
                 iconLabel.setBorder(new EmptyBorder(1, 0, 0, 0));
@@ -496,7 +498,7 @@ public class VariantWeaponsTree extends DynamicWidthTree {
                 iconLabel.setIcon(weaponSize.getIcon());
 
                 if (!slot.canFit(feature)) {
-                    setForeground(Color.RED);
+                    setForeground(Themes.getReddishFontColor());
                     String weaponUnfitForSlot = StringValues.INVALIDATED_WEAPON_UNFIT_FOR_SLOT;
                     if (feature.isContainedInBuiltIns()) {
                         weaponUnfitForSlot = Utility.getWithLinebreaks(weaponUnfitForSlot,
@@ -535,7 +537,7 @@ public class VariantWeaponsTree extends DynamicWidthTree {
             lowerLeftLabel.setText("");
             lowerRightLabel.setText("");
 
-            setBackgroundNonSelectionColor(Color.WHITE);
+            setBackgroundNonSelectionColor(Themes.getListBackgroundColor());
 
             treeNode.setSecondLineTip(null);
             treeNode.setFirstLineTip(null);

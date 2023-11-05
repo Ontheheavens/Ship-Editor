@@ -3,6 +3,7 @@ package oth.shipeditor.utility.components.rendering;
 import com.formdev.flatlaf.ui.FlatLineBorder;
 import oth.shipeditor.components.datafiles.entities.OrdnancedCSVEntry;
 import oth.shipeditor.representation.ship.HullSize;
+import oth.shipeditor.utility.overseers.StaticController;
 
 import javax.swing.*;
 import java.awt.*;
@@ -70,7 +71,7 @@ public class OrdnancedEntryCellRenderer extends PanelListCellRenderer<OrdnancedC
 
         textLabel.setText(value.getEntryName());
 
-        HullSize size = HullSize.getSizeOfActiveLayer();
+        HullSize size = StaticController.getSizeOfActiveLayer();
         if (size != null) {
             int ordnanceCost = value.getOrdnanceCost(size);
             ordnanceLabel.setText("OP: " + ordnanceCost);

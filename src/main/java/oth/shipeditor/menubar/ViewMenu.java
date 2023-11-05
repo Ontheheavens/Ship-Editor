@@ -13,6 +13,7 @@ import oth.shipeditor.components.viewer.PaintOrderController;
 import oth.shipeditor.persistence.Settings;
 import oth.shipeditor.persistence.SettingsManager;
 import oth.shipeditor.utility.graphics.ColorUtilities;
+import oth.shipeditor.utility.themes.Themes;
 
 import javax.swing.*;
 import java.awt.*;
@@ -46,7 +47,7 @@ class ViewMenu extends JMenu {
         this.add(changeBackground);
 
         JMenuItem displayBackgroundImage = new JCheckBoxMenuItem("Display background image");
-        displayBackgroundImage.setIcon(FontIcon.of(FluentUiRegularMZ.TABLE_20, 16));
+        displayBackgroundImage.setIcon(FontIcon.of(FluentUiRegularMZ.TABLE_20, 16, Themes.getIconColor()));
         displayBackgroundImage.setSelected(true);
         displayBackgroundImage.addActionListener(e ->
                 PaintOrderController.setShowBackgroundImage(displayBackgroundImage.isSelected()));
@@ -59,7 +60,7 @@ class ViewMenu extends JMenu {
         );
         this.add(resetTransform);
         toggleRotate = new JCheckBoxMenuItem("Toggle view rotation");
-        toggleRotate.setIcon(FontIcon.of(FluentUiRegularAL.ARROW_ROTATE_CLOCKWISE_20, 16));
+        toggleRotate.setIcon(FontIcon.of(FluentUiRegularAL.ARROW_ROTATE_CLOCKWISE_20, 16, Themes.getIconColor()));
         toggleRotate.setSelected(true);
         toggleRotate.addActionListener(event ->
                 EventBus.publish(new ViewerRotationToggled(toggleRotate.isSelected(), true))
@@ -84,7 +85,7 @@ class ViewMenu extends JMenu {
 
     private JMenu createGuidesSubmenu() {
         JMenu guidesSubmenu = new JMenu("Toggle guides");
-        guidesSubmenu.setIcon(FontIcon.of(BoxiconsRegular.BORDER_INNER, 16));
+        guidesSubmenu.setIcon(FontIcon.of(BoxiconsRegular.BORDER_INNER, 16, Themes.getIconColor()));
 
         toggleCursorGuides = new JCheckBoxMenuItem("Enable cursor guides");
         toggleCursorGuides.setSelected(true);

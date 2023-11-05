@@ -272,6 +272,7 @@ public final class GuidesPainters {
             Paint oldPaint = g.getPaint();
 
             g.setStroke(new BasicStroke(3));
+            g.setPaint(Color.BLACK);
             g.draw(transformed);
             g.setStroke(oldStroke);
             g.setPaint(Color.WHITE);

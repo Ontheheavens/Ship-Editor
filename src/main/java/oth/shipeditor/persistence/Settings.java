@@ -7,6 +7,7 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import lombok.Getter;
 import oth.shipeditor.parsing.deserialize.ColorArrayRGBADeserializer;
 import oth.shipeditor.parsing.serialize.ColorArrayRGBASerializer;
+import oth.shipeditor.utility.themes.Theme;
 
 import java.awt.*;
 import java.nio.file.Path;
@@ -46,6 +47,9 @@ public class Settings {
     @JsonProperty("loadDataAtStart")
     boolean loadDataAtStart;
 
+    @JsonProperty("theme")
+    Theme theme = Theme.LIGHT;
+
     @JsonProperty("dataPackages")
     private List<GameDataPackage> dataPackages = new ArrayList<>();
 
@@ -55,6 +59,11 @@ public class Settings {
         } else {
             this.backgroundColor = Color.GRAY;
         }
+        SettingsManager.updateFileFromRuntime();
+    }
+
+    public void setTheme(Theme inputTheme) {
+        this.theme = inputTheme;
         SettingsManager.updateFileFromRuntime();
     }
 

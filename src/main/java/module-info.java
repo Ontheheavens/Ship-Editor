@@ -99,5 +99,6 @@ module oth.shipeditor {
     exports oth.shipeditor.components.help.parts;
     exports oth.shipeditor.representation.ship;
     opens oth.shipeditor.representation.ship;
+    exports oth.shipeditor.utility.themes;
 
 }

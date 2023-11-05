@@ -14,6 +14,7 @@ import oth.shipeditor.utility.components.ComponentUtilities;
 import oth.shipeditor.utility.components.MouseoverLabelListener;
 import oth.shipeditor.utility.components.dialog.DialogUtilities;
 import oth.shipeditor.utility.text.StringValues;
+import oth.shipeditor.utility.themes.Themes;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -84,13 +85,13 @@ public class ViewerLayerWidgetsPanel extends JPanel {
 
     private void updateAnchorLabel() {
         String anchorPosition = StringValues.NOT_INITIALIZED;
-        Color labelColor = Color.GRAY;
+        Color labelColor = Themes.getDisabledTextColor();
         if (this.layerPainter != null) {
             Point2D anchor = this.layerPainter.getAnchor();
             if (anchor != null) {
                 Point2D coordinatesForDisplay = Utility.getPointCoordinatesForDisplay(anchor);
                 anchorPosition = Utility.getPointPositionText(coordinatesForDisplay);
-                labelColor = Color.BLACK;
+                labelColor = Themes.getTextColor();
             }
         }
         layerAnchorLabel.setText(anchorPosition);
@@ -99,11 +100,11 @@ public class ViewerLayerWidgetsPanel extends JPanel {
 
     private void updateRotationLabel() {
         String rotationValue = StringValues.NOT_INITIALIZED;
-        Color labelColor = Color.GRAY;
+        Color labelColor = Themes.getDisabledTextColor();
         if (this.layerPainter != null) {
             double rotation = this.layerPainter.getRotationRadians();
             rotationValue = Utility.clampAngleWithRounding(rotation) + "°";
-            labelColor = Color.BLACK;
+            labelColor = Themes.getTextColor();
         }
         layerRotationLabel.setText(rotationValue);
         layerRotationLabel.setForeground(labelColor);

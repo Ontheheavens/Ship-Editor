@@ -18,6 +18,7 @@ import oth.shipeditor.utility.components.ComponentUtilities;
 import oth.shipeditor.utility.components.MouseoverLabelListener;
 import oth.shipeditor.utility.components.dialog.DialogUtilities;
 import oth.shipeditor.utility.text.StringValues;
+import oth.shipeditor.utility.themes.Themes;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -98,7 +99,7 @@ public class ShieldPanel extends JPanel {
         shieldCenterMenu.setEnabled(false);
         shieldRadiusMenu.setEnabled(false);
         shieldOpacitySlider.setEnabled(false);
-        Color labelColor = Color.GRAY;
+        Color labelColor = Themes.getDisabledTextColor();
         if (this.shieldPainter != null) {
             ShieldCenterPoint center = this.shieldPainter.getShieldCenterPoint();
             if (center != null) {
@@ -107,7 +108,7 @@ public class ShieldPanel extends JPanel {
                 shieldCenterMenu.setEnabled(true);
                 shieldRadiusMenu.setEnabled(true);
                 shieldOpacitySlider.setEnabled(true);
-                labelColor = Color.BLACK;
+                labelColor = Themes.getTextColor();
             }
         }
         shieldCenterCoords.setText(shieldPosition);

@@ -10,11 +10,13 @@ import oth.shipeditor.communication.events.viewer.control.CursorSnappingToggled;
 import oth.shipeditor.communication.events.viewer.control.PointSelectionModeChange;
 import oth.shipeditor.communication.events.viewer.control.RotationRoundingToggled;
 import oth.shipeditor.components.viewer.control.PointSelectionMode;
+import oth.shipeditor.persistence.Settings;
 import oth.shipeditor.persistence.SettingsManager;
 import oth.shipeditor.undo.UndoOverseer;
+import oth.shipeditor.utility.themes.Theme;
+import oth.shipeditor.utility.themes.Themes;
 
 import javax.swing.*;
-import java.awt.*;
 import java.awt.event.ActionListener;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
@@ -36,9 +38,11 @@ public final class PrimaryMenuBar extends JMenuBar {
         this.add(PrimaryMenuBar.createViewMenu());
         this.add(PrimaryMenuBar.createLayersMenu());
 
-        JMenu about = new JMenu("About");
+        JMenu application = new JMenu("Application");
 
-        String infoText = "Project info";
+        application.add(PrimaryMenuBar.createThemeOptions());
+
+        String infoText = "About";
         JMenuItem projectInfo = new JMenuItem(infoText);
 
         JPanel aboutInfoPanel = new JPanel();
@@ -50,9 +54,39 @@ public final class PrimaryMenuBar extends JMenuBar {
 
         projectInfo.addActionListener(e -> JOptionPane.showMessageDialog(null, aboutInfoPanel,
                 infoText, JOptionPane.INFORMATION_MESSAGE));
-        about.add(projectInfo);
+        application.add(projectInfo);
 
-        this.add(about);
+        this.add(application);
+    }
+
+    private static JMenu createThemeOptions() {
+        JMenu themeMenu = new JMenu("Theme");
+        themeMenu.setIcon(FontIcon.of(FluentUiRegularAL.DARK_THEME_24, 16, Themes.getIconColor()));
+
+        Settings settings = SettingsManager.getSettings();
+        String themeHint = "Will take effect after restart";
+
+        JMenuItem setLight = new JRadioButtonMenuItem("Light");
+        setLight.addActionListener(e -> settings.setTheme(Theme.LIGHT));
+        setLight.setToolTipText(themeHint);
+
+        JMenuItem setDark = new JRadioButtonMenuItem("Dark");
+        setDark.addActionListener(e -> settings.setTheme(Theme.DARK));
+        setDark.setToolTipText(themeHint);
+
+        ButtonGroup buttonGroup = new ButtonGroup();
+        buttonGroup.add(setLight);
+        buttonGroup.add(setDark);
+
+        switch (settings.getTheme()) {
+            case DARK -> setDark.setSelected(true);
+            case LIGHT -> setLight.setSelected(true);
+        }
+
+        themeMenu.add(setLight);
+        themeMenu.add(setDark);
+
+        return themeMenu;
     }
 
     private static JMenu createFileMenu() {
@@ -72,16 +106,16 @@ public final class PrimaryMenuBar extends JMenuBar {
 
         JMenuItem undo = new JMenuItem("Undo");
         undo.setAction(UndoOverseer.getUndoAction());
-        undo.setIcon(FontIcon.of(FluentUiRegularAL.ARROW_UNDO_20, 16));
-        undo.setDisabledIcon(FontIcon.of(FluentUiRegularAL.ARROW_UNDO_20, 16, Color.GRAY));
+        undo.setIcon(FontIcon.of(FluentUiRegularAL.ARROW_UNDO_20, 16, Themes.getIconColor()));
+        undo.setDisabledIcon(FontIcon.of(FluentUiRegularAL.ARROW_UNDO_20, 16, Themes.getDisabledIconColor()));
         KeyStroke keyStrokeToUndo = KeyStroke.getKeyStroke(KeyEvent.VK_U, InputEvent.CTRL_DOWN_MASK);
         undo.setAccelerator(keyStrokeToUndo);
         editMenu.add(undo);
 
         JMenuItem redo = new JMenuItem("Redo");
         redo.setAction(UndoOverseer.getRedoAction());
-        redo.setIcon(FontIcon.of(FluentUiRegularAL.ARROW_REDO_20, 16));
-        redo.setDisabledIcon(FontIcon.of(FluentUiRegularAL.ARROW_REDO_20, 16, Color.GRAY));
+        redo.setIcon(FontIcon.of(FluentUiRegularAL.ARROW_REDO_20, 16, Themes.getIconColor()));
+        redo.setDisabledIcon(FontIcon.of(FluentUiRegularAL.ARROW_REDO_20, 16, Themes.getDisabledIconColor()));
         KeyStroke keyStrokeToRedo = KeyStroke.getKeyStroke(KeyEvent.VK_R, InputEvent.CTRL_DOWN_MASK);
         redo.setAccelerator(keyStrokeToRedo);
         editMenu.add(redo);
@@ -92,7 +126,7 @@ public final class PrimaryMenuBar extends JMenuBar {
         editMenu.add(pointSelectionMode);
 
         toggleCursorSnap = new JCheckBoxMenuItem("Toggle cursor snapping");
-        toggleCursorSnap.setIcon(FontIcon.of(FluentUiRegularAL.GROUP_20, 16));
+        toggleCursorSnap.setIcon(FontIcon.of(FluentUiRegularAL.GROUP_20, 16, Themes.getIconColor()));
         toggleCursorSnap.setSelected(true);
         toggleCursorSnap.addActionListener(event ->
                 EventBus.publish(new CursorSnappingToggled(toggleCursorSnap.isSelected()))
@@ -105,7 +139,7 @@ public final class PrimaryMenuBar extends JMenuBar {
         editMenu.add(toggleCursorSnap);
 
         toggleRotationRounding = new JCheckBoxMenuItem("Toggle rotation rounding");
-        toggleRotationRounding.setIcon(FontIcon.of(FluentUiRegularAL.ARROW_ROTATE_CLOCKWISE_20, 16));
+        toggleRotationRounding.setIcon(FontIcon.of(FluentUiRegularAL.ARROW_ROTATE_CLOCKWISE_20, 16, Themes.getIconColor()));
         toggleRotationRounding.setSelected(true);
         toggleRotationRounding.addActionListener(event ->
                 EventBus.publish(new RotationRoundingToggled(toggleRotationRounding.isSelected()))
@@ -122,7 +156,7 @@ public final class PrimaryMenuBar extends JMenuBar {
 
     private static JMenu createPointSelectionModeOptions() {
         JMenu newSubmenu = new JMenu("Point selection mode");
-        newSubmenu.setIcon(FontIcon.of(FluentUiRegularMZ.TARGET_20, 16));
+        newSubmenu.setIcon(FontIcon.of(FluentUiRegularMZ.TARGET_20, 16, Themes.getIconColor()));
 
         JMenuItem selectHovered = new JRadioButtonMenuItem("Select clicked");
         selectHovered.addActionListener(e ->
@@ -161,7 +195,7 @@ public final class PrimaryMenuBar extends JMenuBar {
     @SuppressWarnings("StaticMethodOnlyUsedInOneClass")
     static JMenuItem createMenuOption(String text, Ikon icon, ActionListener action) {
         JMenuItem newOption = new JMenuItem(text);
-        newOption.setIcon(FontIcon.of(icon, 16));
+        newOption.setIcon(FontIcon.of(icon, 16, Themes.getIconColor()));
         newOption.addActionListener(action);
         return newOption;
     }

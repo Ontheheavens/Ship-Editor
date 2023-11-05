@@ -11,6 +11,7 @@ import oth.shipeditor.components.viewer.layers.ship.ShipLayer;
 import oth.shipeditor.components.viewer.layers.ship.ShipPainter;
 import oth.shipeditor.utility.components.ComponentUtilities;
 import oth.shipeditor.utility.components.containers.ScrollableHeightContainer;
+import oth.shipeditor.utility.themes.Themes;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -47,7 +48,7 @@ public abstract class AbstractBuiltInsPanel extends JPanel {
     }
 
     protected void addHintPanel() {
-        FontIcon hintIcon = FontIcon.of(FluentUiRegularAL.INFO_28, 28);
+        FontIcon hintIcon = FontIcon.of(FluentUiRegularAL.INFO_28, 28, Themes.getIconColor());
         JPanel hintPanel = ComponentUtilities.createHintPanel(getHintText(), hintIcon);
         this.add(hintPanel, BorderLayout.PAGE_START);
     }

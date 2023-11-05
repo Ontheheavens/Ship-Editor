@@ -22,6 +22,7 @@ import oth.shipeditor.utility.components.MouseoverLabelListener;
 import oth.shipeditor.utility.components.dialog.DialogUtilities;
 import oth.shipeditor.utility.graphics.Sprite;
 import oth.shipeditor.utility.text.StringValues;
+import oth.shipeditor.utility.themes.Themes;
 
 import javax.swing.*;
 import java.awt.*;
@@ -80,7 +81,7 @@ final class ViewerStatusPanel extends JPanel {
         rightPanel.add(ViewerStatusPanel.createMirrorModePanel(), gbcRight);
 
         this.add(rightPanel, BorderLayout.CENTER);
-        this.setBorder(BorderFactory.createMatteBorder(1, 0, 0, 0, Color.LIGHT_GRAY));
+        this.setBorder(BorderFactory.createMatteBorder(1, 0, 0, 0, Themes.getBorderColor()));
     }
 
     private static JPanel createMirrorModePanel() {
@@ -140,14 +141,14 @@ final class ViewerStatusPanel extends JPanel {
     private JPanel createLeftsidePanel() {
         leftsideContainer = new JPanel();
 
-        FontIcon dimensionIcon = FontIcon.of(FluentUiRegularMZ.SLIDE_SIZE_24, 20);
+        FontIcon dimensionIcon = FontIcon.of(FluentUiRegularMZ.SLIDE_SIZE_24, 20, Themes.getIconColor());
         dimensions = new JLabel("", dimensionIcon, SwingConstants.TRAILING);
         dimensions.setToolTipText("Width / height of active layer");
         leftsideContainer.add(dimensions);
 
         this.addSeparator();
 
-        FontIcon mouseIcon = FontIcon.of(FluentUiRegularAL.CURSOR_HOVER_20, 20);
+        FontIcon mouseIcon = FontIcon.of(FluentUiRegularAL.CURSOR_HOVER_20, 20, Themes.getIconColor());
         cursorCoords = new JLabel("", mouseIcon, SwingConstants.TRAILING);
         Insets coordsInsets = new Insets(2, 6, 2, 7);
         cursorCoords.setBorder(ComponentUtilities.createRoundCompoundBorder(coordsInsets));
@@ -158,7 +159,7 @@ final class ViewerStatusPanel extends JPanel {
 
         this.addSeparator();
 
-        FontIcon zoomIcon = FontIcon.of(FluentUiRegularMZ.ZOOM_IN_20, 20);
+        FontIcon zoomIcon = FontIcon.of(FluentUiRegularMZ.ZOOM_IN_20, 20, Themes.getIconColor());
         zoom = new JLabel("", zoomIcon, SwingConstants.TRAILING);
         Insets zoomInsets = new Insets(2, 3, 2, 5);
         zoom.setBorder(ComponentUtilities.createRoundCompoundBorder(zoomInsets));
@@ -178,7 +179,7 @@ final class ViewerStatusPanel extends JPanel {
 
         this.addSeparator();
 
-        FontIcon rotationIcon = FontIcon.of(FluentUiRegularAL.ARROW_ROTATE_CLOCKWISE_20, 20);
+        FontIcon rotationIcon = FontIcon.of(FluentUiRegularAL.ARROW_ROTATE_CLOCKWISE_20, 20, Themes.getIconColor());
         this.rotation = new JLabel("", rotationIcon, SwingConstants.TRAILING);
 
         Insets rotationInsets = new Insets(2, 3, 2, 5);

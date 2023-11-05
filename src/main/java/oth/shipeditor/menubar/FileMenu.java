@@ -9,6 +9,7 @@ import oth.shipeditor.parsing.FileUtilities;
 import oth.shipeditor.parsing.JsonProcessor;
 import oth.shipeditor.parsing.loading.FileLoading;
 import oth.shipeditor.utility.Utility;
+import oth.shipeditor.utility.themes.Themes;
 
 import javax.swing.*;
 import java.io.File;
@@ -33,26 +34,26 @@ class FileMenu extends JMenu {
         this.add(openSubmenu);
 
         JMenuItem loadHullAsLayer = new JMenuItem(FileLoading.getLoadHullAsLayer());
-        loadHullAsLayer.setIcon(FontIcon.of(BoxiconsRegular.LAYER, 16));
+        loadHullAsLayer.setIcon(FontIcon.of(BoxiconsRegular.LAYER, 16, Themes.getIconColor()));
         loadHullAsLayer.setText("Load ship file as layer");
         this.add(loadHullAsLayer);
 
         JMenuItem jsonCorrector = FileMenu.getJSONCorrector();
-        jsonCorrector.setIcon(FontIcon.of(FluentUiRegularMZ.TEXT_GRAMMAR_OPTIONS_20, 16));
+        jsonCorrector.setIcon(FontIcon.of(FluentUiRegularMZ.TEXT_GRAMMAR_OPTIONS_20, 16, Themes.getIconColor()));
         this.add(jsonCorrector);
     }
 
     private static JMenu createOpenSubmenu() {
         JMenu newSubmenu = new JMenu("Open");
-        newSubmenu.setIcon(FontIcon.of(FluentUiRegularAL.FOLDER_OPEN_20, 16));
+        newSubmenu.setIcon(FontIcon.of(FluentUiRegularAL.FOLDER_OPEN_20, 16, Themes.getIconColor()));
 
         JMenuItem openSprite = new JMenuItem(FileLoading.getOpenSprite());
-        openSprite.setIcon(FontIcon.of(FluentUiRegularAL.IMAGE_20, 16));
+        openSprite.setIcon(FontIcon.of(FluentUiRegularAL.IMAGE_20, 16, Themes.getIconColor()));
         openSprite.setText("Open sprite to layer");
         newSubmenu.add(openSprite);
 
         JMenuItem openShipData = new JMenuItem(FileLoading.getOpenShip());
-        openShipData.setIcon(FontIcon.of(FluentUiRegularAL.CLIPBOARD_TEXT_20, 16));
+        openShipData.setIcon(FontIcon.of(FluentUiRegularAL.CLIPBOARD_TEXT_20, 16, Themes.getIconColor()));
         openShipData.setText("Open ship file to layer");
         newSubmenu.add(openShipData);
 

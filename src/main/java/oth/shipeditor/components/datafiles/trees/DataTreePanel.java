@@ -14,6 +14,7 @@ import oth.shipeditor.utility.components.ComponentUtilities;
 import oth.shipeditor.utility.components.MouseoverLabelListener;
 import oth.shipeditor.utility.overseers.StaticController;
 import oth.shipeditor.utility.text.StringValues;
+import oth.shipeditor.utility.themes.Themes;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -56,7 +57,7 @@ public abstract class DataTreePanel extends JPanel {
         this.setLayout(new BorderLayout());
         JPanel topContainer = createTopPanel();
         if (topContainer != null) {
-            topContainer.setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, Color.LIGHT_GRAY));
+            topContainer.setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0,  Themes.getBorderColor()));
             this.add(topContainer, BorderLayout.PAGE_START);
         }
         JPanel treePanel = createTreePanel(rootName);
@@ -414,6 +415,19 @@ public abstract class DataTreePanel extends JPanel {
         rightPanel.add(component, otherConstraints);
         rightPanel.revalidate();
         rightPanel.repaint();
+    }
+
+    static void configureCellRendererColors(Object userObject, JLabel stamp) {
+        Color textColor = Themes.getTextColor();
+        stamp.setForeground(textColor);
+        if (userObject instanceof GameDataPackage dataPackage) {
+            stamp.setText(dataPackage.getFolderName());
+            if (SettingsManager.isCoreFolder(dataPackage)) {
+                stamp.setForeground(Themes.getCorePackageTextColor());
+            } else if (dataPackage.isPinned()) {
+                stamp.setForeground(Themes.getPinnedPackageTextColor());
+            }
+        }
     }
 
     protected abstract String getTooltipForEntry(Object entry);

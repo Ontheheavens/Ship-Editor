@@ -17,6 +17,7 @@ import oth.shipeditor.utility.components.ComponentUtilities;
 import oth.shipeditor.utility.components.rendering.CustomTreeNode;
 import oth.shipeditor.utility.overseers.StaticController;
 import oth.shipeditor.utility.text.StringValues;
+import oth.shipeditor.utility.themes.Themes;
 
 import javax.swing.*;
 import java.awt.*;
@@ -90,7 +91,7 @@ public class VariantWeaponsPanel extends AbstractVariantPanel {
         if (pickedForInstall != null) {
             pickedWeaponPanel = pickedForInstall.createPickedWeaponPanel();
         } else {
-            FontIcon hintIcon = FontIcon.of(FluentUiRegularAL.INFO_28, 28);
+            FontIcon hintIcon = FontIcon.of(FluentUiRegularAL.INFO_28, 28, Themes.getIconColor());
             String weaponHint = StringValues.USE_RIGHT_CLICK_CONTEXT_MENU_OF_GAME_DATA_WIDGET_TO_ADD_ENTRIES;
             pickedWeaponPanel = ComponentUtilities.createHintPanel(weaponHint, hintIcon);
             Insets insets = new Insets(1, 0, 0, 0);
