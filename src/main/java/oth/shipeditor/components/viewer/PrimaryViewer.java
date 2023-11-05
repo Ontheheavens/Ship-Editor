@@ -173,7 +173,6 @@ public final class PrimaryViewer extends Viewer implements LayerViewer {
      * @return layer that is currently active in viewer; might be null, in which case caller is expected to handle that.
      */
     @Override
-    @SuppressWarnings("ReturnOfNull")
     public LayerPainter getSelectedLayer() {
         ViewerLayer activeLayer = layerManager.getActiveLayer();
         if (activeLayer == null) {

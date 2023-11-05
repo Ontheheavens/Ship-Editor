@@ -6,7 +6,7 @@ import oth.shipeditor.communication.events.files.HullFileOpened;
 import oth.shipeditor.communication.events.files.SpriteOpened;
 import oth.shipeditor.communication.events.viewer.layers.LastLayerSelectQueued;
 import oth.shipeditor.communication.events.viewer.layers.ships.ShipLayerCreationQueued;
-import oth.shipeditor.representation.HullSpecFile;
+import oth.shipeditor.representation.ship.HullSpecFile;
 import oth.shipeditor.utility.graphics.Sprite;
 import oth.shipeditor.utility.text.StringValues;
 

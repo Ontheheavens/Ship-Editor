@@ -97,5 +97,7 @@ module oth.shipeditor {
     exports oth.shipeditor.components.help;
     opens oth.shipeditor.components.help.parts;
     exports oth.shipeditor.components.help.parts;
+    exports oth.shipeditor.representation.ship;
+    opens oth.shipeditor.representation.ship;
 
 }

@@ -1,6 +1,6 @@
 package oth.shipeditor.communication.events.files;
 
-import oth.shipeditor.representation.EngineStyle;
+import oth.shipeditor.representation.ship.EngineStyle;
 
 import java.util.Map;
 

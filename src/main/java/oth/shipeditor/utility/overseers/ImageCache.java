@@ -41,7 +41,7 @@ public final class ImageCache {
                     JOptionPane.ERROR_MESSAGE);
             throw new UncheckedIOException("Failed to load sprite: " + file.getName(), ex);
         }
-        log.info("Opening sprite: {}.", file.getName());
+        log.trace("Opening sprite: {}.", file.getName());
         instance.cache.put(file, sprite);
         return sprite;
     }

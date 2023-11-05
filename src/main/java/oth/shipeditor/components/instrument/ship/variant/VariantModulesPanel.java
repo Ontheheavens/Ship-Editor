@@ -22,7 +22,7 @@ import oth.shipeditor.components.viewer.layers.ship.data.ShipHull;
 import oth.shipeditor.components.viewer.layers.ship.data.ShipVariant;
 import oth.shipeditor.components.viewer.painters.points.ship.WeaponSlotPainter;
 import oth.shipeditor.components.viewer.painters.points.ship.features.InstalledFeature;
-import oth.shipeditor.representation.VariantFile;
+import oth.shipeditor.representation.ship.VariantFile;
 import oth.shipeditor.undo.EditDispatch;
 import oth.shipeditor.utility.components.ComponentUtilities;
 import oth.shipeditor.utility.overseers.StaticController;

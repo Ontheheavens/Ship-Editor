@@ -6,7 +6,7 @@ import oth.shipeditor.components.viewer.layers.ship.ShipPainter;
 import oth.shipeditor.components.viewer.layers.ship.data.ShipHull;
 import oth.shipeditor.components.viewer.layers.ship.data.ShipSkin;
 import oth.shipeditor.persistence.SettingsManager;
-import oth.shipeditor.representation.HullSize;
+import oth.shipeditor.representation.ship.HullSize;
 import oth.shipeditor.undo.EditDispatch;
 import oth.shipeditor.utility.components.ComponentUtilities;
 import oth.shipeditor.utility.text.StringValues;

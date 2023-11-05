@@ -1,4 +1,4 @@
-package oth.shipeditor.representation;
+package oth.shipeditor.representation.ship;
 
 import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -12,6 +12,7 @@ import oth.shipeditor.components.viewer.layers.ship.data.ShipVariant;
 import oth.shipeditor.components.viewer.layers.ship.data.Variant;
 import oth.shipeditor.parsing.deserialize.ModulesDeserializer;
 import oth.shipeditor.parsing.serialize.VariantFileSerializer;
+import oth.shipeditor.representation.GameDataRepository;
 import oth.shipeditor.utility.text.StringConstants;
 
 import java.nio.file.Path;

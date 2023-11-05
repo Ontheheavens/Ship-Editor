@@ -7,9 +7,9 @@ import oth.shipeditor.components.datafiles.entities.HullmodCSVEntry;
 import oth.shipeditor.components.datafiles.entities.WingCSVEntry;
 import oth.shipeditor.persistence.SettingsManager;
 import oth.shipeditor.representation.GameDataRepository;
-import oth.shipeditor.representation.HullSize;
-import oth.shipeditor.representation.HullSpecFile;
-import oth.shipeditor.representation.HullStyle;
+import oth.shipeditor.representation.ship.HullSize;
+import oth.shipeditor.representation.ship.HullSpecFile;
+import oth.shipeditor.representation.ship.HullStyle;
 import oth.shipeditor.utility.graphics.ColorUtilities;
 
 import java.awt.*;

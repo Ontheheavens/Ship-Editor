@@ -8,7 +8,7 @@ import oth.shipeditor.communication.events.files.HullStylesLoaded;
 import oth.shipeditor.parsing.FileUtilities;
 import oth.shipeditor.persistence.SettingsManager;
 import oth.shipeditor.representation.GameDataRepository;
-import oth.shipeditor.representation.HullStyle;
+import oth.shipeditor.representation.ship.HullStyle;
 import oth.shipeditor.utility.text.StringConstants;
 
 import java.io.File;
@@ -35,7 +35,7 @@ public class LoadHullStyleDataAction extends DataLoadingAction {
         Map<String, HullStyle> collectedHullStyles = new LinkedHashMap<>();
         for (Map.Entry<Path, File> entry : hullStyleFiles.entrySet()) {
             File styleFile = entry.getValue();
-            log.info("Hullstyle data file found in mod directory: {}", entry.getKey());
+            log.trace("Hullstyle data file found in mod directory: {}", entry.getKey());
             Map<String, HullStyle> stylesFromFile = LoadHullStyleDataAction.loadHullStyleFile(styleFile);
             for (HullStyle style : stylesFromFile.values()) {
                 style.setContainingPackage(entry.getKey());
@@ -54,7 +54,7 @@ public class LoadHullStyleDataAction extends DataLoadingAction {
     private static Map<String, HullStyle> loadHullStyleFile(File styleFile) {
         ObjectMapper mapper = FileUtilities.getConfigured();
         Map<String, HullStyle> hullStyles = null;
-        log.info("Fetching hullstyle data at: {}..", styleFile.toPath());
+        log.trace("Fetching hullstyle data at: {}..", styleFile.toPath());
         try {
             TypeFactory typeFactory = mapper.getTypeFactory();
             hullStyles = mapper.readValue(styleFile,

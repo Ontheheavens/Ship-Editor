@@ -4,7 +4,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 import oth.shipeditor.persistence.SettingsManager;
-import oth.shipeditor.representation.EngineStyle;
+import oth.shipeditor.representation.ship.EngineStyle;
 import oth.shipeditor.representation.GameDataRepository;
 
 import java.util.Map;

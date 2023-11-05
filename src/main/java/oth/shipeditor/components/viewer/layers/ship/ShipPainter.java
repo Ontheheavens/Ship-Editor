@@ -26,9 +26,9 @@ import oth.shipeditor.components.viewer.painters.points.ship.features.InstalledF
 import oth.shipeditor.components.viewer.painters.points.ship.features.InstalledFeaturePainter;
 import oth.shipeditor.persistence.SettingsManager;
 import oth.shipeditor.representation.GameDataRepository;
-import oth.shipeditor.representation.HullSpecFile;
-import oth.shipeditor.representation.ShipTypeHints;
-import oth.shipeditor.representation.VariantFile;
+import oth.shipeditor.representation.ship.HullSpecFile;
+import oth.shipeditor.representation.ship.ShipTypeHints;
+import oth.shipeditor.representation.ship.VariantFile;
 import oth.shipeditor.utility.graphics.Sprite;
 import oth.shipeditor.utility.text.StringValues;
 

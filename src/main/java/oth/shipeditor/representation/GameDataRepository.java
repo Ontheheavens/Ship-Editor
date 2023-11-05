@@ -13,6 +13,7 @@ import oth.shipeditor.components.viewer.layers.ship.data.ShipSkin;
 import oth.shipeditor.components.viewer.layers.ship.data.Variant;
 import oth.shipeditor.components.viewer.painters.points.ship.features.InstalledFeature;
 import oth.shipeditor.persistence.SettingsManager;
+import oth.shipeditor.representation.ship.*;
 import oth.shipeditor.representation.weapon.ProjectileSpecFile;
 
 import java.nio.file.Path;

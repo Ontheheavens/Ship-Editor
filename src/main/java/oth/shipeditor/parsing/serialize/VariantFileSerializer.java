@@ -3,7 +3,7 @@ package oth.shipeditor.parsing.serialize;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.ser.std.StdSerializer;
-import oth.shipeditor.representation.VariantFile;
+import oth.shipeditor.representation.ship.VariantFile;
 import oth.shipeditor.utility.text.StringConstants;
 
 import java.io.IOException;

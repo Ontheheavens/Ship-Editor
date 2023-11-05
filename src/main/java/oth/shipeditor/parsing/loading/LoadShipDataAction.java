@@ -10,6 +10,10 @@ import oth.shipeditor.persistence.GameDataPackage;
 import oth.shipeditor.persistence.Settings;
 import oth.shipeditor.persistence.SettingsManager;
 import oth.shipeditor.representation.*;
+import oth.shipeditor.representation.ship.HullSpecFile;
+import oth.shipeditor.representation.ship.ShipSpecFile;
+import oth.shipeditor.representation.ship.SkinSpecFile;
+import oth.shipeditor.representation.ship.VariantFile;
 import oth.shipeditor.utility.objects.Pair;
 import oth.shipeditor.utility.text.StringConstants;
 
@@ -59,7 +63,7 @@ class LoadShipDataAction extends DataLoadingAction {
             if (dataPackage != null && dataPackage.isDisabled()) {
                 continue;
             }
-            log.info("Skin folder found in mod directory: {}", directory);
+            log.trace("Skin folder found in mod directory: {}", directory);
             Map<String, SkinSpecFile> containedSkins = LoadShipDataAction.walkSkinFolder(directory);
             allSkins.putAll(containedSkins);
         }
@@ -101,7 +105,7 @@ class LoadShipDataAction extends DataLoadingAction {
                 continue;
             }
 
-            log.info("Variant folder found in mod directory: {}", directory);
+            log.trace("Variant folder found in mod directory: {}", directory);
 
             List<File> variantFiles = FileLoading.fetchFilesWithExtension(directory, StringConstants.VARIANT);
 
@@ -125,11 +129,11 @@ class LoadShipDataAction extends DataLoadingAction {
     private static Pair<Path, List<ShipCSVEntry>> walkHullFolder(String folderPath, Map<String, SkinSpecFile> skins) {
         Path shipTablePath = Paths.get(folderPath, "data", StringConstants.HULLS, StringConstants.SHIP_DATA_CSV);
 
-        log.info("Parsing ship CSV data at: {}..", shipTablePath);
+        log.trace("Parsing ship CSV data at: {}..", shipTablePath);
         List<Map<String, String>> csvData = FileLoading.parseCSVTable(shipTablePath);
-        log.info("Ship CSV data at {} retrieved successfully.", shipTablePath);
+        log.trace("Ship CSV data at {} retrieved successfully.", shipTablePath);
 
-        log.info("Bulk fetching hull files at: {}...", folderPath);
+        log.trace("Bulk fetching hull files at: {}...", folderPath);
         List<File> shipFiles = FileLoading.fetchFilesWithExtension(shipTablePath.getParent(), "ship");
         Map<String, HullSpecFile> mappedHulls = new HashMap<>();
 
@@ -142,7 +146,7 @@ class LoadShipDataAction extends DataLoadingAction {
                 log.error("Failure to load hull, omitting from result data: {}", hullFile);
             }
         }
-        log.info("Fetched and mapped {} hull files.", mappedHulls.size());
+        log.trace("Fetched and mapped {} hull files.", mappedHulls.size());
 
         Path packagePath = Paths.get(folderPath, "");
         List<ShipCSVEntry> entriesFromPackage = new ArrayList<>();
@@ -190,7 +194,7 @@ class LoadShipDataAction extends DataLoadingAction {
     }
 
     private static Map<String, SkinSpecFile> walkSkinFolder(Path skinFolder) {
-        log.info("Bulk fetching skin files at: {}...", skinFolder);
+        log.trace("Bulk fetching skin files at: {}...", skinFolder);
         List<File> skinFiles = FileLoading.fetchFilesWithExtension(skinFolder, "skin");
         Map<String, SkinSpecFile> mappedSkins = new HashMap<>();
         for (File skinFile : skinFiles) {
@@ -203,7 +207,7 @@ class LoadShipDataAction extends DataLoadingAction {
             }
 
         }
-        log.info("Fetched and mapped {} skin files.", mappedSkins.size());
+        log.trace("Fetched and mapped {} skin files.", mappedSkins.size());
         return mappedSkins;
     }
 

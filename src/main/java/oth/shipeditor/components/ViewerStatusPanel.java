@@ -302,7 +302,7 @@ final class ViewerStatusPanel extends JPanel {
     private void setDimensionsLabel(BufferedImage sprite) {
         if (sprite != null) {
             dimensions.setText(sprite.getWidth() + " × " + sprite.getHeight());
-            log.info("Layer selected: sprite dimensions loaded.");
+            log.trace("Layer selected: sprite dimensions loaded.");
         } else {
             dimensions.setText("Sprite not loaded.");
         }

@@ -1,4 +1,4 @@
-package oth.shipeditor.representation;
+package oth.shipeditor.representation.ship;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Getter;

@@ -5,7 +5,7 @@ import com.fasterxml.jackson.core.JsonToken;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonDeserializer;
 import lombok.extern.log4j.Log4j2;
-import oth.shipeditor.representation.ShipTypeHints;
+import oth.shipeditor.representation.ship.ShipTypeHints;
 
 import java.io.IOException;
 import java.util.ArrayList;

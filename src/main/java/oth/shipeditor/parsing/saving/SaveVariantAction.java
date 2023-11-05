@@ -10,8 +10,8 @@ import oth.shipeditor.components.viewer.painters.points.ship.features.FireMode;
 import oth.shipeditor.components.viewer.painters.points.ship.features.FittedWeaponGroup;
 import oth.shipeditor.components.viewer.painters.points.ship.features.InstalledFeature;
 import oth.shipeditor.parsing.FileUtilities;
-import oth.shipeditor.representation.SpecWeaponGroup;
-import oth.shipeditor.representation.VariantFile;
+import oth.shipeditor.representation.ship.SpecWeaponGroup;
+import oth.shipeditor.representation.ship.VariantFile;
 import oth.shipeditor.utility.text.StringConstants;
 import oth.shipeditor.utility.text.StringValues;
 

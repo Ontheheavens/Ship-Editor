@@ -8,7 +8,7 @@ import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.files.EngineStylesLoaded;
 import oth.shipeditor.parsing.FileUtilities;
 import oth.shipeditor.persistence.SettingsManager;
-import oth.shipeditor.representation.EngineStyle;
+import oth.shipeditor.representation.ship.EngineStyle;
 import oth.shipeditor.representation.GameDataRepository;
 import oth.shipeditor.utility.text.StringConstants;
 import oth.shipeditor.utility.text.StringValues;
@@ -38,7 +38,7 @@ public class LoadEngineStyleDataAction extends DataLoadingAction {
         Map<String, EngineStyle> collectedEngineStyles = new LinkedHashMap<>();
         for (Map.Entry<Path, File> entry : engineStyleFiles.entrySet()) {
             File styleFile = entry.getValue();
-            log.info("Engine style data file found in mod directory: {}", entry.getKey());
+            log.trace("Engine style data file found in mod directory: {}", entry.getKey());
             Map<String, EngineStyle> stylesFromFile = LoadEngineStyleDataAction.loadEngineStyleFile(styleFile);
             for (EngineStyle style : stylesFromFile.values()) {
                 style.setContainingPackage(entry.getKey());
@@ -56,14 +56,14 @@ public class LoadEngineStyleDataAction extends DataLoadingAction {
     private static Map<String, EngineStyle> loadEngineStyleFile(File styleFile) {
         ObjectMapper mapper = FileUtilities.getConfigured();
         Map<String, EngineStyle> engineStyles;
-        log.info("Fetching engine style data at: {}..", styleFile.toPath());
+        log.trace("Fetching engine style data at: {}..", styleFile.toPath());
         MapType mapType = null;
         try {
             TypeFactory typeFactory = mapper.getTypeFactory();
             mapType = typeFactory.constructMapType(HashMap.class, String.class, EngineStyle.class);
             engineStyles = mapper.readValue(styleFile, mapType);
         } catch (IOException e) {
-            log.error("Engine styles file loading failed, retrying with correction: {}", styleFile.getName());
+            log.trace("Engine styles file loading failed, retrying with correction: {}", styleFile.getName());
             engineStyles = FileLoading.parseCorrectableJSON(styleFile, mapType);
         }
 

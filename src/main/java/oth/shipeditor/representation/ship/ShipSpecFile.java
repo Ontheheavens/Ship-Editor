@@ -1,4 +1,4 @@
-package oth.shipeditor.representation;
+package oth.shipeditor.representation.ship;
 
 import java.nio.file.Path;
 

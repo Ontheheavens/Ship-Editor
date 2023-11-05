@@ -84,7 +84,7 @@ public class LoadWeaponsDataAction extends DataLoadingAction {
                 continue;
             }
 
-            log.info("Projectile folder found in mod directory: {}", directory);
+            log.trace("Projectile folder found in mod directory: {}", directory);
 
             List<File> projectileFiles = FileLoading.fetchFilesWithExtension(directory, proj);
 
@@ -111,9 +111,9 @@ public class LoadWeaponsDataAction extends DataLoadingAction {
     private static Map<String, WeaponCSVEntry> walkWeaponsFolder(Path folder) {
         Path weaponTablePath = Paths.get(folder.toString(), "data", StringConstants.WEAPONS, "weapon_data.csv");
 
-        log.info("Parsing weapon CSV data at: {}..", weaponTablePath);
+        log.trace("Parsing weapon CSV data at: {}..", weaponTablePath);
         List<Map<String, String>> csvData = FileLoading.parseCSVTable(weaponTablePath);
-        log.info("Weapon CSV data at {} retrieved successfully.", weaponTablePath);
+        log.trace("Weapon CSV data at {} retrieved successfully.", weaponTablePath);
 
         List<File> weaponFiles = FileLoading.fetchFilesWithExtension(weaponTablePath.getParent(), "wpn");
         Map<String, WeaponSpecFile> mappedWeaponSpecs = new HashMap<>();
@@ -126,7 +126,7 @@ public class LoadWeaponsDataAction extends DataLoadingAction {
                 mappedWeaponSpecs.put(mapped.getId(), mapped);
             }
         }
-        log.info("Fetched and mapped {} weapon files.", mappedWeaponSpecs.size());
+        log.trace("Fetched and mapped {} weapon files.", mappedWeaponSpecs.size());
 
         Map<String, WeaponCSVEntry> weaponEntries = new HashMap<>();
         for (Map<String, String> row : csvData) {
@@ -138,7 +138,7 @@ public class LoadWeaponsDataAction extends DataLoadingAction {
                     newEntry.setSpecFile(matching);
                     weaponEntries.put(rowId, newEntry);
                 } else {
-                    log.error("Weapon CSV entry does not have matching spec file, omitting from data repository. " +
+                    log.trace("Weapon CSV entry does not have matching spec file, omitting from data repository. " +
                             "ID: {}", rowId);
                 }
             }

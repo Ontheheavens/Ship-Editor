@@ -1,6 +1,6 @@
 package oth.shipeditor.components.datafiles.entities;
 
-import oth.shipeditor.representation.HullSize;
+import oth.shipeditor.representation.ship.HullSize;
 
 import javax.swing.*;
 

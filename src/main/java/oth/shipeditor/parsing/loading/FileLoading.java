@@ -17,9 +17,9 @@ import oth.shipeditor.parsing.FileUtilities;
 import oth.shipeditor.parsing.JsonProcessor;
 import oth.shipeditor.persistence.SettingsManager;
 import oth.shipeditor.representation.GameDataRepository;
-import oth.shipeditor.representation.HullSpecFile;
-import oth.shipeditor.representation.SkinSpecFile;
-import oth.shipeditor.representation.VariantFile;
+import oth.shipeditor.representation.ship.HullSpecFile;
+import oth.shipeditor.representation.ship.SkinSpecFile;
+import oth.shipeditor.representation.ship.VariantFile;
 import oth.shipeditor.representation.weapon.ProjectileSpecFile;
 import oth.shipeditor.representation.weapon.WeaponSpecFile;
 import oth.shipeditor.utility.Errors;
@@ -284,7 +284,7 @@ public final class FileLoading {
             log.trace("Opening data file: {}", file.getName());
             dataFile = objectMapper.readValue(file, dataClass);
         } catch (IOException e) {
-            log.error("Data file parsing failed, retrying with correction: {}", file.getName());
+            log.trace("Data file parsing failed, retrying with correction: {}", file.getName());
 
             dataFile = FileLoading.parseCorrectableJSON(file, dataClass);
             if (dataFile == null) {

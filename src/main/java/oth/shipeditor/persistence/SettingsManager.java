@@ -112,7 +112,7 @@ public final class SettingsManager {
 
     public static void updateFileFromRuntime() {
         if (SettingsManager.settings == null) return;
-        log.info("Updating settings: getting path and mapper...");
+        log.trace("Updating settings: getting path and mapper...");
         ObjectMapper mapper = SettingsManager.getMapperForSettingsFile();
         File settingsFile = SettingsManager.getSettingsPath();
         log.info("Updating settings: overwriting JSON file...");

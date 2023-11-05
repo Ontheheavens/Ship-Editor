@@ -2,7 +2,7 @@ package oth.shipeditor.utility.components.rendering;
 
 import com.formdev.flatlaf.ui.FlatLineBorder;
 import oth.shipeditor.components.datafiles.entities.OrdnancedCSVEntry;
-import oth.shipeditor.representation.HullSize;
+import oth.shipeditor.representation.ship.HullSize;
 
 import javax.swing.*;
 import java.awt.*;

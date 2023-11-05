@@ -8,7 +8,7 @@ import oth.shipeditor.components.viewer.entities.AngledPoint;
 import oth.shipeditor.components.viewer.layers.ship.ShipPainter;
 import oth.shipeditor.parsing.loading.FileLoading;
 import oth.shipeditor.persistence.SettingsManager;
-import oth.shipeditor.representation.EngineStyle;
+import oth.shipeditor.representation.ship.EngineStyle;
 import oth.shipeditor.representation.GameDataRepository;
 import oth.shipeditor.undo.EditDispatch;
 import oth.shipeditor.utility.objects.Size2D;

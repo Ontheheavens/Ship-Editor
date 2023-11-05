@@ -9,7 +9,7 @@ import oth.shipeditor.components.viewer.layers.ship.ShipLayer;
 import oth.shipeditor.components.viewer.layers.ship.ShipPainter;
 import oth.shipeditor.persistence.GameDataPackage;
 import oth.shipeditor.persistence.SettingsManager;
-import oth.shipeditor.representation.VariantFile;
+import oth.shipeditor.representation.ship.VariantFile;
 import oth.shipeditor.utility.components.ComponentUtilities;
 import oth.shipeditor.utility.components.MouseoverLabelListener;
 import oth.shipeditor.utility.overseers.StaticController;

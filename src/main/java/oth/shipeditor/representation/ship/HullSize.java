@@ -1,4 +1,4 @@
-package oth.shipeditor.representation;
+package oth.shipeditor.representation.ship;
 
 import lombok.Getter;
 import org.kordamp.ikonli.boxicons.BoxiconsRegular;

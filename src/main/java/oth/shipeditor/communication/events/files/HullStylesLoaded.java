@@ -1,6 +1,6 @@
 package oth.shipeditor.communication.events.files;
 
-import oth.shipeditor.representation.HullStyle;
+import oth.shipeditor.representation.ship.HullStyle;
 
 import java.util.Map;
 

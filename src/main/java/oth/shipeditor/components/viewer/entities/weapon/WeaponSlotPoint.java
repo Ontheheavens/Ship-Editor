@@ -9,7 +9,7 @@ import oth.shipeditor.components.viewer.entities.AngledPoint;
 import oth.shipeditor.components.viewer.layers.ship.ShipPainter;
 import oth.shipeditor.components.viewer.painters.points.ship.features.InstalledFeature;
 import oth.shipeditor.components.viewer.painters.points.ship.WeaponSlotPainter;
-import oth.shipeditor.representation.ShipTypeHints;
+import oth.shipeditor.representation.ship.ShipTypeHints;
 import oth.shipeditor.representation.weapon.WeaponMount;
 import oth.shipeditor.representation.weapon.WeaponSize;
 import oth.shipeditor.representation.weapon.WeaponType;

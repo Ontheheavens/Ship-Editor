@@ -7,7 +7,7 @@ import oth.shipeditor.communication.events.files.HullTreeReloadQueued;
 import oth.shipeditor.components.datafiles.entities.ShipCSVEntry;
 import oth.shipeditor.persistence.SettingsManager;
 import oth.shipeditor.representation.GameDataRepository;
-import oth.shipeditor.representation.HullSize;
+import oth.shipeditor.representation.ship.HullSize;
 import oth.shipeditor.utility.components.ComponentUtilities;
 
 import javax.swing.*;

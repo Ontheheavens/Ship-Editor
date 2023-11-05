@@ -1,6 +1,6 @@
 package oth.shipeditor.communication.events.files;
 
-import oth.shipeditor.representation.SkinSpecFile;
+import oth.shipeditor.representation.ship.SkinSpecFile;
 
 /**
  * @author Ontheheavens

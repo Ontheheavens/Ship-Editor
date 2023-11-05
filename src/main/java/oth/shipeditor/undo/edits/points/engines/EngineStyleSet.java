@@ -1,7 +1,7 @@
 package oth.shipeditor.undo.edits.points.engines;
 
 import oth.shipeditor.components.viewer.entities.engine.EnginePoint;
-import oth.shipeditor.representation.EngineStyle;
+import oth.shipeditor.representation.ship.EngineStyle;
 import oth.shipeditor.undo.AbstractEdit;
 import oth.shipeditor.utility.overseers.StaticController;
 

@@ -33,7 +33,7 @@ import oth.shipeditor.menubar.LayersMenu;
 import oth.shipeditor.parsing.FileUtilities;
 import oth.shipeditor.parsing.loading.OpenSpriteAction;
 import oth.shipeditor.representation.GameDataRepository;
-import oth.shipeditor.representation.HullSpecFile;
+import oth.shipeditor.representation.ship.HullSpecFile;
 import oth.shipeditor.representation.weapon.WeaponMount;
 import oth.shipeditor.representation.weapon.WeaponSpecFile;
 import oth.shipeditor.utility.components.ComponentUtilities;

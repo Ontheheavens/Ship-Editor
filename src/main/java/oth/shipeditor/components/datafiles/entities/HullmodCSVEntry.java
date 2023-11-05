@@ -3,7 +3,7 @@ package oth.shipeditor.components.datafiles.entities;
 import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
 import oth.shipeditor.parsing.loading.FileLoading;
-import oth.shipeditor.representation.HullSize;
+import oth.shipeditor.representation.ship.HullSize;
 import oth.shipeditor.utility.components.ComponentUtilities;
 import oth.shipeditor.utility.text.StringConstants;
 import oth.shipeditor.utility.text.StringValues;

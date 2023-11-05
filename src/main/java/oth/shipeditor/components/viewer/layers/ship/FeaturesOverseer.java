@@ -20,7 +20,7 @@ import oth.shipeditor.components.viewer.painters.points.ship.features.FireMode;
 import oth.shipeditor.components.viewer.painters.points.ship.features.FittedWeaponGroup;
 import oth.shipeditor.components.viewer.painters.points.ship.features.InstalledFeature;
 import oth.shipeditor.representation.GameDataRepository;
-import oth.shipeditor.representation.VariantFile;
+import oth.shipeditor.representation.ship.VariantFile;
 import oth.shipeditor.representation.weapon.WeaponSpecFile;
 import oth.shipeditor.representation.weapon.WeaponType;
 import oth.shipeditor.undo.EditDispatch;

@@ -15,9 +15,9 @@ import oth.shipeditor.components.viewer.painters.points.ship.features.FittedWeap
 import oth.shipeditor.components.viewer.painters.points.ship.features.InstalledFeature;
 import oth.shipeditor.persistence.SettingsManager;
 import oth.shipeditor.representation.GameDataRepository;
-import oth.shipeditor.representation.HullSize;
-import oth.shipeditor.representation.SpecWeaponGroup;
-import oth.shipeditor.representation.VariantFile;
+import oth.shipeditor.representation.ship.HullSize;
+import oth.shipeditor.representation.ship.SpecWeaponGroup;
+import oth.shipeditor.representation.ship.VariantFile;
 import oth.shipeditor.representation.weapon.WeaponSpecFile;
 import oth.shipeditor.undo.EditDispatch;
 import oth.shipeditor.utility.text.StringValues;

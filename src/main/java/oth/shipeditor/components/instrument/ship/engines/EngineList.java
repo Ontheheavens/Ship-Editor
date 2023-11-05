@@ -6,7 +6,7 @@ import oth.shipeditor.communication.events.viewer.points.EnginePointsSorted;
 import oth.shipeditor.components.instrument.ship.PointList;
 import oth.shipeditor.components.viewer.entities.BaseWorldPoint;
 import oth.shipeditor.components.viewer.entities.engine.EnginePoint;
-import oth.shipeditor.representation.EngineStyle;
+import oth.shipeditor.representation.ship.EngineStyle;
 import oth.shipeditor.utility.components.ComponentUtilities;
 import oth.shipeditor.utility.components.rendering.PointCellRenderer;
 import oth.shipeditor.utility.text.StringConstants;

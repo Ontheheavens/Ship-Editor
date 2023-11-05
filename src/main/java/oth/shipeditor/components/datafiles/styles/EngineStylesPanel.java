@@ -3,7 +3,7 @@ package oth.shipeditor.components.datafiles.styles;
 import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.files.EngineStylesLoaded;
 import oth.shipeditor.parsing.loading.FileLoading;
-import oth.shipeditor.representation.EngineStyle;
+import oth.shipeditor.representation.ship.EngineStyle;
 import oth.shipeditor.utility.components.ComponentUtilities;
 import oth.shipeditor.utility.objects.Pair;
 

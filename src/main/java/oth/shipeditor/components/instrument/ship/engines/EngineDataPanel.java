@@ -8,7 +8,7 @@ import oth.shipeditor.components.viewer.entities.engine.EnginePoint;
 import oth.shipeditor.components.viewer.layers.ship.ShipPainter;
 import oth.shipeditor.components.viewer.painters.points.ship.EngineSlotPainter;
 import oth.shipeditor.persistence.SettingsManager;
-import oth.shipeditor.representation.EngineStyle;
+import oth.shipeditor.representation.ship.EngineStyle;
 import oth.shipeditor.representation.GameDataRepository;
 import oth.shipeditor.utility.objects.Size2D;
 import oth.shipeditor.utility.components.ComponentUtilities;

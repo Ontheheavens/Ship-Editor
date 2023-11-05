@@ -15,7 +15,7 @@ import oth.shipeditor.components.viewer.entities.BaseWorldPoint;
 import oth.shipeditor.components.viewer.entities.ShipCenterPoint;
 import oth.shipeditor.components.viewer.layers.ship.ShipPainter;
 import oth.shipeditor.components.viewer.painters.TextPainter;
-import oth.shipeditor.representation.HullSpecFile;
+import oth.shipeditor.representation.ship.HullSpecFile;
 import oth.shipeditor.representation.weapon.WeaponType;
 import oth.shipeditor.undo.EditDispatch;
 import oth.shipeditor.utility.Utility;

@@ -4,7 +4,7 @@ import lombok.extern.log4j.Log4j2;
 import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.files.HullFileOpened;
 import oth.shipeditor.parsing.FileUtilities;
-import oth.shipeditor.representation.HullSpecFile;
+import oth.shipeditor.representation.ship.HullSpecFile;
 import oth.shipeditor.utility.text.StringValues;
 
 import javax.swing.*;

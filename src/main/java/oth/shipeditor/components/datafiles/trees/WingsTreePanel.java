@@ -12,7 +12,7 @@ import oth.shipeditor.parsing.loading.FileLoading;
 import oth.shipeditor.persistence.GameDataPackage;
 import oth.shipeditor.persistence.SettingsManager;
 import oth.shipeditor.representation.GameDataRepository;
-import oth.shipeditor.representation.VariantFile;
+import oth.shipeditor.representation.ship.VariantFile;
 import oth.shipeditor.undo.EditDispatch;
 import oth.shipeditor.utility.overseers.StaticController;
 

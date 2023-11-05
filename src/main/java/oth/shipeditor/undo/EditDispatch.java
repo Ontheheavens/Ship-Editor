@@ -27,7 +27,7 @@ import oth.shipeditor.components.viewer.painters.points.ship.EngineSlotPainter;
 import oth.shipeditor.components.viewer.painters.points.ship.WeaponSlotPainter;
 import oth.shipeditor.components.viewer.painters.points.ship.features.FittedWeaponGroup;
 import oth.shipeditor.components.viewer.painters.points.ship.features.InstalledFeature;
-import oth.shipeditor.representation.EngineStyle;
+import oth.shipeditor.representation.ship.EngineStyle;
 import oth.shipeditor.representation.weapon.WeaponMount;
 import oth.shipeditor.representation.weapon.WeaponSize;
 import oth.shipeditor.representation.weapon.WeaponType;

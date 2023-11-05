@@ -20,8 +20,8 @@ import oth.shipeditor.components.viewer.layers.ship.data.ShipHull;
 import oth.shipeditor.components.viewer.layers.ship.data.ShipSkin;
 import oth.shipeditor.components.viewer.layers.weapon.WeaponLayer;
 import oth.shipeditor.representation.GameDataRepository;
-import oth.shipeditor.representation.HullSpecFile;
-import oth.shipeditor.representation.SkinSpecFile;
+import oth.shipeditor.representation.ship.HullSpecFile;
+import oth.shipeditor.representation.ship.SkinSpecFile;
 import oth.shipeditor.utility.graphics.Sprite;
 import oth.shipeditor.utility.overseers.StaticController;
 

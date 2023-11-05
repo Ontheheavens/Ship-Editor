@@ -29,7 +29,7 @@ abstract class LoadCSVDataAction<T extends CSVEntry> extends DataLoadingAction {
 
     @Override
     public Runnable perform() {
-        log.info("Commencing CSV data fetching...");
+        log.trace("Commencing CSV data fetching...");
         Map<Path, File> tableWithPackage = FileUtilities.getFileFromPackages(targetFile);
         Map<String, List<T>> entriesByPackage = new HashMap<>();
         for (Map.Entry<Path, File> folder : tableWithPackage.entrySet()) {
@@ -39,7 +39,7 @@ abstract class LoadCSVDataAction<T extends CSVEntry> extends DataLoadingAction {
                 continue;
             }
 
-            log.info("Loading CSV table from package: {}", folder.getKey());
+            log.trace("Loading CSV table from package: {}", folder.getKey());
             List<T> systemsList = loadPackage(folder.getKey(), folder.getValue());
             entriesByPackage.putIfAbsent(String.valueOf(folder.getKey()), systemsList);
         }

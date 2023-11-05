@@ -10,6 +10,10 @@ import oth.shipeditor.components.viewer.layers.ship.data.ShipVariant;
 import oth.shipeditor.components.viewer.painters.points.ship.ShieldPointPainter;
 import oth.shipeditor.persistence.SettingsManager;
 import oth.shipeditor.representation.*;
+import oth.shipeditor.representation.ship.HullSpecFile;
+import oth.shipeditor.representation.ship.HullStyle;
+import oth.shipeditor.representation.ship.SkinSpecFile;
+import oth.shipeditor.representation.ship.VariantFile;
 import oth.shipeditor.utility.graphics.Sprite;
 
 import java.util.*;
@@ -109,7 +113,7 @@ public class ShipLayer extends ViewerLayer {
         var activeSkin = this.getActiveSkin();
         if (activeSkin != null) {
             var skinOPs = activeSkin.getOrdnancePoints();
-            if (skinOPs != 0) {
+            if (skinOPs != null) {
                 return skinOPs;
             }
         }
