@@ -226,10 +226,12 @@ public class FeaturesOverseer {
         BusEventListener installListener = event -> {
             if (event instanceof FeatureInstallQueued) {
                 if (StaticController.getActiveLayer() != parent) return;
-                if (moduleVariantForInstall == null) return;
-                addModuleToSelectedSlot(moduleVariantForInstall);
-                if (weaponForInstall == null) return;
-                addWeaponToSelectedSlot(weaponForInstall);
+                if (moduleVariantForInstall != null) {
+                    addModuleToSelectedSlot(moduleVariantForInstall);
+                }
+                if (weaponForInstall != null) {
+                    addWeaponToSelectedSlot(weaponForInstall);
+                }
             }
         };
         listeners.add(installListener);
