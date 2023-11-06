@@ -34,6 +34,7 @@ public abstract class AbstractInstrumentsPane extends JTabbedPane {
         minimizer.setPanelSwitched(false);
         this.initListeners();
         this.setTabPlacement(SwingConstants.LEFT);
+        this.setMinimumSize(new Dimension(400, Integer.MAX_VALUE));
         this.setPreferredSize(preferredSize);
     }
 

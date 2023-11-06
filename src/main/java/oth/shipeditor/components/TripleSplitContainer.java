@@ -315,6 +315,12 @@ final class TripleSplitContainer extends JSplitPane {
             setTargetWidth(width.get());
         }
 
+        @Override
+        public void mousePressed(MouseEvent e) {
+            Supplier<Integer> width = paneSupplier.get()::getWidth;
+            setTargetWidth(width.get());
+        }
+
         private void setTargetWidth(Integer width) {
             AbstractInstrumentsPane instrumentsPane = paneSupplier.get();
             boolean minimized = instrumentsPane.isInstrumentPaneMinimized();

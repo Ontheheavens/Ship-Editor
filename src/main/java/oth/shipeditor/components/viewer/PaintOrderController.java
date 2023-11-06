@@ -170,7 +170,7 @@ public class PaintOrderController implements Painter {
 
         PaintOrderController.paintIfPresent(g, transform, w, h, guidesPainters.getBordersPaint());
         PaintOrderController.paintIfPresent(g, transform, w, h, guidesPainters.getCenterPaint());
-        if (parent.isCursorInViewer()) {
+        if (!ViewerDropReceiver.isDragToViewerInProgress() && parent.isCursorInViewer()) {
             PaintOrderController.paintIfPresent(g, transform, w, h, guidesPainters.getGuidesPaint());
         }
     }

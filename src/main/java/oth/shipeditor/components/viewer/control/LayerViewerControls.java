@@ -320,7 +320,7 @@ public final class LayerViewerControls implements ViewerControl {
         this.refreshCursorPosition(e);
     }
 
-    private void rotateExact(double desiredDegrees) {
+    public void rotateExact(double desiredDegrees) {
         double desiredRadians = Math.toRadians(desiredDegrees);
         double current = StaticController.getRotationRadians();
         double radiansChange = current - desiredRadians;
@@ -335,7 +335,8 @@ public final class LayerViewerControls implements ViewerControl {
         this.parentViewer.rotate(midpoint.getX(), midpoint.getY(), angleRadians);
     }
 
-    private void setZoomExact(double level) {
+    @Override
+    public void setZoomExact(double level) {
         double oldZoom = this.zoomLevel;
         Point2D viewerMidPoint = parentViewer.getViewerMidpoint();
         double factor = level / oldZoom;

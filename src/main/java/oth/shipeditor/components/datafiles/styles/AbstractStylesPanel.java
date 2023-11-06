@@ -1,7 +1,7 @@
 package oth.shipeditor.components.datafiles.styles;
 
+import com.formdev.flatlaf.ui.FlatLineBorder;
 import lombok.Getter;
-import oth.shipeditor.utility.components.ComponentUtilities;
 import oth.shipeditor.utility.themes.Themes;
 
 import javax.swing.*;
@@ -13,10 +13,10 @@ import java.awt.*;
  * @author Ontheheavens
  * @since 19.08.2023
  */
+@Getter
 abstract class AbstractStylesPanel extends JPanel {
 
     static final String ILLEGAL_STYLE_ARGUMENT = "Illegal style argument!";
-    @Getter
     private final JPanel scrollerContent;
 
     AbstractStylesPanel() {
@@ -44,10 +44,11 @@ abstract class AbstractStylesPanel extends JPanel {
         stylePanel.setLayout(new BoxLayout(stylePanel, BoxLayout.PAGE_AXIS));
 
         Insets outsideInsets = new Insets(2, 2, 2, 2);
-        Border border = ComponentUtilities.createRoundCompoundBorder(outsideInsets, true);
-        Insets insets = new Insets(6, 6, 6, 6);
-        stylePanel.setBorder(BorderFactory.createCompoundBorder(border,
-                new EmptyBorder(insets)));
+        Insets insideInsets = new Insets(6, 6, 6, 6);
+        Border lineBorder = new FlatLineBorder(insideInsets, Themes.getBorderColor());
+        Border outsideBorder = new EmptyBorder(outsideInsets);
+
+        stylePanel.setBorder(BorderFactory.createCompoundBorder(outsideBorder, lineBorder));
 
         JPanel titleContainer = this.createStyleTitlePanel(style);
         stylePanel.add(titleContainer);

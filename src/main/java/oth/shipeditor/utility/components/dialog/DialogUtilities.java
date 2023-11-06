@@ -1,10 +1,6 @@
 package oth.shipeditor.utility.components.dialog;
 
-import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.Events;
-import oth.shipeditor.communication.events.viewer.control.ViewerRotationSet;
-import oth.shipeditor.communication.events.viewer.control.ViewerZoomSet;
-import oth.shipeditor.components.viewer.control.ControlPredicates;
 import oth.shipeditor.components.viewer.entities.ShieldCenterPoint;
 import oth.shipeditor.components.viewer.entities.ShipCenterPoint;
 import oth.shipeditor.components.viewer.entities.WorldPoint;
@@ -67,46 +63,6 @@ public final class DialogUtilities {
         if (option == JOptionPane.OK_OPTION) {
             double newRadius = dialog.getUpdatedValue();
             EditDispatch.postCollisionRadiusChanged(point, (float) newRadius);
-            Events.repaintShipView();
-        }
-    }
-
-    public static void showAdjustZoomDialog(double oldZoom) {
-        NumberChangeDialog dialog = new NumberChangeDialog(oldZoom) {
-            @Override
-            protected JLabel createOriginalLabel() {
-                int value = (int) getRounded();
-                return new JLabel(value + "% ");
-            }
-            private double getRounded() {
-                return Math.round(getOriginalNumber() * 100);
-            }
-            @Override
-            protected SpinnerNumberModel createSpinnerModel() {
-                double min = ControlPredicates.MINIMUM_ZOOM * 100.0d;
-                double max = ControlPredicates.MAXIMUM_ZOOM * 100.0d;
-                double step = 1.0d;
-                return new SpinnerNumberModel(getRounded(), min, max, step);
-            }
-        };
-        int option = JOptionPane.showConfirmDialog(null, dialog,
-                "Change Zoom Level", JOptionPane.OK_CANCEL_OPTION,
-                JOptionPane.PLAIN_MESSAGE);
-        if (option == JOptionPane.OK_OPTION) {
-            double newZoom = dialog.getUpdatedValue() * 0.01;
-            EventBus.publish(new ViewerZoomSet(newZoom));
-            Events.repaintShipView();
-        }
-    }
-
-    public static void showAdjustViewerRotationDialog(double oldRotation) {
-        AngleChangeDialog dialog = new AngleChangeDialog(oldRotation);
-        int option = JOptionPane.showConfirmDialog(null, dialog,
-                "Change Viewer Rotation", JOptionPane.OK_CANCEL_OPTION,
-                JOptionPane.PLAIN_MESSAGE);
-        if (option == JOptionPane.OK_OPTION) {
-            double newRotation = dialog.getUpdatedValue();
-            EventBus.publish(new ViewerRotationSet(newRotation));
             Events.repaintShipView();
         }
     }

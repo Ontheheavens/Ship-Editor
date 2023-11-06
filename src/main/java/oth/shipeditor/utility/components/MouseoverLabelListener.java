@@ -13,7 +13,7 @@ import java.awt.event.MouseEvent;
  */
 public class MouseoverLabelListener extends MouseAdapter {
 
-    private final JLabel label;
+    private final JComponent component;
 
     private final JPopupMenu popupMenu;
 
@@ -21,20 +21,20 @@ public class MouseoverLabelListener extends MouseAdapter {
 
     private final Runnable action;
 
-    public MouseoverLabelListener(Runnable clickAction, JLabel inputLabel) {
-        this(null, clickAction, inputLabel, Themes.getPanelHighlightColor());
+    public MouseoverLabelListener(Runnable clickAction, JComponent inputComponent) {
+        this(null, clickAction, inputComponent, Themes.getPanelHighlightColor());
     }
 
-    public MouseoverLabelListener(JPopupMenu menu, JLabel inputLabel) {
-        this(menu, null, inputLabel, Themes.getPanelHighlightColor());
+    public MouseoverLabelListener(JPopupMenu menu, JComponent inputComponent) {
+        this(menu, null, inputComponent, Themes.getPanelHighlightColor());
     }
 
-    MouseoverLabelListener(JPopupMenu menu, JLabel inputLabel, Color color) {
-        this(menu, null, inputLabel, color);
+    public MouseoverLabelListener(JPopupMenu menu, JComponent inputComponent, Color color) {
+        this(menu, null, inputComponent, color);
     }
 
-    private MouseoverLabelListener(JPopupMenu menu, Runnable clickAction, JLabel inputLabel, Color color) {
-        this.label = inputLabel;
+    private MouseoverLabelListener(JPopupMenu menu, Runnable clickAction, JComponent inputComponent, Color color) {
+        this.component = inputComponent;
         this.action = clickAction;
         this.popupMenu = menu;
         this.highlight = color;
@@ -46,22 +46,22 @@ public class MouseoverLabelListener extends MouseAdapter {
         if (popupMenu != null) {
             if (!popupMenu.isEnabled()) return;
         }
-        label.setBackground(highlight);
-        label.setOpaque(true);
+        component.setBackground(highlight);
+        component.setOpaque(true);
     }
 
     @Override
     public void mouseExited(MouseEvent e) {
         super.mouseExited(e);
-        label.setBackground(Themes.getPanelBackgroundColor());
-        label.setOpaque(false);
+        component.setBackground(Themes.getPanelBackgroundColor());
+        component.setOpaque(false);
     }
 
     @Override
     public void mouseClicked(MouseEvent e) {
         if (popupMenu != null && SwingUtilities.isRightMouseButton(e)) {
             if (!popupMenu.isEnabled()) return;
-            popupMenu.show(label, e.getX(), e.getY());
+            popupMenu.show(component, e.getX(), e.getY());
         } else if (SwingUtilities.isLeftMouseButton(e) && action != null) {
             action.run();
         }

@@ -1,5 +1,6 @@
 package oth.shipeditor.components;
 
+import com.formdev.flatlaf.ui.FlatLineBorder;
 import lombok.extern.log4j.Log4j2;
 import org.kordamp.ikonli.fluentui.FluentUiRegularAL;
 import org.kordamp.ikonli.fluentui.FluentUiRegularMZ;
@@ -11,22 +12,25 @@ import oth.shipeditor.communication.events.viewer.layers.LayerSpriteLoadConfirme
 import oth.shipeditor.communication.events.viewer.layers.LayerWasSelected;
 import oth.shipeditor.communication.events.viewer.status.CoordsModeChanged;
 import oth.shipeditor.components.viewer.LayerViewer;
+import oth.shipeditor.components.viewer.PrimaryViewer;
 import oth.shipeditor.components.viewer.control.ControlPredicates;
+import oth.shipeditor.components.viewer.control.ViewerControl;
 import oth.shipeditor.components.viewer.layers.LayerPainter;
 import oth.shipeditor.components.viewer.layers.ViewerLayer;
 import oth.shipeditor.components.viewer.layers.ship.ShipPainter;
-import oth.shipeditor.utility.overseers.StaticController;
 import oth.shipeditor.utility.Utility;
-import oth.shipeditor.utility.components.ComponentUtilities;
 import oth.shipeditor.utility.components.MouseoverLabelListener;
-import oth.shipeditor.utility.components.dialog.DialogUtilities;
 import oth.shipeditor.utility.graphics.Sprite;
+import oth.shipeditor.utility.overseers.StaticController;
 import oth.shipeditor.utility.text.StringValues;
 import oth.shipeditor.utility.themes.Themes;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.KeyEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseWheelEvent;
 import java.awt.geom.Point2D;
 import java.awt.image.BufferedImage;
 
@@ -43,11 +47,13 @@ final class ViewerStatusPanel extends JPanel {
 
     private JLabel cursorCoords;
 
-    private JLabel zoom;
+    private SpinnerNumberModel zoomModel;
 
-    private JLabel rotation;
+    private SpinnerNumberModel rotationModel;
 
     private JPanel leftsideContainer;
+
+    private boolean widgetsAcceptChange;
 
     ViewerStatusPanel(LayerViewer viewable) {
         this.setLayout(new BorderLayout());
@@ -57,8 +63,8 @@ final class ViewerStatusPanel extends JPanel {
 
         this.initListeners();
         this.setDimensionsLabel(null);
-        this.setZoomLabel(StaticController.getZoomLevel());
-        this.setRotationLabel(StaticController.getRotationDegrees());
+        this.setZoomLevel(StaticController.getZoomLevel());
+        this.setRotationDegrees(StaticController.getRotationDegrees());
         this.updateCursorCoordsLabel();
 
         this.add(leftsideContainer, BorderLayout.LINE_START);
@@ -69,6 +75,7 @@ final class ViewerStatusPanel extends JPanel {
         gbcRight.gridx = 0;
         gbcRight.gridy = 0;
         gbcRight.weightx = 1;
+        gbcRight.ipadx = 80;
         gbcRight.insets = new Insets(0, 0, 0, 10);
         gbcRight.anchor = GridBagConstraints.LINE_END;
 
@@ -77,6 +84,7 @@ final class ViewerStatusPanel extends JPanel {
 
         gbcRight.gridx = 1;
         gbcRight.weightx = 0;
+        gbcRight.ipadx = 0;
 
         rightPanel.add(ViewerStatusPanel.createMirrorModePanel(), gbcRight);
 
@@ -88,18 +96,21 @@ final class ViewerStatusPanel extends JPanel {
         JPanel container = new JPanel();
         container.setLayout(new BoxLayout(container, BoxLayout.LINE_AXIS));
 
-        SpinnerNumberModel spinnerListModel = new SpinnerNumberModel(1, 0, 5, 1);
-        JSpinner spinner = new JSpinner(spinnerListModel);
+        int linkageSpinnerMax = 5;
+        int linkageSpinnerMin = 0;
 
-        JSpinner.DefaultEditor spinnerEditor = (JSpinner.DefaultEditor) spinner.getEditor();
+        SpinnerNumberModel spinnerListModel = new SpinnerNumberModel(1,
+                linkageSpinnerMin, linkageSpinnerMax, 1);
+        JSpinner linkageSpinner = new JSpinner(spinnerListModel);
+        JSpinner.DefaultEditor spinnerEditor = (JSpinner.DefaultEditor) linkageSpinner.getEditor();
         JFormattedTextField textField = spinnerEditor.getTextField();
         textField.setEditable(true);
         textField.setColumns(1);
 
-        JLabel toleranceLabel = new JLabel("Linkage tolerance:");
+        JLabel toleranceLabel = new JLabel("Distance:");
         toleranceLabel.setToolTipText("Determines maximum distance at which mirrored points link for interaction");
 
-        JCheckBox mirrorModeCheckbox = new JCheckBox("Mirror mode");
+        JCheckBox mirrorModeCheckbox = new JCheckBox("Mirroring");
         mirrorModeCheckbox.addItemListener(e -> {
             boolean mirrorModeOn = mirrorModeCheckbox.isSelected();
             EventBus.publish(new MirrorModeChange(mirrorModeOn));
@@ -126,14 +137,30 @@ final class ViewerStatusPanel extends JPanel {
         container.add(Box.createRigidArea(new Dimension(margin,0)));
         container.add(toleranceLabel);
         container.add(Box.createRigidArea(new Dimension(margin,0)));
-        container.add(spinner);
+        container.add(linkageSpinner);
         container.add(Box.createRigidArea(new Dimension(margin,0)));
 
-        spinner.addChangeListener(e -> {
+        linkageSpinner.addChangeListener(e -> {
             Integer current = (Integer) spinnerListModel.getValue();
             EventBus.publish(new PointLinkageToleranceChanged(current));
         });
-        spinner.setValue(5);
+        linkageSpinner.setValue(5);
+
+        linkageSpinner.addMouseWheelListener(e -> {
+            if (e.getScrollType() != MouseWheelEvent.WHEEL_UNIT_SCROLL) {
+                return;
+            }
+            int value = (Integer) linkageSpinner.getValue();
+            int scrollAmount = e.getUnitsToScroll();
+
+            // Compare the scroll amount to ensure we always change only by +1 or -1.
+            int adjustedScroll = Integer.compare(scrollAmount, 0);
+
+            int newValue = value - adjustedScroll;
+
+            newValue = Math.min(linkageSpinnerMax, Math.max(linkageSpinnerMin, newValue));
+            linkageSpinner.setValue(newValue);
+        });
 
         return container;
     }
@@ -151,69 +178,142 @@ final class ViewerStatusPanel extends JPanel {
         FontIcon mouseIcon = FontIcon.of(FluentUiRegularAL.CURSOR_HOVER_20, 20, Themes.getIconColor());
         cursorCoords = new JLabel("", mouseIcon, SwingConstants.TRAILING);
         Insets coordsInsets = new Insets(2, 6, 2, 7);
-        cursorCoords.setBorder(ComponentUtilities.createRoundCompoundBorder(coordsInsets));
+        cursorCoords.setBorder(new FlatLineBorder(coordsInsets, Themes.getBorderColor()));
         cursorCoords.setToolTipText("Right-click to change coordinate system");
         JPopupMenu coordsMenu = this.createCoordsMenu();
-        cursorCoords.addMouseListener(new MouseoverLabelListener(coordsMenu, cursorCoords));
+        cursorCoords.addMouseListener(new MouseoverLabelListener(coordsMenu,
+                cursorCoords));
         leftsideContainer.add(cursorCoords);
 
         this.addSeparator();
 
-        FontIcon zoomIcon = FontIcon.of(FluentUiRegularMZ.ZOOM_IN_20, 20, Themes.getIconColor());
-        zoom = new JLabel("", zoomIcon, SwingConstants.TRAILING);
-        Insets zoomInsets = new Insets(2, 3, 2, 5);
-        zoom.setBorder(ComponentUtilities.createRoundCompoundBorder(zoomInsets));
-        String zoomTooltip = Utility.getWithLinebreaks("Mousewheel to zoom viewer", StringValues.RIGHT_CLICK_TO_ADJUST_VALUE);
-        zoom.setToolTipText(zoomTooltip);
-
-        JPopupMenu zoomMenu = new JPopupMenu();
-        JMenuItem adjustZoomValue = new JMenuItem(StringValues.ADJUST_VALUE);
-        adjustZoomValue.addActionListener(event -> {
-            double oldZoom = StaticController.getZoomLevel();
-            DialogUtilities.showAdjustZoomDialog(oldZoom);
-        });
-        zoomMenu.add(adjustZoomValue);
-        zoom.addMouseListener(new MouseoverLabelListener(zoomMenu, zoom));
-
-        leftsideContainer.add(this.zoom);
+        this.addZoomWidget();
 
         this.addSeparator();
 
         FontIcon rotationIcon = FontIcon.of(FluentUiRegularAL.ARROW_ROTATE_CLOCKWISE_20, 20, Themes.getIconColor());
-        this.rotation = new JLabel("", rotationIcon, SwingConstants.TRAILING);
+        JLabel rotationLabel = new JLabel("", rotationIcon, SwingConstants.TRAILING);
 
-        Insets rotationInsets = new Insets(2, 3, 2, 5);
-        rotation.setBorder(ComponentUtilities.createRoundCompoundBorder(rotationInsets));
+        int minimum = 0;
+        int maximum = 360;
+        int initial = 0;
+        rotationModel = new SpinnerNumberModel(initial, minimum, maximum, 1);
+        JSpinner rotationSpinner = createRotationSpinner();
+
+        rotationSpinner.addMouseWheelListener(e -> {
+            if (e.getScrollType() != MouseWheelEvent.WHEEL_UNIT_SCROLL) {
+                return;
+            }
+            int value = (Integer) rotationSpinner.getValue();
+            int scrollAmount = e.getUnitsToScroll();
+            int adjustedScroll = Integer.compare(scrollAmount, 0);
+            int newValue = Math.min(maximum, Math.max(minimum, value - adjustedScroll));
+            rotationSpinner.setValue(newValue);
+        });
+
+        JSpinner.NumberEditor editor = new JSpinner.NumberEditor(rotationSpinner,"0°");
+        rotationSpinner.setEditor(editor);
+
+        JPopupMenu rotationResetMenu = new JPopupMenu();
+        JMenuItem resetRotation = new JMenuItem("Reset rotation degrees");
+        resetRotation.addActionListener(e -> rotationSpinner.setValue(initial));
+        rotationResetMenu.add(resetRotation);
+
+        JFormattedTextField formattedField = editor.getTextField();
+        formattedField.setColumns(2);
+        rotationLabel.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                if (SwingUtilities.isRightMouseButton(e)) {
+                    rotationResetMenu.show(rotationLabel, e.getX(), e.getY());
+                }
+            }
+        });
 
         String rotationTooltip = Utility.getWithLinebreaks("CTRL+Mousewheel to rotate viewer",
-                StringValues.RIGHT_CLICK_TO_ADJUST_VALUE);
-        this.rotation.setToolTipText(rotationTooltip);
+                StringValues.RIGHT_CLICK_TO_RESET_VALUE);
+        rotationLabel.setToolTipText(rotationTooltip);
 
-        JPopupMenu rotationMenu = ViewerStatusPanel.getRotationMenu();
-
-        rotation.addMouseListener(new MouseoverLabelListener(rotationMenu, rotation));
-
-        leftsideContainer.add(this.rotation);
+        leftsideContainer.add(rotationLabel);
+        leftsideContainer.add(rotationSpinner);
 
         return leftsideContainer;
     }
 
-    private static JPopupMenu getRotationMenu() {
-        JPopupMenu rotationMenu = new JPopupMenu();
-        JMenuItem adjustRotationValue = new JMenuItem(StringValues.ADJUST_VALUE);
-        adjustRotationValue.addActionListener(event -> {
-            double oldRotation = StaticController.getRotationDegrees();
-            DialogUtilities.showAdjustViewerRotationDialog(oldRotation);
-        });
-        rotationMenu.add(adjustRotationValue);
+    private JSpinner createRotationSpinner() {
+        JSpinner rotationSpinner = new JSpinner(rotationModel);
+        rotationSpinner.addChangeListener(e -> {
+            if (widgetsAcceptChange) {
+                Number modelNumber = rotationModel.getNumber();
+                int currentValue = modelNumber.intValue();
 
-        JMenuItem resetRotation = new JMenuItem(StringValues.RESET_ROTATION);
-        resetRotation.addActionListener(e -> {
-            EventBus.publish(new ViewerRotationSet(0));
-            Events.repaintShipView();
+                PrimaryViewer primaryViewer = StaticController.getViewer();
+                ViewerControl viewerControls = primaryViewer.getViewerControls();
+                viewerControls.rotateExact(currentValue);
+            }
         });
-        rotationMenu.add(resetRotation);
-        return rotationMenu;
+        return rotationSpinner;
+    }
+
+    private void addZoomWidget() {
+        FontIcon zoomIcon = FontIcon.of(FluentUiRegularMZ.ZOOM_IN_20, 20, Themes.getIconColor());
+        JLabel zoomLabel = new JLabel("", zoomIcon, SwingConstants.TRAILING);
+        String zoomTooltip = Utility.getWithLinebreaks("Mousewheel to zoom viewer",
+                StringValues.RIGHT_CLICK_TO_RESET_VALUE);
+        zoomLabel.setToolTipText(zoomTooltip);
+
+        double minimum = ControlPredicates.MINIMUM_ZOOM;
+        double maximum = ControlPredicates.MAXIMUM_ZOOM;
+        double initial = 1.0d;
+        zoomModel = new SpinnerNumberModel(initial, minimum, maximum, 0.1);
+        JSpinner zoomSpinner = createZoomSpinner();
+
+        JSpinner.NumberEditor editor = new JSpinner.NumberEditor(zoomSpinner,"0%");
+        zoomSpinner.setEditor(editor);
+
+        zoomSpinner.addMouseWheelListener(e -> {
+            if (e.getScrollType() != MouseWheelEvent.WHEEL_UNIT_SCROLL) {
+                return;
+            }
+            double value = (Double) zoomSpinner.getValue();
+            double newValue = value * Math.pow(1 + ControlPredicates.ZOOMING_SPEED, -e.getUnitsToScroll());
+            newValue = Math.min(maximum, Math.max(minimum, newValue));
+            zoomSpinner.setValue(newValue);
+        });
+
+        JPopupMenu zoomResetMenu = new JPopupMenu();
+        JMenuItem resetZoom = new JMenuItem("Reset zoom level");
+        resetZoom.addActionListener(e -> zoomSpinner.setValue(initial));
+        zoomResetMenu.add(resetZoom);
+
+        JFormattedTextField formattedField = editor.getTextField();
+        formattedField.setColumns(4);
+        zoomLabel.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                if (SwingUtilities.isRightMouseButton(e)) {
+                    zoomResetMenu.show(zoomLabel, e.getX(), e.getY());
+                }
+            }
+        });
+
+        leftsideContainer.add(zoomLabel);
+        leftsideContainer.add(zoomSpinner);
+    }
+
+    private JSpinner createZoomSpinner() {
+        JSpinner zoomSpinner = new JSpinner(zoomModel);
+        zoomSpinner.addChangeListener(e -> {
+            if (widgetsAcceptChange) {
+                Number modelNumber = zoomModel.getNumber();
+                double currentValue = modelNumber.doubleValue();
+
+                PrimaryViewer primaryViewer = StaticController.getViewer();
+                ViewerControl viewerControls = primaryViewer.getViewerControls();
+                viewerControls.setZoomExact(currentValue);
+            }
+        });
+        return zoomSpinner;
     }
 
     private void addSeparator() {
@@ -227,9 +327,9 @@ final class ViewerStatusPanel extends JPanel {
     private void initListeners() {
         EventBus.subscribe(event -> {
             if (event instanceof ViewerZoomChanged) {
-                this.setZoomLabel(StaticController.getZoomLevel());
+                this.setZoomLevel(StaticController.getZoomLevel());
             } else if (event instanceof ViewerTransformRotated) {
-                this.setRotationLabel(StaticController.getRotationDegrees());
+                this.setRotationDegrees(StaticController.getRotationDegrees());
             }
         });
         EventBus.subscribe(event -> {
@@ -356,17 +456,20 @@ final class ViewerStatusPanel extends JPanel {
         );
     }
 
-    private void setZoomLabel(double newZoom) {
-        int rounded = (int) Math.round(newZoom * 100);
-        zoom.setText(rounded + "%");
+    private void setZoomLevel(double newZoom) {
+        this.widgetsAcceptChange = false;
+        zoomModel.setValue(newZoom);
+        this.widgetsAcceptChange = true;
     }
 
-    private void setRotationLabel(double newRotation) {
-        double rounded = Utility.round(newRotation, 3);
+    private void setRotationDegrees(double newRotation) {
+        this.widgetsAcceptChange = false;
+        int rounded = (int) Utility.round(newRotation, 3);
         if (ControlPredicates.isRotationRoundingEnabled()) {
             rounded = (int) Math.round(newRotation);
         }
-        rotation.setText(rounded + "°");
+        rotationModel.setValue(rounded);
+        this.widgetsAcceptChange = true;
     }
 
 }

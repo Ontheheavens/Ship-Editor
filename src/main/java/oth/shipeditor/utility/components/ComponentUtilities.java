@@ -19,10 +19,7 @@ import oth.shipeditor.utility.text.StringValues;
 import oth.shipeditor.utility.themes.Themes;
 
 import javax.swing.*;
-import javax.swing.border.Border;
-import javax.swing.border.EmptyBorder;
-import javax.swing.border.MatteBorder;
-import javax.swing.border.TitledBorder;
+import javax.swing.border.*;
 import javax.swing.event.ChangeListener;
 import java.awt.*;
 import java.awt.event.ActionListener;
@@ -182,21 +179,8 @@ public final class ComponentUtilities {
         return openFileMenu;
     }
 
-    public static Border createRoundCompoundBorder(Insets insets) {
-        return ComponentUtilities.createRoundCompoundBorder(insets, false);
-    }
-
-    @SuppressWarnings("BooleanParameter")
-    public static Border createRoundCompoundBorder(Insets insets, boolean reversed) {
-        Border empty = new EmptyBorder(insets);
-        Border lineBorder = new FlatRoundBorder();
-        if (reversed) {
-            return BorderFactory.createCompoundBorder(empty, lineBorder);
-        } else return BorderFactory.createCompoundBorder(lineBorder, empty);
-    }
-
     public static Border createLabelSimpleBorder(Insets insets) {
-        return new FlatLineBorder(insets, Color.LIGHT_GRAY);
+        return new FlatLineBorder(insets, Themes.getBorderColor());
     }
 
     public static ImageIcon createIconFromColor(Color color, int width, int height) {

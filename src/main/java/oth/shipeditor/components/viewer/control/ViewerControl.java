@@ -20,4 +20,8 @@ public interface ViewerControl extends MouseControl {
 
     void notifyCursorState(Point cursorLocation);
 
+    void setZoomExact(double level);
+
+    void rotateExact(double desiredDegrees);
+
 }
