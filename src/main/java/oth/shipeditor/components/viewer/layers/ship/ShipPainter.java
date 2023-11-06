@@ -244,7 +244,7 @@ public class ShipPainter extends LayerPainter {
 
     void finishInitialization() {
         this.setUninitialized(false);
-        log.info("{} initialized!", this);
+        log.trace("{} initialized!", this);
         EventBus.publish(new LayerShipDataInitialized(this));
         EventBus.publish(new ViewerRepaintQueued());
     }

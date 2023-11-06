@@ -1,6 +1,10 @@
 package oth.shipeditor.components.logging;
 
+import oth.shipeditor.utility.Utility;
+import oth.shipeditor.utility.themes.Themes;
+
 import javax.swing.*;
+import javax.swing.border.EmptyBorder;
 import java.awt.*;
 
 /**
@@ -20,6 +24,10 @@ public class LogsPanel extends JPanel {
 
     public LogsPanel() {
         this.setLayout(new BorderLayout());
+        logger.setBorder(new EmptyBorder(2, 2, 2, 2));
+        logger.setForeground(Themes.getTextColor());
+        logger.setBackground(Themes.getListBackgroundColor());
+        logger.setFont(Utility.getDefaultFont());
         scrollPane = new JScrollPane(logger);
         JScrollBar verticalScrollBar = scrollPane.getVerticalScrollBar();
         verticalScrollBar.setUnitIncrement(20);

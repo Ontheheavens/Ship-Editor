@@ -5,9 +5,10 @@ import oth.shipeditor.components.datafiles.entities.ShipCSVEntry;
 import oth.shipeditor.components.datafiles.entities.transferable.TransferableEntry;
 import oth.shipeditor.components.viewer.control.ControlPredicates;
 import oth.shipeditor.components.viewer.control.ViewerControl;
-import oth.shipeditor.components.viewer.layers.ViewerLayer;
 import oth.shipeditor.components.viewer.layers.ship.ShipLayer;
+import oth.shipeditor.components.viewer.layers.ship.ShipPainter;
 import oth.shipeditor.parsing.FileUtilities;
+import oth.shipeditor.undo.UndoOverseer;
 import oth.shipeditor.utility.overseers.StaticController;
 
 import javax.swing.*;
@@ -17,6 +18,7 @@ import java.awt.dnd.DnDConstants;
 import java.awt.dnd.DropTarget;
 import java.awt.dnd.DropTargetDragEvent;
 import java.awt.dnd.DropTargetDropEvent;
+import java.awt.geom.Point2D;
 import java.io.File;
 import java.util.Arrays;
 import java.util.List;
@@ -109,13 +111,24 @@ class ViewerDropReceiver extends DropTarget {
     }
 
     private static void handleShipEntryDrop(DropTargetDropEvent dtde, ShipCSVEntry shipEntry) {
-        ViewerLayer activeLayer = StaticController.getActiveLayer();
-        if (activeLayer instanceof ShipLayer shipLayer && shipLayer.getActiveVariant() != null) {
+        try {
+            ShipLayer shipLayer = shipEntry.loadLayerFromEntry();
+            ShipPainter shipPainter = shipLayer.getPainter();
+            Point2D difference = shipPainter.getSpriteCenterDifferenceToAnchor();
 
+            Point2D currentCursor = StaticController.getCorrectedCursor();
+            Point2D targetForSpriteCenter = new Point2D.Double(currentCursor.getX() - difference.getX(),
+                    currentCursor.getY() - difference.getY());
+
+            shipPainter.updateAnchorOffset(targetForSpriteCenter);
+            UndoOverseer.finishAllEdits();
+
+            dtde.dropComplete(true);
+        } catch (Exception exception) {
+            dtde.dropComplete(false);
+        } finally {
+            ControlPredicates.setDragToViewerInProgress(false);
         }
-
-        dtde.dropComplete(false);
-        ControlPredicates.setDragToViewerInProgress(false);
     }
 
 }

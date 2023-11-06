@@ -99,6 +99,7 @@ public abstract class DataTreePanel extends JPanel {
             JLabel variantFileLabel = DataTreePanel.createVariantFileLabel(variant);
             if (withSelector) {
                 JRadioButton selector = new JRadioButton();
+                selector.setBorder(new EmptyBorder(0, 0, 2, 4));
                 selector.addActionListener(e -> FeaturesOverseer.setModuleForInstall(variant));
                 selector.setToolTipText("Select variant to be installed as module");
                 group.add(selector);

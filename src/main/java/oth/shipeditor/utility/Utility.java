@@ -67,6 +67,11 @@ public final class Utility {
         return new Font("Orbitron", Font.BOLD, size);
     }
 
+    public static Font getDefaultFont() {
+        MenuContainer label = new JLabel();
+        return label.getFont();
+    }
+
     public static Point2D correctAdjustedCursor(Point2D adjustedCursor, AffineTransform screenToWorld) {
         Point2D wP = screenToWorld.transform(adjustedCursor, null);
         double roundedX = Math.round(wP.getX() * 2) / 2.0;

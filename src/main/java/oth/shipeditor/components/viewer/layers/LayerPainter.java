@@ -247,9 +247,17 @@ public abstract class LayerPainter implements Painter {
         EditDispatch.postAnchorOffsetChanged(this, updated);
     }
 
+    /**
+     * @return world position of the sprite center. Is dependent on anchor position.
+     */
     public Point2D getSpriteCenter() {
-        return new Point2D.Double((anchor.getX() + this.getSpriteWidth() / 2.0f),
-                (anchor.getY() + this.getSpriteHeight() / 2.0f));
+        Point2D difference = this.getSpriteCenterDifferenceToAnchor();
+        return new Point2D.Double((anchor.getX() + difference.getX()),
+                (anchor.getY() + difference.getY()));
+    }
+
+    public Point2D getSpriteCenterDifferenceToAnchor() {
+        return new Point2D.Double((this.getSpriteWidth() / 2.0f), (this.getSpriteHeight() / 2.0f));
     }
 
     protected void paintContent(Graphics2D g, AffineTransform worldToScreen, double w, double h) {

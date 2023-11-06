@@ -213,12 +213,12 @@ public final class PrimaryViewer extends Viewer implements LayerViewer {
                     Point2D widthPoint = new Point2D.Double(layerAnchor.getX() + prevLayerWidth.width, layerAnchor.getY());
 
                     newPainter.updateAnchorOffset(widthPoint);
+                    UndoOverseer.finishAllEdits();
                 }
             }
         }
         EventBus.publish(new LayerSpriteLoadConfirmed(layer, sprite));
         EventBus.publish(new ActiveLayerUpdated(layer));
-        this.centerViewpoint();
         return layer;
     }
 

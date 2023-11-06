@@ -27,15 +27,23 @@ public abstract class AbstractInstrumentsPane extends JTabbedPane {
     @Getter @Setter
     private boolean instrumentPaneMinimized;
 
-    private final Dimension maximumPanelSize = new Dimension(300, Integer.MAX_VALUE);
+    private final Dimension preferredSize = new Dimension(300, Integer.MAX_VALUE);
 
     protected AbstractInstrumentsPane() {
         this.minimizer = new MinimizerWidget(this.minimizeTabbedPane(), this.restoreTabbedPane());
         minimizer.setPanelSwitched(false);
         this.initListeners();
         this.setTabPlacement(SwingConstants.LEFT);
-        this.setMinimumSize(maximumPanelSize);
-        this.setMaximumSize(maximumPanelSize);
+        this.setPreferredSize(preferredSize);
+    }
+
+    public void setTargetWidth(int width) {
+        preferredSize.width = width;
+        this.setMinimumSize(new Dimension(300, Integer.MAX_VALUE));
+    }
+
+    public int getTargetWidth() {
+        return preferredSize.width;
     }
 
     protected String getMinimizePrompt() {
@@ -67,8 +75,7 @@ public abstract class AbstractInstrumentsPane extends JTabbedPane {
             minimizer.setMinimized(true);
             Dimension preferred = this.getPreferredSize();
             Dimension minimizedSize = new Dimension(0, preferred.height);
-            this.setMinimumSize(minimizedSize);
-            this.setMaximumSize(minimizedSize);
+            this.setPreferredSize(minimizedSize);
             updateTooltipText();
             EventBus.publish(new InstrumentSplitterResized(this, true));
         };
@@ -77,8 +84,7 @@ public abstract class AbstractInstrumentsPane extends JTabbedPane {
     private Runnable restoreTabbedPane() {
         return () -> {
             minimizer.setMinimized(false);
-            this.setMinimumSize(maximumPanelSize);
-            this.setMaximumSize(maximumPanelSize);
+            this.setPreferredSize(preferredSize);
             updateTooltipText();
             EventBus.publish(new InstrumentSplitterResized(this, false));
         };

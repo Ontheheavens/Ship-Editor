@@ -61,7 +61,7 @@ class HullsTreePanel extends DataTreePanel {
             return "<html>" +
                     "<p>" + "Hull size: " + hullSpecFileFile.getHullSize() + "</p>" +
                     "<p>" + "Hull ID: " + shipEntry.getHullID() + "</p>" +
-                    "<p>" + "(Double-click to load as layer)" + "</p>" +
+                    "<p>" + "(Double-click or drag to load as layer)" + "</p>" +
                     "</html>";
         } else if (entry instanceof GameDataPackage dataPackage) {
             return DataTreePanel.getTooltipForPackage(dataPackage);

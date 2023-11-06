@@ -160,7 +160,7 @@ public class ShipCSVEntry implements CSVEntry, InstallableEntry {
     }
 
     @SuppressWarnings("MethodWithMultipleReturnPoints")
-    public void loadLayerFromEntry() {
+    public ShipLayer loadLayerFromEntry() {
         String spriteName = this.hullSpecFile.getSpriteName();
         Path spriteFilePath = Path.of(spriteName);
         File spriteFile = FileLoading.fetchDataFile(spriteFilePath, this.packageFolderPath);
@@ -171,17 +171,17 @@ public class ShipCSVEntry implements CSVEntry, InstallableEntry {
                     "Sprite file for ship not found, layer not created: " + spriteFilePath,
                     StringValues.FILE_LOADING_ERROR,
                     JOptionPane.ERROR_MESSAGE);
-            return;
+            return null;
         }
 
         ShipLayer newLayer = FileUtilities.createShipLayerWithSprite(spriteFile);
         newLayer.initializeHullData(this.hullSpecFile);
 
-        if (skins == null || skins.isEmpty()) return;
+        if (skins == null || skins.isEmpty()) return newLayer;
 
         Map<String, SkinSpecFile> eligibleSkins = new HashMap<>(skins);
         eligibleSkins.remove(SkinSpecFile.DEFAULT);
-        if (eligibleSkins.isEmpty()) return;
+        if (eligibleSkins.isEmpty()) return newLayer;
         for (SkinSpecFile skinSpecFile : eligibleSkins.values()) {
             if (skinSpecFile == null || skinSpecFile.isBase()) continue;
 
@@ -200,6 +200,7 @@ public class ShipCSVEntry implements CSVEntry, InstallableEntry {
             skinSpecFile.setLoadedSkinSprite(skinSprite);
             EventBus.publish(new SkinFileOpened(skinSpecFile, skinSpecFile == this.activeSkinSpecFile));
         }
+        return newLayer;
     }
 
     /**

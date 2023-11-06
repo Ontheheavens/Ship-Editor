@@ -97,7 +97,7 @@ public final class ViewerLayersPanel extends SortableTabbedPane {
         this.setTabLayoutPolicy(JTabbedPane.SCROLL_TAB_LAYOUT);
         this.addChangeListener(event -> {
             ViewerLayer newlySelected = getLayerByTab((LayerTab) getSelectedComponent());
-            log.info("Layer panel change!");
+            log.trace("Layer panel change!");
             // If the change results from the last layer being removed and the newly selected layer is null,
             // call to set active layer is unnecessary as this case is handled directly by layer manager.
             if (newlySelected != null) {
