@@ -13,6 +13,7 @@ import oth.shipeditor.components.instrument.ship.EditorInstrument;
 import oth.shipeditor.components.instrument.ship.ShipInstrumentsPane;
 import oth.shipeditor.components.viewer.PrimaryViewer;
 import oth.shipeditor.components.viewer.control.ControlPredicates;
+import oth.shipeditor.components.viewer.entities.weapon.WeaponSlotPoint;
 import oth.shipeditor.components.viewer.layers.LayerManager;
 import oth.shipeditor.components.viewer.layers.LayerPainter;
 import oth.shipeditor.components.viewer.layers.ViewerLayer;
@@ -33,6 +34,7 @@ import java.util.function.BiConsumer;
  * @author Ontheheavens
  * @since 09.07.2023
  */
+@SuppressWarnings("OverlyCoupledClass")
 public final class StaticController {
 
     @Getter @Setter
@@ -167,6 +169,27 @@ public final class StaticController {
         }
 
         return size;
+    }
+
+    /**
+     * @return selected slot from a currently active layer, with instrument mode eligibility checks.
+     */
+    public static WeaponSlotPoint getSelectedAndEligibleSlot() {
+        ViewerLayer viewerLayer = StaticController.getActiveLayer();
+        if (viewerLayer instanceof ShipLayer shipLayer) {
+            var shipPainter = shipLayer.getPainter();
+            if (shipPainter == null || shipPainter.isUninitialized()) return null;
+            var slotPainter = shipPainter.getWeaponSlotPainter();
+
+            WeaponSlotPoint selected = slotPainter.getSelected();
+            var eligibleSlots = slotPainter.getEligibleForSelection();
+
+            if (selected != null && eligibleSlots.contains(selected)) {
+                return selected;
+            }
+        }
+
+        return null;
     }
 
 }

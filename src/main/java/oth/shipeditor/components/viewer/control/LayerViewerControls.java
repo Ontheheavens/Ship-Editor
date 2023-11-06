@@ -8,6 +8,7 @@ import oth.shipeditor.communication.events.viewer.control.*;
 import oth.shipeditor.communication.events.viewer.layers.LayerRotationQueued;
 import oth.shipeditor.communication.events.viewer.points.*;
 import oth.shipeditor.components.viewer.PrimaryViewer;
+import oth.shipeditor.components.viewer.ViewerDropReceiver;
 import oth.shipeditor.components.viewer.layers.LayerPainter;
 import oth.shipeditor.components.viewer.layers.ship.ShipPainter;
 import oth.shipeditor.components.viewer.painters.points.ship.BoundPointsPainter;
@@ -404,7 +405,13 @@ public final class LayerViewerControls implements ViewerControl {
                 EventBus.publish(new PointDragQueued(screenToWorld, cursor));
             }
         }
+        updateViewerCursorState();
         this.parentViewer.setRepaintQueued();
+    }
+
+    private void updateViewerCursorState() {
+        Rectangle viewerBounds = parentViewer.getBounds();
+        parentViewer.setCursorInViewer(viewerBounds.contains(this.mousePoint));
     }
 
     @Override
@@ -415,9 +422,10 @@ public final class LayerViewerControls implements ViewerControl {
         Point2D corrected = Utility.correctAdjustedCursor(adjusted, screenToWorld);
         EventBus.publish(new ViewerCursorMoved(this.mousePoint, adjusted, corrected));
 
-        boolean dragInProgress = ControlPredicates.isDragToViewerInProgress();
+        boolean dragInProgress = ViewerDropReceiver.isDragToViewerInProgress();
         boolean closestMode = ControlPredicates.getSelectionMode() == PointSelectionMode.CLOSEST;
         if (dragInProgress && closestMode) {
+            updateViewerCursorState();
             EventBus.publish(new PointSelectQueued(null));
         }
     }

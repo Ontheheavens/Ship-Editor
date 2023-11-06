@@ -8,6 +8,7 @@ import oth.shipeditor.communication.events.files.HullTreeEntryCleared;
 import oth.shipeditor.communication.events.files.HullTreeReloadQueued;
 import oth.shipeditor.components.datafiles.OpenDataTarget;
 import oth.shipeditor.components.datafiles.entities.ShipCSVEntry;
+import oth.shipeditor.components.instrument.ship.EditorInstrument;
 import oth.shipeditor.parsing.FileUtilities;
 import oth.shipeditor.parsing.loading.FileLoading;
 import oth.shipeditor.persistence.GameDataPackage;
@@ -18,6 +19,7 @@ import oth.shipeditor.representation.ship.HullSpecFile;
 import oth.shipeditor.representation.ship.SkinSpecFile;
 import oth.shipeditor.utility.components.ComponentUtilities;
 import oth.shipeditor.utility.objects.Pair;
+import oth.shipeditor.utility.overseers.StaticController;
 import oth.shipeditor.utility.text.StringValues;
 
 import javax.swing.*;
@@ -58,10 +60,14 @@ class HullsTreePanel extends DataTreePanel {
     protected String getTooltipForEntry(Object entry) {
         if (entry instanceof ShipCSVEntry shipEntry) {
             HullSpecFile hullSpecFileFile = shipEntry.getHullSpecFile();
+            String dragHint = "(Double-click or drag to load as layer)";
+            if (StaticController.getEditorMode() == EditorInstrument.VARIANT_MODULES) {
+                dragHint = "(Drag to install as module)";
+            }
             return "<html>" +
                     "<p>" + "Hull size: " + hullSpecFileFile.getHullSize() + "</p>" +
                     "<p>" + "Hull ID: " + shipEntry.getHullID() + "</p>" +
-                    "<p>" + "(Double-click or drag to load as layer)" + "</p>" +
+                    "<p>" + dragHint + "</p>" +
                     "</html>";
         } else if (entry instanceof GameDataPackage dataPackage) {
             return DataTreePanel.getTooltipForPackage(dataPackage);

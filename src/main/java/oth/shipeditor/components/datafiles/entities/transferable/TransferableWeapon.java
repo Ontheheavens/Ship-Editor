@@ -10,7 +10,6 @@ import java.awt.datatransfer.DataFlavor;
  */
 public class TransferableWeapon extends TransferableEntry {
 
-    @SuppressWarnings("TypeMayBeWeakened")
     public TransferableWeapon(WeaponCSVEntry data) {
         super(data);
     }

@@ -42,7 +42,7 @@ import java.util.stream.Stream;
  * @author Ontheheavens
  * @since 19.09.2023
  */
-@SuppressWarnings({"WeakerAccess", "OverlyCoupledClass", "OverlyComplexClass"})
+@SuppressWarnings({"WeakerAccess", "OverlyCoupledClass", "OverlyComplexClass", "ClassWithTooManyMethods"})
 public class FeaturesOverseer {
 
     @SuppressWarnings("StaticNonFinalField")
@@ -64,12 +64,14 @@ public class FeaturesOverseer {
 
     @SuppressWarnings("StaticMethodOnlyUsedInOneClass")
     public static void setWeaponForInstall(WeaponCSVEntry entry) {
-        weaponForInstall = entry;
+        FeaturesOverseer.weaponForInstall = entry;
+        FeaturesOverseer.moduleVariantForInstall = null;
         EventBus.publish(new WeaponEntryPicked());
     }
 
     @SuppressWarnings("StaticMethodOnlyUsedInOneClass")
     public static void setModuleForInstall(VariantFile variant) {
+        FeaturesOverseer.weaponForInstall = null;
         FeaturesOverseer.moduleVariantForInstall = variant;
         EventBus.publish(new ShipEntryPicked());
     }

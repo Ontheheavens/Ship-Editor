@@ -1,8 +1,8 @@
 package oth.shipeditor.utility.graphics;
 
 import lombok.extern.log4j.Log4j2;
-import oth.shipeditor.utility.overseers.StaticController;
 import oth.shipeditor.utility.Utility;
+import oth.shipeditor.utility.overseers.StaticController;
 
 import java.awt.*;
 import java.awt.font.GlyphVector;
@@ -306,6 +306,43 @@ public final class DrawUtilities {
                 position, cross, 12);
 
         DrawUtilities.drawOutlined(g, transformedCross, crossColor);
+    }
+
+    public static void paintInstallableGhost(Graphics2D g, AffineTransform worldToScreen,
+                                             double rotation, Point2D targetLocation,
+                                             Sprite sprite)  {
+        AffineTransform oldAT = g.getTransform();
+
+        var spriteImage = sprite.getImage();
+        int width = spriteImage.getWidth();
+        int height = spriteImage.getHeight();
+
+        AffineTransform transform = new AffineTransform(worldToScreen);
+        double rotationRadians = Math.toRadians(rotation);
+
+        double targetLocationX = targetLocation.getX();
+        double targetLocationY = targetLocation.getY();
+
+        Point2D difference = Utility.getSpriteCenterDifferenceToAnchor(spriteImage);
+        Point2D anchorForSpriteCenter = new Point2D.Double(targetLocationX - difference.getX(),
+                targetLocationY - difference.getY());
+
+        double centerX = anchorForSpriteCenter.getX() + (double) width / 2;
+        double centerY = anchorForSpriteCenter.getY() + (double) height / 2;
+        AffineTransform rotationTransform = AffineTransform.getRotateInstance(rotationRadians,
+                centerX, centerY);
+        transform.concatenate(rotationTransform);
+
+        g.transform(transform);
+
+        float alpha = 0.5f;
+        Composite old = Utility.setAlphaComposite(g, alpha);
+
+        g.drawImage(spriteImage, (int) anchorForSpriteCenter.getX(),
+                (int) anchorForSpriteCenter.getY(), width, height, null);
+
+        g.setComposite(old);
+        g.setTransform(oldAT);
     }
 
 }

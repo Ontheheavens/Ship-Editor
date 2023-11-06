@@ -257,7 +257,9 @@ public abstract class LayerPainter implements Painter {
     }
 
     public Point2D getSpriteCenterDifferenceToAnchor() {
-        return new Point2D.Double((this.getSpriteWidth() / 2.0f), (this.getSpriteHeight() / 2.0f));
+        Sprite spriteContainer = getSprite();
+        var spriteImage = spriteContainer.getImage();
+        return Utility.getSpriteCenterDifferenceToAnchor(spriteImage);
     }
 
     protected void paintContent(Graphics2D g, AffineTransform worldToScreen, double w, double h) {
@@ -265,7 +267,6 @@ public abstract class LayerPainter implements Painter {
         int height = this.getSpriteHeight();
         Sprite spriteContainer = getSprite();
         g.drawImage(spriteContainer.getImage(), (int) anchor.getX(), (int) anchor.getY(), width, height, null);
-
     }
 
     @SuppressWarnings("DuplicatedCode")

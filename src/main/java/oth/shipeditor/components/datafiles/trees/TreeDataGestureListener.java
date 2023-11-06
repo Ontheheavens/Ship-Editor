@@ -8,7 +8,8 @@ import oth.shipeditor.components.datafiles.entities.transferable.TransferableHul
 import oth.shipeditor.components.datafiles.entities.transferable.TransferableShip;
 import oth.shipeditor.components.datafiles.entities.transferable.TransferableWeapon;
 import oth.shipeditor.components.datafiles.entities.transferable.TransferableWing;
-import oth.shipeditor.components.viewer.control.ControlPredicates;
+import oth.shipeditor.components.viewer.ViewerDragListener;
+import oth.shipeditor.components.viewer.ViewerDropReceiver;
 
 import javax.swing.*;
 import javax.swing.tree.DefaultMutableTreeNode;
@@ -22,11 +23,11 @@ import java.awt.dnd.DragSource;
  * @author Ontheheavens
  * @since 05.11.2023
  */
-public class DataDragGestureListener implements DragGestureListener {
+public class TreeDataGestureListener implements DragGestureListener {
 
     private final JTree tree;
 
-    DataDragGestureListener(JTree inputTree) {
+    TreeDataGestureListener(JTree inputTree) {
         this.tree = inputTree;
     }
 
@@ -39,16 +40,22 @@ public class DataDragGestureListener implements DragGestureListener {
 
             Transferable transferable;
             switch (userObject) {
-                case ShipCSVEntry shipEntry -> transferable = new TransferableShip(shipEntry);
-                case WeaponCSVEntry weaponEntry -> transferable = new TransferableWeapon(weaponEntry);
+                case ShipCSVEntry shipEntry -> {
+                    transferable = new TransferableShip(shipEntry);
+                    ViewerDropReceiver.commenceDragToViewer(shipEntry);
+                }
+                case WeaponCSVEntry weaponEntry -> {
+                    transferable = new TransferableWeapon(weaponEntry);
+                    ViewerDropReceiver.commenceDragToViewer(weaponEntry);
+                }
                 case HullmodCSVEntry hullmodEntry -> transferable = new TransferableHullmod(hullmodEntry);
                 case WingCSVEntry wingEntry -> transferable = new TransferableWing(wingEntry);
                 default -> {
+                    ViewerDropReceiver.finishDragToViewer();
                     return;
                 }
             }
-            ControlPredicates.setDragToViewerInProgress(true);
-            dge.startDrag(DragSource.DefaultMoveDrop, transferable);
+            dge.startDrag(DragSource.DefaultMoveDrop, transferable, new ViewerDragListener());
         }
     }
 

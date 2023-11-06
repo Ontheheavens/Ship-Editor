@@ -10,7 +10,6 @@ import java.awt.datatransfer.DataFlavor;
  */
 public class TransferableShip extends TransferableEntry {
 
-    @SuppressWarnings("TypeMayBeWeakened")
     public TransferableShip(ShipCSVEntry data) {
         super(data);
     }

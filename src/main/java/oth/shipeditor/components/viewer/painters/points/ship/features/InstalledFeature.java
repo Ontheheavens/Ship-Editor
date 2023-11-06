@@ -14,6 +14,7 @@ import oth.shipeditor.representation.weapon.WeaponMount;
 import oth.shipeditor.representation.weapon.WeaponSpecFile;
 import oth.shipeditor.representation.weapon.WeaponType;
 import oth.shipeditor.utility.Utility;
+import oth.shipeditor.utility.graphics.Sprite;
 import oth.shipeditor.utility.text.StringConstants;
 
 import java.awt.*;
@@ -161,6 +162,12 @@ public final class InstalledFeature implements InstallableEntry {
 
         double transformedAngle = Utility.transformAngle(slotPoint.getAngle());
         painter.setRotationRadians(Math.toRadians(transformedAngle + 90));
+    }
+
+    @Override
+    public Sprite getEntrySprite() {
+        LayerPainter painter = getFeaturePainter();
+        return painter.getSprite();
     }
 
     public void paint(Graphics2D g, AffineTransform worldToScreen, double w, double h) {

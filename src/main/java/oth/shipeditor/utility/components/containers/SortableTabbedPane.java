@@ -65,6 +65,7 @@ public abstract class SortableTabbedPane extends JTabbedPane {
         });
         IntSupplier intSupplier = () -> {
             int count = getTabCount();
+            if (count == 0) return -1;
             Rectangle bounds = getBoundsAt(count - 1);
             bounds.translate(bounds.width * point.x / 2, bounds.height * point.y / 2);
             return bounds.contains(tabPoint) ? count : -1;

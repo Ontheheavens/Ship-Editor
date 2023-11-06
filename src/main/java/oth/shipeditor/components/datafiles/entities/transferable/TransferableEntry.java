@@ -2,6 +2,7 @@ package oth.shipeditor.components.datafiles.entities.transferable;
 
 import lombok.Getter;
 import oth.shipeditor.components.datafiles.entities.*;
+import oth.shipeditor.representation.ship.VariantFile;
 
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
@@ -15,10 +16,13 @@ import java.awt.datatransfer.UnsupportedFlavorException;
 @Getter
 public abstract class TransferableEntry implements Transferable {
 
-    private final CSVEntry nodeData;
+    private final Object nodeData;
 
     public static final DataFlavor TRANSFERABLE_SHIP = new DataFlavor(ShipCSVEntry.class,
             "Ship Entry");
+
+    public static final DataFlavor TRANSFERABLE_VARIANT = new DataFlavor(VariantFile.class,
+            "Variant File");
 
     public static final DataFlavor TRANSFERABLE_WEAPON = new DataFlavor(WeaponCSVEntry.class,
             "Weapon Entry");
@@ -29,7 +33,7 @@ public abstract class TransferableEntry implements Transferable {
     public static final DataFlavor TRANSFERABLE_WING = new DataFlavor(WingCSVEntry.class,
             "Wing Entry");
 
-    TransferableEntry(CSVEntry data) {
+    TransferableEntry(Object data) {
         this.nodeData = data;
     }
 

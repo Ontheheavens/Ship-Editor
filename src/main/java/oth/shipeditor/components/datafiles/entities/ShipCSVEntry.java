@@ -13,14 +13,19 @@ import oth.shipeditor.representation.ship.HullSpecFile;
 import oth.shipeditor.representation.ship.ShipTypeHints;
 import oth.shipeditor.representation.ship.SkinSpecFile;
 import oth.shipeditor.utility.Utility;
+import oth.shipeditor.utility.graphics.DrawUtilities;
 import oth.shipeditor.utility.graphics.Sprite;
 import oth.shipeditor.utility.text.StringConstants;
 import oth.shipeditor.utility.text.StringValues;
 
 import javax.swing.*;
+import java.awt.*;
+import java.awt.geom.AffineTransform;
+import java.awt.geom.Point2D;
 import java.io.File;
 import java.nio.file.Path;
 import java.util.*;
+import java.util.List;
 
 /**
  * @author Ontheheavens
@@ -46,6 +51,8 @@ public class ShipCSVEntry implements CSVEntry, InstallableEntry {
     private final String hullID;
 
     private final Path packageFolderPath;
+
+    private Sprite entrySprite;
 
     public ShipCSVEntry(Map<String, String> row, Map.Entry<HullSpecFile, Map<String, SkinSpecFile>> hullWithSkins,
                         Path folder, String fileName) {
@@ -136,6 +143,27 @@ public class ShipCSVEntry implements CSVEntry, InstallableEntry {
     @Override
     public String getID() {
         return hullID;
+    }
+
+    public Sprite getEntrySprite() {
+        if (entrySprite == null) {
+            String spriteFileName = this.getShipSpriteName();
+            File spriteFile = FileLoading.fetchDataFile(Path.of(spriteFileName), this.getPackageFolderPath());
+
+            if (spriteFile != null) {
+                entrySprite = FileLoading.loadSprite(spriteFile);
+            }
+        }
+        return entrySprite;
+    }
+
+    /**
+     * @param rotation - in degrees.
+     */
+    public void paintEntry(Graphics2D g, AffineTransform worldToScreen,
+                            double rotation, Point2D targetLocation) {
+        DrawUtilities.paintInstallableGhost(g, worldToScreen,
+                rotation, targetLocation, getEntrySprite());
     }
 
     @Override

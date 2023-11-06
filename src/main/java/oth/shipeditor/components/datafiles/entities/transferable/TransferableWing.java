@@ -10,7 +10,6 @@ import java.awt.datatransfer.DataFlavor;
  */
 public class TransferableWing extends TransferableEntry {
 
-    @SuppressWarnings("TypeMayBeWeakened")
     public TransferableWing(WingCSVEntry data) {
         super(data);
     }

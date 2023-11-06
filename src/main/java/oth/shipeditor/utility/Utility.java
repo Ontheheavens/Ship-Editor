@@ -18,6 +18,7 @@ import java.awt.event.ActionListener;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Point2D;
 import java.awt.image.BufferedImage;
+import java.awt.image.RenderedImage;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.math.BigDecimal;
@@ -70,6 +71,10 @@ public final class Utility {
     public static Font getDefaultFont() {
         MenuContainer label = new JLabel();
         return label.getFont();
+    }
+
+    public static Point2D getSpriteCenterDifferenceToAnchor(RenderedImage image) {
+        return new Point2D.Double((image.getWidth() / 2.0f), (image.getHeight() / 2.0f));
     }
 
     public static Point2D correctAdjustedCursor(Point2D adjustedCursor, AffineTransform screenToWorld) {

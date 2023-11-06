@@ -13,6 +13,7 @@ import oth.shipeditor.components.viewer.painters.points.weapon.ProjectilePainter
 import oth.shipeditor.parsing.loading.FileLoading;
 import oth.shipeditor.representation.GameDataRepository;
 import oth.shipeditor.representation.weapon.*;
+import oth.shipeditor.utility.graphics.DrawUtilities;
 import oth.shipeditor.utility.objects.Size2D;
 import oth.shipeditor.utility.overseers.StaticController;
 import oth.shipeditor.utility.Utility;
@@ -24,6 +25,7 @@ import oth.shipeditor.utility.text.StringValues;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
+import java.awt.geom.AffineTransform;
 import java.awt.geom.Point2D;
 import java.awt.image.BufferedImage;
 import java.io.File;
@@ -167,6 +169,22 @@ public class WeaponCSVEntry implements CSVEntry, InstallableEntry {
             weaponImage = new Sprite(combinedImage, turretSprite.getPath(), turretSprite.getFilename());
         }
         return weaponImage;
+    }
+
+    @Override
+    public Sprite getEntrySprite() {
+        return getWeaponImage();
+    }
+
+    /**
+     * @param rotation - in degrees.
+     */
+    public void paintEntry(Graphics2D g, AffineTransform worldToScreen,
+                            double rotation, Point2D targetLocation, WeaponMount mount) {
+        WeaponSprites weaponSprites = getSprites();
+        Sprite neededSprite = weaponSprites.getMainSprite(mount);
+        DrawUtilities.paintInstallableGhost(g, worldToScreen,
+                rotation, targetLocation, neededSprite);
     }
 
     public void loadLayerFromEntry() {

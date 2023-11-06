@@ -10,7 +10,6 @@ import java.awt.datatransfer.DataFlavor;
  */
 public class TransferableHullmod extends TransferableEntry {
 
-    @SuppressWarnings("TypeMayBeWeakened")
     public TransferableHullmod(HullmodCSVEntry data) {
         super(data);
     }

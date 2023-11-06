@@ -22,6 +22,7 @@ import javax.swing.table.DefaultTableModel;
 import javax.swing.tree.*;
 import java.awt.*;
 import java.awt.dnd.DnDConstants;
+import java.awt.dnd.DragGestureListener;
 import java.awt.dnd.DragSource;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
@@ -77,6 +78,21 @@ public abstract class DataTreePanel extends JPanel {
         return variantLabel;
     }
 
+    private static void outfitVariantLabelWithSelector(VariantFile variant, JPanel variantLine,
+                                                       ButtonGroup group, JLabel variantFileLabel) {
+        JRadioButton selector = new JRadioButton();
+        selector.setBorder(new EmptyBorder(0, 0, 2, 4));
+        selector.addActionListener(e -> FeaturesOverseer.setModuleForInstall(variant));
+        selector.setToolTipText("Select variant or drag label to be installed as module");
+        group.add(selector);
+        variantLine.add(selector);
+
+        DragSource dragSource = DragSource.getDefaultDragSource();
+        DragGestureListener gestureListener = new LabelDragListener(variant);
+        dragSource.createDefaultDragGestureRecognizer(variantFileLabel,
+                DnDConstants.ACTION_COPY, gestureListener);
+    }
+
     static JPanel createVariantsPanel(Collection<VariantFile> variantFiles, boolean withSelector) {
         JPanel variantsPanel = new JPanel();
         variantsPanel.setLayout(new FlowLayout(FlowLayout.LEADING, 0, 0));
@@ -98,12 +114,8 @@ public abstract class DataTreePanel extends JPanel {
 
             JLabel variantFileLabel = DataTreePanel.createVariantFileLabel(variant);
             if (withSelector) {
-                JRadioButton selector = new JRadioButton();
-                selector.setBorder(new EmptyBorder(0, 0, 2, 4));
-                selector.addActionListener(e -> FeaturesOverseer.setModuleForInstall(variant));
-                selector.setToolTipText("Select variant to be installed as module");
-                group.add(selector);
-                variantLine.add(selector);
+                DataTreePanel.outfitVariantLabelWithSelector(variant, variantLine,
+                        group, variantFileLabel);
             }
             variantLine.add(variantFileLabel);
             labelContainer.add(variantLine);
@@ -277,8 +289,9 @@ public abstract class DataTreePanel extends JPanel {
             }
         };
         DragSource dragSource = DragSource.getDefaultDragSource();
+        DragGestureListener gestureListener = new TreeDataGestureListener(customTree);
         dragSource.createDefaultDragGestureRecognizer(customTree, DnDConstants.ACTION_COPY,
-                new DataDragGestureListener(customTree));
+                gestureListener);
         return customTree;
     }
 

@@ -1,6 +1,7 @@
 package oth.shipeditor.components.datafiles.trees;
 
 import oth.shipeditor.components.datafiles.entities.HullmodCSVEntry;
+import oth.shipeditor.components.datafiles.entities.InstallableEntry;
 import oth.shipeditor.components.datafiles.entities.ShipCSVEntry;
 import oth.shipeditor.parsing.loading.FileLoading;
 import oth.shipeditor.persistence.SettingsManager;
@@ -81,11 +82,9 @@ class ShipFilesSubpanel extends JPanel {
         return shipFilesPanel;
     }
 
-    private static void addSpritePreview(JPanel shipFilesPanel, ShipCSVEntry selected) {
-        String spriteFileName = selected.getShipSpriteName();
-        File spriteFile = FileLoading.fetchDataFile(Path.of(spriteFileName), selected.getPackageFolderPath());
-        if (spriteFile != null) {
-            Sprite sprite = FileLoading.loadSprite(spriteFile);
+    private static void addSpritePreview(JPanel shipFilesPanel, InstallableEntry selected) {
+        Sprite sprite = selected.getEntrySprite();
+        if (sprite != null) {
             String tooltip = Utility.getTooltipForSprite(sprite);
             JLabel spriteIcon = ComponentUtilities.createIconFromImage(sprite.getImage(), tooltip, 128);
             spriteIcon.setAlignmentX(0.5f);

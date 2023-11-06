@@ -2,6 +2,7 @@ package oth.shipeditor.components.viewer;
 
 import de.javagl.viewer.Viewer;
 import lombok.Getter;
+import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
 import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.components.ViewerFocusRequestQueued;
@@ -48,6 +49,7 @@ public final class PrimaryViewer extends Viewer implements LayerViewer {
 
     private PaintOrderController paintOrderController;
 
+    @Setter
     private boolean cursorInViewer;
 
     private ViewerControl viewerControls;
