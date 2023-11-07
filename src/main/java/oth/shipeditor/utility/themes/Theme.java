@@ -13,15 +13,24 @@ import java.awt.*;
 @Getter
 public enum Theme {
 
-    LIGHT(Color.BLACK, Color.GRAY, Color.BLACK,
-            Color.GRAY, Color.LIGHT_GRAY,
-            Color.LIGHT_GRAY, Color.GRAY,
-            Color.LIGHT_GRAY, Color.WHITE),
+    LIGHT(Color.BLACK,
+            Color.GRAY,
+            Color.BLACK,
+            Color.GRAY,
+            Color.LIGHT_GRAY,
+            Color.LIGHT_GRAY,
+            Color.GRAY,
+            Color.LIGHT_GRAY,
+            Color.WHITE),
 
-    DARK(Color.LIGHT_GRAY, Color.GRAY, Color.LIGHT_GRAY,
-            Color.GRAY, Color.GRAY,
-            Color.DARK_GRAY, Color.GRAY,
-            ColorUtilities.getBlendedColor(Color.DARK_GRAY, Color.BLACK, 0.5f),
+    DARK(Color.LIGHT_GRAY,
+            Color.GRAY,
+            Color.LIGHT_GRAY,
+            Color.GRAY,
+            Color.GRAY,
+            Color.DARK_GRAY,
+            Color.GRAY,
+            ColorUtilities.getBlendedColor(Color.DARK_GRAY, Color.BLACK, 0.25f),
             Color.DARK_GRAY);
 
     private final Color textColor;

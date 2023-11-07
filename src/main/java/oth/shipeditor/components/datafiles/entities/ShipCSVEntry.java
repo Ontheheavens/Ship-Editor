@@ -146,6 +146,12 @@ public class ShipCSVEntry implements CSVEntry, InstallableEntry {
     }
 
     public Sprite getEntrySprite() {
+        if (activeSkinSpecFile != null && !activeSkinSpecFile.isBase()) {
+            Sprite loadedSkinSprite = activeSkinSpecFile.getLoadedSkinSprite();
+            if (loadedSkinSprite != null) {
+                return loadedSkinSprite;
+            }
+        }
         if (entrySprite == null) {
             String spriteFileName = this.getShipSpriteName();
             File spriteFile = FileLoading.fetchDataFile(Path.of(spriteFileName), this.getPackageFolderPath());
@@ -212,20 +218,6 @@ public class ShipCSVEntry implements CSVEntry, InstallableEntry {
         if (eligibleSkins.isEmpty()) return newLayer;
         for (SkinSpecFile skinSpecFile : eligibleSkins.values()) {
             if (skinSpecFile == null || skinSpecFile.isBase()) continue;
-
-            String skinSpriteName = skinSpecFile.getSpriteName();
-            Path skinPackagePath = skinSpecFile.getContainingPackage();
-
-            if (skinSpriteName == null || skinSpriteName.isEmpty()) {
-                skinSpriteName = this.hullSpecFile.getSpriteName();
-            }
-
-            Path skinSpriteFilePath = Path.of(skinSpriteName);
-            File skinSpriteFile = FileLoading.fetchDataFile(skinSpriteFilePath, skinPackagePath);
-
-            Sprite skinSprite = FileLoading.loadSprite(skinSpriteFile);
-
-            skinSpecFile.setLoadedSkinSprite(skinSprite);
             EventBus.publish(new SkinFileOpened(skinSpecFile, skinSpecFile == this.activeSkinSpecFile));
         }
         return newLayer;

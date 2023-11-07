@@ -7,6 +7,7 @@ import oth.shipeditor.communication.events.files.HullmodDataSet;
 import oth.shipeditor.communication.events.files.WingDataSet;
 import oth.shipeditor.components.datafiles.entities.*;
 import oth.shipeditor.components.datafiles.trees.WeaponFilterPanel;
+import oth.shipeditor.components.viewer.layers.ship.ShipLayer;
 import oth.shipeditor.components.viewer.layers.ship.ShipPainter;
 import oth.shipeditor.components.viewer.layers.ship.data.ActiveShipSpec;
 import oth.shipeditor.components.viewer.layers.ship.data.ShipSkin;
@@ -166,6 +167,32 @@ public class GameDataRepository {
             baseHullId = specFile.getHullId();
         }
         return baseHullId;
+    }
+
+    public static ShipLayer createLayerFromVariant(Variant variant) {
+        String shipHullId = variant.getShipHullId();
+        ShipSpecFile specFile = GameDataRepository.retrieveSpecByID(shipHullId);
+        String baseHullId;
+        SkinSpecFile skinSpec = null;
+        if (specFile instanceof SkinSpecFile checkedSkin) {
+            baseHullId = checkedSkin.getBaseHullId();
+            skinSpec = checkedSkin;
+        } else {
+            baseHullId = specFile.getHullId();
+        }
+        ShipCSVEntry csvEntry = GameDataRepository.retrieveShipCSVEntryByID(baseHullId);
+        ShipLayer shipLayer = csvEntry.loadLayerFromEntry();
+        ShipPainter shipPainter = shipLayer.getPainter();
+
+        if (skinSpec != null) {
+            ShipSkin shipSkin = ShipSkin.createFromSpec(skinSpec);
+
+            shipPainter.setActiveSpec(ActiveShipSpec.SKIN, shipSkin);
+        }
+
+        shipPainter.selectVariant(variant);
+
+        return shipLayer;
     }
 
     public static InstalledFeature createModuleFromVariant(String slotID, Variant variant) {

@@ -13,8 +13,10 @@ import oth.shipeditor.components.viewer.layers.ship.FeaturesOverseer;
 import oth.shipeditor.components.viewer.layers.ship.ShipLayer;
 import oth.shipeditor.components.viewer.layers.ship.ShipPainter;
 import oth.shipeditor.parsing.FileUtilities;
+import oth.shipeditor.representation.GameDataRepository;
 import oth.shipeditor.representation.ship.VariantFile;
 import oth.shipeditor.undo.UndoOverseer;
+import oth.shipeditor.utility.Errors;
 import oth.shipeditor.utility.overseers.StaticController;
 
 import javax.swing.*;
@@ -82,7 +84,7 @@ public class ViewerDropReceiver extends DropTarget {
         draggedEntry = null;
     }
 
-    @SuppressWarnings({"unchecked", "AccessToStaticFieldLockedOnInstance", "CallToPrintStackTrace"})
+    @SuppressWarnings({"unchecked", "AccessToStaticFieldLockedOnInstance"})
     public synchronized void drop(DropTargetDropEvent dtde) {
         try {
             Transferable transferable = dtde.getTransferable();
@@ -117,7 +119,7 @@ public class ViewerDropReceiver extends DropTarget {
                     "Failed to conclude drag-and-drop action for viewer, exception thrown at: " + dtde,
                     "Drag-and-drop operation error!",
                     JOptionPane.ERROR_MESSAGE);
-            ex.printStackTrace();
+            Errors.printToStream(ex);
         }
         ViewerDropReceiver.finishDragToViewer();
     }
@@ -151,29 +153,51 @@ public class ViewerDropReceiver extends DropTarget {
     private static void handleShipEntryDrop(DropTargetDropEvent dtde, ShipCSVEntry shipEntry) {
         try {
             if (StaticController.getEditorMode() == EditorInstrument.VARIANT_MODULES) {
-                ViewerDropReceiver.handleVariantFileDrop(dtde, FeaturesOverseer.moduleVariantForInstall);
+                VariantFile forInstall = FeaturesOverseer.moduleVariantForInstall;
+                ViewerDropReceiver.addAsModule(dtde, forInstall);
             } else {
                 ShipLayer shipLayer = shipEntry.loadLayerFromEntry();
-                ShipPainter shipPainter = shipLayer.getPainter();
-                Point2D difference = shipPainter.getSpriteCenterDifferenceToAnchor();
-
-                Point2D currentCursor = StaticController.getCorrectedCursor();
-                Point2D targetForSpriteCenter = new Point2D.Double(currentCursor.getX() - difference.getX(),
-                        currentCursor.getY() - difference.getY());
-
-                shipPainter.updateAnchorOffset(targetForSpriteCenter);
-                UndoOverseer.finishAllEdits();
-
-                dtde.dropComplete(true);
-                ViewerDropReceiver.finishDragToViewer();
+                ViewerDropReceiver.dropShipLayer(dtde, shipLayer);
             }
         } catch (Exception exception) {
+            Errors.printToStream(exception);
             dtde.dropComplete(false);
         }
         ViewerDropReceiver.finishDragToViewer();
     }
 
     private static void handleVariantFileDrop(DropTargetDropEvent dtde, VariantFile variantFile) {
+        try {
+            if (StaticController.getEditorMode() == EditorInstrument.VARIANT_MODULES) {
+                ViewerDropReceiver.addAsModule(dtde, variantFile);
+            } else {
+                ShipLayer shipLayer = GameDataRepository.createLayerFromVariant(variantFile);
+                ViewerDropReceiver.dropShipLayer(dtde, shipLayer);
+            }
+        } catch (Exception exception) {
+            Errors.printToStream(exception);
+            dtde.dropComplete(false);
+        }
+        ViewerDropReceiver.finishDragToViewer();
+    }
+
+    private static void dropShipLayer(DropTargetDropEvent dtde,
+                                      ShipLayer shipLayer) {
+        ShipPainter shipPainter = shipLayer.getPainter();
+        Point2D difference = shipPainter.getSpriteCenterDifferenceToAnchor();
+
+        Point2D currentCursor = StaticController.getCorrectedCursor();
+        Point2D targetForSpriteCenter = new Point2D.Double(currentCursor.getX() - difference.getX(),
+                currentCursor.getY() - difference.getY());
+
+        shipPainter.updateAnchorOffset(targetForSpriteCenter);
+        UndoOverseer.finishAllEdits();
+
+        dtde.dropComplete(true);
+        ViewerDropReceiver.finishDragToViewer();
+    }
+
+    private static void addAsModule(DropTargetDropEvent dtde, VariantFile variantFile) {
         try {
             ViewerLayer viewerLayer = StaticController.getActiveLayer();
             if (viewerLayer instanceof ShipLayer shipLayer) {
@@ -188,6 +212,7 @@ public class ViewerDropReceiver extends DropTarget {
                 dtde.dropComplete(false);
             }
         } catch (Exception exception) {
+            Errors.printToStream(exception);
             dtde.dropComplete(false);
         }
         ViewerDropReceiver.finishDragToViewer();

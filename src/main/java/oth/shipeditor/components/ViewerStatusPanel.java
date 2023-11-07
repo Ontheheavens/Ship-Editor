@@ -27,10 +27,7 @@ import oth.shipeditor.utility.themes.Themes;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.KeyEvent;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseWheelEvent;
+import java.awt.event.*;
 import java.awt.geom.Point2D;
 import java.awt.image.BufferedImage;
 
@@ -221,14 +218,11 @@ final class ViewerStatusPanel extends JPanel {
 
         JFormattedTextField formattedField = editor.getTextField();
         formattedField.setColumns(2);
-        rotationLabel.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                if (SwingUtilities.isRightMouseButton(e)) {
-                    rotationResetMenu.show(rotationLabel, e.getX(), e.getY());
-                }
-            }
-        });
+
+        MouseListener labelResetListener = new ResetMenuListener(rotationResetMenu, rotationLabel);
+        rotationLabel.addMouseListener(labelResetListener);
+        MouseListener spinnerResetListener = new ResetMenuListener(rotationResetMenu, formattedField);
+        formattedField.addMouseListener(spinnerResetListener);
 
         String rotationTooltip = Utility.getWithLinebreaks("CTRL+Mousewheel to rotate viewer",
                 StringValues.RIGHT_CLICK_TO_RESET_VALUE);
@@ -288,14 +282,10 @@ final class ViewerStatusPanel extends JPanel {
 
         JFormattedTextField formattedField = editor.getTextField();
         formattedField.setColumns(4);
-        zoomLabel.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                if (SwingUtilities.isRightMouseButton(e)) {
-                    zoomResetMenu.show(zoomLabel, e.getX(), e.getY());
-                }
-            }
-        });
+        MouseListener labelResetListener = new ResetMenuListener(zoomResetMenu, zoomLabel);
+        zoomLabel.addMouseListener(labelResetListener);
+        MouseListener spinnerResetListener = new ResetMenuListener(zoomResetMenu, formattedField);
+        formattedField.addMouseListener(spinnerResetListener);
 
         leftsideContainer.add(zoomLabel);
         leftsideContainer.add(zoomSpinner);
@@ -470,6 +460,25 @@ final class ViewerStatusPanel extends JPanel {
         }
         rotationModel.setValue(rounded);
         this.widgetsAcceptChange = true;
+    }
+
+    private static final class ResetMenuListener extends MouseAdapter {
+
+        private final JPopupMenu resetMenu;
+        private final JComponent sourceComponent;
+
+        private ResetMenuListener(JPopupMenu menu, JComponent component) {
+            this.resetMenu = menu;
+            this.sourceComponent = component;
+        }
+
+        @Override
+        public void mouseClicked(MouseEvent e) {
+            if (SwingUtilities.isRightMouseButton(e)) {
+                resetMenu.show(sourceComponent, e.getX(), e.getY());
+            }
+        }
+
     }
 
 }

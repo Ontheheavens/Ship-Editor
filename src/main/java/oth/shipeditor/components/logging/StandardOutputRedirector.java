@@ -1,5 +1,6 @@
 package oth.shipeditor.components.logging;
 
+import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
 
 import java.io.PrintStream;
@@ -11,14 +12,23 @@ import java.io.PrintStream;
 @Log4j2
 public final class StandardOutputRedirector {
 
+    @Getter
+    private static PrintStream outStreamProxy;
+
+    @Getter
+    private static PrintStream errorStreamProxy;
+
     private StandardOutputRedirector() {}
 
     @SuppressWarnings("UseOfSystemOutOrSystemErr")
     public static void redirectStandardStreams() {
         PrintStream out = System.out;
-        System.setOut(StandardOutputRedirector.createLoggingProxy(out));
+        outStreamProxy = StandardOutputRedirector.createLoggingProxy(out);
+        System.setOut(outStreamProxy);
+
         PrintStream err = System.err;
-        System.setErr(StandardOutputRedirector.createLoggingProxy(err));
+        errorStreamProxy = StandardOutputRedirector.createLoggingProxy(err);
+        System.setErr(errorStreamProxy);
     }
 
     @SuppressWarnings("ImplicitDefaultCharsetUsage")

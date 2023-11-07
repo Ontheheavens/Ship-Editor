@@ -9,11 +9,14 @@ import lombok.Getter;
 import lombok.Setter;
 import oth.shipeditor.parsing.deserialize.ColorArrayRGBADeserializer;
 import oth.shipeditor.parsing.deserialize.ShipTypeHintsDeserializer;
+import oth.shipeditor.parsing.loading.FileLoading;
+import oth.shipeditor.representation.GameDataRepository;
 import oth.shipeditor.representation.weapon.WeaponSlot;
 import oth.shipeditor.utility.graphics.Sprite;
 import oth.shipeditor.utility.text.StringConstants;
 
 import java.awt.*;
+import java.io.File;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
@@ -57,6 +60,25 @@ public class SkinSpecFile implements ShipSpecFile {
 
     @JsonIgnore
     private transient Sprite loadedSkinSprite;
+
+    public Sprite getLoadedSkinSprite() {
+        if (loadedSkinSprite == null) {
+            String skinSpriteName = this.getSpriteName();
+            Path skinPackagePath = this.getContainingPackage();
+
+            if (skinSpriteName == null || skinSpriteName.isEmpty()) {
+                ShipSpecFile baseHullSpec = GameDataRepository.retrieveSpecByID(baseHullId);
+                skinSpriteName = baseHullSpec.getSpriteName();
+            }
+
+            Path skinSpriteFilePath = Path.of(skinSpriteName);
+            File skinSpriteFile = FileLoading.fetchDataFile(skinSpriteFilePath, skinPackagePath);
+
+            Sprite skinSprite = FileLoading.loadSprite(skinSpriteFile);
+            this.setLoadedSkinSprite(skinSprite);
+        }
+        return loadedSkinSprite;
+    }
 
     @JsonProperty(StringConstants.BASE_HULL_ID)
     private String baseHullId;

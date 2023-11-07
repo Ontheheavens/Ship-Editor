@@ -1,6 +1,7 @@
 package oth.shipeditor.utility;
 
 import lombok.extern.log4j.Log4j2;
+import oth.shipeditor.components.logging.StandardOutputRedirector;
 import oth.shipeditor.persistence.Settings;
 import oth.shipeditor.persistence.SettingsManager;
 import oth.shipeditor.utility.text.StringValues;
@@ -21,7 +22,6 @@ public final class Errors {
         Errors.showFileError(message, null);
     }
 
-    @SuppressWarnings("CallToPrintStackTrace")
     public static void showFileError(String message, Throwable exception) {
         Object[] options = {"OK", "Hide file errors"};
         int result = JOptionPane.showOptionDialog(
@@ -41,8 +41,12 @@ public final class Errors {
         }
 
         if (exception != null) {
-            exception.printStackTrace();
+            Errors.printToStream(exception);
         }
+    }
+
+    public static void printToStream(Throwable throwable) {
+        throwable.printStackTrace(StandardOutputRedirector.getErrorStreamProxy());
     }
 
 }
