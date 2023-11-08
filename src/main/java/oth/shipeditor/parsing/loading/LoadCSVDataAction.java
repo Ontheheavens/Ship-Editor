@@ -40,8 +40,8 @@ abstract class LoadCSVDataAction<T extends CSVEntry> extends DataLoadingAction {
             }
 
             log.trace("Loading CSV table from package: {}", folder.getKey());
-            List<T> systemsList = loadPackage(folder.getKey(), folder.getValue());
-            entriesByPackage.putIfAbsent(String.valueOf(folder.getKey()), systemsList);
+            List<T> entriesList = loadPackage(folder.getKey(), folder.getValue());
+            entriesByPackage.putIfAbsent(String.valueOf(folder.getKey()), entriesList);
         }
         return () -> publishResult(entriesByPackage);
     }

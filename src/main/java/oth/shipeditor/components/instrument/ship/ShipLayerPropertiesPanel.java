@@ -66,9 +66,15 @@ final class ShipLayerPropertiesPanel extends JPanel {
 
                 ViewerLayer selected = checked.selected();
                 boolean layerPainterPresent = selected != null && selected.getPainter() != null;
-                if (!layerPainterPresent) return;
+                if (!layerPainterPresent) {
+                    layerCircumstancePanel.refresh(null);
+                    return;
+                }
                 LayerPainter layerPainter = selected.getPainter();
-                if (!(layerPainter instanceof ShipPainter shipPainter) || shipPainter.isUninitialized()) return;
+                if (!(layerPainter instanceof ShipPainter shipPainter) || shipPainter.isUninitialized()) {
+                    layerCircumstancePanel.refresh(null);
+                    return;
+                }
                 this.refreshData(shipPainter.getParentLayer());
 
                 layerCircumstancePanel.refresh(selected.getPainter());

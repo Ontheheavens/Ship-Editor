@@ -11,6 +11,7 @@ import oth.shipeditor.components.viewer.entities.weapon.WeaponSlotPoint;
 import oth.shipeditor.components.viewer.layers.LayerManager;
 import oth.shipeditor.components.viewer.layers.LayerPainter;
 import oth.shipeditor.components.viewer.layers.ViewerLayer;
+import oth.shipeditor.components.viewer.layers.ship.ShipPainter;
 import oth.shipeditor.components.viewer.painters.GuidesPainters;
 import oth.shipeditor.components.viewer.painters.HotkeyHelpPainter;
 import oth.shipeditor.components.viewer.painters.points.AbstractPointPainter;
@@ -114,13 +115,17 @@ public class PaintOrderController implements Painter {
     @SuppressWarnings("ChainOfInstanceofChecks")
     private static void paintDraggedEntity(Graphics2D g, AffineTransform worldToScreen, double w, double h) {
         InstallableEntry dragged = ViewerDropReceiver.getDraggedEntry();
-        Point2D currentCursor = StaticController.getCorrectedCursor();
+        Point2D currentCursor = StaticController.getCorrectedWithoutRotate();
 
         double rotation = 0;
         WeaponMount mount = WeaponMount.TURRET;
         WeaponSlotPoint selectedWeaponSlot = StaticController.getSelectedAndEligibleSlot();
         if (selectedWeaponSlot != null) {
             rotation = selectedWeaponSlot.getAngle();
+            ShipPainter weaponSlotParent = selectedWeaponSlot.getParent();
+            double rotationRadians = weaponSlotParent.getRotationRadians();
+            rotation -= Math.toDegrees(rotationRadians);
+
             rotation = Utility.flipAngle(rotation);
             mount = selectedWeaponSlot.getWeaponMount();
         }

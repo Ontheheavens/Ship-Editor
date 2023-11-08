@@ -186,12 +186,13 @@ public class ViewerDropReceiver extends DropTarget {
         ShipPainter shipPainter = shipLayer.getPainter();
         Point2D difference = shipPainter.getSpriteCenterDifferenceToAnchor();
 
-        Point2D currentCursor = StaticController.getCorrectedCursor();
+        Point2D currentCursor = StaticController.getCorrectedWithoutRotate();
         Point2D targetForSpriteCenter = new Point2D.Double(currentCursor.getX() - difference.getX(),
                 currentCursor.getY() - difference.getY());
 
         shipPainter.updateAnchorOffset(targetForSpriteCenter);
         UndoOverseer.finishAllEdits();
+        StaticController.reselectCurrentLayer();
 
         dtde.dropComplete(true);
         ViewerDropReceiver.finishDragToViewer();

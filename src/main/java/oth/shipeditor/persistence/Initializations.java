@@ -25,6 +25,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Objects;
 import java.util.function.Function;
+import java.util.stream.Stream;
 
 /**
  * @author Ontheheavens
@@ -35,10 +36,6 @@ public final class Initializations {
 
     public static final String FILE_CHOOSER_SHORTCUTS_FILES_FUNCTION = "FileChooser.shortcuts.filesFunction";
     public static final String SHELL_FOLDER_0_X_12 = "ShellFolder: 0x12";
-
-    private static boolean folderHasCore;
-
-    private static boolean folderHasMods;
 
     private Initializations() {
     }
@@ -181,10 +178,6 @@ public final class Initializations {
         SettingsManager.getCorePackage();
     }
 
-    private static void createDefaultSettings() {
-
-    }
-
     @SuppressWarnings({"ProhibitedExceptionThrown", "IfStatementWithNegatedCondition"})
     public static void selectGameFolder() {
         Settings settings = SettingsManager.getSettings();
@@ -192,6 +185,19 @@ public final class Initializations {
         if (gameFolderPath != null && !gameFolderPath.isEmpty()) {
             return;
         }
+
+        String[] predefinedPaths = {"C:\\Games\\Starsector", "C:\\Program Files (x86)\\Fractal Softworks\\Starsector"};
+
+        for (String predefinedPath : predefinedPaths) {
+            Path predefinedFolderPath = Paths.get(predefinedPath);
+            if (Initializations.checkGameFolderEligibility(predefinedFolderPath, settings)) {
+                log.info("Saving game folder path from predefined paths...");
+                String resultPath = predefinedFolderPath.toAbsolutePath().toString();
+                settings.setGameFolderPath(resultPath);
+                return;
+            }
+        }
+
         String errorMessage = "Game folder selection failed!";
         JFileChooser folderChooser = new JFileChooser();
         folderChooser.setDialogTitle("Choose folder containing installed game:");
@@ -205,13 +211,10 @@ public final class Initializations {
             File file = folderChooser.getSelectedFile();
             Path filePath = file.toPath();
 
-            Initializations.checkGameFolderEligibility(filePath, settings);
-            if (folderHasCore && folderHasMods) {
+            if (Initializations.checkGameFolderEligibility(filePath, settings)) {
                 String absolutePath = file.getAbsolutePath();
                 log.info("Saving game folder path...");
                 settings.setGameFolderPath(absolutePath);
-                folderHasCore = false;
-                folderHasMods = false;
             } else {
                 log.info("Selected game folder path invalid.");
                 JOptionPane.showMessageDialog(null,
@@ -223,25 +226,30 @@ public final class Initializations {
         }
     }
 
-    @SuppressWarnings("NonBooleanMethodNameMayNotStartWithQuestion")
-    private static void checkGameFolderEligibility(Path filePath, Settings settings) {
-        try (var stream = Files.walk(filePath, 5)) {
-            stream.filter(Files::isDirectory).forEach(path -> {
+    private static boolean checkGameFolderEligibility(Path filePath, Settings settings) {
+        boolean folderHasCore = false;
+        boolean folderHasMods = false;
+        try (Stream<Path> pathStream = Files.walk(filePath, 5)) {
+            Stream<Path> filtered = pathStream.filter(Files::isDirectory);
+            for (Path path : filtered.toArray(Path[]::new)) {
                 String folderName = path.getFileName().toString();
                 String coreFolderPath = path.toString();
+
                 if (Initializations.isCoreFolder(path)) {
                     settings.setCoreFolderPath(coreFolderPath);
                     SettingsManager.setCoreFolderName(FileUtilities.extractFolderName(coreFolderPath));
                     folderHasCore = true;
                 }
+
                 if ("mods".equals(folderName)) {
                     settings.setModFolderPath(coreFolderPath);
                     folderHasMods = true;
                 }
-            });
+            }
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+        return folderHasCore && folderHasMods;
     }
 
     private static boolean isCoreFolder(Path folderPath) {

@@ -86,6 +86,12 @@ public final class StaticController {
         manager.setActiveLayer(current);
     }
 
+    public static Point2D getCorrectedWithoutRotate() {
+        Point2D currentCursor = StaticController.getAdjustedCursor();
+        AffineTransform screenToWorld = viewer.getScreenToWorld();
+        return Utility.correctAdjustedCursor(currentCursor, screenToWorld);
+    }
+
     public static AffineTransform getScreenToWorld() {
         if (activeLayer != null) {
             LayerPainter painter = activeLayer.getPainter();

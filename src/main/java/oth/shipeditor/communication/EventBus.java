@@ -2,6 +2,7 @@ package oth.shipeditor.communication;
 
 import lombok.extern.log4j.Log4j2;
 import oth.shipeditor.communication.events.BusEvent;
+import oth.shipeditor.utility.Errors;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -41,8 +42,13 @@ public final class EventBus {
 
     public static void publish(BusEvent event) {
         Iterable<BusEventListener> receivers = new HashSet<>(bus.subscribers);
-        for (BusEventListener receiver : receivers) {
-            receiver.handleEvent(event);
+        try {
+            // Without preventive error handling the debug is GNARLY here. Needs refactor to minimize looping time!
+            for (BusEventListener receiver : receivers) {
+                receiver.handleEvent(event);
+            }
+        } catch (Throwable throwable) {
+            Errors.printToStream(throwable);
         }
     }
 

@@ -10,6 +10,7 @@ import oth.shipeditor.communication.events.components.CenterPanelsRepaintQueued;
 import oth.shipeditor.communication.events.viewer.layers.LayerWasSelected;
 import oth.shipeditor.communication.events.viewer.layers.PainterOpacityChangeQueued;
 import oth.shipeditor.components.viewer.entities.ShipCenterPoint;
+import oth.shipeditor.components.viewer.layers.LayerPainter;
 import oth.shipeditor.components.viewer.layers.ViewerLayer;
 import oth.shipeditor.components.viewer.layers.ship.ShipLayer;
 import oth.shipeditor.components.viewer.layers.ship.ShipPainter;
@@ -100,7 +101,12 @@ public final class CollisionPanel extends JPanel {
         this.updateHullLabels();
 
         moduleAnchorPanel.setCenterPainter(this.getCenterPainter());
-        moduleAnchorPanel.refresh(selected.getPainter());
+        if (selected != null) {
+            LayerPainter layerPainter = selected.getPainter();
+            moduleAnchorPanel.refresh(layerPainter);
+        } else {
+            moduleAnchorPanel.refresh(null);
+        }
 
         this.repaint();
     }
