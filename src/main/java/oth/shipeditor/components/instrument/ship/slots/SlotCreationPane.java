@@ -4,6 +4,7 @@ import lombok.Getter;
 import oth.shipeditor.representation.weapon.WeaponMount;
 import oth.shipeditor.representation.weapon.WeaponSize;
 import oth.shipeditor.representation.weapon.WeaponType;
+import oth.shipeditor.utility.components.widgets.Spinners;
 import oth.shipeditor.utility.objects.Pair;
 import oth.shipeditor.utility.components.ComponentUtilities;
 
@@ -95,10 +96,10 @@ public class SlotCreationPane extends JPanel {
         JPanel container = new JPanel();
         container.setLayout(new GridBagLayout());
 
-        ComponentUtilities.addLabelWithSpinner(container, "Default angle:",
+        Spinners.addLabelWithDegreeSpinner(container, "Default angle:",
                 aDouble -> defaultAngle = aDouble, 0);
 
-        ComponentUtilities.addLabelWithSpinner(container, "Default arc:",
+        Spinners.addLabelWithDegreeSpinner(container, "Default arc:",
                 aDouble -> defaultArc = aDouble, 1);
 
         JPanel wrapper = new JPanel();

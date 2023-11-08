@@ -64,7 +64,7 @@ public final class EditDispatch {
                 while (true) {
                     Thread.sleep(1000);
                     if (editCommenced) {
-                        EventBus.publish(new TimedEditConcluded());
+                        EditDispatch.notifyTimedEditConcluded();
                         editCommenced = false;
                     }
                 }
@@ -76,8 +76,12 @@ public final class EditDispatch {
     private EditDispatch() {
     }
 
-    public static void setEditCommenced() {
+    public static void notifyTimedEditCommenced() {
         editCommenced = true;
+    }
+
+    public static void notifyTimedEditConcluded() {
+        EventBus.publish(new TimedEditConcluded());
     }
 
     private static void handleContinuousEdit(Edit edit) {

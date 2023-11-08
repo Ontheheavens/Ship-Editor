@@ -5,11 +5,13 @@ import oth.shipeditor.components.viewer.layers.ViewerLayer;
 import oth.shipeditor.components.viewer.layers.ship.ShipLayer;
 import oth.shipeditor.components.viewer.layers.ship.ShipPainter;
 import oth.shipeditor.components.viewer.layers.ship.data.ShipSkin;
-import oth.shipeditor.utility.components.containers.PropertiesPanel;
+import oth.shipeditor.utility.components.ComponentUtilities;
+import oth.shipeditor.utility.components.containers.LayerPropertiesPanel;
 import oth.shipeditor.utility.objects.Pair;
 import oth.shipeditor.utility.text.StringValues;
 
 import javax.swing.*;
+import java.awt.*;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -17,30 +19,35 @@ import java.util.Map;
  * @author Ontheheavens
  * @since 28.10.2023
  */
-public class SkinInfoPanel extends PropertiesPanel {
+public class SkinInfoPanel extends LayerPropertiesPanel {
 
-    @SuppressWarnings("MethodWithMultipleReturnPoints")
-    public void refreshContent(ViewerLayer layer) {
-        fireClearingListeners(layer);
+    public void refreshContent(LayerPainter layerPainter) {
+        fireClearingListeners(layerPainter);
 
-        boolean layerPainterPresent = layer != null && layer.getPainter() != null;
-        if (!layerPainterPresent) return;
-        LayerPainter layerPainter = layer.getPainter();
         if (!(layerPainter instanceof ShipPainter shipPainter) || shipPainter.isUninitialized()) return;
-        ShipLayer shipLayer = (ShipLayer) layer;
+        ShipLayer shipLayer = shipPainter.getParentLayer();
         ShipSkin activeSkin = shipLayer.getActiveSkin();
         if (activeSkin == null || activeSkin.isBase()) return;
 
-        fireRefresherListeners(shipLayer);
+        fireRefresherListeners(layerPainter);
     }
 
     protected void populateContent() {
+        this.setLayout(new BorderLayout());
         Map<JLabel, JComponent> widgets = new LinkedHashMap<>();
 
         var hullNameWidget = createHullNameEditor();
         widgets.put(hullNameWidget.getFirst(), hullNameWidget.getSecond());
 
-        installWidgets(widgets);
+        JPanel widgetsPanel = createWidgetsPanel(widgets);
+        this.add(widgetsPanel, BorderLayout.PAGE_START);
+    }
+
+    @Override
+    protected JPanel createWidgetsPanel(Map<JLabel, JComponent> widgets) {
+        JPanel widgetsPanel = super.createWidgetsPanel(widgets);
+        ComponentUtilities.outfitPanelWithTitle(widgetsPanel, "Skin data");
+        return widgetsPanel;
     }
 
     private Pair<JLabel, JTextField> createHullNameEditor() {
@@ -50,7 +57,8 @@ public class SkinInfoPanel extends PropertiesPanel {
         hullNameEditor.addActionListener(e -> {
             if (isWidgetsReadyForInput()) {
                 String currentText = hullNameEditor.getText();
-                ViewerLayer viewerLayer = getCachedLayer();
+                LayerPainter cachedLayer = getCachedLayerPainter();
+                ViewerLayer viewerLayer = cachedLayer.getParentLayer();
                 if (viewerLayer instanceof ShipLayer shipLayer) {
                     var activeSkin = shipLayer.getActiveSkin();
                     if (activeSkin != null) {
@@ -64,8 +72,8 @@ public class SkinInfoPanel extends PropertiesPanel {
         registerWidgetListeners(hullNameEditor, layer -> {
             hullNameEditor.setText(StringValues.NOT_INITIALIZED);
             hullNameEditor.setEnabled(false);
-        }, layer -> {
-            ShipLayer shipLayer = (ShipLayer) layer;
+        }, layerPainter -> {
+            ShipLayer shipLayer = (ShipLayer) layerPainter.getParentLayer();
             var skin = shipLayer.getActiveSkin();
             hullNameEditor.setEnabled(true);
             hullNameEditor.setText(skin.getHullName());

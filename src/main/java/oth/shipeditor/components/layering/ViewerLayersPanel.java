@@ -37,8 +37,8 @@ import oth.shipeditor.representation.GameDataRepository;
 import oth.shipeditor.representation.ship.HullSpecFile;
 import oth.shipeditor.representation.weapon.WeaponMount;
 import oth.shipeditor.representation.weapon.WeaponSpecFile;
-import oth.shipeditor.utility.components.ComponentUtilities;
 import oth.shipeditor.utility.components.containers.SortableTabbedPane;
+import oth.shipeditor.utility.components.widgets.Spinners;
 import oth.shipeditor.utility.graphics.ColorUtilities;
 import oth.shipeditor.utility.graphics.Sprite;
 import oth.shipeditor.utility.overseers.StaticController;
@@ -46,7 +46,6 @@ import oth.shipeditor.utility.text.StringValues;
 import oth.shipeditor.utility.themes.Themes;
 
 import javax.swing.*;
-import javax.swing.border.Border;
 import javax.swing.border.EmptyBorder;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.plaf.TabbedPaneUI;
@@ -381,14 +380,12 @@ public final class ViewerLayersPanel extends SortableTabbedPane {
                 SpinnerNumberModel heightModel = new SpinnerNumberModel(1000.0d,
                         100.0d, 4000.0d, 1.0d);
 
-                JLabel widthLabel = new JLabel("Image width:");
-                Border border = new EmptyBorder(0, 16, 0, 0);
-                widthLabel.setBorder(border);
-                JLabel heightLabel = new JLabel("Image height:");
-                heightLabel.setBorder(border);
+                String widthLabelText = "Image width:";
+                String heightLabelText = "Image height:";
 
-                JPanel dimensionsController = ComponentUtilities.createTwinSpinnerPanel(widthModel, heightModel,
-                        widthLabel, heightLabel);
+                JPanel dimensionsController = Spinners.createTwinSpinnerPanel(widthModel, heightModel,
+                        widthLabelText, heightLabelText);
+                dimensionsController.setBorder(new EmptyBorder(0, 16, 0, 0));
                 JPanel container = new JPanel();
                 container.setLayout(new BoxLayout(container, BoxLayout.PAGE_AXIS));
                 container.add(Box.createVerticalGlue());

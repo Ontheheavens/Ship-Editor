@@ -2,6 +2,7 @@ package oth.shipeditor.components.instrument.ship;
 
 import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.viewer.layers.LayerWasSelected;
+import oth.shipeditor.components.instrument.LayerCircumstancePanel;
 import oth.shipeditor.components.instrument.ViewerLayerWidgetsPanel;
 import oth.shipeditor.components.viewer.entities.weapon.SlotData;
 import oth.shipeditor.components.viewer.entities.weapon.WeaponSlotPoint;
@@ -29,6 +30,8 @@ final class ShipLayerPropertiesPanel extends JPanel {
     private final JPanel weaponSlotsSummaryPanel;
     private final HullDataControlPanel hullDataPanel;
 
+    private final LayerCircumstancePanel layerCircumstancePanel;
+
     ShipLayerPropertiesPanel() {
         this.setLayout(new BorderLayout());
         JPanel layerWidgetsPanel = new ViewerLayerWidgetsPanel();
@@ -48,6 +51,9 @@ final class ShipLayerPropertiesPanel extends JPanel {
 
         this.add(dataContainer, BorderLayout.CENTER);
 
+        layerCircumstancePanel = new LayerCircumstancePanel();
+        this.add(layerCircumstancePanel, BorderLayout.PAGE_END);
+
         this.initListeners();
     }
 
@@ -64,6 +70,8 @@ final class ShipLayerPropertiesPanel extends JPanel {
                 LayerPainter layerPainter = selected.getPainter();
                 if (!(layerPainter instanceof ShipPainter shipPainter) || shipPainter.isUninitialized()) return;
                 this.refreshData(shipPainter.getParentLayer());
+
+                layerCircumstancePanel.refresh(selected.getPainter());
             }
         });
     }

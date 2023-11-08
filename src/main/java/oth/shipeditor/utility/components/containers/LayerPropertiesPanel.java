@@ -1,7 +1,7 @@
 package oth.shipeditor.utility.components.containers;
 
 import lombok.Getter;
-import oth.shipeditor.components.viewer.layers.ViewerLayer;
+import oth.shipeditor.components.viewer.layers.LayerPainter;
 import oth.shipeditor.utility.components.ComponentUtilities;
 import oth.shipeditor.utility.overseers.EventScheduler;
 import oth.shipeditor.utility.overseers.StaticController;
@@ -13,34 +13,35 @@ import java.util.Map;
 import java.util.function.Consumer;
 
 /**
- * As of October 2023 this class is the preferred way of implementing various property panels like hull/skin data values.
- * Uses GridBagLayout, handles refresh and population of values on layer selection.
+ * This class is the preferred way of implementing various property panels like hull/skin data values.
+ * Handles refresh and population of values on layer selection.
  * @author Ontheheavens
  * @since 29.10.2023
  */
-@SuppressWarnings("AbstractClassWithOnlyOneDirectInheritor")
 @Getter
-public abstract class PropertiesPanel extends JPanel {
+public abstract class LayerPropertiesPanel extends JPanel {
 
-    private final Map<JComponent, Consumer<ViewerLayer>> clearingListeners;
+    private final Map<JComponent, Consumer<LayerPainter>> clearingListeners;
 
-    private final Map<JComponent, Consumer<ViewerLayer>> refresherListeners;
+    private final Map<JComponent, Consumer<LayerPainter>> refresherListeners;
 
     private boolean widgetsReadyForInput;
 
-    private ViewerLayer cachedLayer;
+    private LayerPainter cachedLayerPainter;
 
-    protected PropertiesPanel() {
+    protected LayerPropertiesPanel() {
         clearingListeners = new LinkedHashMap<>();
         refresherListeners = new LinkedHashMap<>();
-        this.setLayout(new BorderLayout());
         this.populateContent();
     }
 
-    protected void installWidgets(Map<JLabel, JComponent> widgets) {
+    /**
+     * Default method for populating widgets.
+     * @return panel with added widgets, which uses GridBagLayout.
+     */
+    protected JPanel createWidgetsPanel(Map<JLabel, JComponent> widgets) {
         JPanel contentContainer = new JPanel();
         contentContainer.setLayout(new GridBagLayout());
-        ComponentUtilities.outfitPanelWithTitle(contentContainer, "Skin data");
 
         int ordering = 0;
         for (Map.Entry<JLabel, JComponent> entry : widgets.entrySet()) {
@@ -50,38 +51,44 @@ public abstract class PropertiesPanel extends JPanel {
             ordering++;
         }
 
-        this.add(contentContainer, BorderLayout.PAGE_START);
+        return contentContainer;
     }
 
-    public void refresh(ViewerLayer layer) {
-        cachedLayer = layer;
+    public void refresh(LayerPainter layer) {
+        cachedLayerPainter = layer;
         widgetsReadyForInput = false;
         this.refreshContent(layer);
         widgetsReadyForInput = true;
     }
 
-    public abstract void refreshContent(ViewerLayer layer);
+    /**
+     * To be called at any significant layer change, like selection. Not expected to add or remove components.
+     */
+    public abstract void refreshContent(LayerPainter layerPainter);
 
+    /**
+     * Called once at panel creation to install all sub-components.
+     */
     protected abstract void populateContent();
 
     protected void processChange() {
-        this.refresh(cachedLayer);
+        this.refresh(cachedLayerPainter);
         EventScheduler repainter = StaticController.getScheduler();
         repainter.queueViewerRepaint();
         repainter.queueActiveLayerUpdate();
     }
 
-    protected void fireClearingListeners(ViewerLayer layer) {
+    protected void fireClearingListeners(LayerPainter layer) {
         clearingListeners.forEach((widget, clearer) -> clearer.accept(layer));
     }
 
-    protected void fireRefresherListeners(ViewerLayer layer) {
+    protected void fireRefresherListeners(LayerPainter layer) {
         refresherListeners.forEach((widget, refresher) -> refresher.accept(layer));
     }
 
     protected void registerWidgetListeners(JComponent widget,
-                                           Consumer<ViewerLayer> clearer,
-                                           Consumer<ViewerLayer> refresher) {
+                                           Consumer<LayerPainter> clearer,
+                                           Consumer<LayerPainter> refresher) {
         clearingListeners.put(widget, clearer);
         refresherListeners.put(widget, refresher);
     }

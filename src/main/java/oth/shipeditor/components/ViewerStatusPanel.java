@@ -20,6 +20,8 @@ import oth.shipeditor.components.viewer.layers.ViewerLayer;
 import oth.shipeditor.components.viewer.layers.ship.ShipPainter;
 import oth.shipeditor.utility.Utility;
 import oth.shipeditor.utility.components.MouseoverLabelListener;
+import oth.shipeditor.utility.components.widgets.IncrementType;
+import oth.shipeditor.utility.components.widgets.Spinners;
 import oth.shipeditor.utility.graphics.Sprite;
 import oth.shipeditor.utility.overseers.StaticController;
 import oth.shipeditor.utility.text.StringValues;
@@ -93,12 +95,12 @@ final class ViewerStatusPanel extends JPanel {
         JPanel container = new JPanel();
         container.setLayout(new BoxLayout(container, BoxLayout.LINE_AXIS));
 
-        int linkageSpinnerMax = 5;
-        int linkageSpinnerMin = 0;
+        double linkageSpinnerMax = 5.0d;
+        double linkageSpinnerMin = 0.0d;
 
-        SpinnerNumberModel spinnerListModel = new SpinnerNumberModel(1,
-                linkageSpinnerMin, linkageSpinnerMax, 1);
-        JSpinner linkageSpinner = new JSpinner(spinnerListModel);
+        SpinnerNumberModel linkageSpinnerModel = new SpinnerNumberModel(1.0d,
+                linkageSpinnerMin, linkageSpinnerMax, 1.0d);
+        JSpinner linkageSpinner = Spinners.createWheelable(linkageSpinnerModel, IncrementType.UNARY);
         JSpinner.DefaultEditor spinnerEditor = (JSpinner.DefaultEditor) linkageSpinner.getEditor();
         JFormattedTextField textField = spinnerEditor.getTextField();
         textField.setEditable(true);
@@ -138,26 +140,10 @@ final class ViewerStatusPanel extends JPanel {
         container.add(Box.createRigidArea(new Dimension(margin,0)));
 
         linkageSpinner.addChangeListener(e -> {
-            Integer current = (Integer) spinnerListModel.getValue();
-            EventBus.publish(new PointLinkageToleranceChanged(current));
+            double current = (Double) linkageSpinnerModel.getValue();
+            EventBus.publish(new PointLinkageToleranceChanged((int) current));
         });
-        linkageSpinner.setValue(5);
-
-        linkageSpinner.addMouseWheelListener(e -> {
-            if (e.getScrollType() != MouseWheelEvent.WHEEL_UNIT_SCROLL) {
-                return;
-            }
-            int value = (Integer) linkageSpinner.getValue();
-            int scrollAmount = e.getUnitsToScroll();
-
-            // Compare the scroll amount to ensure we always change only by +1 or -1.
-            int adjustedScroll = Integer.compare(scrollAmount, 0);
-
-            int newValue = value - adjustedScroll;
-
-            newValue = Math.min(linkageSpinnerMax, Math.max(linkageSpinnerMin, newValue));
-            linkageSpinner.setValue(newValue);
-        });
+        linkageSpinner.setValue(5.0d);
 
         return container;
     }
@@ -191,22 +177,11 @@ final class ViewerStatusPanel extends JPanel {
         FontIcon rotationIcon = FontIcon.of(FluentUiRegularAL.ARROW_ROTATE_CLOCKWISE_20, 20, Themes.getIconColor());
         JLabel rotationLabel = new JLabel("", rotationIcon, SwingConstants.TRAILING);
 
-        int minimum = 0;
-        int maximum = 360;
-        int initial = 0;
-        rotationModel = new SpinnerNumberModel(initial, minimum, maximum, 1);
+        double minimum = 0.0d;
+        double maximum = 360.0d;
+        double initial = 0.0d;
+        rotationModel = new SpinnerNumberModel(initial, minimum, maximum, 1.0d);
         JSpinner rotationSpinner = createRotationSpinner();
-
-        rotationSpinner.addMouseWheelListener(e -> {
-            if (e.getScrollType() != MouseWheelEvent.WHEEL_UNIT_SCROLL) {
-                return;
-            }
-            int value = (Integer) rotationSpinner.getValue();
-            int scrollAmount = e.getUnitsToScroll();
-            int adjustedScroll = Integer.compare(scrollAmount, 0);
-            int newValue = Math.min(maximum, Math.max(minimum, value - adjustedScroll));
-            rotationSpinner.setValue(newValue);
-        });
 
         JSpinner.NumberEditor editor = new JSpinner.NumberEditor(rotationSpinner,"0°");
         rotationSpinner.setEditor(editor);
@@ -235,11 +210,11 @@ final class ViewerStatusPanel extends JPanel {
     }
 
     private JSpinner createRotationSpinner() {
-        JSpinner rotationSpinner = new JSpinner(rotationModel);
+        JSpinner rotationSpinner = Spinners.createWheelable(rotationModel, IncrementType.UNARY);
         rotationSpinner.addChangeListener(e -> {
             if (widgetsAcceptChange) {
                 Number modelNumber = rotationModel.getNumber();
-                int currentValue = modelNumber.intValue();
+                double currentValue = modelNumber.doubleValue();
 
                 PrimaryViewer primaryViewer = StaticController.getViewer();
                 ViewerControl viewerControls = primaryViewer.getViewerControls();
@@ -458,7 +433,7 @@ final class ViewerStatusPanel extends JPanel {
         if (ControlPredicates.isRotationRoundingEnabled()) {
             rounded = (int) Math.round(newRotation);
         }
-        rotationModel.setValue(rounded);
+        rotationModel.setValue((double) rounded);
         this.widgetsAcceptChange = true;
     }
 

@@ -23,13 +23,11 @@ import javax.swing.border.*;
 import javax.swing.event.ChangeListener;
 import java.awt.*;
 import java.awt.event.ActionListener;
-import java.awt.event.MouseWheelEvent;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.nio.file.Path;
 import java.util.Dictionary;
 import java.util.Hashtable;
-import java.util.function.Consumer;
 
 /**
  * @author Ontheheavens
@@ -143,15 +141,22 @@ public final class ComponentUtilities {
         return resizedImage;
     }
 
-    public static Pair<JSlider, JLabel> createOpacityWidget(ChangeListener change,
+    public static Pair<JLabel, JSlider> createOpacityWidget(ChangeListener change,
                                                             BusEventListener eventListener) {
+        Pair<JLabel, JSlider> widgets = ComponentUtilities.createOpacityWidget();
+        JSlider slider = widgets.getSecond();
+        slider.addChangeListener(change);
+        EventBus.subscribe(eventListener);
+
+        return widgets;
+    }
+
+    public static Pair<JLabel, JSlider> createOpacityWidget() {
         JSlider opacitySlider = new JSlider(SwingConstants.HORIZONTAL,
                 0, 100, 100);
         opacitySlider.setAlignmentX(0.0f);
         opacitySlider.setEnabled(false);
         opacitySlider.setSnapToTicks(true);
-        opacitySlider.addChangeListener(change);
-        EventBus.subscribe(eventListener);
         Dictionary<Integer, JLabel> labelTable = new Hashtable<>();
         labelTable.put(0, new JLabel("0%"));
         labelTable.put(50, new JLabel("50%"));
@@ -164,7 +169,7 @@ public final class ComponentUtilities {
         JLabel opacityLabel = new JLabel();
         opacityLabel.setAlignmentX(0.0f);
 
-        return new Pair<>(opacitySlider, opacityLabel);
+        return new Pair<>(opacityLabel, opacitySlider);
     }
 
     public static JPopupMenu createPathContextMenu(Path filePath) {
@@ -456,75 +461,6 @@ public final class ComponentUtilities {
         return container;
     }
 
-    /**
-     * Default values for spinner are set to 0/360.
-     */
-    @SuppressWarnings("UnusedReturnValue")
-    public static JSpinner addLabelWithSpinner(JPanel container, String labelText, Consumer<Double> spinnerEffect, int y) {
-        return ComponentUtilities.addLabelWithSpinner(container, labelText, spinnerEffect, 0, 360, y);
-    }
-
-    /**
-     * @param container expected to have GridBagLayout.
-     * @param y vertical grid position in layout, 0 corresponds to first/top.
-     */
-    @SuppressWarnings({"MethodWithTooManyParameters", "WeakerAccess"})
-    public static JSpinner addLabelWithSpinner(JPanel container, String labelText,
-                                               Consumer<Double> spinnerEffect,
-                                               double minValue, double maxValue, int y) {
-        SpinnerNumberModel spinnerNumberModel = new SpinnerNumberModel(0,
-                minValue, maxValue, 0.5d);
-        JSpinner spinner = new JSpinner(spinnerNumberModel);
-        return ComponentUtilities.addLabelWithSpinner(container, labelText, spinnerEffect,
-                spinner, spinnerNumberModel, minValue, maxValue, y);
-    }
-
-    @SuppressWarnings("MethodWithTooManyParameters")
-    public static JSpinner addLabelWithSpinner(JPanel container, String labelText,
-                                               Consumer<Double> spinnerEffect, JSpinner spinner,
-                                               SpinnerNumberModel spinnerNumberModel,
-                                               double minValue, double maxValue, int y) {
-        GridBagConstraints constraints = new GridBagConstraints();
-
-        constraints.insets = new Insets(3, 10, 0, 3);
-        constraints.gridx = 0;
-        constraints.gridy = y;
-        constraints.weightx = 0.0;
-        constraints.weighty = 1.0;
-        constraints.fill = GridBagConstraints.NONE;
-        constraints.anchor = GridBagConstraints.LINE_START;
-
-        JLabel selectorLabel = new JLabel(labelText);
-        container.add(selectorLabel, constraints);
-
-        constraints.gridx = 1;
-        constraints.weightx = 1.0;
-        constraints.gridy = y;
-        constraints.fill = GridBagConstraints.HORIZONTAL;
-        constraints.insets = new Insets(3, 3, 0, 6);
-        constraints.anchor = GridBagConstraints.LINE_END;
-
-        spinner.addChangeListener(e -> {
-            Number modelNumber = spinnerNumberModel.getNumber();
-            double current = modelNumber.doubleValue();
-            if (spinnerEffect != null) {
-                spinnerEffect.accept(current);
-            }
-        });
-        spinner.addMouseWheelListener(e -> {
-            if (e.getScrollType() != MouseWheelEvent.WHEEL_UNIT_SCROLL) {
-                return;
-            }
-            double value = (Double) spinner.getValue();
-            double newValue = value - e.getUnitsToScroll();
-            newValue = Math.min(maxValue, Math.max(minValue, newValue));
-            spinner.setValue(newValue);
-        });
-
-        container.add(spinner, constraints);
-        return spinner;
-    }
-
     public static JPanel createHintPanel(String text, FontIcon icon) {
         JPanel hintPanel = new JPanel();
         hintPanel.setLayout(new BoxLayout(hintPanel, BoxLayout.LINE_AXIS));
@@ -543,38 +479,6 @@ public final class ComponentUtilities {
 
         Insets insets = new Insets(1, 0, 0, 0);
         return hintPanel;
-    }
-
-    public static JPanel createTwinSpinnerPanel(SpinnerNumberModel first, SpinnerNumberModel second,
-                                                JLabel firstLabel, JLabel secondLabel) {
-        JSpinner firstSpinner = ComponentUtilities.createWheelable(first);
-        JSpinner secondSpinner = ComponentUtilities.createWheelable(second);
-        GridLayout gridLayout = new GridLayout(2, 2);
-        gridLayout.setHgap(4);
-        gridLayout.setVgap(6);
-        JPanel container = new JPanel(gridLayout);
-        container.setBorder(new EmptyBorder(4, 0, 0, 0));
-        container.add(firstLabel);
-        container.add(firstSpinner);
-        container.add(secondLabel);
-        container.add(secondSpinner);
-
-        return container;
-    }
-
-    private static JSpinner createWheelable(SpinnerNumberModel second) {
-        JSpinner spinner = new JSpinner(second);
-
-        spinner.addMouseWheelListener(e -> {
-            if (e.getScrollType() != MouseWheelEvent.WHEEL_UNIT_SCROLL) {
-                return;
-            }
-            double value = (Double) spinner.getValue();
-            double newValue = value - e.getUnitsToScroll();
-            newValue = Math.min((Double) second.getMaximum(), Math.max((Double) second.getMinimum(), newValue));
-            spinner.setValue(newValue);
-        });
-        return spinner;
     }
 
 }

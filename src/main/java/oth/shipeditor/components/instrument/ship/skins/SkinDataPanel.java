@@ -83,7 +83,7 @@ public class SkinDataPanel extends JPanel {
 
     private void refreshPanel(ViewerLayer layer) {
         this.recreateSkinChooser(layer);
-        infoPanel.refresh(layer);
+        infoPanel.refresh(layer.getPainter());
     }
 
     private static JComboBox<ShipSkin> createDisabledChooser() {

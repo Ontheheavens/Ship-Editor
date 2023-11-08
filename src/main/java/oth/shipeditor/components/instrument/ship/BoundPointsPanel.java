@@ -111,10 +111,10 @@ public final class BoundPointsPanel extends JPanel {
                 opacitySlider.setValue(value);
             }
         };
-        Pair<JSlider, JLabel> widgetComponents = ComponentUtilities.createOpacityWidget(changeListener, eventListener);
+        Pair<JLabel, JSlider> widgetComponents = ComponentUtilities.createOpacityWidget(changeListener, eventListener);
 
-        opacitySlider = widgetComponents.getFirst();
-        opacityLabel = widgetComponents.getSecond();
+        opacityLabel = widgetComponents.getFirst();
+        opacitySlider = widgetComponents.getSecond();
         this.updateOpacityLabel(100);
 
         ComponentUtilities.layoutAsOpposites(container, opacityLabel, opacitySlider, sidePadding);

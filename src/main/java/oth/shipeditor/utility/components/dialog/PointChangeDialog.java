@@ -1,6 +1,7 @@
 package oth.shipeditor.utility.components.dialog;
 
 import oth.shipeditor.utility.components.ComponentUtilities;
+import oth.shipeditor.utility.components.widgets.Spinners;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -49,11 +50,11 @@ class PointChangeDialog extends JPanel {
         spinnerModelX = new SpinnerNumberModel(originalPosition.getX(), min, max, step);
         spinnerModelY = new SpinnerNumberModel(originalPosition.getY(), min, max, step);
 
-        JLabel labelX = new JLabel("X coordinate (World):");
-        JLabel labelY = new JLabel("Y coordinate (World):");
+        String labelTextX = "X coordinate (World):";
+        String labelTextY = "Y coordinate (World):";
 
-        return ComponentUtilities.createTwinSpinnerPanel(spinnerModelX, spinnerModelY,
-                labelX, labelY);
+        return Spinners.createTwinSpinnerPanel(spinnerModelX, spinnerModelY,
+                labelTextX, labelTextY);
     }
 
     Point2D getUpdatedPosition() {

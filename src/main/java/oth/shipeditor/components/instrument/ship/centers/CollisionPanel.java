@@ -1,11 +1,12 @@
 package oth.shipeditor.components.instrument.ship.centers;
 
+import lombok.AccessLevel;
+import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
 import oth.shipeditor.communication.BusEventListener;
 import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.BusEvent;
 import oth.shipeditor.communication.events.components.CenterPanelsRepaintQueued;
-import oth.shipeditor.communication.events.viewer.control.TimedEditConcluded;
 import oth.shipeditor.communication.events.viewer.layers.LayerWasSelected;
 import oth.shipeditor.communication.events.viewer.layers.PainterOpacityChangeQueued;
 import oth.shipeditor.components.viewer.entities.ShipCenterPoint;
@@ -14,12 +15,12 @@ import oth.shipeditor.components.viewer.layers.ship.ShipLayer;
 import oth.shipeditor.components.viewer.layers.ship.ShipPainter;
 import oth.shipeditor.components.viewer.painters.PainterVisibility;
 import oth.shipeditor.components.viewer.painters.points.ship.CenterPointPainter;
-import oth.shipeditor.undo.EditDispatch;
-import oth.shipeditor.utility.objects.Pair;
 import oth.shipeditor.utility.Utility;
 import oth.shipeditor.utility.components.ComponentUtilities;
 import oth.shipeditor.utility.components.MouseoverLabelListener;
 import oth.shipeditor.utility.components.dialog.DialogUtilities;
+import oth.shipeditor.utility.objects.Pair;
+import oth.shipeditor.utility.overseers.StaticController;
 import oth.shipeditor.utility.text.StringValues;
 import oth.shipeditor.utility.themes.Themes;
 
@@ -28,8 +29,6 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.event.ChangeListener;
 import java.awt.*;
 import java.awt.event.ActionListener;
-import java.awt.geom.Point2D;
-import java.util.function.Consumer;
 
 /**
  * @author Ontheheavens
@@ -41,6 +40,7 @@ public final class CollisionPanel extends JPanel {
     /**
      * Reference to the hull center painter of the currently active layer.
      */
+    @Getter(AccessLevel.PRIVATE)
     private CenterPointPainter centerPainter;
 
     private JLabel centerCoords;
@@ -51,7 +51,8 @@ public final class CollisionPanel extends JPanel {
 
     private JPopupMenu shipCenterMenu;
     private JPopupMenu collisionRadiusMenu;
-    private JPanel anchorWrapper;
+
+    private ModuleAnchorPanel moduleAnchorPanel;
 
     public CollisionPanel() {
         LayoutManager layout = new BorderLayout();
@@ -67,7 +68,7 @@ public final class CollisionPanel extends JPanel {
     private void initPointListener() {
         EventBus.subscribe(event -> {
             if (event instanceof CenterPanelsRepaintQueued) {
-                this.refresh();
+                this.refresh(StaticController.getActiveLayer());
             }
         });
     }
@@ -78,27 +79,29 @@ public final class CollisionPanel extends JPanel {
                 ViewerLayer selected = checked.selected();
                 if (!(selected instanceof ShipLayer checkedLayer)) {
                     this.centerPainter = null;
-                    this.refresh();
+                    this.refresh(selected);
                     return;
                 }
                 boolean enableSlider = false;
-                if (checkedLayer.getPainter() != null) {
-                    ShipPainter selectedShipPainter = checkedLayer.getPainter();
-                    this.centerPainter = selectedShipPainter.getCenterPointPainter();
+                ShipPainter shipPainter = checkedLayer.getPainter();
+                if (shipPainter != null && !shipPainter.isUninitialized()) {
+                    this.centerPainter = shipPainter.getCenterPointPainter();
                     enableSlider = true;
                 } else {
                     this.centerPainter = null;
                 }
-                this.refresh();
+                this.refresh(selected);
                 collisionOpacitySlider.setEnabled(enableSlider);
             }
         });
     }
 
-    private void refresh() {
+    private void refresh(ViewerLayer selected) {
         this.updateHullLabels();
-        this.refreshModuleAnchor();
-        this.revalidate();
+
+        moduleAnchorPanel.setCenterPainter(this.getCenterPainter());
+        moduleAnchorPanel.refresh(selected.getPainter());
+
         this.repaint();
     }
 
@@ -152,7 +155,8 @@ public final class CollisionPanel extends JPanel {
 
         hullCenterPanel.add(Box.createVerticalStrut(6));
 
-        hullCenterPanel.add(createModuleAnchorPanel());
+        moduleAnchorPanel = new ModuleAnchorPanel();
+        hullCenterPanel.add(moduleAnchorPanel);
 
         return hullCenterPanel;
     }
@@ -219,10 +223,10 @@ public final class CollisionPanel extends JPanel {
             EventBus.publish(new PainterOpacityChangeQueued(CenterPointPainter.class, changedValue));
         };
         BusEventListener eventListener = this::handleSelectedLayerOpacity;
-        Pair<JSlider, JLabel> widgetComponents = ComponentUtilities.createOpacityWidget(changeListener, eventListener);
+        Pair<JLabel, JSlider> widgetComponents = ComponentUtilities.createOpacityWidget(changeListener, eventListener);
 
-        collisionOpacitySlider = widgetComponents.getFirst();
-        collisionOpacityLabel = widgetComponents.getSecond();
+        collisionOpacityLabel = widgetComponents.getFirst();
+        collisionOpacitySlider = widgetComponents.getSecond();
         this.updateCollisionOpacityLabel(100);
 
         int sidePadding = 6;
@@ -230,112 +234,6 @@ public final class CollisionPanel extends JPanel {
                 collisionOpacitySlider, sidePadding);
 
         return container;
-    }
-
-    private void refreshModuleAnchor() {
-        anchorWrapper.removeAll();
-        CollisionPanel.addAnchorWidgetToPanel(centerPainter, anchorWrapper, this::refresh);
-    }
-
-    public static void addAnchorWidgetToPanel(CenterPointPainter centerPainter,
-                                              JPanel wrapper, Runnable panelRefresh) {
-        JPanel container = new JPanel();
-        container.setLayout(new GridBagLayout());
-
-        GridBagConstraints constraints = new GridBagConstraints();
-
-        constraints.insets = new Insets(3, 10, 0, 6);
-        constraints.gridwidth = 2;
-        constraints.gridx = 0;
-        constraints.gridy = 0;
-        constraints.weightx = 1.0;
-        constraints.weighty = 1.0;
-        constraints.fill = GridBagConstraints.HORIZONTAL;
-        constraints.anchor = GridBagConstraints.LINE_START;
-
-        ComponentUtilities.outfitPanelWithTitle(container,
-                new Insets(1, 0, 0, 0), StringValues.MODULE_ANCHOR);
-
-        if (centerPainter != null && centerPainter.getModuleAnchorOffset() != null) {
-            CollisionPanel.populateAnchorWidget(centerPainter, panelRefresh, container, constraints);
-        } else {
-            JButton defineAnchor = new JButton("Define anchor");
-            if (centerPainter != null) {
-                defineAnchor.addActionListener(e -> {
-                    centerPainter.changeModuleAnchor(new Point2D.Double());
-                    EventBus.publish(new TimedEditConcluded());
-                    panelRefresh.run();
-                });
-            } else {
-                defineAnchor.setEnabled(false);
-            }
-            container.add(defineAnchor, constraints);
-        }
-        wrapper.add(container, BorderLayout.CENTER);
-
-        Dimension containerPreferredSize = container.getPreferredSize();
-        int width = container.getMaximumSize().width;
-        Dimension maximumSize = new Dimension(width, containerPreferredSize.height);
-        wrapper.setMaximumSize(maximumSize);
-    }
-
-    private static void populateAnchorWidget(CenterPointPainter centerPainter,
-                                             Runnable panelRefresh, JPanel container,
-                                             GridBagConstraints constraints) {
-        // This construction is bug-prone: particularly, any attempts to set the spinner value directly
-        // should be avoided, since that pushes new edit on overseer stack via change listener of spinner.
-
-        Point2D moduleAnchorOffset = centerPainter.getModuleAnchorOffset();
-        SpinnerNumberModel spinnerNumberModelX = new SpinnerNumberModel(moduleAnchorOffset.getX(),
-                Integer.MIN_VALUE, Integer.MAX_VALUE, 0.5d);
-        JSpinner spinnerX = new JSpinner(spinnerNumberModelX);
-
-        Consumer<Double> spinnerEffectX = value -> {
-            Point2D original = centerPainter.getModuleAnchorOffset();
-            Point2D changed = new Point2D.Double(value, original.getY());
-            centerPainter.changeModuleAnchor(changed);
-            CollisionPanel.startEditFinishCountdown();
-        };
-        ComponentUtilities.addLabelWithSpinner(container, "Y coordinate:",
-                spinnerEffectX, spinnerX, spinnerNumberModelX,
-                Integer.MIN_VALUE, Integer.MAX_VALUE, 0);
-
-        SpinnerNumberModel spinnerNumberModelY = new SpinnerNumberModel(moduleAnchorOffset.getY(),
-                Integer.MIN_VALUE, Integer.MAX_VALUE, 0.5d);
-        JSpinner spinnerY = new JSpinner(spinnerNumberModelY);
-
-
-        Consumer<Double> spinnerEffectY = value -> {
-            Point2D original = centerPainter.getModuleAnchorOffset();
-            Point2D changed = new Point2D.Double(original.getX(), value);
-            centerPainter.changeModuleAnchor(changed);
-            CollisionPanel.startEditFinishCountdown();
-        };
-        ComponentUtilities.addLabelWithSpinner(container, "X coordinate:",
-                spinnerEffectY, spinnerY, spinnerNumberModelY,
-                Integer.MIN_VALUE, Integer.MAX_VALUE, 1);
-
-
-        JButton removeAnchor = new JButton("Clear anchor");
-        removeAnchor.addActionListener(e -> {
-            centerPainter.changeModuleAnchor(null);
-            EventBus.publish(new TimedEditConcluded());
-            panelRefresh.run();
-        });
-        constraints.gridy = 3;
-        container.add(removeAnchor, constraints);
-    }
-
-    private static void startEditFinishCountdown() {
-        EditDispatch.setEditCommenced();
-    }
-
-    private JPanel createModuleAnchorPanel() {
-        anchorWrapper = new JPanel();
-        anchorWrapper.setLayout(new BorderLayout());
-        anchorWrapper.setAlignmentX(0.5f);
-        anchorWrapper.setAlignmentY(0);
-        return anchorWrapper;
     }
 
     private void handleSelectedLayerOpacity(BusEvent event) {

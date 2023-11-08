@@ -199,10 +199,10 @@ public class ShieldPanel extends JPanel {
                 shieldOpacitySlider.setValue(value);
             }
         };
-        Pair<JSlider, JLabel> widgetComponents = ComponentUtilities.createOpacityWidget(changeListener, eventListener);
+        Pair<JLabel, JSlider> widgetComponents = ComponentUtilities.createOpacityWidget(changeListener, eventListener);
 
-        shieldOpacitySlider = widgetComponents.getFirst();
-        shieldOpacityLabel = widgetComponents.getSecond();
+        shieldOpacityLabel = widgetComponents.getFirst();
+        shieldOpacitySlider = widgetComponents.getSecond();
         this.updateShieldOpacityLabel(100);
 
         int sidePadding = 6;

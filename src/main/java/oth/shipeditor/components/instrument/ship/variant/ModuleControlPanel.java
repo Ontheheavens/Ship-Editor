@@ -2,7 +2,7 @@ package oth.shipeditor.components.instrument.ship.variant;
 
 import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.viewer.ViewerRepaintQueued;
-import oth.shipeditor.components.instrument.ship.centers.CollisionPanel;
+import oth.shipeditor.components.instrument.ship.centers.ModuleAnchorPanel;
 import oth.shipeditor.components.viewer.layers.ship.ShipPainter;
 import oth.shipeditor.components.viewer.painters.PainterVisibility;
 import oth.shipeditor.components.viewer.painters.points.ship.features.InstalledFeature;
@@ -59,8 +59,13 @@ class ModuleControlPanel extends JPanel {
 
         ShipPainter modulePainter = (ShipPainter) module.getFeaturePainter();
         var centersPainter = modulePainter.getCenterPointPainter();
-        CollisionPanel.addAnchorWidgetToPanel(centersPainter,
-                anchorWidgetWrapper, parent::refreshControlPanel);
+
+        // TODO: This does not work, make everything persistent and mutable.
+
+        ModuleAnchorPanel anchorPanel = new ModuleAnchorPanel();
+        anchorWidgetWrapper.add(anchorPanel);
+        anchorPanel.setCenterPainter(centersPainter);
+        anchorPanel.refresh(modulePainter);
     }
 
     private void addCollisionVisibilityPanel() {
