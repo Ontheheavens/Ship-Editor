@@ -16,6 +16,8 @@ public class EventScheduler {
 
     private boolean viewerRepaintQueued;
 
+    private boolean layerPropertiesRepaintQueued;
+
     private boolean centerPanelsRepaintQueued;
 
     private boolean boundsPanelRepaintQueued;
@@ -46,6 +48,10 @@ public class EventScheduler {
             if (viewerRepaintQueued) {
                 EventBus.publish(new ViewerRepaintQueued());
                 viewerRepaintQueued = false;
+            }
+            if (layerPropertiesRepaintQueued) {
+                EventBus.publish(new LayerPropertiesRepaintQueued());
+                layerPropertiesRepaintQueued = false;
             }
             if (centerPanelsRepaintQueued) {
                 EventBus.publish(new CenterPanelsRepaintQueued());
@@ -102,6 +108,10 @@ public class EventScheduler {
 
     public void queueViewerRepaint() {
         this.viewerRepaintQueued = true;
+    }
+
+    public void queueLayerPropertiesRepaint() {
+        this.layerPropertiesRepaintQueued = true;
     }
 
     public void queueCenterPanelsRepaint() {

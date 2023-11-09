@@ -170,10 +170,8 @@ public final class EditDispatch {
         EditDispatch.handleContinuousEdit(offsetChangeEdit);
         layerPainter.setAnchor(updated);
         var repainter = StaticController.getScheduler();
-        repainter.queueViewerRepaint();
-        repainter.queueBoundsPanelRepaint();
+        repainter.queueLayerPropertiesRepaint();
         repainter.queueCenterPanelsRepaint();
-        repainter.queueBuiltInsRepaint();
     }
 
     public static void postModuleAnchorChanged(CenterPointPainter centersPainter, Point2D updated) {
@@ -283,10 +281,8 @@ public final class EditDispatch {
         EditDispatch.handleContinuousEdit(rotationEdit);
         painter.setRotationRadians(updated);
         var repainter = StaticController.getScheduler();
-        repainter.queueViewerRepaint();
-        repainter.queueBoundsPanelRepaint();
+        repainter.queueLayerPropertiesRepaint();
         repainter.queueCenterPanelsRepaint();
-        repainter.queueBuiltInsRepaint();
     }
 
     public static void postPointDragged(WorldPoint selected, Point2D changedPosition) {

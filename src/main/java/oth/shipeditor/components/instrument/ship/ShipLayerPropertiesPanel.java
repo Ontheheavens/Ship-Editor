@@ -1,9 +1,6 @@
 package oth.shipeditor.components.instrument.ship;
 
-import oth.shipeditor.communication.EventBus;
-import oth.shipeditor.communication.events.viewer.layers.LayerWasSelected;
-import oth.shipeditor.components.instrument.LayerCircumstancePanel;
-import oth.shipeditor.components.instrument.ViewerLayerWidgetsPanel;
+import oth.shipeditor.components.instrument.AbstractLayerPropertiesPanel;
 import oth.shipeditor.components.viewer.entities.weapon.SlotData;
 import oth.shipeditor.components.viewer.entities.weapon.WeaponSlotPoint;
 import oth.shipeditor.components.viewer.layers.LayerPainter;
@@ -25,18 +22,13 @@ import java.util.Map;
  * @author Ontheheavens
  * @since 11.06.2023
  */
-final class ShipLayerPropertiesPanel extends JPanel {
+final class ShipLayerPropertiesPanel extends AbstractLayerPropertiesPanel {
 
-    private final JPanel weaponSlotsSummaryPanel;
     private final HullDataControlPanel hullDataPanel;
 
-    private final LayerCircumstancePanel layerCircumstancePanel;
+    private final JPanel weaponSlotsSummaryPanel;
 
     ShipLayerPropertiesPanel() {
-        this.setLayout(new BorderLayout());
-        JPanel layerWidgetsPanel = new ViewerLayerWidgetsPanel();
-        this.add(layerWidgetsPanel, BorderLayout.PAGE_START);
-
         JPanel dataContainer = new JPanel();
         dataContainer.setLayout(new BorderLayout());
 
@@ -50,44 +42,27 @@ final class ShipLayerPropertiesPanel extends JPanel {
         dataContainer.add(weaponSlotsSummaryPanel, BorderLayout.CENTER);
 
         this.add(dataContainer, BorderLayout.CENTER);
-
-        layerCircumstancePanel = new LayerCircumstancePanel();
-        this.add(layerCircumstancePanel, BorderLayout.PAGE_END);
-
-        this.initListeners();
     }
 
-    private void initListeners() {
-        EventBus.subscribe(event -> {
-            if (event instanceof LayerWasSelected checked) {
-                weaponSlotsSummaryPanel.removeAll();
-
-                hullDataPanel.clearData();
-
-                ViewerLayer selected = checked.selected();
-                boolean layerPainterPresent = selected != null && selected.getPainter() != null;
-                if (!layerPainterPresent) {
-                    layerCircumstancePanel.refresh(null);
-                    return;
-                }
-                LayerPainter layerPainter = selected.getPainter();
-                if (!(layerPainter instanceof ShipPainter shipPainter) || shipPainter.isUninitialized()) {
-                    layerCircumstancePanel.refresh(null);
-                    return;
-                }
-                this.refreshData(shipPainter.getParentLayer());
-
-                layerCircumstancePanel.refresh(selected.getPainter());
-            }
-        });
+    @Override
+    protected boolean isValidLayer(LayerPainter layerPainter) {
+        return layerPainter instanceof ShipPainter shipPainter && !shipPainter.isUninitialized();
     }
 
-    private void refreshData(ShipLayer shipLayer) {
+    @Override
+    protected void clearData() {
+        weaponSlotsSummaryPanel.removeAll();
+        hullDataPanel.clearData();
+    }
+
+
+    @Override
+    protected void refreshData(ViewerLayer selected) {
         weaponSlotsSummaryPanel.add(Box.createVerticalStrut(8));
-        ShipPainter shipPainter = shipLayer.getPainter();
+        ShipPainter shipPainter = (ShipPainter) selected.getPainter();
         weaponSlotsSummaryPanel.add(ShipLayerPropertiesPanel.createSlotsSummaryPanel(shipPainter));
 
-        hullDataPanel.refreshData(shipLayer);
+        hullDataPanel.refreshData((ShipLayer) selected);
     }
 
     private static JPanel createSlotsSummaryPanel(ShipPainter shipPainter) {

@@ -3,8 +3,6 @@ package oth.shipeditor.utility.components.containers;
 import lombok.Getter;
 import oth.shipeditor.components.viewer.layers.LayerPainter;
 import oth.shipeditor.utility.components.ComponentUtilities;
-import oth.shipeditor.utility.overseers.EventScheduler;
-import oth.shipeditor.utility.overseers.StaticController;
 
 import javax.swing.*;
 import java.awt.*;
@@ -73,9 +71,6 @@ public abstract class LayerPropertiesPanel extends JPanel {
 
     protected void processChange() {
         this.refresh(cachedLayerPainter);
-        EventScheduler repainter = StaticController.getScheduler();
-        repainter.queueViewerRepaint();
-        repainter.queueActiveLayerUpdate();
     }
 
     protected void fireClearingListeners(LayerPainter layer) {

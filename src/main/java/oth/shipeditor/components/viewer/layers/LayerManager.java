@@ -5,7 +5,6 @@ import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
 import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.files.*;
-import oth.shipeditor.communication.events.viewer.ViewerRepaintQueued;
 import oth.shipeditor.communication.events.viewer.layers.*;
 import oth.shipeditor.communication.events.viewer.layers.ships.LayerShipDataInitialized;
 import oth.shipeditor.communication.events.viewer.layers.ships.ShipLayerCreated;
@@ -116,7 +115,6 @@ public class LayerManager {
                 LayerPainter painter = activeLayer.getPainter();
                 if (painter == null) return;
                 painter.setSpriteOpacity(checked.changedValue());
-                EventBus.publish(new ViewerRepaintQueued());
             }
         });
         EventBus.subscribe(event -> {

@@ -1,7 +1,5 @@
 package oth.shipeditor.components.instrument;
 
-import oth.shipeditor.communication.EventBus;
-import oth.shipeditor.communication.events.viewer.layers.LayerOpacityChangeQueued;
 import oth.shipeditor.components.viewer.control.ControlPredicates;
 import oth.shipeditor.components.viewer.layers.LayerPainter;
 import oth.shipeditor.utility.Utility;
@@ -71,7 +69,10 @@ public class LayerCircumstancePanel extends LayerPropertiesPanel {
                 int opacity = opacitySlider.getValue();
                 opacityLabel.setToolTipText(StringValues.CURRENT_VALUE + opacity + "%");
                 float changedValue = opacity / 100.0f;
-                EventBus.publish(new LayerOpacityChangeQueued(changedValue));
+                LayerPainter cachedLayerPainter = getCachedLayerPainter();
+                if (cachedLayerPainter != null) {
+                    cachedLayerPainter.setSpriteOpacity(changedValue);
+                }
                 processChange();
             }
         });
@@ -145,7 +146,7 @@ public class LayerCircumstancePanel extends LayerPropertiesPanel {
 
         @Override
         protected String getPanelTitleText() {
-            return "Layer Anchor";
+            return "Anchor position";
         }
 
         @Override
@@ -164,7 +165,7 @@ public class LayerCircumstancePanel extends LayerPropertiesPanel {
             return point -> {
                 LayerPainter cachedLayerPainter = getCachedLayerPainter();
                 if (cachedLayerPainter != null) {
-                    cachedLayerPainter.setAnchor(point);
+                    cachedLayerPainter.updateAnchorOffset(point);
                 }
             };
         }

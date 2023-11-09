@@ -37,6 +37,7 @@ module oth.shipeditor {
     exports oth.shipeditor.components.viewer.entities.weapon;
     exports oth.shipeditor.communication;
     exports oth.shipeditor.communication.events;
+    exports oth.shipeditor.communication.events.viewer.layers;
     exports oth.shipeditor.communication.events.viewer.points;
     exports oth.shipeditor.components.viewer.painters.points;
     exports oth.shipeditor.components.viewer.painters.points.weapon;

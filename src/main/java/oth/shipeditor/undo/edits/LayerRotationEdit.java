@@ -33,10 +33,8 @@ public class LayerRotationEdit extends AbstractEdit implements LayerEdit {
         undoSubEdits();
         layerPainter.setRotationRadians(oldRotation);
         var repainter = StaticController.getScheduler();
-        repainter.queueViewerRepaint();
-        repainter.queueBoundsPanelRepaint();
+        repainter.queueLayerPropertiesRepaint();
         repainter.queueCenterPanelsRepaint();
-        repainter.queueBuiltInsRepaint();
     }
 
     @Override
@@ -44,10 +42,8 @@ public class LayerRotationEdit extends AbstractEdit implements LayerEdit {
         layerPainter.setRotationRadians(updatedRotation);
         redoSubEdits();
         var repainter = StaticController.getScheduler();
-        repainter.queueViewerRepaint();
-        repainter.queueBoundsPanelRepaint();
+        repainter.queueLayerPropertiesRepaint();
         repainter.queueCenterPanelsRepaint();
-        repainter.queueBuiltInsRepaint();
     }
 
     @Override

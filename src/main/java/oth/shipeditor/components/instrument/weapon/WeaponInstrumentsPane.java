@@ -1,7 +1,6 @@
 package oth.shipeditor.components.instrument.weapon;
 
 import oth.shipeditor.components.instrument.AbstractInstrumentsPane;
-import oth.shipeditor.components.instrument.ViewerLayerWidgetsPanel;
 import oth.shipeditor.utility.text.StringValues;
 
 import javax.swing.*;
@@ -21,7 +20,8 @@ public class WeaponInstrumentsPane extends AbstractInstrumentsPane {
     private void createTabs() {
         JPanel layerPanel = new JPanel();
         layerPanel.setLayout(new BorderLayout());
-        JPanel layerWidgetsPanel = new ViewerLayerWidgetsPanel();
+
+        JPanel layerWidgetsPanel = new WeaponLayerPropertiesPanel();
         layerPanel.add(layerWidgetsPanel, BorderLayout.CENTER);
         this.addTab(StringValues.LAYER,layerPanel);
 
