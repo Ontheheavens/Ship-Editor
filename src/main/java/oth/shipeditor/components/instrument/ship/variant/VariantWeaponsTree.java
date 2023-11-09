@@ -131,13 +131,17 @@ public class VariantWeaponsTree extends DynamicWidthTree {
         model.reload();
     }
 
-    void removeWeaponGroup(FittedWeaponGroup group) {
+    @SuppressWarnings("MethodOnlyUsedFromInnerClass")
+    private void removeWeaponGroup(FittedWeaponGroup group) {
         Enumeration<TreeNode> groups = rootNode.children();
         while (groups.hasMoreElements()) {
             CustomTreeNode groupNode = (CustomTreeNode) groups.nextElement();
             FittedWeaponGroup groupObject = (FittedWeaponGroup) groupNode.getUserObject();
             if (groupObject == group) {
-                model.removeNodeFromParent(groupNode);
+                // Bulk uninstalls are all undoable actions.
+                group.uninstallAll();
+                ShipVariant groupParent = group.getParent();
+                groupParent.removeWeaponGroup(group);
                 model.reload();
             }
         }
@@ -289,7 +293,6 @@ public class VariantWeaponsTree extends DynamicWidthTree {
                     contextMenu = new JPopupMenu();
 
                     JMenu modeSubmenu = getModeSubmenu(weaponGroup);
-
                     contextMenu.add(modeSubmenu);
 
                     JCheckBoxMenuItem autofire = new JCheckBoxMenuItem("Toggle autofire");
@@ -299,6 +302,12 @@ public class VariantWeaponsTree extends DynamicWidthTree {
                         VariantWeaponsTree.this.repaint();
                     });
                     contextMenu.add(autofire);
+
+                    contextMenu.addSeparator();
+
+                    JMenuItem removeGroup = new JMenuItem("Remove weapon group");
+                    removeGroup.addActionListener(e -> removeWeaponGroup(weaponGroup));
+                    contextMenu.add(removeGroup);
                 }
                 case InstalledFeature feature -> {
                     contextMenu = new JPopupMenu();

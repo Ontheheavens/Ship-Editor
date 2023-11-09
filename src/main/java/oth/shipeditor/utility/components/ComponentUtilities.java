@@ -7,6 +7,7 @@ import org.kordamp.ikonli.swing.FontIcon;
 import oth.shipeditor.communication.BusEventListener;
 import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.components.LoadingActionFired;
+import oth.shipeditor.components.viewer.layers.LayerPainter;
 import oth.shipeditor.components.viewer.painters.PainterVisibility;
 import oth.shipeditor.components.viewer.painters.points.AbstractPointPainter;
 import oth.shipeditor.parsing.FileUtilities;
@@ -19,7 +20,10 @@ import oth.shipeditor.utility.text.StringValues;
 import oth.shipeditor.utility.themes.Themes;
 
 import javax.swing.*;
-import javax.swing.border.*;
+import javax.swing.border.Border;
+import javax.swing.border.EmptyBorder;
+import javax.swing.border.MatteBorder;
+import javax.swing.border.TitledBorder;
 import javax.swing.event.ChangeListener;
 import java.awt.*;
 import java.awt.event.ActionListener;
@@ -28,6 +32,9 @@ import java.io.File;
 import java.nio.file.Path;
 import java.util.Dictionary;
 import java.util.Hashtable;
+import java.util.function.BiConsumer;
+import java.util.function.BooleanSupplier;
+import java.util.function.Consumer;
 
 /**
  * @author Ontheheavens
@@ -151,7 +158,45 @@ public final class ComponentUtilities {
         return widgets;
     }
 
-    public static Pair<JLabel, JSlider> createOpacityWidget() {
+    public static Pair<JLabel, JSlider> createOpacityWidget(BooleanSupplier widgetChecker,
+                                                            Consumer<Float> setter,
+                                                            BiConsumer<JComponent,
+                                                                    Consumer<LayerPainter>> clearerListener,
+                                                            BiConsumer<JComponent,
+                                                                    Consumer<LayerPainter>> refresherListener) {
+        Pair<JLabel, JSlider> widgetComponents = ComponentUtilities.createOpacityWidget();
+
+        JLabel opacityLabel = widgetComponents.getFirst();
+        JSlider opacitySlider = widgetComponents.getSecond();
+
+        ChangeListener changeListener = e -> {
+            if (widgetChecker.getAsBoolean()) {
+                int sliderValue = opacitySlider.getValue();
+                float resultValue = sliderValue / 100.0f;
+                setter.accept(resultValue);
+            }
+        };
+
+        opacitySlider.addChangeListener(changeListener);
+
+        clearerListener.accept(opacitySlider, layer -> {
+            opacitySlider.setValue(100);
+            opacitySlider.setEnabled(false);
+            opacityLabel.setToolTipText(StringValues.NOT_INITIALIZED);
+        });
+
+        refresherListener.accept(opacitySlider, layerPainter -> {
+            // Refresh code is expected to make sure this block never gets called if layer does not have a painter.
+            int value = (int) (layerPainter.getSpriteOpacity() * 100.0f);
+            opacityLabel.setToolTipText(StringValues.CURRENT_VALUE + value + "%");
+            opacitySlider.setValue(value);
+            opacitySlider.setEnabled(true);
+        });
+
+        return widgetComponents;
+    }
+
+    private static Pair<JLabel, JSlider> createOpacityWidget() {
         JSlider opacitySlider = new JSlider(SwingConstants.HORIZONTAL,
                 0, 100, 100);
         opacitySlider.setAlignmentX(0.0f);
@@ -325,8 +370,6 @@ public final class ComponentUtilities {
         container.setAlignmentY(0);
         return container;
     }
-
-
 
     public static void outfitPanelWithTitle(JPanel panel, String text) {
         var insets = new Insets(1, 0, 0, 0);

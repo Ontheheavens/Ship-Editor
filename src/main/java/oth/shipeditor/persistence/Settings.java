@@ -30,7 +30,7 @@ public class Settings {
     @JsonDeserialize(using = ColorArrayRGBADeserializer.class)
     @JsonSerialize(using = ColorArrayRGBASerializer.class)
     @JsonInclude(JsonInclude.Include.NON_NULL)
-    Color backgroundColor;
+    Color backgroundColor = Color.GRAY;
 
     @JsonProperty("gameFolderPath")
     String gameFolderPath;
@@ -42,13 +42,13 @@ public class Settings {
     String modFolderPath;
 
     @JsonProperty("showLoadingErrors")
-    boolean showLoadingErrors = true;
+    boolean showLoadingErrors;
 
     @JsonProperty("loadDataAtStart")
-    boolean loadDataAtStart;
+    boolean loadDataAtStart = true;
 
     @JsonProperty("theme")
-    Theme theme = Theme.LIGHT;
+    Theme theme = Theme.FLAT_INTELLIJ;
 
     @JsonProperty("dataPackages")
     private List<GameDataPackage> dataPackages = new ArrayList<>();

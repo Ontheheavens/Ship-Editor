@@ -9,13 +9,14 @@ import oth.shipeditor.utility.components.widgets.IncrementType;
 import oth.shipeditor.utility.components.widgets.PointLocationWidget;
 import oth.shipeditor.utility.components.widgets.Spinners;
 import oth.shipeditor.utility.objects.Pair;
-import oth.shipeditor.utility.text.StringValues;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.geom.Point2D;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.function.BiConsumer;
+import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
@@ -58,38 +59,25 @@ public class LayerCircumstancePanel extends LayerPropertiesPanel {
     }
 
     private Pair<JLabel, JSlider> createLayerOpacitySlider() {
-        Pair<JLabel, JSlider> baseWidgets = ComponentUtilities.createOpacityWidget();
-
-        JLabel opacityLabel = baseWidgets.getFirst();
-        opacityLabel.setText("Sprite opacity:");
-        JSlider opacitySlider = baseWidgets.getSecond();
-
-        opacitySlider.addChangeListener(e -> {
-            if (isWidgetsReadyForInput()) {
-                int opacity = opacitySlider.getValue();
-                opacityLabel.setToolTipText(StringValues.CURRENT_VALUE + opacity + "%");
-                float changedValue = opacity / 100.0f;
-                LayerPainter cachedLayerPainter = getCachedLayerPainter();
-                if (cachedLayerPainter != null) {
-                    cachedLayerPainter.setSpriteOpacity(changedValue);
-                }
-                processChange();
+        BooleanSupplier readinessChecker = this::isWidgetsReadyForInput;
+        Consumer<Float> opacitySetter = changedValue -> {
+            LayerPainter cachedLayerPainter = getCachedLayerPainter();
+            if (cachedLayerPainter != null) {
+                cachedLayerPainter.setSpriteOpacity(changedValue);
             }
-        });
+            processChange();
+        };
 
-        registerWidgetListeners(opacitySlider, layer -> {
-            opacitySlider.setValue(100);
-            opacitySlider.setEnabled(false);
-            opacityLabel.setToolTipText(StringValues.NOT_INITIALIZED);
-        }, layerPainter -> {
-            // Refresh code is expected to make sure this block never gets called if layer does not have a painter.
-            int value = (int) (layerPainter.getSpriteOpacity() * 100.0f);
-            opacityLabel.setToolTipText(StringValues.CURRENT_VALUE + value + "%");
-            opacitySlider.setValue(value);
-            opacitySlider.setEnabled(true);
-        });
+        BiConsumer<JComponent, Consumer<LayerPainter>> clearerListener = this::registerWidgetClearer;
+        BiConsumer<JComponent, Consumer<LayerPainter>> refresherListener = this::registerWidgetRefresher;
 
-        return baseWidgets;
+        Pair<JLabel, JSlider> opacityWidget = ComponentUtilities.createOpacityWidget(readinessChecker,
+                opacitySetter, clearerListener, refresherListener);
+
+        JLabel opacityLabel = opacityWidget.getFirst();
+        opacityLabel.setText("Sprite opacity:");
+
+        return opacityWidget;
     }
 
     private Pair<JLabel, JSpinner> createLayerRotationSpinner() {

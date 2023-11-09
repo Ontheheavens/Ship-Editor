@@ -333,9 +333,7 @@ public class FeaturesOverseer {
                 FittedWeaponGroup targetGroup = variant.getGroupWithExistingMapping(slotID);
                 Map<String, InstalledFeature> groupWeapons;
                 if (targetGroup != null) {
-                    groupWeapons = targetGroup.getWeapons();
-                    InstalledFeature existing = groupWeapons.get(slotID);
-                    EditDispatch.postFeatureUninstalled(groupWeapons, slotID, existing, null);
+                    targetGroup.removeBySlotID(slotID);
                 }
             }
             case VARIANT_MODULES -> {

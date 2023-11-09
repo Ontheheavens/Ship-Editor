@@ -84,7 +84,17 @@ public abstract class LayerPropertiesPanel extends JPanel {
     protected void registerWidgetListeners(JComponent widget,
                                            Consumer<LayerPainter> clearer,
                                            Consumer<LayerPainter> refresher) {
+        registerWidgetClearer(widget, clearer);
+        registerWidgetRefresher(widget, refresher);
+    }
+
+    protected void registerWidgetClearer(JComponent widget,
+                                           Consumer<LayerPainter> clearer) {
         clearingListeners.put(widget, clearer);
+    }
+
+    protected void registerWidgetRefresher(JComponent widget,
+                                         Consumer<LayerPainter> refresher) {
         refresherListeners.put(widget, refresher);
     }
 

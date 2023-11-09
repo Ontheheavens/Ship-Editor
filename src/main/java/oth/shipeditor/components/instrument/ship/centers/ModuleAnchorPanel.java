@@ -8,6 +8,7 @@ import oth.shipeditor.components.viewer.layers.ship.ShipPainter;
 import oth.shipeditor.components.viewer.painters.points.ship.CenterPointPainter;
 import oth.shipeditor.undo.EditDispatch;
 import oth.shipeditor.utility.components.widgets.PointLocationWidget;
+import oth.shipeditor.utility.components.widgets.Spinners;
 import oth.shipeditor.utility.components.widgets.TwinSpinnerPanel;
 import oth.shipeditor.utility.text.StringValues;
 
@@ -81,6 +82,16 @@ public class ModuleAnchorPanel extends PointLocationWidget {
             }
         });
         return createDeleteButton;
+    }
+
+    /**
+     * The coordinate name reversal completely intentional - blame Alex and module anchor field for that!
+     */
+    @SuppressWarnings("SuspiciousNameCombination")
+    @Override
+    protected TwinSpinnerPanel createSpinnerPanel(Point2D initialPoint, Consumer<Point2D> pointSetter) {
+        return Spinners.createLocationSpinners(initialPoint, retrieveGetter(), pointSetter,
+                StringValues.Y_COORDINATE, StringValues.X_COORDINATE);
     }
 
     @Override

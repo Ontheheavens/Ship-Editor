@@ -1,5 +1,7 @@
 package oth.shipeditor.utility.components.widgets;
 
+import oth.shipeditor.utility.text.StringValues;
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseWheelEvent;
@@ -35,7 +37,7 @@ public final class Spinners {
                                                 SpinnerNumberModel spinnerNumberModel, int y) {
         GridBagConstraints constraints = new GridBagConstraints();
 
-        constraints.insets = new Insets(3, 10, 0, 3);
+        constraints.insets = new Insets(3, 3, 0, 3);
         constraints.gridx = 0;
         constraints.gridy = y;
         constraints.weightx = 0.0;
@@ -50,7 +52,7 @@ public final class Spinners {
         constraints.weightx = 1.0;
         constraints.gridy = y;
         constraints.fill = GridBagConstraints.HORIZONTAL;
-        constraints.insets = new Insets(3, 3, 0, 6);
+        constraints.insets = new Insets(3, 3, 0, 2);
         constraints.anchor = GridBagConstraints.LINE_END;
 
         JSpinner spinner =  Spinners.createWheelable(spinnerNumberModel);
@@ -67,10 +69,10 @@ public final class Spinners {
     }
 
     public static TwinSpinnerPanel createLocationSpinners(Point2D initial,
-                                                Supplier<Point2D> pointGetter,
-                                                Consumer<Point2D> pointSetter) {
+                                                          Supplier<Point2D> pointGetter,
+                                                          Consumer<Point2D> pointSetter) {
         return Spinners.createLocationSpinners(initial, pointGetter,
-                pointSetter, "X coordinate:", "Y coordinate:");
+                pointSetter, StringValues.X_COORDINATE, StringValues.Y_COORDINATE);
     }
 
     public static TwinSpinnerPanel createLocationSpinners(Point2D initial,

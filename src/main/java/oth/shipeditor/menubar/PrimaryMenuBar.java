@@ -66,25 +66,24 @@ public final class PrimaryMenuBar extends JMenuBar {
         Settings settings = SettingsManager.getSettings();
         String themeHint = "Will take effect after restart";
 
-        JMenuItem setLight = new JRadioButtonMenuItem("Light");
-        setLight.addActionListener(e -> settings.setTheme(Theme.LIGHT));
-        setLight.setToolTipText(themeHint);
-
-        JMenuItem setDark = new JRadioButtonMenuItem("Dark");
-        setDark.addActionListener(e -> settings.setTheme(Theme.DARK));
-        setDark.setToolTipText(themeHint);
+        var themes = Theme.values();
 
         ButtonGroup buttonGroup = new ButtonGroup();
-        buttonGroup.add(setLight);
-        buttonGroup.add(setDark);
 
-        switch (settings.getTheme()) {
-            case DARK -> setDark.setSelected(true);
-            case LIGHT -> setLight.setSelected(true);
+        for (Theme theme : themes) {
+            JMenuItem setTheme = new JRadioButtonMenuItem(theme.getDisplayedName());
+            setTheme.addActionListener(e -> settings.setTheme(theme));
+            setTheme.setToolTipText(themeHint);
+
+            buttonGroup.add(setTheme);
+
+            Theme settingsTheme = settings.getTheme();
+            if (settingsTheme == theme) {
+                setTheme.setSelected(true);
+            }
+
+            themeMenu.add(setTheme);
         }
-
-        themeMenu.add(setLight);
-        themeMenu.add(setDark);
 
         return themeMenu;
     }

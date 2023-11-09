@@ -16,7 +16,7 @@ public class QuickButtonsPanel extends JPanel {
 
     QuickButtonsPanel() {
         this.add(QuickButtonsPanel.createUndoRedoButtons());
-        Color background = UIManager.getColor(Themes.TITLE_PANE_BACKGROUND);
+        Color background = Themes.getTitleBackgroundColor();
         this.setBackground(background);
     }
 

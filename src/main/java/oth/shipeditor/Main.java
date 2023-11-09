@@ -7,7 +7,7 @@ import oth.shipeditor.parsing.loading.FileLoading;
 import oth.shipeditor.persistence.Initializations;
 import oth.shipeditor.persistence.Settings;
 import oth.shipeditor.persistence.SettingsManager;
-import oth.shipeditor.utility.themes.Themes;
+import oth.shipeditor.utility.themes.Theme;
 
 import javax.swing.*;
 import java.io.File;
@@ -70,10 +70,9 @@ public final class Main {
         } );
 
         Settings settings = SettingsManager.getSettings();
-        switch (settings.getTheme()) {
-            case DARK -> Themes.setDarkTheme();
-            case LIGHT -> Themes.setLightTheme();
-        }
+        Theme settingsTheme = settings.getTheme();
+        Runnable setterMethod = settingsTheme.getSetterMethod();
+        setterMethod.run();
     }
 
 }

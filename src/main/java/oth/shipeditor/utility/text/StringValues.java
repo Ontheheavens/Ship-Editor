@@ -68,6 +68,8 @@ public final class StringValues {
     public static final String VARIANT_INITIALIZATION_ERROR = "Variant initialization error!";
     public static final String RIGHT_CLICK_TO_RESET_VALUE = "Right-click to reset value";
     public static final String DEFINE_ANCHOR = "Define anchor";
+    public static final String Y_COORDINATE = "Y coordinate:";
+    public static final String X_COORDINATE = "X coordinate:";
 
     private StringValues() {
     }

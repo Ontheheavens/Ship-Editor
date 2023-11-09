@@ -39,6 +39,10 @@ public abstract class PointLocationWidget extends LayerPropertiesPanel {
 
     protected abstract boolean isLayerPainterEligible(LayerPainter layerPainter);
 
+    protected TwinSpinnerPanel createSpinnerPanel(Point2D initialPoint, Consumer<Point2D> pointSetter) {
+        return Spinners.createLocationSpinners(initialPoint, retrieveGetter(), pointSetter);
+    }
+
     @Override
     protected void populateContent() {
         this.setLayout(new BorderLayout());
@@ -52,8 +56,7 @@ public abstract class PointLocationWidget extends LayerPropertiesPanel {
             }
         };
 
-        twinSpinnerPanel = Spinners.createLocationSpinners(initialPoint,
-                retrieveGetter(), pointSetter);
+        twinSpinnerPanel = createSpinnerPanel(initialPoint, pointSetter);
 
         registerWidgetListeners(twinSpinnerPanel, layer -> {
             twinSpinnerPanel.clear();

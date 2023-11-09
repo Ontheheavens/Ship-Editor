@@ -46,6 +46,8 @@ public class HullDataControlPanel extends JPanel {
     private boolean readyForInput;
     private JTextField hullNameEditor;
 
+    private static final int RIGHT_PAD = 2;
+
     @SuppressWarnings("ThisEscapedInObjectConstruction")
     HullDataControlPanel() {
         this.setLayout(new GridBagLayout());
@@ -81,7 +83,7 @@ public class HullDataControlPanel extends JPanel {
         });
 
         ComponentUtilities.addLabelAndComponent(this, label, hullNameEditor,
-                2, 0, 0, 1);
+                2, RIGHT_PAD, 0, 1);
     }
 
     private void addHullIDPanel() {
@@ -102,7 +104,7 @@ public class HullDataControlPanel extends JPanel {
         });
 
         ComponentUtilities.addLabelAndComponent(this, label, hullIDEditor,
-                2, 0, 0, 2);
+                2, RIGHT_PAD, 0, 2);
     }
 
     private void addSizeSelector() {
@@ -139,7 +141,7 @@ public class HullDataControlPanel extends JPanel {
         });
 
         ComponentUtilities.addLabelAndComponent(this, selectorLabel, sizeSelector,
-                2, 0, 0, 3);
+                2, RIGHT_PAD, 0, 3);
     }
 
     private void addStyleSelector() {
@@ -174,7 +176,7 @@ public class HullDataControlPanel extends JPanel {
         });
 
         ComponentUtilities.addLabelAndComponent(this, selectorLabel, styleSelector,
-                2, 0, 0, 4);
+                2, RIGHT_PAD, 0, 4);
     }
 
     private void addSpriteNameLabel() {

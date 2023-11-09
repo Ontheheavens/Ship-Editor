@@ -106,6 +106,10 @@ public class ShipVariant implements Variant {
         return result;
     }
 
+    public void removeWeaponGroup(FittedWeaponGroup group) {
+        EditDispatch.postWeaponGroupRemoved(this, group);
+    }
+
     public void sortModules(Map<String, InstalledFeature> rearranged) {
         var old = this.getFittedModules();
         EditDispatch.postModulesSorted(this::setFittedModules, old, rearranged);

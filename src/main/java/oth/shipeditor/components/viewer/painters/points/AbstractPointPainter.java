@@ -67,7 +67,7 @@ public abstract class AbstractPointPainter implements Painter {
         return interactionEnabled && isParentLayerActive();
     }
 
-    protected void setPaintOpacity(float opacity) {
+    public void setPaintOpacity(float opacity) {
         if (opacity < 0.0f) {
             this.paintOpacity = 0.0f;
         } else this.paintOpacity = Math.min(opacity, 1.0f);

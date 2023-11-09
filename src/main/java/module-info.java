@@ -16,6 +16,7 @@ module oth.shipeditor {
     // These packages are tightly intertwined with the app and/or are important, but can be removed with some work.
     requires lombok;
     requires com.formdev.flatlaf;
+    requires com.formdev.flatlaf.intellijthemes;
     requires org.apache.logging.log4j;
     requires org.apache.logging.log4j.core;
     requires org.apache.commons.collections4;

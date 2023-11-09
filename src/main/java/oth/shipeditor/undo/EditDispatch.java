@@ -19,6 +19,7 @@ import oth.shipeditor.components.viewer.entities.weapon.SlotData;
 import oth.shipeditor.components.viewer.entities.weapon.WeaponSlotPoint;
 import oth.shipeditor.components.viewer.layers.LayerPainter;
 import oth.shipeditor.components.viewer.layers.ship.ShipLayer;
+import oth.shipeditor.components.viewer.layers.ship.data.ShipVariant;
 import oth.shipeditor.components.viewer.painters.points.AbstractPointPainter;
 import oth.shipeditor.components.viewer.painters.points.MirrorablePointPainter;
 import oth.shipeditor.components.viewer.painters.points.ship.BoundPointsPainter;
@@ -484,6 +485,20 @@ public final class EditDispatch {
         UndoOverseer.post(groupsSortEdit);
 
         groupsSortEdit.redo();
+    }
+
+    public static void postWeaponGroupRemoved(ShipVariant parent, FittedWeaponGroup toRemove) {
+        List<FittedWeaponGroup> weaponGroups = parent.getWeaponGroups();
+        int groupIndex = weaponGroups.indexOf(toRemove);
+
+        Edit groupRemoveEdit = new WeaponGroupRemovalEdit(weaponGroups, groupIndex, toRemove);
+
+        weaponGroups.remove(toRemove);
+        UndoOverseer.post(groupRemoveEdit);
+
+        StaticController.reselectCurrentLayer();
+        var repainter = StaticController.getScheduler();
+        repainter.queueViewerRepaint();
     }
 
     public static void postModulesSorted(Consumer<Map<String, InstalledFeature>> moduleSetter,

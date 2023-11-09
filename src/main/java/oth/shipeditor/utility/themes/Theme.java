@@ -1,67 +1,36 @@
 package oth.shipeditor.utility.themes;
 
+import com.formdev.flatlaf.FlatDarkLaf;
+import com.formdev.flatlaf.FlatIntelliJLaf;
+import com.formdev.flatlaf.intellijthemes.FlatArcDarkIJTheme;
+import com.formdev.flatlaf.intellijthemes.FlatOneDarkIJTheme;
+import com.formdev.flatlaf.intellijthemes.FlatVuesionIJTheme;
 import lombok.Getter;
-import oth.shipeditor.utility.graphics.ColorUtilities;
-
-import java.awt.*;
 
 /**
  * @author Ontheheavens
  * @since 05.11.2023
  */
-@SuppressWarnings("ParameterHidesMemberVariable")
 @Getter
 public enum Theme {
 
-    LIGHT(Color.BLACK,
-            Color.GRAY,
-            Color.BLACK,
-            Color.GRAY,
-            Color.LIGHT_GRAY,
-            Color.LIGHT_GRAY,
-            Color.GRAY,
-            Color.LIGHT_GRAY,
-            Color.WHITE),
+    FLAT_INTELLIJ("Flat IntelliJ", FlatIntelliJLaf::setup),
 
-    DARK(Color.LIGHT_GRAY,
-            Color.GRAY,
-            Color.LIGHT_GRAY,
-            Color.GRAY,
-            Color.GRAY,
-            Color.DARK_GRAY,
-            Color.GRAY,
-            ColorUtilities.getBlendedColor(Color.DARK_GRAY, Color.BLACK, 0.25f),
-            Color.DARK_GRAY);
+    FLAT_DARK("Flat Dark", FlatDarkLaf::setup),
 
-    private final Color textColor;
+    ONE_DARK("One Dark", FlatOneDarkIJTheme::setup),
 
-    private final Color disabledTextColor;
+    ARC_DARK("Arc Dark", FlatArcDarkIJTheme::setup),
 
-    private final Color iconColor;
+    VUESION("Vuesion", FlatVuesionIJTheme::setup);
 
-    private final Color disabledIconColor;
+    private final String displayedName;
 
-    private final Color borderColor;
+    private final Runnable setterMethod;
 
-    private final Color panelBackgroundColor;
-
-    private final Color panelHighlightColor;
-
-    private final Color panelDarkColor;
-
-    private final Color listBackgroundColor;
-
-    @SuppressWarnings("ConstructorWithTooManyParameters")
-    Theme(Color textColor, Color disabledTextColor, Color iconColor, Color disabledIconColor,
-          Color borderColor, Color panelBackgroundColor, Color panelHighlightColor, Color panelDarkColor, Color listBackgroundColor) {
-        this.textColor = textColor;
-        this.disabledTextColor = disabledTextColor;
-        this.iconColor = iconColor;
-        this.disabledIconColor = disabledIconColor;
-        this.borderColor = borderColor;
-        this.panelBackgroundColor = panelBackgroundColor;
-        this.panelHighlightColor = panelHighlightColor;
-        this.panelDarkColor = panelDarkColor;
-        this.listBackgroundColor = listBackgroundColor;
+    Theme(String name, Runnable setter) {
+        this.displayedName = name;
+        this.setterMethod = setter;
     }
+
 }
