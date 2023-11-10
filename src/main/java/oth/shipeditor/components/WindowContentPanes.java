@@ -73,6 +73,9 @@ public final class WindowContentPanes {
         }
         ViewerLayersPanel layersPanel = new ViewerLayersPanel(shipView.getLayerManager());
         northPane.add(layersPanel, BorderLayout.CENTER);
+
+        northPane.setBackground(Themes.getTabBackgroundColor());
+
         primaryContentPane.add(northPane, BorderLayout.PAGE_START);
     }
 

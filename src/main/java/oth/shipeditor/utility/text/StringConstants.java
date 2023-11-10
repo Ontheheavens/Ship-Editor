@@ -146,4 +146,6 @@ public interface StringConstants {
 
     String LOW_TECH = "LOW_TECH";
 
+    String TREE_PAINT_LINES = "Tree.paintLines";
+
 }

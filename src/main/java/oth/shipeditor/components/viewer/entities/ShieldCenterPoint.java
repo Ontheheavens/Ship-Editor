@@ -11,6 +11,7 @@ import oth.shipeditor.utility.Utility;
 import oth.shipeditor.utility.graphics.ColorUtilities;
 import oth.shipeditor.utility.graphics.DrawUtilities;
 import oth.shipeditor.utility.graphics.ShapeUtilities;
+import oth.shipeditor.utility.text.StringValues;
 
 import java.awt.*;
 import java.awt.geom.AffineTransform;
@@ -51,7 +52,7 @@ public class ShieldCenterPoint extends BaseWorldPoint {
 
     @Override
     public String getNameForLabel() {
-        return "Shield Center";
+        return StringValues.SHIELD_CENTER;
     }
 
     private Color getDisplayedShieldColor(Color base) {

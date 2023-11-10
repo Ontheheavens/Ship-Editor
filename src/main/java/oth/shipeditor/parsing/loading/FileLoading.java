@@ -54,7 +54,7 @@ import java.util.stream.Stream;
  * @author Ontheheavens
  * @since 16.07.2023
  */
-@SuppressWarnings({"CallToPrintStackTrace", "ClassWithTooManyFields", "OverlyCoupledClass"})
+@SuppressWarnings({"ClassWithTooManyFields", "OverlyCoupledClass", "ClassWithTooManyMethods"})
 @Log4j2
 public final class FileLoading {
 
@@ -154,7 +154,7 @@ public final class FileLoading {
             }
             return null;
         } catch (IOException e) {
-            e.printStackTrace();
+            Errors.printToStream(e);
             return null;
         }
     }
@@ -303,7 +303,7 @@ public final class FileLoading {
             dataFile = FileLoading.parseCorrectableJSON(file, dataClass);
             if (dataFile == null) {
                 log.error("Data file parsing failed conclusively: {}", file.getName());
-                e.printStackTrace();
+                Errors.printToStream(e);
                 if (SettingsManager.areFileErrorPopupsEnabled()) {
                     Errors.showFileError("Data file parsing failed, exception thrown at: " + file);
                 }
@@ -334,7 +334,7 @@ public final class FileLoading {
         } catch (IOException e) {
             log.error("Corrected JSON parsing failed: {}", file.getName());
             result = null;
-            e.printStackTrace();
+            Errors.printToStream(e);
         }
         return result;
     }
@@ -350,7 +350,7 @@ public final class FileLoading {
                     .map(Path::toFile)
                     .forEach(files::add);
         } catch (IOException exception) {
-            exception.printStackTrace();
+            Errors.printToStream(exception);
         }
         return files;
     }
@@ -382,7 +382,7 @@ public final class FileLoading {
             }
         } catch (Exception exception) {
             log.error("Data CSV loading failed!");
-            exception.printStackTrace();
+            Errors.printToStream(exception);
             if (SettingsManager.areFileErrorPopupsEnabled()) {
                 Errors.showFileError("Failed to parse CSV table (likely semantic errors), " +
                         "loading incomplete: " + csvFile);

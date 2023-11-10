@@ -38,7 +38,7 @@ import java.util.List;
 @Log4j2
 public class CenterPointPainter extends SinglePointPainter {
 
-    public static final float COLLISION_OPACITY = 0.2f;
+    private static final float COLLISION_OPACITY = 0.2f;
     private final List<BaseWorldPoint> points = new ArrayList<>();
 
     @Getter
@@ -67,6 +67,7 @@ public class CenterPointPainter extends SinglePointPainter {
 
     public void changeModuleAnchor(Point2D updated) {
         EditDispatch.postModuleAnchorChanged(this, updated);
+        EditDispatch.notifyTimedEditCommenced();
     }
 
     @Override

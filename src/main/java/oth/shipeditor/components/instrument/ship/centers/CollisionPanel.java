@@ -1,268 +1,201 @@
 package oth.shipeditor.components.instrument.ship.centers;
 
-import lombok.AccessLevel;
-import lombok.Getter;
-import lombok.extern.log4j.Log4j2;
-import oth.shipeditor.communication.BusEventListener;
-import oth.shipeditor.communication.EventBus;
-import oth.shipeditor.communication.events.BusEvent;
-import oth.shipeditor.communication.events.components.CenterPanelsRepaintQueued;
-import oth.shipeditor.communication.events.viewer.layers.LayerWasSelected;
-import oth.shipeditor.communication.events.viewer.layers.PainterOpacityChangeQueued;
 import oth.shipeditor.components.viewer.entities.ShipCenterPoint;
 import oth.shipeditor.components.viewer.layers.LayerPainter;
-import oth.shipeditor.components.viewer.layers.ViewerLayer;
-import oth.shipeditor.components.viewer.layers.ship.ShipLayer;
 import oth.shipeditor.components.viewer.layers.ship.ShipPainter;
 import oth.shipeditor.components.viewer.painters.PainterVisibility;
 import oth.shipeditor.components.viewer.painters.points.ship.CenterPointPainter;
-import oth.shipeditor.utility.Utility;
+import oth.shipeditor.undo.EditDispatch;
 import oth.shipeditor.utility.components.ComponentUtilities;
-import oth.shipeditor.utility.components.MouseoverLabelListener;
-import oth.shipeditor.utility.components.dialog.DialogUtilities;
+import oth.shipeditor.utility.components.widgets.IncrementType;
+import oth.shipeditor.utility.components.widgets.PointLocationWidget;
+import oth.shipeditor.utility.components.widgets.Spinners;
 import oth.shipeditor.utility.objects.Pair;
-import oth.shipeditor.utility.overseers.StaticController;
 import oth.shipeditor.utility.text.StringValues;
-import oth.shipeditor.utility.themes.Themes;
 
 import javax.swing.*;
+import javax.swing.border.Border;
 import javax.swing.border.EmptyBorder;
-import javax.swing.event.ChangeListener;
 import java.awt.*;
-import java.awt.event.ActionListener;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.function.BiConsumer;
+import java.util.function.BooleanSupplier;
+import java.util.function.Consumer;
+import java.util.function.Function;
 
 /**
  * @author Ontheheavens
- * @since 06.06.2023
+ * @since 09.11.2023
  */
-@Log4j2
-public final class CollisionPanel extends JPanel {
+public class CollisionPanel extends AbstractCenterPanel {
 
-    /**
-     * Reference to the hull center painter of the currently active layer.
-     */
-    @Getter(AccessLevel.PRIVATE)
-    private CenterPointPainter centerPainter;
+    private PointLocationWidget shipCenterWidget;
 
-    private JLabel centerCoords;
-    private JLabel collisionRadius;
+    private ModuleAnchorPanel moduleAnchorWidget;
 
-    private JLabel collisionOpacityLabel;
-    private JSlider collisionOpacitySlider;
-
-    private JPopupMenu shipCenterMenu;
-    private JPopupMenu collisionRadiusMenu;
-
-    private ModuleAnchorPanel moduleAnchorPanel;
-
-    public CollisionPanel() {
-        LayoutManager layout = new BorderLayout();
-        this.setLayout(layout);
-
-        JPanel hullCenterPanel = createCollisionPanel();
-        this.add(hullCenterPanel, BorderLayout.PAGE_START);
-
-        this.initLayerListeners();
-        this.initPointListener();
-    }
-
-    private void initPointListener() {
-        EventBus.subscribe(event -> {
-            if (event instanceof CenterPanelsRepaintQueued) {
-                this.refresh(StaticController.getActiveLayer());
-            }
-        });
-    }
-
-    private void initLayerListeners() {
-        EventBus.subscribe(event -> {
-            if (event instanceof LayerWasSelected checked) {
-                ViewerLayer selected = checked.selected();
-                if (!(selected instanceof ShipLayer checkedLayer)) {
-                    this.centerPainter = null;
-                    this.refresh(selected);
-                    return;
-                }
-                boolean enableSlider = false;
-                ShipPainter shipPainter = checkedLayer.getPainter();
-                if (shipPainter != null && !shipPainter.isUninitialized()) {
-                    this.centerPainter = shipPainter.getCenterPointPainter();
-                    enableSlider = true;
-                } else {
-                    this.centerPainter = null;
-                }
-                this.refresh(selected);
-                collisionOpacitySlider.setEnabled(enableSlider);
-            }
-        });
-    }
-
-    private void refresh(ViewerLayer selected) {
-        this.updateHullLabels();
-
-        moduleAnchorPanel.setCenterPainter(this.getCenterPainter());
-        if (selected != null) {
-            LayerPainter layerPainter = selected.getPainter();
-            moduleAnchorPanel.refresh(layerPainter);
-        } else {
-            moduleAnchorPanel.refresh(null);
+    @Override
+    public void refreshContent(LayerPainter layerPainter) {
+        if (!(layerPainter instanceof ShipPainter shipPainter) || shipPainter.isUninitialized()) {
+            fireClearingListeners(layerPainter);
+            shipCenterWidget.refresh(null);
+            moduleAnchorWidget.setCenterPainter(null);
+            moduleAnchorWidget.refresh(null);
+            return;
         }
 
-        this.repaint();
+        fireRefresherListeners(layerPainter);
+        shipCenterWidget.refresh(layerPainter);
+        moduleAnchorWidget.setCenterPainter(((ShipPainter) layerPainter).getCenterPointPainter());
+        moduleAnchorWidget.refresh(layerPainter);
     }
 
-    private void updateHullLabels() {
-        String noInit = StringValues.NOT_INITIALIZED;
-        String centerPosition = noInit;
-        String collisionValue = noInit;
-        shipCenterMenu.setEnabled(false);
-        collisionRadiusMenu.setEnabled(false);
-        collisionOpacitySlider.setEnabled(false);
-        Color labelColor = Themes.getDisabledTextColor();
-        if (this.centerPainter != null) {
-            ShipCenterPoint center = this.centerPainter.getCenterPoint();
-            if (center != null) {
-                centerPosition = center.getPositionText();
-                collisionValue = Utility.round(center.getCollisionRadius(), 5) + " " + StringValues.PIXELS;
-                shipCenterMenu.setEnabled(true);
-                collisionRadiusMenu.setEnabled(true);
-                collisionOpacitySlider.setEnabled(true);
-                labelColor = Themes.getTextColor();
+    @Override
+    protected void populateContent() {
+        this.setLayout(new BorderLayout());
+
+        JPanel topContainer = new JPanel(new BorderLayout());
+
+        Map<JLabel, JComponent> topWidgets = new LinkedHashMap<>();
+
+        var collisionOpacityWidget = createCollisionOpacityWidget();
+        topWidgets.put(collisionOpacityWidget.getFirst(), collisionOpacityWidget.getSecond());
+
+        var collisionVisibilityWidget = createCollisionVisibilityWidget();
+        topWidgets.put(collisionVisibilityWidget.getFirst(), collisionVisibilityWidget.getSecond());
+
+        Border bottomPadding = new EmptyBorder(0, 0, 4, 0);
+
+        JPanel topWidgetsPanel = createWidgetsPanel(topWidgets);
+        topWidgetsPanel.setBorder(bottomPadding);
+        topContainer.add(topWidgetsPanel, BorderLayout.PAGE_START);
+        shipCenterWidget = createShipCenterLocationWidget();
+        topContainer.add(shipCenterWidget, BorderLayout.CENTER);
+        this.add(topContainer, BorderLayout.PAGE_START);
+
+        JPanel centerContainer = new JPanel(new BorderLayout());
+
+        var collisionRadiusWidget = createCollisionRadiusSpinner();
+        Map<JLabel, JComponent> centerWidgets = Map.of(
+                collisionRadiusWidget.getFirst(), collisionRadiusWidget.getSecond()
+        );
+
+        JPanel centerWidgetsPanel = createWidgetsPanel(centerWidgets);
+        centerWidgetsPanel.setBorder(bottomPadding);
+        centerContainer.add(centerWidgetsPanel, BorderLayout.PAGE_START);
+
+        moduleAnchorWidget = CollisionPanel.createModuleAnchorLocationWidget();
+
+        JPanel moduleAnchorWrapper = new JPanel(new BorderLayout());
+        moduleAnchorWrapper.add(moduleAnchorWidget, BorderLayout.PAGE_START);
+        centerContainer.add(moduleAnchorWrapper, BorderLayout.CENTER);
+
+        this.add(centerContainer, BorderLayout.CENTER);
+    }
+
+
+    private Pair<JLabel, JSlider> createCollisionOpacityWidget() {
+        BooleanSupplier readinessChecker = this::isWidgetsReadyForInput;
+        Consumer<Float> opacitySetter = changedValue -> {
+            LayerPainter cachedLayerPainter = getCachedLayerPainter();
+            if (cachedLayerPainter != null) {
+                CenterPointPainter centerPointPainter = ((ShipPainter) cachedLayerPainter).getCenterPointPainter();
+                centerPointPainter.setPaintOpacity(changedValue);
+                processChange();
             }
-        }
-        centerCoords.setText(centerPosition);
-        centerCoords.setForeground(labelColor);
-        collisionRadius.setText(collisionValue);
-        collisionRadius.setForeground(labelColor);
-    }
-
-    private JPanel createCollisionPanel() {
-        JPanel hullCenterPanel = new JPanel();
-        hullCenterPanel.setLayout(new BoxLayout(hullCenterPanel, BoxLayout.PAGE_AXIS));
-
-        JComboBox<PainterVisibility> visibilityList = new JComboBox<>(PainterVisibility.values());
-        ActionListener selectionAction = e -> {
-            if (!(e.getSource() instanceof ShipPainter checked)) return;
-            CenterPointPainter boundsPainter = checked.getCenterPointPainter();
-            PainterVisibility valueOfLayer = boundsPainter.getVisibilityMode();
-            visibilityList.setSelectedItem(valueOfLayer);
         };
-        JPanel visibilityWidgetContainer = ComponentUtilities.createVisibilityWidget(visibilityList,
-                CenterPointPainter.class, selectionAction, "");
 
-        hullCenterPanel.add(createCollisionOpacityPanel());
+        BiConsumer<JComponent, Consumer<LayerPainter>> clearerListener = this::registerWidgetClearer;
+        BiConsumer<JComponent, Consumer<LayerPainter>> refresherListener = this::registerWidgetRefresher;
 
-        hullCenterPanel.add(visibilityWidgetContainer);
-
-        ComponentUtilities.addSeparatorToBoxPanel(hullCenterPanel);
-
-        hullCenterPanel.add(createShipCenterInfo());
-        hullCenterPanel.add(createCollisionInfo());
-
-        hullCenterPanel.add(Box.createVerticalStrut(6));
-
-        moduleAnchorPanel = new ModuleAnchorPanel();
-        hullCenterPanel.add(moduleAnchorPanel);
-
-        return hullCenterPanel;
-    }
-
-    private JPanel createShipCenterInfo() {
-        centerCoords = new JLabel();
-
-        centerCoords.setToolTipText(StringValues.RIGHT_CLICK_TO_ADJUST_POSITION);
-        Insets insets = ComponentUtilities.createLabelInsets();
-        insets.top = 1;
-        centerCoords.setBorder(ComponentUtilities.createLabelSimpleBorder(insets));
-
-        shipCenterMenu = new JPopupMenu();
-        JMenuItem adjustPosition = new JMenuItem(StringValues.ADJUST_POSITION);
-        adjustPosition.addActionListener(event -> {
-            ShipCenterPoint centerPoint = centerPainter.getCenterPoint();
-            DialogUtilities.showAdjustPointDialog(centerPoint);
-        });
-        shipCenterMenu.add(adjustPosition);
-        centerCoords.addMouseListener(new MouseoverLabelListener(shipCenterMenu, centerCoords));
-
-        JPanel panel = ComponentUtilities.createBoxLabelPanel("Center position:", centerCoords);
-        panel.setBorder(new EmptyBorder(12, 0, 0, 0));
-        return panel;
-    }
-
-    private JPanel createCollisionInfo() {
-        collisionRadius = new JLabel();
-
-        collisionRadius.setToolTipText(StringValues.RIGHT_CLICK_TO_ADJUST_VALUE);
-        Insets insets = ComponentUtilities.createLabelInsets();
-        insets.top = 1;
-        collisionRadius.setBorder(ComponentUtilities.createLabelSimpleBorder(insets));
-
-        collisionRadiusMenu = new JPopupMenu();
-        JMenuItem adjustValue = new JMenuItem(StringValues.ADJUST_VALUE);
-        adjustValue.addActionListener(event -> {
-            ShipCenterPoint centerPoint = centerPainter.getCenterPoint();
-            DialogUtilities.showAdjustCollisionDialog(centerPoint);
-        });
-        collisionRadiusMenu.add(adjustValue);
-        collisionRadius.addMouseListener(new MouseoverLabelListener(collisionRadiusMenu, collisionRadius));
-
-        JPanel panel = ComponentUtilities.createBoxLabelPanel("Collision radius:", collisionRadius);
-        panel.setBorder(new EmptyBorder(16, 0, 0, 0));
-        return panel;
-    }
-
-    private void updateCollisionOpacityLabel(int opacity) {
-        collisionOpacityLabel.setText("Collision opacity");
-        collisionOpacityLabel.setToolTipText(StringValues.CURRENT_VALUE + opacity + "%");
-    }
-
-    private JPanel createCollisionOpacityPanel() {
-        JPanel container = new JPanel();
-
-        container.setLayout(new BoxLayout(container, BoxLayout.LINE_AXIS));
-
-        ChangeListener changeListener = e -> {
-            JSlider source = (JSlider)e.getSource();
-            int opacity = source.getValue();
-            updateCollisionOpacityLabel(opacity);
-            float changedValue = opacity / 100.0f;
-            EventBus.publish(new PainterOpacityChangeQueued(CenterPointPainter.class, changedValue));
+        Function<LayerPainter, Float> opacityGetter = layerPainter -> {
+            CenterPointPainter centerPointPainter = ((ShipPainter) layerPainter).getCenterPointPainter();
+            return centerPointPainter.getPaintOpacity();
         };
-        BusEventListener eventListener = this::handleSelectedLayerOpacity;
-        Pair<JLabel, JSlider> widgetComponents = ComponentUtilities.createOpacityWidget(changeListener, eventListener);
 
-        collisionOpacityLabel = widgetComponents.getFirst();
-        collisionOpacitySlider = widgetComponents.getSecond();
-        this.updateCollisionOpacityLabel(100);
+        Pair<JLabel, JSlider> opacityWidget = ComponentUtilities.createOpacityWidget(readinessChecker,
+                opacityGetter, opacitySetter, clearerListener, refresherListener);
 
-        int sidePadding = 6;
-        ComponentUtilities.layoutAsOpposites(container, collisionOpacityLabel,
-                collisionOpacitySlider, sidePadding);
+        JLabel opacityLabel = opacityWidget.getFirst();
+        opacityLabel.setText("Collision opacity:");
 
-        return container;
+        return opacityWidget;
     }
 
-    private void handleSelectedLayerOpacity(BusEvent event) {
-        if (event instanceof LayerWasSelected checked) {
-            ViewerLayer selected = checked.selected();
-            int defaultOpacity = (int) (CenterPointPainter.COLLISION_OPACITY * 100.0f);
-            if (!(selected instanceof ShipLayer checkedLayer)) {
-                updateCollisionOpacityLabel(defaultOpacity);
-                collisionOpacitySlider.setValue(defaultOpacity);
-                return;
+    private Pair<JLabel, JComboBox<PainterVisibility>> createCollisionVisibilityWidget() {
+        BooleanSupplier readinessChecker = this::isWidgetsReadyForInput;
+        Consumer<PainterVisibility> visibilitySetter = changedValue -> {
+            LayerPainter cachedLayerPainter = getCachedLayerPainter();
+            if (cachedLayerPainter != null) {
+                CenterPointPainter centerPointPainter = ((ShipPainter) cachedLayerPainter).getCenterPointPainter();
+                centerPointPainter.setVisibilityMode(changedValue);
+                processChange();
             }
-            ShipPainter painter = checkedLayer.getPainter();
-            int value;
-            if (painter == null || painter.isUninitialized()) {
-                value = defaultOpacity;
-            }
-            else {
-                CenterPointPainter centerPointPainter = painter.getCenterPointPainter();
-                value = (int) (centerPointPainter.getPaintOpacity() * 100.0f);
-            }
-            updateCollisionOpacityLabel(value);
-            collisionOpacitySlider.setValue(value);
-        }
+        };
+
+        BiConsumer<JComponent, Consumer<LayerPainter>> clearerListener = this::registerWidgetClearer;
+        BiConsumer<JComponent, Consumer<LayerPainter>> refresherListener = this::registerWidgetRefresher;
+
+        Function<LayerPainter, PainterVisibility> visibilityGetter = layerPainter -> {
+            CenterPointPainter centerPointPainter = ((ShipPainter) layerPainter).getCenterPointPainter();
+            return centerPointPainter.getVisibilityMode();
+        };
+
+        var opacityWidget = PainterVisibility.createVisibilityWidget(
+                readinessChecker, visibilityGetter, visibilitySetter, clearerListener, refresherListener
+        );
+
+        JLabel opacityLabel = opacityWidget.getFirst();
+        opacityLabel.setText(StringValues.COLLISION_VIEW);
+
+        return opacityWidget;
+    }
+
+    private Pair<JLabel, JSpinner> createCollisionRadiusSpinner() {
+        double minimum = 0.0d;
+        double maximum = Double.MAX_VALUE;
+        double initial = 0.0d;
+        SpinnerNumberModel numberModel = new SpinnerNumberModel(initial, minimum, maximum, 1.0d);
+
+        JSpinner radiusSpinner = Spinners.createWheelable(numberModel, IncrementType.CHUNK);
+        radiusSpinner.setEnabled(false);
+        JLabel radiusLabel = new JLabel(StringValues.COLLISION_RADIUS);
+
+        radiusSpinner.addChangeListener(e -> {
+            if (!isWidgetsReadyForInput()) return;
+            Number modelNumber = numberModel.getNumber();
+            double newRadius = modelNumber.doubleValue();
+
+            LayerPainter layerPainter = getCachedLayerPainter();
+            ShipPainter shipPainter = (ShipPainter) layerPainter;
+            CenterPointPainter centerPointPainter = shipPainter.getCenterPointPainter();
+            ShipCenterPoint shipCenterPoint = centerPointPainter.getCenterPoint();
+            EditDispatch.postCollisionRadiusChanged(shipCenterPoint, (float) newRadius);
+            processChange();
+        });
+
+        registerWidgetListeners(radiusSpinner, layer -> {
+            numberModel.setValue(0.0d);
+            radiusSpinner.setEnabled(false);
+        }, layerPainter -> {
+            ShipPainter shipPainter = (ShipPainter) layerPainter;
+            CenterPointPainter centerPointPainter = shipPainter.getCenterPointPainter();
+            ShipCenterPoint shipCenterPoint = centerPointPainter.getCenterPoint();
+            double currentRadius = shipCenterPoint.getCollisionRadius();
+
+            numberModel.setValue(currentRadius);
+            radiusSpinner.setEnabled(true);
+        });
+
+        return new Pair<>(radiusLabel, radiusSpinner);
+    }
+
+    private PointLocationWidget createShipCenterLocationWidget() {
+        return new ShipCenterLocationWidget(this);
+    }
+
+    private static ModuleAnchorPanel createModuleAnchorLocationWidget() {
+        return new ModuleAnchorPanel();
     }
 
 }

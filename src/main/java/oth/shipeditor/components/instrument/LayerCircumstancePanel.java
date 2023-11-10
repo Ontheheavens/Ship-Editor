@@ -15,10 +15,7 @@ import java.awt.*;
 import java.awt.geom.Point2D;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.function.BiConsumer;
-import java.util.function.BooleanSupplier;
-import java.util.function.Consumer;
-import java.util.function.Supplier;
+import java.util.function.*;
 
 /**
  * @author Ontheheavens
@@ -71,8 +68,10 @@ public class LayerCircumstancePanel extends LayerPropertiesPanel {
         BiConsumer<JComponent, Consumer<LayerPainter>> clearerListener = this::registerWidgetClearer;
         BiConsumer<JComponent, Consumer<LayerPainter>> refresherListener = this::registerWidgetRefresher;
 
+        Function<LayerPainter, Float> opacityGetter = LayerPainter::getSpriteOpacity;
+
         Pair<JLabel, JSlider> opacityWidget = ComponentUtilities.createOpacityWidget(readinessChecker,
-                opacitySetter, clearerListener, refresherListener);
+                opacityGetter, opacitySetter, clearerListener, refresherListener);
 
         JLabel opacityLabel = opacityWidget.getFirst();
         opacityLabel.setText("Sprite opacity:");

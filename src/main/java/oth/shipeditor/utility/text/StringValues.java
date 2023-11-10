@@ -70,6 +70,12 @@ public final class StringValues {
     public static final String DEFINE_ANCHOR = "Define anchor";
     public static final String Y_COORDINATE = "Y coordinate:";
     public static final String X_COORDINATE = "X coordinate:";
+    public static final String COLLISION_VIEW = "Collision view:";
+    public static final String SHIP_CENTER = "Ship Center";
+    public static final String COLLISION_RADIUS = "Collision radius:";
+    public static final String SHIELD_POSITION = "Shield position:";
+    public static final String SHIELD_CENTER = "Shield Center";
+    public static final String SHIELD_RADIUS = "Shield radius:";
 
     private StringValues() {
     }

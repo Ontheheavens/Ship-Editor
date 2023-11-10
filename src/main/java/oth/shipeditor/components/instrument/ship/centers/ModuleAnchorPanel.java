@@ -42,6 +42,7 @@ public class ModuleAnchorPanel extends PointLocationWidget {
         constraints.anchor = GridBagConstraints.LINE_START;
 
         JButton createDeleteButton = getCreateDeleteButton();
+        createDeleteButton.setEnabled(false);
 
         String clearAnchor = "Clear anchor";
         registerWidgetListeners(createDeleteButton, layer -> {
@@ -120,7 +121,7 @@ public class ModuleAnchorPanel extends PointLocationWidget {
         return point -> {
             CenterPointPainter painter = getCenterPainter();
             if (painter != null) {
-                painter.setModuleAnchorOffset(point);
+                painter.changeModuleAnchor(point);
             }
         };
     }

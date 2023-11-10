@@ -143,7 +143,7 @@ public class LaunchBaysPanel extends JPanel {
             visibilityList.setSelectedItem(valueOfLayer);
         };
 
-        return ComponentUtilities.createVisibilityWidget(visibilityList,
+        return PainterVisibility.createVisibilityWidget(visibilityList,
                 LaunchBayPainter.class, selectionAction, "");
     }
 

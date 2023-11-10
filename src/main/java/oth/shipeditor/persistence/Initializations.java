@@ -7,6 +7,7 @@ import oth.shipeditor.PrimaryWindow;
 import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.viewer.ViewerBackgroundChanged;
 import oth.shipeditor.parsing.FileUtilities;
+import oth.shipeditor.utility.Errors;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
@@ -247,7 +248,8 @@ public final class Initializations {
                 }
             }
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            Errors.printToStream(e);
+            return false;
         }
         return folderHasCore && folderHasMods;
     }

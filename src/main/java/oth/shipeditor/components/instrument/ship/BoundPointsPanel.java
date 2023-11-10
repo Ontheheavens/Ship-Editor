@@ -132,7 +132,7 @@ public final class BoundPointsPanel extends JPanel {
             visibilityList.setSelectedItem(valueOfLayer);
         };
 
-        return ComponentUtilities.createVisibilityWidget(visibilityList,
+        return PainterVisibility.createVisibilityWidget(visibilityList,
                 BoundPointsPainter.class, selectionAction, "");
     }
 

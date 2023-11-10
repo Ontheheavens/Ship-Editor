@@ -86,17 +86,7 @@ public final class EditDispatch {
     }
 
     private static void handleContinuousEdit(Edit edit) {
-        BusEventListener finishListener = new BusEventListener() {
-            @Override
-            public void handleEvent(BusEvent event) {
-                // This is far from perfect, more like a quick hack...
-                // However, refactoring with another solution may prove very difficult.
-                if (event instanceof ViewerMouseReleased && !edit.isFinished()) {
-                    edit.setFinished(true);
-                    EventBus.unsubscribe(this);
-                }
-            }
-        };
+        BusEventListener finishListener = new DefaultEditFinisher(edit);
         EditDispatch.handleContinuousEdit(edit, finishListener);
     }
 
@@ -510,6 +500,27 @@ public final class EditDispatch {
         var repainter = StaticController.getScheduler();
         repainter.queueViewerRepaint();
         repainter.queueModulesRepaint();
+    }
+
+    private static final class DefaultEditFinisher implements BusEventListener {
+
+        private final Edit edit;
+
+        private DefaultEditFinisher(Edit continuousEdit) {
+            this.edit = continuousEdit;
+        }
+
+        @Override
+        public void handleEvent(BusEvent event) {
+            boolean isMouseReleaseEvent = event instanceof ViewerMouseReleased;
+            boolean isConclusionEvent = event instanceof TimedEditConcluded;
+            boolean editUnfinished = !edit.isFinished();
+            if ((isMouseReleaseEvent || isConclusionEvent) && editUnfinished) {
+                edit.setFinished(true);
+                EventBus.unsubscribe(this);
+            }
+        }
+
     }
 
 }

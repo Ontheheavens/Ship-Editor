@@ -2,7 +2,7 @@ package oth.shipeditor.utility.components.containers.trees;
 
 import com.formdev.flatlaf.ui.FlatTreeUI;
 import com.formdev.flatlaf.ui.FlatUIUtils;
-import oth.shipeditor.Main;
+import oth.shipeditor.utility.text.StringConstants;
 
 import javax.swing.*;
 import javax.swing.tree.TreePath;
@@ -80,7 +80,7 @@ public class DynamicWidthTreeUI extends FlatTreeUI {
 
         if (treeState == null) return;
 
-        boolean paintLines = UIManager.getBoolean(Main.TREE_PAINT_LINES);
+        boolean paintLines = UIManager.getBoolean(StringConstants.TREE_PAINT_LINES);
 
         Rectangle clipBounds = g.getClipBounds();
         TreePath firstPath = getClosestPathForLocation( tree, 0, clipBounds.y );

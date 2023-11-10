@@ -10,6 +10,7 @@ import oth.shipeditor.utility.overseers.StaticController;
 import oth.shipeditor.utility.Utility;
 import oth.shipeditor.utility.graphics.ColorUtilities;
 import oth.shipeditor.utility.graphics.DrawUtilities;
+import oth.shipeditor.utility.text.StringValues;
 
 import java.awt.*;
 import java.awt.geom.AffineTransform;
@@ -31,8 +32,8 @@ public class ShipCenterPoint extends BaseWorldPoint {
 
 
 
-    public ShipCenterPoint(Point2D position, float radius, ShipPainter layer, CenterPointPainter parent) {
-        super(position, layer);
+    public ShipCenterPoint(Point2D pointPosition, float radius, ShipPainter layer, CenterPointPainter parent) {
+        super(pointPosition, layer);
         this.collisionRadius = radius;
         this.parentPainter = parent;
     }
@@ -55,7 +56,7 @@ public class ShipCenterPoint extends BaseWorldPoint {
 
     @Override
     public String getNameForLabel() {
-        return "Ship Center";
+        return StringValues.SHIP_CENTER;
     }
 
     @Override

@@ -152,7 +152,7 @@ public class WeaponSlotListPanel extends JPanel {
             visibilityList.setSelectedItem(valueOfLayer);
         };
 
-        return ComponentUtilities.createVisibilityWidget(visibilityList,
+        return PainterVisibility.createVisibilityWidget(visibilityList,
                 WeaponSlotPainter.class, selectionAction, "");
     }
 

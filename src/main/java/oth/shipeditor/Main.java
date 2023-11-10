@@ -1,13 +1,14 @@
 package oth.shipeditor;
 
-import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
 import oth.shipeditor.components.logging.StandardOutputRedirector;
 import oth.shipeditor.parsing.loading.FileLoading;
 import oth.shipeditor.persistence.Initializations;
 import oth.shipeditor.persistence.Settings;
 import oth.shipeditor.persistence.SettingsManager;
+import oth.shipeditor.utility.text.StringConstants;
 import oth.shipeditor.utility.themes.Theme;
+import oth.shipeditor.utility.themes.Themes;
 
 import javax.swing.*;
 import java.io.File;
@@ -24,11 +25,6 @@ import java.util.function.Function;
 @Log4j2
 public final class Main {
 
-    public static final String TREE_PAINT_LINES = "Tree.paintLines";
-
-    @Getter
-    private static PrimaryWindow window;
-
     private Main() {}
 
     public static void main(String[] args) {
@@ -37,7 +33,7 @@ public final class Main {
             StandardOutputRedirector.redirectStandardStreams();
             Initializations.initializeSettingsFile();
             Main.configureLaf();
-            window = PrimaryWindow.create();
+            PrimaryWindow window = PrimaryWindow.create();
             Initializations.updateStateFromSettings(window);
 
             window.showGUI();
@@ -57,7 +53,7 @@ public final class Main {
         UIManager.put("SplitPane.oneTouchButtonSize", 10);
         UIManager.put("TitlePane.useWindowDecorations", true);
 
-        UIManager.put(TREE_PAINT_LINES, true);
+        UIManager.put(StringConstants.TREE_PAINT_LINES, true);
         UIManager.put("Tree.showDefaultIcons", true);
         UIManager.put("TitlePane.showIcon", true);
         UIManager.put("TitlePane.showIconInDialogs", true);
@@ -73,6 +69,8 @@ public final class Main {
         Theme settingsTheme = settings.getTheme();
         Runnable setterMethod = settingsTheme.getSetterMethod();
         setterMethod.run();
+
+        Themes.setupColors();
     }
 
 }

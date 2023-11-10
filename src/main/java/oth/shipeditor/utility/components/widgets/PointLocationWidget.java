@@ -4,12 +4,16 @@ import lombok.Getter;
 import oth.shipeditor.components.viewer.layers.LayerPainter;
 import oth.shipeditor.components.viewer.layers.ship.ShipPainter;
 import oth.shipeditor.undo.EditDispatch;
+import oth.shipeditor.utility.Utility;
 import oth.shipeditor.utility.components.ComponentUtilities;
 import oth.shipeditor.utility.components.containers.LayerPropertiesPanel;
+import oth.shipeditor.utility.text.StringValues;
 
 import javax.swing.*;
+import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.awt.geom.Point2D;
+import java.util.Map;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
@@ -57,6 +61,7 @@ public abstract class PointLocationWidget extends LayerPropertiesPanel {
         };
 
         twinSpinnerPanel = createSpinnerPanel(initialPoint, pointSetter);
+        twinSpinnerPanel.setToolTipText("Point location in world coordinates");
 
         registerWidgetListeners(twinSpinnerPanel, layer -> {
             twinSpinnerPanel.clear();
@@ -82,8 +87,7 @@ public abstract class PointLocationWidget extends LayerPropertiesPanel {
         twinSpinnerPanel.clear();
         twinSpinnerPanel.disable();
 
-        ComponentUtilities.outfitPanelWithTitle(twinSpinnerPanel,
-                new Insets(1, 0, 0, 0), getPanelTitleText());
+        addPanelTitle();
 
         Dimension containerPreferredSize = twinSpinnerPanel.getPreferredSize();
         int width = twinSpinnerPanel.getMaximumSize().width;
@@ -91,6 +95,34 @@ public abstract class PointLocationWidget extends LayerPropertiesPanel {
         twinSpinnerPanel.setMaximumSize(maximumSize);
 
         this.add(twinSpinnerPanel, BorderLayout.CENTER);
+    }
+
+    private void addPanelTitle() {
+        Insets insets = new Insets(1, 0, 0, 0);
+        ComponentUtilities.outfitPanelWithTitle(this, insets, getPanelTitleText());
+    }
+
+    protected JPanel createDependentCoordinatesLabel(String name) {
+        JLabel coordsNameLabel = new JLabel(name);
+        coordsNameLabel.setToolTipText("Point location depends on coordinate system");
+        JLabel coordsDisplayLabel = new JLabel(StringValues.NOT_INITIALIZED);
+
+        registerWidgetListeners(coordsDisplayLabel,
+                layer -> coordsDisplayLabel.setText(StringValues.NOT_INITIALIZED),
+                layer -> {
+                    Supplier<Point2D> getter = retrieveGetter();
+                    Point2D existing = getter.get();
+                    if (existing != null) {
+                        Point2D translated = Utility.getPointCoordinatesForDisplay(existing);
+                        coordsDisplayLabel.setText(Utility.getPointPositionText(translated));
+                    } else {
+                        coordsDisplayLabel.setText(StringValues.NOT_INITIALIZED);
+                    }
+                });
+
+        var container = createWidgetsPanel(Map.of(coordsNameLabel, coordsDisplayLabel));
+        container.setBorder(new EmptyBorder(0, 0, 5, 0));
+        return container;
     }
 
     protected abstract String getPanelTitleText();

@@ -68,9 +68,9 @@ public final class Spinners {
         return spinner;
     }
 
-    public static TwinSpinnerPanel createLocationSpinners(Point2D initial,
-                                                          Supplier<Point2D> pointGetter,
-                                                          Consumer<Point2D> pointSetter) {
+    static TwinSpinnerPanel createLocationSpinners(Point2D initial,
+                                                   Supplier<Point2D> pointGetter,
+                                                   Consumer<Point2D> pointSetter) {
         return Spinners.createLocationSpinners(initial, pointGetter,
                 pointSetter, StringValues.X_COORDINATE, StringValues.Y_COORDINATE);
     }

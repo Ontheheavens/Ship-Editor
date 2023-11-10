@@ -45,7 +45,7 @@ public abstract class LayerPropertiesPanel extends JPanel {
         for (Map.Entry<JLabel, JComponent> entry : widgets.entrySet()) {
             JLabel label = entry.getKey();
             JComponent widget = entry.getValue();
-            ComponentUtilities.addLabelAndComponent(contentContainer, label, widget, ordering);
+            addWidgetRow(contentContainer, label, widget, ordering);
             ordering++;
         }
 
@@ -57,6 +57,10 @@ public abstract class LayerPropertiesPanel extends JPanel {
         widgetsReadyForInput = false;
         this.refreshContent(layer);
         widgetsReadyForInput = true;
+    }
+
+    protected void addWidgetRow(JPanel contentContainer, JLabel label, JComponent component, int ordering) {
+        ComponentUtilities.addLabelAndComponent(contentContainer, label, component, ordering);
     }
 
     /**

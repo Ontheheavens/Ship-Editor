@@ -78,7 +78,7 @@ public class EnginesPanel extends JPanel {
             visibilityList.setSelectedItem(valueOfLayer);
         };
 
-        return ComponentUtilities.createVisibilityWidget(visibilityList,
+        return PainterVisibility.createVisibilityWidget(visibilityList,
                 EngineSlotPainter.class, selectionAction, "");
     }
 

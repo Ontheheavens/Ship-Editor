@@ -8,8 +8,6 @@ import oth.shipeditor.communication.BusEventListener;
 import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.components.LoadingActionFired;
 import oth.shipeditor.components.viewer.layers.LayerPainter;
-import oth.shipeditor.components.viewer.painters.PainterVisibility;
-import oth.shipeditor.components.viewer.painters.points.AbstractPointPainter;
 import oth.shipeditor.parsing.FileUtilities;
 import oth.shipeditor.parsing.loading.FileLoading;
 import oth.shipeditor.utility.components.containers.SortableList;
@@ -35,6 +33,7 @@ import java.util.Hashtable;
 import java.util.function.BiConsumer;
 import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
+import java.util.function.Function;
 
 /**
  * @author Ontheheavens
@@ -159,6 +158,7 @@ public final class ComponentUtilities {
     }
 
     public static Pair<JLabel, JSlider> createOpacityWidget(BooleanSupplier widgetChecker,
+                                                            Function<LayerPainter, Float> opacityGetter,
                                                             Consumer<Float> setter,
                                                             BiConsumer<JComponent,
                                                                     Consumer<LayerPainter>> clearerListener,
@@ -187,7 +187,7 @@ public final class ComponentUtilities {
 
         refresherListener.accept(opacitySlider, layerPainter -> {
             // Refresh code is expected to make sure this block never gets called if layer does not have a painter.
-            int value = (int) (layerPainter.getSpriteOpacity() * 100.0f);
+            int value = (int) (opacityGetter.apply(layerPainter) * 100.0f);
             opacityLabel.setToolTipText(StringValues.CURRENT_VALUE + value + "%");
             opacitySlider.setValue(value);
             opacitySlider.setEnabled(true);
@@ -286,39 +286,6 @@ public final class ComponentUtilities {
 
         ComponentUtilities.layoutAsOpposites(container, left, colorIcon, 0);
         return container;
-    }
-
-    public static JPanel createVisibilityWidget(JComboBox<PainterVisibility> visibilityList,
-                                                Class<? extends AbstractPointPainter> painterClass,
-                                                ActionListener selectionAction, String labelName) {
-        ActionListener chooseAction = PainterVisibility.createActionListener(visibilityList, painterClass);
-        return ComponentUtilities.createVisibilityWidgetRaw(visibilityList, chooseAction, selectionAction, labelName);
-    }
-
-    public static JPanel createVisibilityWidgetRaw(JComboBox<PainterVisibility> visibilityList,
-                                                ActionListener chooseAction,
-                                                ActionListener selectionAction, String labelName) {
-        String widgetLabel = labelName;
-        JPanel widgetPanel = new JPanel();
-        widgetPanel.setLayout(new GridBagLayout());
-
-        visibilityList.setRenderer(PainterVisibility.createCellRenderer());
-        visibilityList.addActionListener(chooseAction);
-        EventBus.subscribe(PainterVisibility.createBusEventListener(visibilityList, selectionAction));
-
-        visibilityList.setMaximumSize(visibilityList.getPreferredSize());
-
-        if (widgetLabel.isEmpty()) {
-            widgetLabel = StringValues.PAINTER_VIEW;
-        }
-
-        JLabel visibilityWidgetLabel = new JLabel(widgetLabel);
-        visibilityWidgetLabel.setToolTipText(StringValues.TOGGLED_ON_PER_LAYER_BASIS);
-
-        ComponentUtilities.addLabelAndComponent(widgetPanel, visibilityWidgetLabel, visibilityList, 0);
-        widgetPanel.setMaximumSize(new Dimension(Integer.MAX_VALUE, 29));
-
-        return widgetPanel;
     }
 
     public static Insets createLabelInsets() {

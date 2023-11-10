@@ -42,8 +42,16 @@ public final class Themes {
         return ColorUtilities.getBlendedColor(Themes.getTextColor(), Color.BLUE, 0.75f);
     }
 
-    public static Color getTitleBackgroundColor() {
-        return UIManager.getColor("TitlePane.background");
+    public static Color getDarkerBackgroundColor() {
+        return ColorUtilities.getBlendedColor(Themes.getPanelDarkColor(), Color.BLACK, 0.15f);
+    }
+
+    public static Color getTabBackgroundColor() {
+        return ColorUtilities.getBlendedColor(Themes.getTabColor(), Color.BLACK, 0.05f);
+    }
+
+    public static Color getBrighterSelectionColor() {
+        return UIManager.getColor("Button.default.hoverBackground");
     }
 
     public static Color getReddishFontColor() {
@@ -59,11 +67,36 @@ public final class Themes {
     }
 
     public static Color getPanelDarkColor() {
-        return UIManager.getColor("TextArea.disabledBackground");
+        return ColorUtilities.getBlendedColor(Themes.getPanelBackgroundColor(), Color.BLACK, 0.15f);
     }
 
     public static Color getListBackgroundColor() {
         return UIManager.getColor("List.background");
+    }
+
+    private static Color getTabColor() {
+        return UIManager.getColor("TabbedPane.background");
+    }
+
+    public static void setupColors() {
+        UIManager.put("SplitPane.background", Themes.getPanelDarkColor());
+
+        String gripColorID = "SplitPaneDivider.gripColor";
+        Color gripColor = UIManager.getColor(gripColorID);
+        Color darkerGripColor = ColorUtilities.getBlendedColor(gripColor,
+                Color.BLACK, 0.5f);
+
+        String dividerDraggingColorID = "SplitPaneDivider.draggingColor";
+        Color dividerDraggingColor = UIManager.getColor(dividerDraggingColorID);
+        Color darkDividerDraggingColor = ColorUtilities.getBlendedColor(dividerDraggingColor,
+                Color.BLACK, 0.25f);
+
+        UIManager.put(gripColorID, darkerGripColor);
+        UIManager.put(dividerDraggingColorID, darkDividerDraggingColor);
+
+        Color selectedTabColor = ColorUtilities.getBlendedColor(Themes.getTabColor(),
+                Color.WHITE, 0.05f);
+        UIManager.put("TabbedPane.selectedBackground", selectedTabColor);
     }
 
 }

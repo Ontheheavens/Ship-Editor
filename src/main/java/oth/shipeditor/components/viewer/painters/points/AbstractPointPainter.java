@@ -148,6 +148,7 @@ public abstract class AbstractPointPainter implements Painter {
         listeners.add(painterOpacityListener);
         EventBus.subscribe(painterOpacityListener);
         BusEventListener painterVisibilityListener = event -> {
+            // TODO: remove this stuff after refactor, widgets should modify painter directly.
             if (event instanceof PainterVisibilityChanged checked) {
                 Class<? extends AbstractPointPainter> painterClass = checked.painterClass();
                 if (!painterClass.isInstance(this) || !isParentLayerActive()) return;

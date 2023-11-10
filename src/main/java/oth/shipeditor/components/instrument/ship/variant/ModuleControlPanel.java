@@ -81,7 +81,7 @@ class ModuleControlPanel extends JPanel {
             var centerPointPainter = modulePainter.getCenterPointPainter();
             return centerPointPainter.getVisibilityMode();
         };
-        this.addVisibilityPanel("Collision view:", 0, chooserAction, currentSupplier);
+        this.addVisibilityPanel(StringValues.COLLISION_VIEW, 0, chooserAction, currentSupplier);
     }
 
     private void addBoundsVisibilityPanel() {

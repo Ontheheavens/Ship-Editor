@@ -8,6 +8,6 @@ import oth.shipeditor.components.viewer.painters.PainterVisibility;
  * @since 16.07.2023
  */
 public record PainterVisibilityChanged(Class<? extends AbstractPointPainter> painterClass,
-                                       PainterVisibility changed) implements LayerEvent{
+                                       PainterVisibility changed) implements LayerEvent {
 
 }

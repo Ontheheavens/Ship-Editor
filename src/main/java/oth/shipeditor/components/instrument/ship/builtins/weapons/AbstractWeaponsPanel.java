@@ -128,7 +128,7 @@ public abstract class AbstractWeaponsPanel extends AbstractBuiltInsPanel {
             EventBus.publish(new ViewerRepaintQueued());
         };
 
-        JPanel visibilityWidget = ComponentUtilities.createVisibilityWidgetRaw(visibilityList,
+        JPanel visibilityWidget = PainterVisibility.createVisibilityWidgetRaw(visibilityList,
                 chooserAction, selectionAction, "");
 
         northContainer.add(visibilityWidget, BorderLayout.PAGE_START);
