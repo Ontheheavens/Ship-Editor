@@ -39,6 +39,7 @@ import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.nio.file.FileVisitOption;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -133,10 +134,14 @@ public final class FileLoading {
         };
     }
 
+    private static Stream<Path> walk(Path start) throws IOException {
+        return Files.walk(start, FileVisitOption.FOLLOW_LINKS);
+    }
+
     private static Path searchFileInFolder(Path filePath, Path folderPath) {
         String fileName = filePath.getFileName().toString();
 
-        try (var stream = Files.walk(folderPath)) {
+        try (var stream = FileLoading.walk(folderPath)) {
             List<Path> foundFiles = stream.filter(file -> {
                 String toString = file.getFileName().toString();
                 return toString.equals(fileName);
@@ -337,7 +342,7 @@ public final class FileLoading {
     @SuppressWarnings("WeakerAccess")
     public static List<File> fetchFilesWithExtension(Path target, String dotlessExtension) {
         List<File> files = new ArrayList<>();
-        try (Stream<Path> pathStream = Files.walk(target)) {
+        try (Stream<Path> pathStream = FileLoading.walk(target)) {
             pathStream.filter(path -> {
                         String toString = path.getFileName().toString();
                         return toString.endsWith("." + dotlessExtension);

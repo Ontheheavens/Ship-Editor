@@ -212,7 +212,7 @@ public final class CollisionPanel extends JPanel {
     }
 
     private void updateCollisionOpacityLabel(int opacity) {
-        collisionOpacityLabel.setText(StringValues.PAINTER_OPACITY);
+        collisionOpacityLabel.setText("Collision opacity");
         collisionOpacityLabel.setToolTipText(StringValues.CURRENT_VALUE + opacity + "%");
     }
 

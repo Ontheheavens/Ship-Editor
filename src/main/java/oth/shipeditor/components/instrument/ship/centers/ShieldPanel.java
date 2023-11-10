@@ -118,7 +118,7 @@ public class ShieldPanel extends JPanel {
     }
 
     private void updateShieldOpacityLabel(int opacity) {
-        shieldOpacityLabel.setText(StringValues.PAINTER_OPACITY);
+        shieldOpacityLabel.setText("Shield opacity");
         shieldOpacityLabel.setToolTipText(StringValues.CURRENT_VALUE + opacity + "%");
     }
 

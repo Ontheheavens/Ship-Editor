@@ -7,6 +7,7 @@ import org.kordamp.ikonli.swing.FontIcon;
 import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.components.SelectShipDataEntry;
 import oth.shipeditor.communication.events.components.SelectWeaponDataEntry;
+import oth.shipeditor.communication.events.viewer.points.InstrumentModeChanged;
 import oth.shipeditor.components.layering.ViewerLayersPanel;
 import oth.shipeditor.components.logging.LogsPanel;
 import oth.shipeditor.components.viewer.LayerViewer;
@@ -56,6 +57,7 @@ public final class WindowContentPanes {
             switch (event) {
                 case SelectWeaponDataEntry ignored -> westTabsPane.setSelectedIndex(0);
                 case SelectShipDataEntry ignored -> westTabsPane.setSelectedIndex(0);
+                case InstrumentModeChanged ignored -> westTabsPane.setSelectedIndex(0);
                 default -> {}
             }
         });

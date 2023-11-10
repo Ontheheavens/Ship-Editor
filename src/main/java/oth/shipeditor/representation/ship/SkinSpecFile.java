@@ -95,6 +95,7 @@ public class SkinSpecFile implements ShipSpecFile {
     @JsonProperty(StringConstants.HULL_DESIGNATION)
     private String hullDesignation;
 
+    @JsonAlias(StringConstants.STYLE)
     @JsonProperty("hullStyle")
     private String hullStyle;
 
