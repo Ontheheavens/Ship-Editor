@@ -8,7 +8,7 @@ import oth.shipeditor.communication.events.files.HullTreeEntryCleared;
 import oth.shipeditor.communication.events.files.HullTreeReloadQueued;
 import oth.shipeditor.components.datafiles.OpenDataTarget;
 import oth.shipeditor.components.datafiles.entities.ShipCSVEntry;
-import oth.shipeditor.components.instrument.ship.EditorInstrument;
+import oth.shipeditor.components.instrument.EditorInstrument;
 import oth.shipeditor.parsing.FileUtilities;
 import oth.shipeditor.parsing.loading.FileLoading;
 import oth.shipeditor.persistence.GameDataPackage;

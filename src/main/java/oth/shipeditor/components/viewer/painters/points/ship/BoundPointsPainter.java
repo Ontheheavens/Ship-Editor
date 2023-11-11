@@ -9,7 +9,7 @@ import oth.shipeditor.communication.events.viewer.ViewerRepaintQueued;
 import oth.shipeditor.communication.events.viewer.points.BoundInsertedConfirmed;
 import oth.shipeditor.communication.events.viewer.points.BoundPointsSorted;
 import oth.shipeditor.communication.events.viewer.points.PointCreationQueued;
-import oth.shipeditor.components.instrument.ship.EditorInstrument;
+import oth.shipeditor.components.instrument.EditorInstrument;
 import oth.shipeditor.components.viewer.control.ControlPredicates;
 import oth.shipeditor.components.viewer.entities.BaseWorldPoint;
 import oth.shipeditor.components.viewer.entities.BoundPoint;
@@ -56,6 +56,11 @@ public final class BoundPointsPainter extends MirrorablePointPainter {
         this.boundPoints = new ArrayList<>();
         this.initHotkeys();
         this.initPointListening();
+    }
+
+    @Override
+    public BoundPoint getSelected() {
+        return (BoundPoint) super.getSelected();
     }
 
     @Override

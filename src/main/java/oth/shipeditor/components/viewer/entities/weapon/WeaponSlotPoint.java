@@ -4,7 +4,7 @@ import lombok.Getter;
 import lombok.Setter;
 import oth.shipeditor.components.CoordsDisplayMode;
 import oth.shipeditor.components.datafiles.entities.CSVEntry;
-import oth.shipeditor.components.instrument.ship.EditorInstrument;
+import oth.shipeditor.components.instrument.EditorInstrument;
 import oth.shipeditor.components.viewer.entities.AngledPoint;
 import oth.shipeditor.components.viewer.layers.ship.ShipPainter;
 import oth.shipeditor.components.viewer.painters.points.ship.features.InstalledFeature;

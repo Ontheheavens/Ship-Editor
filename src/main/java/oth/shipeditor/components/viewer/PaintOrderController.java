@@ -6,7 +6,7 @@ import lombok.Setter;
 import oth.shipeditor.components.datafiles.entities.InstallableEntry;
 import oth.shipeditor.components.datafiles.entities.ShipCSVEntry;
 import oth.shipeditor.components.datafiles.entities.WeaponCSVEntry;
-import oth.shipeditor.components.instrument.ship.EditorInstrument;
+import oth.shipeditor.components.instrument.EditorInstrument;
 import oth.shipeditor.components.viewer.entities.weapon.WeaponSlotPoint;
 import oth.shipeditor.components.viewer.layers.LayerManager;
 import oth.shipeditor.components.viewer.layers.LayerPainter;

@@ -9,7 +9,7 @@ import oth.shipeditor.communication.events.viewer.control.ViewerCursorMoved;
 import oth.shipeditor.communication.events.viewer.layers.LayerWasSelected;
 import oth.shipeditor.communication.events.viewer.status.CoordsModeChanged;
 import oth.shipeditor.components.CoordsDisplayMode;
-import oth.shipeditor.components.instrument.ship.EditorInstrument;
+import oth.shipeditor.components.instrument.EditorInstrument;
 import oth.shipeditor.components.instrument.ship.ShipInstrumentsPane;
 import oth.shipeditor.components.viewer.PrimaryViewer;
 import oth.shipeditor.components.viewer.control.ControlPredicates;

@@ -1,4 +1,4 @@
-package oth.shipeditor.utility.components.containers;
+package oth.shipeditor.components.instrument;
 
 import lombok.Getter;
 import oth.shipeditor.components.viewer.layers.LayerPainter;

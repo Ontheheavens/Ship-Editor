@@ -129,7 +129,7 @@ class ShipFilesSubpanel extends JPanel {
         labelContainer.setBorder(new EmptyBorder(0, 4, 0, 0));
 
         labelContainer.setLayout(new BoxLayout(labelContainer, BoxLayout.PAGE_AXIS));
-        JLabel shipNameLabel = new JLabel("Ship filename: " + shipName);
+        JLabel shipNameLabel = new JLabel("Ship name: " + shipName);
         shipNameLabel.setBorder(new EmptyBorder(ComponentUtilities.createLabelInsets()));
         labelContainer.add(shipNameLabel);
 

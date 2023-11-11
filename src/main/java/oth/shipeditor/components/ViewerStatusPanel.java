@@ -323,9 +323,9 @@ final class ViewerStatusPanel extends JPanel {
         });
     }
 
-    private JRadioButtonMenuItem createCoordsOption(String text, ButtonGroup group,
+    private JRadioButtonMenuItem createCoordsOption(ButtonGroup group,
                                                     CoordsDisplayMode displayMode) {
-        JRadioButtonMenuItem menuItem = new JRadioButtonMenuItem(text);
+        JRadioButtonMenuItem menuItem = new JRadioButtonMenuItem(displayMode.getDisplayedText());
         menuItem.addActionListener(e -> {
             menuItem.setSelected(true);
             this.updateCursorCoordsLabel();
@@ -337,28 +337,19 @@ final class ViewerStatusPanel extends JPanel {
     }
 
     private JPopupMenu createCoordsMenu() {
-        String axes = "X , Y from ";
         JPopupMenu popupMenu = new JPopupMenu();
         ButtonGroup group = new ButtonGroup();
 
-        JRadioButtonMenuItem world = createCoordsOption(
-                axes + "start of coordinate system (World 0,0)",
-                group, CoordsDisplayMode.WORLD);
+        JRadioButtonMenuItem world = createCoordsOption(group, CoordsDisplayMode.WORLD);
         popupMenu.add(world);
 
-        JRadioButtonMenuItem sprite = createCoordsOption(
-                axes + "selected sprite center (Sprite 0,0)",
-                group, CoordsDisplayMode.SPRITE_CENTER);
+        JRadioButtonMenuItem sprite = createCoordsOption(group, CoordsDisplayMode.SPRITE_CENTER);
         popupMenu.add(sprite);
 
-        JRadioButtonMenuItem shipCenterAnchor = createCoordsOption(
-                axes + "bottom left corner of selected sprite (Entity Center Anchor 0,0)",
-                group, CoordsDisplayMode.SHIPCENTER_ANCHOR);
+        JRadioButtonMenuItem shipCenterAnchor = createCoordsOption(group, CoordsDisplayMode.SHIPCENTER_ANCHOR);
         popupMenu.add(shipCenterAnchor);
 
-        JRadioButtonMenuItem shipCenter = createCoordsOption(
-                axes + "designated entity center of selected layer (Entity Center 0,0)",
-                group, CoordsDisplayMode.SHIP_CENTER);
+        JRadioButtonMenuItem shipCenter = createCoordsOption(group, CoordsDisplayMode.SHIP_CENTER);
         shipCenter.setSelected(true);
         popupMenu.add(shipCenter);
 

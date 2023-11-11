@@ -1,4 +1,4 @@
-package oth.shipeditor.components.instrument.ship;
+package oth.shipeditor.components.instrument;
 
 import lombok.Getter;
 import oth.shipeditor.utility.text.StringValues;

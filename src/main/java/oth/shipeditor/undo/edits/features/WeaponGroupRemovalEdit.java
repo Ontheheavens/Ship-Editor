@@ -1,6 +1,6 @@
 package oth.shipeditor.undo.edits.features;
 
-import oth.shipeditor.components.instrument.ship.EditorInstrument;
+import oth.shipeditor.components.instrument.EditorInstrument;
 import oth.shipeditor.components.viewer.painters.points.ship.features.FittedWeaponGroup;
 import oth.shipeditor.undo.AbstractEdit;
 import oth.shipeditor.utility.overseers.StaticController;

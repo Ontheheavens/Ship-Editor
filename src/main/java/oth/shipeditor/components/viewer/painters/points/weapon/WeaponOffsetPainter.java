@@ -3,7 +3,7 @@ package oth.shipeditor.components.viewer.painters.points.weapon;
 import lombok.Getter;
 import lombok.Setter;
 import oth.shipeditor.communication.events.viewer.points.PointCreationQueued;
-import oth.shipeditor.components.instrument.ship.EditorInstrument;
+import oth.shipeditor.components.instrument.EditorInstrument;
 import oth.shipeditor.components.viewer.entities.BaseWorldPoint;
 import oth.shipeditor.components.viewer.entities.weapon.OffsetPoint;
 import oth.shipeditor.components.viewer.layers.weapon.WeaponPainter;

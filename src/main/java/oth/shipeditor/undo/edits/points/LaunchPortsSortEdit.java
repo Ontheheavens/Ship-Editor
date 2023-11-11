@@ -1,7 +1,7 @@
 package oth.shipeditor.undo.edits.points;
 
 import lombok.RequiredArgsConstructor;
-import oth.shipeditor.components.instrument.ship.EditorInstrument;
+import oth.shipeditor.components.instrument.EditorInstrument;
 import oth.shipeditor.components.viewer.entities.bays.LaunchBay;
 import oth.shipeditor.components.viewer.entities.bays.LaunchPortPoint;
 import oth.shipeditor.undo.AbstractEdit;

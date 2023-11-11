@@ -19,6 +19,7 @@ import java.util.List;
  * @author Ontheheavens
  * @since 19.06.2023
  */
+@SuppressWarnings("ClassWithTooManyFields")
 @Getter
 public class Settings {
 

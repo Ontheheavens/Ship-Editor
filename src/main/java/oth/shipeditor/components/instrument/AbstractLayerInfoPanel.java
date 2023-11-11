@@ -14,11 +14,11 @@ import java.awt.*;
  * @author Ontheheavens
  * @since 09.11.2023
  */
-public abstract class AbstractLayerPropertiesPanel extends JPanel {
+public abstract class AbstractLayerInfoPanel extends JPanel {
 
     private final LayerCircumstancePanel layerCircumstancePanel;
 
-    protected AbstractLayerPropertiesPanel() {
+    protected AbstractLayerInfoPanel() {
         this.setLayout(new BorderLayout());
 
         layerCircumstancePanel = new LayerCircumstancePanel();

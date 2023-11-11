@@ -8,7 +8,7 @@ import oth.shipeditor.communication.events.viewer.points.InstrumentModeChanged;
 import oth.shipeditor.components.datafiles.styles.EngineStylesPanel;
 import oth.shipeditor.components.datafiles.styles.HullStylesPanel;
 import oth.shipeditor.components.datafiles.trees.*;
-import oth.shipeditor.components.instrument.ship.EditorInstrument;
+import oth.shipeditor.components.instrument.EditorInstrument;
 import oth.shipeditor.utility.text.StringValues;
 
 import javax.swing.*;

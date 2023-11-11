@@ -1,7 +1,7 @@
 package oth.shipeditor.undo.edits.features;
 
 import lombok.RequiredArgsConstructor;
-import oth.shipeditor.components.instrument.ship.EditorInstrument;
+import oth.shipeditor.components.instrument.EditorInstrument;
 import oth.shipeditor.components.viewer.painters.points.ship.features.FittedWeaponGroup;
 import oth.shipeditor.components.viewer.painters.points.ship.features.InstalledFeature;
 import oth.shipeditor.undo.AbstractEdit;

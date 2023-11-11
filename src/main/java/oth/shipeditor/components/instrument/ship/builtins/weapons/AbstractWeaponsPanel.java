@@ -9,7 +9,7 @@ import oth.shipeditor.communication.events.components.WeaponEntryPicked;
 import oth.shipeditor.communication.events.viewer.ViewerRepaintQueued;
 import oth.shipeditor.communication.events.viewer.points.PointSelectedConfirmed;
 import oth.shipeditor.components.datafiles.entities.WeaponCSVEntry;
-import oth.shipeditor.components.instrument.ship.EditorInstrument;
+import oth.shipeditor.components.instrument.EditorInstrument;
 import oth.shipeditor.components.instrument.ship.builtins.AbstractBuiltInsPanel;
 import oth.shipeditor.components.instrument.ship.shared.InstalledFeatureList;
 import oth.shipeditor.components.viewer.entities.weapon.WeaponSlotPoint;
@@ -41,6 +41,8 @@ import java.util.function.Consumer;
  */
 @SuppressWarnings("OverlyCoupledClass")
 public abstract class AbstractWeaponsPanel extends AbstractBuiltInsPanel {
+
+    // TODO: All of this will need refactoring with more modern LayerPropertiesPanel techniques.
 
     private JPanel weaponPickPanel;
 
@@ -159,13 +161,15 @@ public abstract class AbstractWeaponsPanel extends AbstractBuiltInsPanel {
             return;
         }
 
-        this.populateWeaponBuiltIns(layer);
+        if (layer != null) {
+            this.populateWeaponBuiltIns(layer);
 
-        ShipPainter painter = layer.getPainter();
-        ShipSkin activeSkin = painter.getActiveSkin();
+            ShipPainter painter = layer.getPainter();
+            ShipSkin activeSkin = painter.getActiveSkin();
 
-        if (activeSkin != null && !activeSkin.isBase()) {
-            this.handleSkinBuiltInsChanges(layer);
+            if (activeSkin != null && !activeSkin.isBase()) {
+                this.handleSkinBuiltInsChanges(layer);
+            }
         }
 
         this.revalidate();

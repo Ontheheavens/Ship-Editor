@@ -2,7 +2,7 @@ package oth.shipeditor.components.viewer.entities;
 
 import lombok.Getter;
 import lombok.Setter;
-import oth.shipeditor.components.instrument.ship.EditorInstrument;
+import oth.shipeditor.components.instrument.EditorInstrument;
 import oth.shipeditor.components.viewer.layers.ship.ShipPainter;
 import oth.shipeditor.components.viewer.painters.points.ship.ShieldPointPainter;
 import oth.shipeditor.representation.ship.HullStyle;

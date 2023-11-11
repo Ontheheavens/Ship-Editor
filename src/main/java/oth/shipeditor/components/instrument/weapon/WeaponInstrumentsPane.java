@@ -21,7 +21,7 @@ public class WeaponInstrumentsPane extends AbstractInstrumentsPane {
         JPanel layerPanel = new JPanel();
         layerPanel.setLayout(new BorderLayout());
 
-        JPanel layerWidgetsPanel = new WeaponLayerPropertiesPanel();
+        JPanel layerWidgetsPanel = new WeaponLayerInfoPanel();
         layerPanel.add(layerWidgetsPanel, BorderLayout.CENTER);
         this.addTab(StringValues.LAYER,layerPanel);
 

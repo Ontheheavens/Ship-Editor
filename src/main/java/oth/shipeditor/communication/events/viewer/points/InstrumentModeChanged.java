@@ -1,6 +1,6 @@
 package oth.shipeditor.communication.events.viewer.points;
 
-import oth.shipeditor.components.instrument.ship.EditorInstrument;
+import oth.shipeditor.components.instrument.EditorInstrument;
 
 /**
  * @author Ontheheavens

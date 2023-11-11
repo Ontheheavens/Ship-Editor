@@ -1,4 +1,4 @@
-package oth.shipeditor.components.instrument.ship;
+package oth.shipeditor.components.instrument.ship.hull;
 
 import com.formdev.flatlaf.ui.FlatLineBorder;
 import oth.shipeditor.components.viewer.layers.ship.ShipLayer;

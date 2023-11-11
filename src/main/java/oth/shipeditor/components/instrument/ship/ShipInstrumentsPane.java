@@ -6,7 +6,9 @@ import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.viewer.ViewerRepaintQueued;
 import oth.shipeditor.communication.events.viewer.points.InstrumentModeChanged;
 import oth.shipeditor.components.instrument.AbstractInstrumentsPane;
+import oth.shipeditor.components.instrument.EditorInstrument;
 import oth.shipeditor.components.instrument.ship.bays.LaunchBaysPanel;
+import oth.shipeditor.components.instrument.ship.bounds.BoundsPanel;
 import oth.shipeditor.components.instrument.ship.builtins.BuiltInHullmodsPanel;
 import oth.shipeditor.components.instrument.ship.builtins.BuiltInWingsPanel;
 import oth.shipeditor.components.instrument.ship.builtins.weapons.BuiltInWeaponsPanel;
@@ -14,6 +16,7 @@ import oth.shipeditor.components.instrument.ship.builtins.weapons.DecorativesPan
 import oth.shipeditor.components.instrument.ship.centers.CollisionPanel;
 import oth.shipeditor.components.instrument.ship.centers.ShieldPanel;
 import oth.shipeditor.components.instrument.ship.engines.EnginesPanel;
+import oth.shipeditor.components.instrument.ship.hull.ShipLayerInfoPanel;
 import oth.shipeditor.components.instrument.ship.skins.SkinDataPanel;
 import oth.shipeditor.components.instrument.ship.skins.SkinSlotOverridesPanel;
 import oth.shipeditor.components.instrument.ship.slots.WeaponSlotsPanel;
@@ -47,10 +50,10 @@ public final class ShipInstrumentsPane extends AbstractInstrumentsPane {
 
     @SuppressWarnings("OverlyCoupledMethod")
     private void createTabs() {
-        this.createTab(new ShipLayerPropertiesPanel(), EditorInstrument.LAYER);
+        this.createTab(new ShipLayerInfoPanel(), EditorInstrument.LAYER);
         this.createTab(new CollisionPanel(), EditorInstrument.COLLISION);
         this.createTab(new ShieldPanel(), EditorInstrument.SHIELD);
-        this.createTab(new BoundPointsPanel(), EditorInstrument.BOUNDS);
+        this.createTab(new BoundsPanel(), EditorInstrument.BOUNDS);
         this.createTab(new WeaponSlotsPanel(), EditorInstrument.WEAPON_SLOTS);
         this.createTab(new LaunchBaysPanel(), EditorInstrument.LAUNCH_BAYS);
         this.createTab(new EnginesPanel(), EditorInstrument.ENGINES);

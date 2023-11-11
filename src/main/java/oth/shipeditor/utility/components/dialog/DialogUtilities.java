@@ -16,8 +16,6 @@ public final class DialogUtilities {
     private DialogUtilities() {
     }
 
-    // TODO: Delete this stuff later.
-
     public static void showAdjustPointDialog(WorldPoint point) {
         PointChangeDialog dialog = new PointChangeDialog(point.getPosition());
         int option = JOptionPane.showConfirmDialog(null, dialog,

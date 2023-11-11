@@ -1,6 +1,6 @@
-package oth.shipeditor.components.instrument.ship;
+package oth.shipeditor.components.instrument.ship.hull;
 
-import oth.shipeditor.components.instrument.AbstractLayerPropertiesPanel;
+import oth.shipeditor.components.instrument.AbstractLayerInfoPanel;
 import oth.shipeditor.components.viewer.entities.weapon.SlotData;
 import oth.shipeditor.components.viewer.entities.weapon.WeaponSlotPoint;
 import oth.shipeditor.components.viewer.layers.LayerPainter;
@@ -22,13 +22,13 @@ import java.util.Map;
  * @author Ontheheavens
  * @since 11.06.2023
  */
-final class ShipLayerPropertiesPanel extends AbstractLayerPropertiesPanel {
+public final class ShipLayerInfoPanel extends AbstractLayerInfoPanel {
 
     private final HullDataControlPanel hullDataPanel;
 
     private final JPanel weaponSlotsSummaryPanel;
 
-    ShipLayerPropertiesPanel() {
+    public ShipLayerInfoPanel() {
         JPanel dataContainer = new JPanel();
         dataContainer.setLayout(new BorderLayout());
 
@@ -60,7 +60,7 @@ final class ShipLayerPropertiesPanel extends AbstractLayerPropertiesPanel {
     protected void refreshData(ViewerLayer selected) {
         weaponSlotsSummaryPanel.add(Box.createVerticalStrut(8));
         ShipPainter shipPainter = (ShipPainter) selected.getPainter();
-        weaponSlotsSummaryPanel.add(ShipLayerPropertiesPanel.createSlotsSummaryPanel(shipPainter));
+        weaponSlotsSummaryPanel.add(ShipLayerInfoPanel.createSlotsSummaryPanel(shipPainter));
 
         hullDataPanel.refreshData((ShipLayer) selected);
     }
@@ -77,7 +77,7 @@ final class ShipLayerPropertiesPanel extends AbstractLayerPropertiesPanel {
         WeaponSlotPainter slotPainter = shipPainter.getWeaponSlotPainter();
         List<WeaponSlotPoint> slotPointList = slotPainter.getSlotPoints();
 
-        Map<String, Integer> slotSummary = ShipLayerPropertiesPanel.generateSlotConfigSummary(slotPointList);
+        Map<String, Integer> slotSummary = ShipLayerInfoPanel.generateSlotConfigSummary(slotPointList);
 
         container.add(Box.createVerticalStrut(4));
 

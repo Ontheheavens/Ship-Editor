@@ -6,7 +6,7 @@ import oth.shipeditor.components.viewer.layers.ship.ShipLayer;
 import oth.shipeditor.components.viewer.layers.ship.ShipPainter;
 import oth.shipeditor.components.viewer.layers.ship.data.ShipSkin;
 import oth.shipeditor.utility.components.ComponentUtilities;
-import oth.shipeditor.utility.components.containers.LayerPropertiesPanel;
+import oth.shipeditor.components.instrument.LayerPropertiesPanel;
 import oth.shipeditor.utility.objects.Pair;
 import oth.shipeditor.utility.text.StringValues;
 

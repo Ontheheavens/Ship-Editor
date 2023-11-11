@@ -79,8 +79,15 @@ public final class Spinners {
                                                           Supplier<Point2D> pointGetter,
                                                           Consumer<Point2D> pointSetter,
                                                           String labelX, String labelY) {
+        return Spinners.createLocationSpinners(initial, pointGetter, pointSetter, labelX, labelY, 0.5d);
+    }
+
+    public static TwinSpinnerPanel createLocationSpinners(Point2D initial,
+                                                          Supplier<Point2D> pointGetter,
+                                                          Consumer<Point2D> pointSetter,
+                                                          String labelX, String labelY, double stepSize) {
         SpinnerNumberModel modelX = new SpinnerNumberModel(initial.getX(),
-                Integer.MIN_VALUE, Integer.MAX_VALUE, 0.5d);
+                Integer.MIN_VALUE, Integer.MAX_VALUE, stepSize);
         Consumer<Double> spinnerEffectX = value -> {
             Point2D original = pointGetter.get();
             if (original != null) {
@@ -91,7 +98,7 @@ public final class Spinners {
         };
 
         SpinnerNumberModel modelY = new SpinnerNumberModel(initial.getY(),
-                Integer.MIN_VALUE, Integer.MAX_VALUE, 0.5d);
+                Integer.MIN_VALUE, Integer.MAX_VALUE, stepSize);
         Consumer<Double> spinnerEffectY = value -> {
             Point2D original = pointGetter.get();
             if (original != null) {

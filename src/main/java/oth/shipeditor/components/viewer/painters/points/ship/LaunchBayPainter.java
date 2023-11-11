@@ -7,7 +7,7 @@ import oth.shipeditor.communication.events.viewer.ViewerRepaintQueued;
 import oth.shipeditor.communication.events.viewer.points.LaunchBayAddConfirmed;
 import oth.shipeditor.communication.events.viewer.points.LaunchBayRemoveConfirmed;
 import oth.shipeditor.communication.events.viewer.points.PointCreationQueued;
-import oth.shipeditor.components.instrument.ship.EditorInstrument;
+import oth.shipeditor.components.instrument.EditorInstrument;
 import oth.shipeditor.components.viewer.entities.BaseWorldPoint;
 import oth.shipeditor.components.viewer.entities.WorldPoint;
 import oth.shipeditor.components.viewer.entities.bays.LaunchBay;

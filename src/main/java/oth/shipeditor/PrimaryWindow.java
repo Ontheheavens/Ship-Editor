@@ -35,6 +35,9 @@ public final class PrimaryWindow extends JFrame {
 
     private final WindowContentPanes contentPanes;
 
+    @Getter
+    private boolean initialized;
+
     private static final Dimension MINIMUM_WINDOW_SIZE = new Dimension(800, 600);
 
     private PrimaryWindow() {
@@ -120,6 +123,7 @@ public final class PrimaryWindow extends JFrame {
     void showGUI() {
         this.setVisible(true);
         EventBus.publish(new WindowGUIShowConfirmed());
+        this.initialized = true;
     }
 
 
@@ -139,16 +143,20 @@ public final class PrimaryWindow extends JFrame {
             resizeTimer.setRepeats(false);
         }
 
-        @Override
-        public void componentMoved(ComponentEvent e) {
+        private void scheduleSave() {
+            if (!PrimaryWindow.this.initialized) return;
             saveScheduled = true;
             resizeTimer.restart();
         }
 
         @Override
+        public void componentMoved(ComponentEvent e) {
+            scheduleSave();
+        }
+
+        @Override
         public void componentResized(ComponentEvent e) {
-            saveScheduled = true;
-            resizeTimer.restart();
+            scheduleSave();
         }
 
         private void saveBounds() {

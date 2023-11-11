@@ -4,11 +4,12 @@ import oth.shipeditor.components.viewer.control.ControlPredicates;
 import oth.shipeditor.components.viewer.layers.LayerPainter;
 import oth.shipeditor.utility.Utility;
 import oth.shipeditor.utility.components.ComponentUtilities;
-import oth.shipeditor.utility.components.containers.LayerPropertiesPanel;
 import oth.shipeditor.utility.components.widgets.IncrementType;
 import oth.shipeditor.utility.components.widgets.PointLocationWidget;
 import oth.shipeditor.utility.components.widgets.Spinners;
+import oth.shipeditor.utility.components.widgets.TwinSpinnerPanel;
 import oth.shipeditor.utility.objects.Pair;
+import oth.shipeditor.utility.text.StringValues;
 
 import javax.swing.*;
 import java.awt.*;
@@ -125,6 +126,12 @@ public class LayerCircumstancePanel extends LayerPropertiesPanel {
     }
 
     private static class LayerAnchorLocationWidget extends PointLocationWidget {
+
+        @Override
+        protected TwinSpinnerPanel createSpinnerPanel(Point2D initialPoint, Consumer<Point2D> pointSetter) {
+            return Spinners.createLocationSpinners(initialPoint, retrieveGetter(), pointSetter,
+                    StringValues.X_COORDINATE, StringValues.Y_COORDINATE, 1.0d);
+        }
 
         @Override
         protected boolean isLayerPainterEligible(LayerPainter layerPainter) {

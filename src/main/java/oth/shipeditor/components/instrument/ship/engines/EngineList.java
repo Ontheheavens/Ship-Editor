@@ -3,7 +3,7 @@ package oth.shipeditor.components.instrument.ship.engines;
 import com.formdev.flatlaf.ui.FlatLineBorder;
 import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.viewer.points.EnginePointsSorted;
-import oth.shipeditor.components.instrument.ship.PointList;
+import oth.shipeditor.utility.components.containers.PointList;
 import oth.shipeditor.components.viewer.entities.BaseWorldPoint;
 import oth.shipeditor.components.viewer.entities.engine.EnginePoint;
 import oth.shipeditor.representation.ship.EngineStyle;

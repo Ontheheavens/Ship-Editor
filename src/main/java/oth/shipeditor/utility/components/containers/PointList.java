@@ -1,4 +1,4 @@
-package oth.shipeditor.components.instrument.ship;
+package oth.shipeditor.utility.components.containers;
 
 import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.viewer.ViewerRepaintQueued;
@@ -6,7 +6,6 @@ import oth.shipeditor.communication.events.viewer.points.PointRemoveQueued;
 import oth.shipeditor.communication.events.viewer.points.PointSelectQueued;
 import oth.shipeditor.communication.events.viewer.points.PointSelectedConfirmed;
 import oth.shipeditor.components.viewer.entities.BaseWorldPoint;
-import oth.shipeditor.utility.components.containers.SortableList;
 import oth.shipeditor.utility.components.dialog.DialogUtilities;
 import oth.shipeditor.utility.components.rendering.PointCellRenderer;
 import oth.shipeditor.utility.text.StringValues;

@@ -103,5 +103,11 @@ module oth.shipeditor {
     opens oth.shipeditor.representation.ship;
     exports oth.shipeditor.utility.themes;
     exports oth.shipeditor.components.datafiles.entities.transferable;
+    exports oth.shipeditor.components.instrument.ship.bounds;
+    opens oth.shipeditor.components.instrument.ship.bounds;
+    exports oth.shipeditor.utility.components.containers;
+    opens oth.shipeditor.utility.components.containers;
+    exports oth.shipeditor.components.instrument.ship.hull;
+    opens oth.shipeditor.components.instrument.ship.hull;
 
 }

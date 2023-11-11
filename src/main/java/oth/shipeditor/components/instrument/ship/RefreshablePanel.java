@@ -14,6 +14,7 @@ import javax.swing.*;
  */
 @Getter
 @SuppressWarnings("AbstractClassWithOnlyOneDirectInheritor")
+@Deprecated
 public abstract class RefreshablePanel extends JPanel {
 
     protected RefreshablePanel() {

@@ -97,7 +97,6 @@ public abstract class AbstractPointPainter implements Painter {
         return new SimplePointSelectionListener();
     }
 
-    @SuppressWarnings("OverlyComplexMethod")
     private void initPointListeners() {
         BusEventListener pointRemovalListener = event -> {
             if (event instanceof PointRemoveQueued checked && this.isInteractionEnabled()) {
@@ -118,20 +117,7 @@ public abstract class AbstractPointPainter implements Painter {
                 AffineTransform screenToWorld = checked.screenToWorld();
                 Point2D target = checked.target();
                 Point2D changedPosition = Utility.correctAdjustedCursor(target, screenToWorld);
-
-                WorldPoint counterpart = null;
-                Point2D counterpartNewPosition = null;
-                boolean mirroringEnabled = ControlPredicates.isMirrorModeEnabled();
-                if (isMirrorable() && mirroringEnabled) {
-                    counterpart = getMirroredCounterpart(getSelected());
-                    if (counterpart != null) {
-                        counterpartNewPosition = createCounterpartPosition(changedPosition);
-                    }
-                }
-                EditDispatch.postPointDragged(getSelected(), changedPosition);
-                if (counterpartNewPosition != null) {
-                    EditDispatch.postPointDragged(counterpart, counterpartNewPosition);
-                }
+                this.dragPointWithMirrorCheck(changedPosition);
             }
         };
         listeners.add(pointDragListener);
@@ -158,6 +144,22 @@ public abstract class AbstractPointPainter implements Painter {
         };
         listeners.add(painterVisibilityListener);
         EventBus.subscribe(painterVisibilityListener);
+    }
+
+    public void dragPointWithMirrorCheck(Point2D changedPosition) {
+        WorldPoint counterpart = null;
+        Point2D counterpartNewPosition = null;
+        boolean mirroringEnabled = ControlPredicates.isMirrorModeEnabled();
+        if (isMirrorable() && mirroringEnabled) {
+            counterpart = getMirroredCounterpart(getSelected());
+            if (counterpart != null) {
+                counterpartNewPosition = createCounterpartPosition(changedPosition);
+            }
+        }
+        EditDispatch.postPointDragged(getSelected(), changedPosition);
+        if (counterpartNewPosition != null) {
+            EditDispatch.postPointDragged(counterpart, counterpartNewPosition);
+        }
     }
 
     private void handlePointRemovalEvent(BaseWorldPoint point, boolean removalViaListPanel) {

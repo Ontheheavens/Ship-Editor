@@ -1,12 +1,14 @@
 package oth.shipeditor.utility.components.widgets;
 
 import lombok.Getter;
+import oth.shipeditor.components.CoordsDisplayMode;
+import oth.shipeditor.components.instrument.LayerPropertiesPanel;
 import oth.shipeditor.components.viewer.layers.LayerPainter;
 import oth.shipeditor.components.viewer.layers.ship.ShipPainter;
 import oth.shipeditor.undo.EditDispatch;
 import oth.shipeditor.utility.Utility;
 import oth.shipeditor.utility.components.ComponentUtilities;
-import oth.shipeditor.utility.components.containers.LayerPropertiesPanel;
+import oth.shipeditor.utility.overseers.StaticController;
 import oth.shipeditor.utility.text.StringValues;
 
 import javax.swing.*;
@@ -104,7 +106,12 @@ public abstract class PointLocationWidget extends LayerPropertiesPanel {
 
     protected JPanel createDependentCoordinatesLabel(String name) {
         JLabel coordsNameLabel = new JLabel(name);
-        coordsNameLabel.setToolTipText("Point location depends on coordinate system");
+
+        String coordinatesHint = "Point location depends on coordinate system";
+        CoordsDisplayMode coordsMode = StaticController.getCoordsMode();
+        String currentMode = "Current system: " + coordsMode.getShortName();
+        coordsNameLabel.setToolTipText(Utility.getWithLinebreaks(coordinatesHint, currentMode));
+
         JLabel coordsDisplayLabel = new JLabel(StringValues.NOT_INITIALIZED);
 
         registerWidgetListeners(coordsDisplayLabel,
