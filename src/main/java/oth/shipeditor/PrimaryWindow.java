@@ -10,10 +10,16 @@ import oth.shipeditor.components.viewer.control.ControlPredicates;
 import oth.shipeditor.menubar.PrimaryMenuBar;
 import oth.shipeditor.parsing.saving.SaveCoordinator;
 import oth.shipeditor.persistence.Initializations;
+import oth.shipeditor.persistence.Settings;
+import oth.shipeditor.persistence.SettingsManager;
+import oth.shipeditor.utility.objects.SimpleRectangle;
 import oth.shipeditor.utility.overseers.StaticController;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ActionListener;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
 
 /**
  * @author Ontheheavens
@@ -29,6 +35,8 @@ public final class PrimaryWindow extends JFrame {
 
     private final WindowContentPanes contentPanes;
 
+    private static final Dimension MINIMUM_WINDOW_SIZE = new Dimension(800, 600);
+
     private PrimaryWindow() {
         log.info("Application start: creating window.");
         this.setTitle(SHIP_EDITOR);
@@ -36,7 +44,7 @@ public final class PrimaryWindow extends JFrame {
 
         PrimaryWindow.performStaticInits();
 
-        this.setMinimumSize(new Dimension(800, 600));
+        this.setMinimumSize(MINIMUM_WINDOW_SIZE);
 
         this.initListeners();
         // This centers the frame.
@@ -53,6 +61,7 @@ public final class PrimaryWindow extends JFrame {
         contentPanes.loadEditingPanes();
 
         PrimaryWindow.configureTooltips();
+        this.addComponentListener(new ResizingPersistenceListener());
         this.pack();
     }
 
@@ -65,13 +74,39 @@ public final class PrimaryWindow extends JFrame {
     }
 
     public static PrimaryWindow create() {
-        return new PrimaryWindow();
+        PrimaryWindow primaryWindow = new PrimaryWindow();
+        primaryWindow.restoreSize();
+        return primaryWindow;
     }
 
     private static void configureTooltips() {
         ToolTipManager toolTipManager = ToolTipManager.sharedInstance();
         toolTipManager.setInitialDelay(10);
         toolTipManager.setDismissDelay(90000);
+    }
+
+    private void restoreSize() {
+        Settings settings = SettingsManager.getSettings();
+        SimpleRectangle saved = settings.getWindowBounds();
+
+        if (saved != null) {
+            int x = Math.max(0, saved.x);
+            int y = Math.max(0, saved.y);
+
+            Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+
+            int clampedWidth = Math.min(saved.width, screenSize.width - x);
+            int clampedHeight = Math.min(saved.height, screenSize.height - y);
+
+            int width = Math.max(MINIMUM_WINDOW_SIZE.width, clampedWidth);
+            int height = Math.max(MINIMUM_WINDOW_SIZE.height, clampedHeight);
+
+            this.setBounds(new Rectangle(x, y, width, height));
+        }
+
+        if (settings.isWindowMaximized()) {
+            this.setExtendedState(getExtendedState() | Frame.MAXIMIZED_BOTH);
+        }
     }
 
     private void initListeners() {
@@ -85,6 +120,51 @@ public final class PrimaryWindow extends JFrame {
     void showGUI() {
         this.setVisible(true);
         EventBus.publish(new WindowGUIShowConfirmed());
+    }
+
+
+    private class ResizingPersistenceListener extends ComponentAdapter {
+
+        private boolean saveScheduled;
+        private final Timer resizeTimer;
+
+        ResizingPersistenceListener() {
+            ActionListener savingAction = e -> {
+                if (saveScheduled) {
+                    saveBounds();
+                    saveScheduled = false;
+                }
+            };
+            resizeTimer = new Timer(2500, savingAction);
+            resizeTimer.setRepeats(false);
+        }
+
+        @Override
+        public void componentMoved(ComponentEvent e) {
+            saveScheduled = true;
+            resizeTimer.restart();
+        }
+
+        @Override
+        public void componentResized(ComponentEvent e) {
+            saveScheduled = true;
+            resizeTimer.restart();
+        }
+
+        private void saveBounds() {
+            log.info("Saving modified window bounds...");
+            var bounds = PrimaryWindow.this.getBounds();
+            SimpleRectangle serializable = new SimpleRectangle(bounds.x, bounds.y, bounds.width, bounds.height);
+            Settings settings = SettingsManager.getSettings();
+            settings.setWindowBounds(serializable);
+
+            int state = PrimaryWindow.this.getExtendedState();
+            boolean maximized = (state & Frame.MAXIMIZED_BOTH) == Frame.MAXIMIZED_BOTH;
+            settings.setWindowMaximized(maximized);
+
+            SettingsManager.updateFileFromRuntime();
+        }
+
     }
 
 }

@@ -7,6 +7,7 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import lombok.Getter;
 import oth.shipeditor.parsing.deserialize.ColorArrayRGBADeserializer;
 import oth.shipeditor.parsing.serialize.ColorArrayRGBASerializer;
+import oth.shipeditor.utility.objects.SimpleRectangle;
 import oth.shipeditor.utility.themes.Theme;
 
 import java.awt.*;
@@ -50,6 +51,12 @@ public class Settings {
     @JsonProperty("theme")
     Theme theme = Theme.FLAT_INTELLIJ;
 
+    @JsonProperty("windowBounds")
+    SimpleRectangle windowBounds;
+
+    @JsonProperty("windowMaximized")
+    boolean windowMaximized;
+
     @JsonProperty("dataPackages")
     private List<GameDataPackage> dataPackages = new ArrayList<>();
 
@@ -60,6 +67,14 @@ public class Settings {
             this.backgroundColor = Color.GRAY;
         }
         SettingsManager.updateFileFromRuntime();
+    }
+
+    public void setWindowBounds(SimpleRectangle inputBounds) {
+        this.windowBounds = inputBounds;
+    }
+
+    public void setWindowMaximized(boolean maximized) {
+        this.windowMaximized = maximized;
     }
 
     public void setTheme(Theme inputTheme) {

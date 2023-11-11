@@ -171,6 +171,7 @@ public final class Initializations {
                 }
             }
         } catch (IOException e) {
+            Errors.printToStream(e);
             log.error("Failed to resolve settings file, writing default one.", e);
             loaded = SettingsManager.createDefault();
             SettingsManager.writeSettingsToFile(mapper, settingsFile, loaded);
