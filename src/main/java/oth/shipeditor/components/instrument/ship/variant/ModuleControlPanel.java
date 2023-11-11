@@ -109,7 +109,6 @@ class ModuleControlPanel extends JPanel {
             });
             EventBus.publish(new ViewerRepaintQueued());
         };
-        // TODO: revisit slots conditional paint later, not satisfactory with regards to modes!
         Function<ShipPainter, PainterVisibility> currentSupplier = modulePainter -> {
             var slotPainter = modulePainter.getWeaponSlotPainter();
             return slotPainter.getVisibilityMode();

@@ -7,7 +7,7 @@ import oth.shipeditor.communication.events.components.BaysPanelRepaintQueued;
 import oth.shipeditor.communication.events.viewer.ViewerRepaintQueued;
 import oth.shipeditor.components.instrument.EditorInstrument;
 import oth.shipeditor.components.viewer.entities.BaseWorldPoint;
-import oth.shipeditor.components.viewer.entities.weapon.SlotDrawingHelper;
+import oth.shipeditor.components.viewer.entities.weapon.SlotDrawer;
 import oth.shipeditor.components.viewer.entities.weapon.SlotPoint;
 import oth.shipeditor.components.viewer.entities.weapon.WeaponSlotOverride;
 import oth.shipeditor.components.viewer.layers.ship.ShipPainter;
@@ -32,7 +32,7 @@ public class LaunchPortPoint extends BaseWorldPoint implements SlotPoint {
     @Getter @Setter
     private LaunchBay parentBay;
 
-    private SlotDrawingHelper drawingHelper;
+    private SlotDrawer slotDrawer;
 
     public LaunchPortPoint(Point2D pointPosition, ShipPainter layer, LaunchBay bay) {
         super(pointPosition, layer);
@@ -123,9 +123,9 @@ public class LaunchPortPoint extends BaseWorldPoint implements SlotPoint {
     }
 
     private void initHelper() {
-        this.drawingHelper = new SlotDrawingHelper(this);
-        drawingHelper.setDrawAngle(false);
-        drawingHelper.setDrawArc(false);
+        this.slotDrawer = new SlotDrawer(this);
+        slotDrawer.setDrawAngle(false);
+        slotDrawer.setDrawArc(false);
     }
 
     @Override
@@ -152,13 +152,13 @@ public class LaunchPortPoint extends BaseWorldPoint implements SlotPoint {
     @Override
     public void paint(Graphics2D g, AffineTransform worldToScreen, double w, double h) {
 
-        drawingHelper.setPointPosition(this.getPosition());
-        drawingHelper.setType(this.parentBay.getWeaponType());
-        drawingHelper.setMount(this.parentBay.getWeaponMount());
-        drawingHelper.setSize(this.parentBay.getWeaponSize());
-        drawingHelper.setAngle(this.parentBay.getAngle());
-        drawingHelper.setArc(this.parentBay.getArc());
-        drawingHelper.paintSlotVisuals(g, worldToScreen);
+        slotDrawer.setPointPosition(this.getPosition());
+        slotDrawer.setType(this.parentBay.getWeaponType());
+        slotDrawer.setMount(this.parentBay.getWeaponMount());
+        slotDrawer.setSize(this.parentBay.getWeaponSize());
+        slotDrawer.setAngle(this.parentBay.getAngle());
+        slotDrawer.setArc(this.parentBay.getArc());
+        slotDrawer.paintSlotVisuals(g, worldToScreen);
 
         if (!isPointSelected()) {
             super.paint(g, worldToScreen, w, h);

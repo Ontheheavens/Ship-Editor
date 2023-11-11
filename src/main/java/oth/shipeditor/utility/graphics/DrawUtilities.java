@@ -128,7 +128,7 @@ public final class DrawUtilities {
         DrawUtilities.drawOutlined(g, shape, color, quality, cachedFive, cachedThree);
     }
 
-    @SuppressWarnings({"BooleanParameter", "MethodWithTooManyParameters", "WeakerAccess"})
+    @SuppressWarnings({"BooleanParameter", "WeakerAccess"})
     public static void drawOutlined(Graphics2D g, Shape shape, Paint color, boolean quality,
                                     Stroke outlineStroke, Stroke coreStroke) {
         RenderingHints originalHints = g.getRenderingHints();
@@ -163,11 +163,12 @@ public final class DrawUtilities {
 
     @SuppressWarnings("MethodWithTooManyParameters")
     public static void drawAngledCirclePointer(Graphics2D g, AffineTransform worldToScreen, Shape circle,
-                                               double circleRadius, double rawAngle, Point2D position, Paint color) {
+                                               double circleRadius, double rawAngle, Point2D position,
+                                               Paint color, double paintMultiplier) {
         double transformedAngle = Utility.transformAngle(rawAngle);
 
         Point2D lineEndpoint = ShapeUtilities.getPointInDirection(position,
-                transformedAngle, 0.5f);
+                transformedAngle, 0.5f * paintMultiplier);
         Point2D closestIntersection = ShapeUtilities.getPointInDirection(position,
                 transformedAngle, circleRadius);
 
@@ -180,7 +181,7 @@ public final class DrawUtilities {
         double radiusDistance = ShapeUtilities.getScreenCircleRadius(worldToScreen, position, closestIntersection);
 
         DrawUtilities.drawCompositeFigure(g, worldToScreen, position, combinedPath,
-                radiusDistance * 2.0d, Color.WHITE);
+                radiusDistance * 2.0d, Color.WHITE, paintMultiplier);
 
         Shape baseCircleTransformed = ShapeUtilities.ensureDynamicScaleShape(worldToScreen,
                 position, circle, 12);
@@ -197,7 +198,6 @@ public final class DrawUtilities {
      * @return resulting {@link Shape} instance of bounds of the drawn text, from which bounding box positions can be retrieved.
      */
 
-    @SuppressWarnings("MethodWithTooManyParameters")
     public static Shape paintScreenTextOutlined(Graphics2D g, String text, Font fontInput, Stroke strokeInput,
                                                 Point2D screenPoint, RectangleCorner corner) {
         Font font = fontInput;
@@ -292,9 +292,9 @@ public final class DrawUtilities {
 
     @SuppressWarnings("MethodWithTooManyParameters")
     public static void drawCompositeFigure(Graphics2D g, AffineTransform worldToScreen, Point2D position, Shape figure,
-                                           double measurement, Paint color) {
+                                           double measurement, Paint color, double paintMultiplier) {
         Shape transformed = ShapeUtilities.ensureSpecialScaleShape(worldToScreen,
-                position, figure, 12, measurement);
+                position, figure, 12 * paintMultiplier, measurement);
         DrawUtilities.drawOutlined(g, transformed, color, false,
                 new BasicStroke(3.0f), new BasicStroke(2.25f));
     }

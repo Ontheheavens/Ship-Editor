@@ -13,7 +13,7 @@ import oth.shipeditor.components.viewer.control.ControlPredicates;
 import oth.shipeditor.components.viewer.entities.BaseWorldPoint;
 import oth.shipeditor.components.viewer.entities.WorldPoint;
 import oth.shipeditor.components.viewer.entities.weapon.SlotData;
-import oth.shipeditor.components.viewer.entities.weapon.SlotDrawingHelper;
+import oth.shipeditor.components.viewer.entities.weapon.SlotDrawer;
 import oth.shipeditor.components.viewer.entities.weapon.WeaponSlotOverride;
 import oth.shipeditor.components.viewer.entities.weapon.WeaponSlotPoint;
 import oth.shipeditor.components.viewer.layers.ship.ShipPainter;
@@ -57,9 +57,9 @@ public class WeaponSlotPainter extends AngledPointPainter {
     @Getter @Setter
     private List<WeaponSlotPoint> slotPoints;
 
-    private final SlotDrawingHelper slotMockDrawer = new SlotDrawingHelper(null);
+    private final SlotDrawer slotMockDrawer = new SlotDrawer(null);
 
-    private final SlotDrawingHelper counterpartMockDrawer = new SlotDrawingHelper(null);
+    private final SlotDrawer counterpartMockDrawer = new SlotDrawer(null);
 
     public WeaponSlotPainter(ShipPainter parent) {
         super(parent);
@@ -336,35 +336,27 @@ public class WeaponSlotPainter extends AngledPointPainter {
 
     @Override
     protected void paintDelegates(Graphics2D g, AffineTransform worldToScreen, double w, double h) {
-        List<WeaponSlotPoint> pointsIndex = this.getEligibleForSelection();
-        // TODO: revisit slots conditional paint later, not satisfactory with regards to modes!
-        pointsIndex.forEach(slotPoint -> {
+        List<WeaponSlotPoint> allPoints = this.getPointsIndex();
+        paintSlots(g, worldToScreen, w, h, allPoints);
+    }
+
+    private void paintSlots(Graphics2D g, AffineTransform worldToScreen,
+                            double w, double h, Iterable<WeaponSlotPoint> slotPointList) {
+        slotPointList.forEach(slotPoint -> {
             paintDelegate(g, worldToScreen, w, h, slotPoint);
             slotPoint.setPaintSizeMultiplier(1);
-            double alpha = 0.8d;
-            switch (StaticController.getEditorMode()) {
-                case BUILT_IN_WEAPONS, DECORATIVES, VARIANT_WEAPONS, VARIANT_MODULES -> {
-                    if (slotPoint.isPointSelected()) {
-                        alpha = 1.0d;
-                    }
-                    else {
-                        alpha = 0.3d;
-                    }
-                }
-            }
-            setSlotTransparency(slotPoint, alpha);
         });
     }
 
     @Override
     protected void handleSelectionHighlight() {
         WorldPoint selection = this.getSelected();
-        double full = 1.0d;
+        double full = 1.5d;
         if (selection != null && isSlotSelectionEnabled()) {
-            this.setSlotTransparency(selection, full);
+            this.setSlotPaintSize(selection, full);
             WorldPoint counterpart = this.getMirroredCounterpart(selection);
             if (counterpart != null && ControlPredicates.isMirrorModeEnabled()) {
-                this.setSlotTransparency(counterpart, full);
+                this.setSlotPaintSize(counterpart, full);
             }
         }
     }
@@ -421,9 +413,9 @@ public class WeaponSlotPainter extends AngledPointPainter {
         }
     }
 
-    private void setSlotTransparency(WorldPoint point, double value) {
+    private void setSlotPaintSize(WorldPoint point, double value) {
         if (point instanceof WeaponSlotPoint checked) {
-            checked.setTransparency(value);
+            checked.setPaintSizeMultiplier(value);
         } else {
             throwIllegalPoint();
         }
@@ -463,11 +455,15 @@ public class WeaponSlotPainter extends AngledPointPainter {
         var visibility = this.getVisibilityMode();
         boolean isRightMode = visibility == ALWAYS_SHOWN || visibility == SHOWN_WHEN_EDITED;
         boolean visibleForRelatedMode = isVisibleForRelatedMode() && isRightMode;
-        if (checkVisibility() || visibleForRelatedMode) {
+        if (checkVisibility()) {
             this.paintPainterContent(g, worldToScreen, w, h);
 
             this.handleSelectionHighlight();
             this.paintDelegates(g, worldToScreen, w, h);
+        } else if (visibleForRelatedMode) {
+            this.handleSelectionHighlight();
+            List<WeaponSlotPoint> activePoints = this.getEligibleForSelection();
+            this.paintSlots(g, worldToScreen, w, h, activePoints);
         }
     }
 

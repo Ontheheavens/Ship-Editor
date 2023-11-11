@@ -43,7 +43,7 @@ public class OffsetPoint extends AngledPoint {
 
         Point2D position = this.getPosition();
         DrawUtilities.drawAngledCirclePointer(g, worldToScreen, shape, worldSizeRadius,
-                this.angle, position, Color.WHITE);
+                this.angle, position, Color.WHITE, getPaintSizeMultiplier());
     }
 
 }

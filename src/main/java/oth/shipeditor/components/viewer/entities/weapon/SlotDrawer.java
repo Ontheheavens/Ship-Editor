@@ -18,7 +18,7 @@ import java.awt.geom.*;
  * @since 12.08.2023
  */
 @Getter @Setter
-public class SlotDrawingHelper {
+public class SlotDrawer {
 
     private SlotPoint parentPoint;
 
@@ -34,21 +34,21 @@ public class SlotDrawingHelper {
 
     private double arc;
 
+    private double paintSizeMultiplier = 1;
+
     private boolean drawArc = true;
 
     private boolean drawAngle = true;
 
-    public SlotDrawingHelper(SlotPoint parent) {
+    public SlotDrawer(SlotPoint parent) {
         this.parentPoint = parent;
     }
 
     public void paintSlotVisuals(Graphics2D g, AffineTransform worldToScreen) {
         Point2D position = this.pointPosition;
 
-        double circleRadius = 0.10f;
-
+        double circleRadius = 0.10f * paintSizeMultiplier;
         Ellipse2D circle = ShapeUtilities.createCircle(position, (float) circleRadius);
-
         this.drawMountShape(g, worldToScreen, circle, circleRadius);
 
         if (drawArc) {
@@ -96,10 +96,11 @@ public class SlotDrawingHelper {
 
     private void paintMount(Graphics2D g, AffineTransform worldToScreen, Shape input, double scale, double screenSize) {
         Point2D position = this.pointPosition;
-        AffineTransform transform = ShapeUtilities.getScaled(position, scale, scale);
+        double finalScale = scale * paintSizeMultiplier;
+        AffineTransform transform = ShapeUtilities.getScaled(position, finalScale, finalScale);
         Shape enlarged = transform.createTransformedShape(input);
         Shape transformed = ShapeUtilities.ensureDynamicScaleShape(worldToScreen,
-                position, enlarged, screenSize);
+                position, enlarged, screenSize * paintSizeMultiplier);
 
         boolean hovered = StaticController.checkIsHovered(transformed);
         Color mountColor = this.type.getColor();
@@ -120,7 +121,7 @@ public class SlotDrawingHelper {
 
         double arcStartAngle = transformedAngle - halfArc;
 
-        double lineLength = 0.55f;
+        double lineLength = 0.55f * paintSizeMultiplier;
 
         Point2D arcStartEndpoint = ShapeUtilities.getPointInDirection(position, arcStartAngle, lineLength);
 
@@ -137,7 +138,7 @@ public class SlotDrawingHelper {
         Shape arcStartLine = new Line2D.Double(arcStartEndpoint, arcStartCirclePoint);
         Shape arcEndLine = new Line2D.Double(arcEndEndpoint, arcEndCirclePoint);
 
-        Ellipse2D enlargedCircle = ShapeUtilities.createCircle(position, 0.40f);
+        Ellipse2D enlargedCircle = ShapeUtilities.createCircle(position, (float) (0.40f * paintSizeMultiplier));
         Rectangle2D circleBounds = enlargedCircle.getBounds2D();
         Shape arcFigure = new Arc2D.Double(circleBounds.getX(), circleBounds.getY(),
                 circleBounds.getWidth(), circleBounds.getHeight(), Utility.transformAngle(arcEndAngle - 90),
@@ -157,7 +158,7 @@ public class SlotDrawingHelper {
         }
 
         DrawUtilities.drawCompositeFigure(g, worldToScreen, position, combinedPath,
-                radiusDistance * 2.0d, color);
+                radiusDistance * 2.0d, color, paintSizeMultiplier);
     }
 
     private void drawAnglePointer(Graphics2D g, AffineTransform worldToScreen, Shape circle, double circleRadius) {
@@ -167,7 +168,7 @@ public class SlotDrawingHelper {
             color = parentPoint.getCurrentColor();
         }
         DrawUtilities.drawAngledCirclePointer(g, worldToScreen, circle, circleRadius,
-                this.angle, position, color);
+                this.angle, position, color, paintSizeMultiplier);
     }
 
 }

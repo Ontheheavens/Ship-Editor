@@ -7,17 +7,17 @@ import oth.shipeditor.components.datafiles.entities.CSVEntry;
 import oth.shipeditor.components.instrument.EditorInstrument;
 import oth.shipeditor.components.viewer.entities.AngledPoint;
 import oth.shipeditor.components.viewer.layers.ship.ShipPainter;
-import oth.shipeditor.components.viewer.painters.points.ship.features.InstalledFeature;
 import oth.shipeditor.components.viewer.painters.points.ship.WeaponSlotPainter;
+import oth.shipeditor.components.viewer.painters.points.ship.features.InstalledFeature;
 import oth.shipeditor.representation.ship.ShipTypeHints;
 import oth.shipeditor.representation.weapon.WeaponMount;
 import oth.shipeditor.representation.weapon.WeaponSize;
 import oth.shipeditor.representation.weapon.WeaponType;
 import oth.shipeditor.undo.EditDispatch;
-import oth.shipeditor.utility.overseers.EventScheduler;
-import oth.shipeditor.utility.overseers.StaticController;
 import oth.shipeditor.utility.Utility;
 import oth.shipeditor.utility.graphics.ColorUtilities;
+import oth.shipeditor.utility.overseers.EventScheduler;
+import oth.shipeditor.utility.overseers.StaticController;
 
 import java.awt.*;
 import java.awt.geom.AffineTransform;
@@ -28,7 +28,6 @@ import java.util.List;
  * @author Ontheheavens
  * @since 25.07.2023
  */
-@SuppressWarnings("WeakerAccess")
 public class WeaponSlotPoint extends AngledPoint implements SlotPoint {
 
     @Getter @Setter
@@ -56,9 +55,9 @@ public class WeaponSlotPoint extends AngledPoint implements SlotPoint {
     private WeaponSlotOverride skinOverride;
 
     @Getter @Setter
-    private double transparency = 0.8d;
+    private double transparency = 1.0d;
 
-    private SlotDrawingHelper drawingHelper;
+    private SlotDrawer slotDrawer;
 
     public WeaponSlotPoint(Point2D pointPosition, ShipPainter layer) {
         this(pointPosition, layer, null);
@@ -82,7 +81,7 @@ public class WeaponSlotPoint extends AngledPoint implements SlotPoint {
     }
 
     private void initHelper() {
-        this.drawingHelper = new SlotDrawingHelper(this);
+        this.slotDrawer = new SlotDrawer(this);
     }
 
     public WeaponMount getWeaponMount() {
@@ -208,13 +207,15 @@ public class WeaponSlotPoint extends AngledPoint implements SlotPoint {
         float alpha = (float) this.getTransparency();
         Composite old = Utility.setAlphaComposite(g, alpha);
 
-        drawingHelper.setPointPosition(this.getPosition());
-        drawingHelper.setType(this.getWeaponType());
-        drawingHelper.setMount(this.getWeaponMount());
-        drawingHelper.setSize(this.getWeaponSize());
-        drawingHelper.setAngle(this.getAngle());
-        drawingHelper.setArc(this.getArc());
-        drawingHelper.paintSlotVisuals(g, worldToScreen);
+        slotDrawer.setPointPosition(this.getPosition());
+        slotDrawer.setType(this.getWeaponType());
+        slotDrawer.setMount(this.getWeaponMount());
+        slotDrawer.setSize(this.getWeaponSize());
+        slotDrawer.setAngle(this.getAngle());
+        slotDrawer.setArc(this.getArc());
+        slotDrawer.setPaintSizeMultiplier(this.getPaintSizeMultiplier());
+
+        slotDrawer.paintSlotVisuals(g, worldToScreen);
 
         if (!isPointSelected()) {
             super.paint(g, worldToScreen, w, h);
