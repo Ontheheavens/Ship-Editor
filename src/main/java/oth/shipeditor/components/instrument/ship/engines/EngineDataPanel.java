@@ -145,6 +145,8 @@ public class EngineDataPanel extends JPanel {
         }
         JComponent valueBox;
 
+        // TODO: implement bulk style change.
+
         EngineDataOverride skinOverride = selected.getSkinOverride();
 
         GameDataRepository gameData = SettingsManager.getGameData();

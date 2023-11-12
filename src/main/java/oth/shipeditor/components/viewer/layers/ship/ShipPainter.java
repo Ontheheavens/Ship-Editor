@@ -370,8 +370,10 @@ public class ShipPainter extends LayerPainter {
         var skin  = this.getActiveSkin();
         if (skin != null && !skin.isBase()) {
             return skin.getHintsModifiedBySkin();
+        } else if (dataEntry != null) {
+            return dataEntry.getBaseHullHints();
         }
-        return dataEntry.getBaseHullHints();
+        return null;
     }
 
     @SuppressWarnings({"BooleanParameter", "OverlyComplexMethod"})

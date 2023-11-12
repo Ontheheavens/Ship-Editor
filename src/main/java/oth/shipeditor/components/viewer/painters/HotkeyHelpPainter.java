@@ -26,7 +26,6 @@ import java.util.Map;
 @Log4j2
 public class HotkeyHelpPainter implements Painter {
 
-
     private final Map<EditorInstrument, BufferedImage> hintsByMode = new EnumMap<>(EditorInstrument.class);
 
     @Override

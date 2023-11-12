@@ -5,6 +5,7 @@ import org.kordamp.ikonli.Ikon;
 import org.kordamp.ikonli.fluentui.FluentUiRegularAL;
 import org.kordamp.ikonli.fluentui.FluentUiRegularMZ;
 import org.kordamp.ikonli.swing.FontIcon;
+import oth.shipeditor.Main;
 import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.viewer.control.CursorSnappingToggled;
 import oth.shipeditor.communication.events.viewer.control.PointSelectionModeChange;
@@ -49,7 +50,7 @@ public final class PrimaryMenuBar extends JMenuBar {
         aboutInfoPanel.setLayout(new BoxLayout(aboutInfoPanel, BoxLayout.PAGE_AXIS));
         aboutInfoPanel.add(new JLabel("Made by: Ontheheavens & Xenoargh"));
         aboutInfoPanel.add(new JLabel("Started: March 2023"));
-        String projectVersion = SettingsManager.getProjectVersion();
+        String projectVersion = Main.VERSION;
         aboutInfoPanel.add(new JLabel("Current version: " + projectVersion));
 
         projectInfo.addActionListener(e -> JOptionPane.showMessageDialog(null, aboutInfoPanel,

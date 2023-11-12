@@ -130,17 +130,17 @@ public class ShipVariant implements Variant {
                 feature.setParentGroup(groupWithFit);
                 groupWeapons.put(index, slotID, feature);
             } else {
-                FittedWeaponGroup firstGroup = weaponGroups.get(0);
-                if (firstGroup != null) {
-                    var groupWeapons = firstGroup.getWeapons();
-                    feature.setParentGroup(firstGroup);
-                    groupWeapons.put(slotID, feature);
-                } else {
+                if (weaponGroups.isEmpty() || weaponGroups.get(0) == null) {
                     FittedWeaponGroup newGroup = new FittedWeaponGroup(this,
                             false, FireMode.LINKED);
                     this.weaponGroups.add(newGroup);
                     feature.setParentGroup(newGroup);
                     var groupWeapons = newGroup.getWeapons();
+                    groupWeapons.put(slotID, feature);
+                } else {
+                    FittedWeaponGroup firstGroup = weaponGroups.get(0);
+                    var groupWeapons = firstGroup.getWeapons();
+                    feature.setParentGroup(firstGroup);
                     groupWeapons.put(slotID, feature);
                 }
             }

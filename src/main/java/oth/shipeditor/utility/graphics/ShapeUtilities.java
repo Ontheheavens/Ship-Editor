@@ -43,8 +43,7 @@ public final class ShapeUtilities {
      * @param scale scaling factor applied to the transformation. A value greater than 1 scales up, and a value less than 1 scales down.
      * @return new AffineTransform that represents the scaled version of the original world-to-screen transformation.
      */
-    public static AffineTransform getScaledWtS(Point2D center, AffineTransform worldToScreen,
-                                               double scale) {
+    public static AffineTransform getScaledWtS(Point2D center, AffineTransform worldToScreen, float scale) {
         return ShapeUtilities.getScaledWtS(center, worldToScreen, scale, scale);
     }
 
@@ -74,28 +73,6 @@ public final class ShapeUtilities {
     public static Shape rotateShape(Shape shape, Point2D anchor, double degrees) {
         AffineTransform rotation = AffineTransform.getRotateInstance(degrees, anchor.getX(), anchor.getY());
         return rotation.createTransformedShape(shape);
-    }
-
-    @SuppressWarnings("unused")
-    public static AffineTransform getScreenToWorldRotation(AffineTransform worldToScreen, Point2D positionWorld) {
-        Point2D positionScreen = worldToScreen.transform(positionWorld, null);
-
-        double screenX = positionScreen.getX(), screenY = positionScreen.getY();
-
-        // Extracting the rotation component from the worldToScreen transform.
-        double[] matrix = new double[6];
-        worldToScreen.getMatrix(matrix);
-        double scaleX = Math.sqrt(matrix[0] * matrix[0] + matrix[1] * matrix[1]);
-        double rotationAngle = -Math.atan2(matrix[1] / scaleX, matrix[0] / scaleX);
-
-        AffineTransform rotationTransform = new AffineTransform();
-        // New AffineTransform by default is focused  on the 0,0 in screen coordinates.
-        // We have to center it on our point, do the rotation, then translate back.
-        rotationTransform.translate(screenX, screenY);
-        rotationTransform.rotate(-rotationAngle);
-        rotationTransform.translate(-screenX, -screenY);
-
-        return rotationTransform;
     }
 
     public static Ellipse2D createCircle(Point2D position, float radius) {
@@ -189,7 +166,8 @@ public final class ShapeUtilities {
                                                 Shape worldShape, Shape transformed, double scaleFactor) {
         Shape shape = transformed;
         if (scaleFactor > 1) {
-            AffineTransform scaleTX = ShapeUtilities.getScaledWtS(positionWorld, worldToScreen, scaleFactor);
+            AffineTransform scaleTX = ShapeUtilities.getScaledWtS(positionWorld,
+                    worldToScreen, (float) scaleFactor);
             shape = scaleTX.createTransformedShape(worldShape);
         }
         return shape;

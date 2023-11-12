@@ -25,6 +25,8 @@ import java.util.function.Function;
 @Log4j2
 public final class Main {
 
+    public static final String VERSION = "0.7.3";
+
     private Main() {}
 
     public static void main(String[] args) {

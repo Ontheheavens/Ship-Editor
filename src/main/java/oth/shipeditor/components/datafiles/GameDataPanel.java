@@ -4,11 +4,13 @@ import lombok.extern.log4j.Log4j2;
 import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.components.SelectShipDataEntry;
 import oth.shipeditor.communication.events.components.SelectWeaponDataEntry;
+import oth.shipeditor.communication.events.components.VariantDataTabSelected;
 import oth.shipeditor.communication.events.viewer.points.InstrumentModeChanged;
 import oth.shipeditor.components.datafiles.styles.EngineStylesPanel;
 import oth.shipeditor.components.datafiles.styles.HullStylesPanel;
 import oth.shipeditor.components.datafiles.trees.*;
 import oth.shipeditor.components.instrument.EditorInstrument;
+import oth.shipeditor.components.instrument.ship.variant.VariantDataTab;
 import oth.shipeditor.utility.text.StringValues;
 
 import javax.swing.*;
@@ -45,6 +47,14 @@ public class GameDataPanel extends JPanel {
                 case SelectShipDataEntry ignored -> selectShipTab();
                 case SelectWeaponDataEntry ignored -> selectWeaponTab();
                 case InstrumentModeChanged updated -> handleInstrumentModeChange(updated.newMode());
+                case VariantDataTabSelected tabEvent -> {
+                    VariantDataTab variantDataTab = tabEvent.selected();
+                    if (variantDataTab == VariantDataTab.HULLMODS) {
+                        selectHullmodsTab();
+                    } else if (variantDataTab == VariantDataTab.WINGS) {
+                        selectWingsTab();
+                    }
+                }
                 default -> {}
             }
         });

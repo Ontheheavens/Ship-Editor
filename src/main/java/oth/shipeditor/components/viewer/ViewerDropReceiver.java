@@ -12,9 +12,11 @@ import oth.shipeditor.components.viewer.layers.ViewerLayer;
 import oth.shipeditor.components.viewer.layers.ship.FeaturesOverseer;
 import oth.shipeditor.components.viewer.layers.ship.ShipLayer;
 import oth.shipeditor.components.viewer.layers.ship.ShipPainter;
+import oth.shipeditor.components.viewer.painters.points.ship.WeaponSlotPainter;
 import oth.shipeditor.parsing.FileUtilities;
 import oth.shipeditor.representation.GameDataRepository;
 import oth.shipeditor.representation.ship.VariantFile;
+import oth.shipeditor.representation.weapon.WeaponType;
 import oth.shipeditor.undo.UndoOverseer;
 import oth.shipeditor.utility.Errors;
 import oth.shipeditor.utility.overseers.StaticController;
@@ -150,9 +152,22 @@ public class ViewerDropReceiver extends DropTarget {
         ViewerDropReceiver.finishDragToViewer();
     }
 
+    private static boolean hasModuleSlotsInActiveLayer() {
+        boolean hasModuleSlots = false;
+        if (StaticController.getActiveLayer() instanceof ShipLayer targetLayer) {
+            ShipPainter shipPainter = targetLayer.getPainter();
+            WeaponSlotPainter weaponSlotPainter = shipPainter.getWeaponSlotPainter();
+            hasModuleSlots = weaponSlotPainter.hasSlotsOfType(WeaponType.STATION_MODULE);
+        }
+        return hasModuleSlots;
+    }
+
     private static void handleShipEntryDrop(DropTargetDropEvent dtde, ShipCSVEntry shipEntry) {
         try {
-            if (StaticController.getEditorMode() == EditorInstrument.VARIANT_MODULES) {
+            boolean hasSlots = ViewerDropReceiver.hasModuleSlotsInActiveLayer();
+            boolean isModulesMode = StaticController.getEditorMode() == EditorInstrument.VARIANT_MODULES;
+
+            if (isModulesMode && hasSlots) {
                 VariantFile forInstall = FeaturesOverseer.moduleVariantForInstall;
                 ViewerDropReceiver.addAsModule(dtde, forInstall);
             } else {
@@ -168,7 +183,9 @@ public class ViewerDropReceiver extends DropTarget {
 
     private static void handleVariantFileDrop(DropTargetDropEvent dtde, VariantFile variantFile) {
         try {
-            if (StaticController.getEditorMode() == EditorInstrument.VARIANT_MODULES) {
+            boolean hasSlots = ViewerDropReceiver.hasModuleSlotsInActiveLayer();
+            boolean isModuleMode = StaticController.getEditorMode() == EditorInstrument.VARIANT_MODULES;
+            if (isModuleMode && hasSlots) {
                 ViewerDropReceiver.addAsModule(dtde, variantFile);
             } else {
                 ShipLayer shipLayer = GameDataRepository.createLayerFromVariant(variantFile);

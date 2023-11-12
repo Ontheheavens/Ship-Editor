@@ -1,6 +1,8 @@
 package oth.shipeditor.components.instrument.ship.hull;
 
 import com.formdev.flatlaf.ui.FlatLineBorder;
+import oth.shipeditor.communication.EventBus;
+import oth.shipeditor.communication.events.components.LayerTabUpdated;
 import oth.shipeditor.components.viewer.layers.ship.ShipLayer;
 import oth.shipeditor.components.viewer.layers.ship.data.ShipHull;
 import oth.shipeditor.persistence.SettingsManager;
@@ -78,6 +80,7 @@ public class HullDataControlPanel extends JPanel {
                 ShipHull shipHull = cachedLayer.getHull();
                 shipHull.setHullName(currentText);
 
+                EventBus.publish(new LayerTabUpdated(cachedLayer));
                 processChange();
             }
         });

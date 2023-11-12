@@ -87,6 +87,16 @@ public class WeaponSlotPainter extends AngledPointPainter {
         return KeyEvent.VK_W;
     }
 
+    public boolean hasSlotsOfType(WeaponType type) {
+        for (WeaponSlotPoint slotPoint : this.getSlotPoints()) {
+            WeaponType slotPointType = slotPoint.getWeaponType();
+            if (slotPointType == type) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     @Override
     protected EditorInstrument getInstrumentType() {
         return EditorInstrument.WEAPON_SLOTS;

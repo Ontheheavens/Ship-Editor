@@ -19,14 +19,10 @@ import java.util.List;
  * @author Ontheheavens
  * @since 19.06.2023
  */
-@SuppressWarnings("ClassWithTooManyFields")
 @Getter
 public class Settings {
 
     Settings() {}
-
-    @JsonProperty("editorVersion")
-    String editorVersion = "0.7.2";
 
     @JsonProperty("backgroundColor")
     @JsonDeserialize(using = ColorArrayRGBADeserializer.class)
