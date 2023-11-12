@@ -31,7 +31,7 @@ abstract class LoadCSVDataAction<T extends CSVEntry> extends DataLoadingAction {
     public Runnable perform() {
         log.trace("Commencing CSV data fetching...");
         Map<Path, File> tableWithPackage = FileUtilities.getFileFromPackages(targetFile);
-        Map<String, List<T>> entriesByPackage = new HashMap<>();
+        Map<Path, List<T>> entriesByPackage = new HashMap<>();
         for (Map.Entry<Path, File> folder : tableWithPackage.entrySet()) {
             Settings settings = SettingsManager.getSettings();
             GameDataPackage dataPackage = settings.getPackage(folder.getKey());
@@ -41,12 +41,12 @@ abstract class LoadCSVDataAction<T extends CSVEntry> extends DataLoadingAction {
 
             log.trace("Loading CSV table from package: {}", folder.getKey());
             List<T> entriesList = loadPackage(folder.getKey(), folder.getValue());
-            entriesByPackage.putIfAbsent(String.valueOf(folder.getKey()), entriesList);
+            entriesByPackage.putIfAbsent(folder.getKey(), entriesList);
         }
         return () -> publishResult(entriesByPackage);
     }
 
-    protected abstract void publishResult(Map<String, List<T>> entriesByPackage);
+    protected abstract void publishResult(Map<Path, List<T>> entriesByPackage);
 
     protected abstract T instantiateEntry(Map<String, String> row, Path folderPath, Path dataFilePath);
 

@@ -16,7 +16,10 @@ import java.awt.*;
 @Getter
 abstract class AbstractStylesPanel extends JPanel {
 
+    protected static final int CONTENT_SIDE_PAD = 2;
+
     static final String ILLEGAL_STYLE_ARGUMENT = "Illegal style argument!";
+
     private final JPanel scrollerContent;
 
     AbstractStylesPanel() {

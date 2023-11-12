@@ -424,7 +424,7 @@ public final class LayerViewerControls implements ViewerControl {
 
     private final class SmoothZoomHandler {
 
-        private static final int DELAY_MS = 4;
+        private static final int DELAY_MS = 6;
         private static final double SNAP = 0.025;
 
         private final Timer zoomTimer;

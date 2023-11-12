@@ -63,11 +63,13 @@ public class HullStylesPanel extends AbstractStylesPanel {
             contentContainer.setLayout(new BoxLayout(contentContainer, BoxLayout.PAGE_AXIS));
 
             JLabel ringLabel = new JLabel("Shield ring color:");
-            JPanel ringColorPanel = ComponentUtilities.createColorPropertyPanel(ringLabel, checked.getShieldRingColor());
+            JPanel ringColorPanel = ComponentUtilities.createColorPropertyPanel(ringLabel,
+                    checked.getShieldRingColor(), CONTENT_SIDE_PAD);
             contentContainer.add(ringColorPanel);
 
             JLabel innerLabel = new JLabel("Shield inner color:");
-            JPanel innerColorPanel = ComponentUtilities.createColorPropertyPanel(innerLabel, checked.getShieldInnerColor());
+            JPanel innerColorPanel = ComponentUtilities.createColorPropertyPanel(innerLabel,
+                    checked.getShieldInnerColor(), CONTENT_SIDE_PAD);
             contentContainer.add(innerColorPanel);
 
             return contentContainer;

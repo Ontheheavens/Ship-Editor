@@ -157,7 +157,6 @@ public final class SettingsManager {
                 settings.addDataPackage(path);
             }
         }
-        SettingsManager.updateFileFromRuntime();
     }
 
 }

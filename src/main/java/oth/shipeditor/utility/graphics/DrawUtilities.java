@@ -22,10 +22,6 @@ public final class DrawUtilities {
 
     private static final DrawMode DRAW_MODE = DrawMode.FAST;
 
-    private enum DrawMode {
-        NORMAL, QUALITY, FAST
-    }
-
     private DrawUtilities() {
     }
 
@@ -68,10 +64,15 @@ public final class DrawUtilities {
         DrawUtilities.outlineShape(g, shape, color, cached);
     }
 
+    private static void outlineShape(Graphics2D g, Shape shape, Paint color, Stroke stroke) {
+        DrawUtilities.outlineShape(g, shape, color, stroke, DRAW_MODE);
+    }
+
     @SuppressWarnings("WeakerAccess")
-    public static void outlineShape(Graphics2D g, Shape shape, Paint color, Stroke stroke) {
+    public static void outlineShape(Graphics2D g, Shape shape, Paint color,
+                                    Stroke stroke, DrawMode mode) {
         RenderingHints hints = g.getRenderingHints();
-        switch (DRAW_MODE) {
+        switch (mode) {
             case NORMAL -> {}
             case QUALITY -> g.setRenderingHint(RenderingHints.KEY_STROKE_CONTROL,
                     RenderingHints.VALUE_STROKE_PURE);
@@ -128,6 +129,33 @@ public final class DrawUtilities {
         DrawUtilities.drawOutlined(g, shape, color, quality, cachedFive, cachedThree);
     }
 
+    @SuppressWarnings("MethodWithTooManyParameters")
+    public static void drawAngledCirclePointer(Graphics2D g, AffineTransform worldToScreen, Shape circle,
+                                               double circleRadius, double rawAngle, Point2D position,
+                                               Paint color, double paintMultiplier) {
+        double transformedAngle = Utility.transformAngle(rawAngle);
+
+        Point2D lineEndpoint = ShapeUtilities.getPointInDirection(position,
+                transformedAngle, 0.5f * paintMultiplier);
+        Point2D closestIntersection = ShapeUtilities.getPointInDirection(position,
+                transformedAngle, circleRadius);
+
+        Shape angleLine = new Line2D.Double(lineEndpoint, closestIntersection);
+
+        GeneralPath combinedPath = new GeneralPath();
+        combinedPath.append(circle, false);
+        combinedPath.append(angleLine, false);
+
+        double radiusDistance = ShapeUtilities.getScreenCircleRadius(worldToScreen, position, closestIntersection);
+
+        DrawUtilities.drawCompositeFigure(g, worldToScreen, position, combinedPath,
+                radiusDistance * 2.0d, Color.WHITE, paintMultiplier);
+
+        Shape baseCircleTransformed = ShapeUtilities.ensureDynamicScaleShape(worldToScreen,
+                position, circle, 12);
+        DrawUtilities.drawOutlined(g, baseCircleTransformed, color, false);
+    }
+
     @SuppressWarnings({"BooleanParameter", "WeakerAccess"})
     public static void drawOutlined(Graphics2D g, Shape shape, Paint color, boolean quality,
                                     Stroke outlineStroke, Stroke coreStroke) {
@@ -159,33 +187,6 @@ public final class DrawUtilities {
     public static Shape paintScreenTextOutlined(Graphics2D g, String text, Font fontInput, Point2D screenPoint) {
         return DrawUtilities.paintScreenTextOutlined(g, text, fontInput,
                 null, screenPoint, RectangleCorner.BOTTOM_RIGHT);
-    }
-
-    @SuppressWarnings("MethodWithTooManyParameters")
-    public static void drawAngledCirclePointer(Graphics2D g, AffineTransform worldToScreen, Shape circle,
-                                               double circleRadius, double rawAngle, Point2D position,
-                                               Paint color, double paintMultiplier) {
-        double transformedAngle = Utility.transformAngle(rawAngle);
-
-        Point2D lineEndpoint = ShapeUtilities.getPointInDirection(position,
-                transformedAngle, 0.5f * paintMultiplier);
-        Point2D closestIntersection = ShapeUtilities.getPointInDirection(position,
-                transformedAngle, circleRadius);
-
-        Shape angleLine = new Line2D.Double(lineEndpoint, closestIntersection);
-
-        GeneralPath combinedPath = new GeneralPath();
-        combinedPath.append(circle, false);
-        combinedPath.append(angleLine, false);
-
-        double radiusDistance = ShapeUtilities.getScreenCircleRadius(worldToScreen, position, closestIntersection);
-
-        DrawUtilities.drawCompositeFigure(g, worldToScreen, position, combinedPath,
-                radiusDistance * 2.0d, Color.WHITE, paintMultiplier);
-
-        Shape baseCircleTransformed = ShapeUtilities.ensureDynamicScaleShape(worldToScreen,
-                position, circle, 12);
-        DrawUtilities.drawOutlined(g, baseCircleTransformed, color, false);
     }
 
     /**
@@ -241,7 +242,7 @@ public final class DrawUtilities {
         g.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
 
         DrawUtilities.fillShape(g, bounds, ColorUtilities.setColorAlpha(outlineColor, 50));
-        DrawUtilities.outlineShape(g, textShapeTransformed, outlineColor, stroke);
+        DrawUtilities.outlineShape(g, textShapeTransformed, outlineColor, stroke, DrawMode.QUALITY);
         DrawUtilities.fillShape(g,textShapeTransformed, fillColor);
 
         g.setRenderingHints(originalHints);

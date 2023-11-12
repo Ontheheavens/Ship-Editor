@@ -133,10 +133,9 @@ public class WeaponsTreePanel extends CSVDataTreePanel<WeaponCSVEntry>{
         });
     }
 
-    @SuppressWarnings("WeakerAccess")
     @Override
     public void reload() {
-        Map<String, List<WeaponCSVEntry>> weaponPackageList = WeaponFilterPanel.getFilteredEntries();
+        Map<Path, List<WeaponCSVEntry>> weaponPackageList = WeaponFilterPanel.getFilteredEntries();
         populateEntries(weaponPackageList);
 
         JTree tree = getTree();
@@ -237,7 +236,7 @@ public class WeaponsTreePanel extends CSVDataTreePanel<WeaponCSVEntry>{
     }
 
     @Override
-    protected void loadAllEntries(Map<String, List<WeaponCSVEntry>> entries) {
+    protected void loadAllEntries(Map<Path, List<WeaponCSVEntry>> entries) {
         if (entries == null || entries.isEmpty()) {
             log.info("No entries registered: input empty.");
             return;
@@ -245,9 +244,10 @@ public class WeaponsTreePanel extends CSVDataTreePanel<WeaponCSVEntry>{
 
         int nodeCount = 0;
 
-        for (Map.Entry<String, List<WeaponCSVEntry>> entryFolder : entries.entrySet()) {
+        for (Map.Entry<Path, List<WeaponCSVEntry>> entryFolder : entries.entrySet()) {
             Settings settings = SettingsManager.getSettings();
-            String folderName = FileUtilities.extractFolderName(entryFolder.getKey());
+            Path path = entryFolder.getKey();
+            String folderName = FileUtilities.extractFolderName(path.toString());
             GameDataPackage dataPackage = settings.getPackage(folderName);
             if (dataPackage == null || dataPackage.isDisabled()) {
                 continue;

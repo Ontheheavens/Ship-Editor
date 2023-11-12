@@ -45,7 +45,7 @@ class ShipSystemsTreePanel extends CSVDataTreePanel<ShipSystemCSVEntry>{
     @Override
     protected Map<Path, List<ShipSystemCSVEntry>> getPackageList() {
         GameDataRepository gameData = SettingsManager.getGameData();
-        return gameData.getShipsystemEntriesByPackage();
+        return gameData.getShipSystemEntriesByPackage();
     }
 
     @Override
@@ -59,7 +59,7 @@ class ShipSystemsTreePanel extends CSVDataTreePanel<ShipSystemCSVEntry>{
     protected void initWalkerListening() {
         EventBus.subscribe(event -> {
             if (event instanceof ShipSystemsLoaded checked) {
-                Map<String, List<ShipSystemCSVEntry>> shipsystems = checked.systemsByPackage();
+                Map<Path, List<ShipSystemCSVEntry>> shipsystems = checked.systemsByPackage();
                 if (shipsystems == null) {
                     throw new RuntimeException("Shipsystem data initialization failed: table data is NULL!");
                 }

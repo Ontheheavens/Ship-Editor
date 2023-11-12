@@ -47,8 +47,8 @@ public class SkinDataPanel extends JPanel {
             return;
         }
 
-        ShipHull shipData = checkedLayer.getHull();
-        if (shipData == null)  {
+        ShipHull shipHull = checkedLayer.getHull();
+        if (shipHull == null)  {
             chooserContainer.add(SkinDataPanel.createDisabledChooser());
             return;
         }

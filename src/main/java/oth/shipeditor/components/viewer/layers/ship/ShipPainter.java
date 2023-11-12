@@ -88,7 +88,11 @@ public class ShipPainter extends LayerPainter {
 
     public ShipPainter(ShipLayer layer) {
         super(layer);
+        this.clearVariant();
         this.activateEmptySkin();
+    }
+
+    private void clearVariant() {
         this.selectVariant(VariantFile.empty());
     }
 

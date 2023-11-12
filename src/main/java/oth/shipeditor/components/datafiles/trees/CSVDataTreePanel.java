@@ -18,7 +18,6 @@ import javax.swing.tree.MutableTreeNode;
 import javax.swing.tree.TreePath;
 import java.awt.*;
 import java.nio.file.Path;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -82,19 +81,10 @@ public abstract class CSVDataTreePanel<T extends CSVEntry> extends DataTreePanel
     @Override
     public void reload() {
         Map<Path, List<T>> packages = getPackageList();
-
-        Map<String, List<T>> convertedEntries = new LinkedHashMap<>();
-
-        for (Map.Entry<Path, List<T>> entry : packages.entrySet()) {
-            Path path = entry.getKey();
-            String keyAsString = path.toString();
-            convertedEntries.put(keyAsString, entry.getValue());
-        }
-
-        populateEntries(convertedEntries);
+        populateEntries(packages);
     }
 
-    void populateEntries(Map<String, List<T>> entriesByPackage) {
+    void populateEntries(Map<Path, List<T>> entriesByPackage) {
         DefaultMutableTreeNode rootNode = getRootNode();
         rootNode.removeAllChildren();
         loadAllEntries(entriesByPackage);
@@ -108,11 +98,12 @@ public abstract class CSVDataTreePanel<T extends CSVEntry> extends DataTreePanel
 
     protected abstract void setLoadedStatus();
 
-    protected void loadAllEntries(Map<String, List<T>> entries) {
+    protected void loadAllEntries(Map<Path, List<T>> entries) {
         Map<String, T> entriesRepository = getRepository();
-        for (Map.Entry<String, List<T>> entry : entries.entrySet()) {
+        for (Map.Entry<Path, List<T>> entry : entries.entrySet()) {
             Settings settings = SettingsManager.getSettings();
-            String folderName = FileUtilities.extractFolderName(entry.getKey());
+            Path path = entry.getKey();
+            String folderName = FileUtilities.extractFolderName(path.toString());
             GameDataPackage dataPackage = settings.getPackage(folderName);
             if (dataPackage == null || dataPackage.isDisabled()) {
                 continue;
@@ -126,9 +117,10 @@ public abstract class CSVDataTreePanel<T extends CSVEntry> extends DataTreePanel
         setLoadedStatus();
     }
 
-    private DefaultMutableTreeNode createPackageNode(Map.Entry<String, List<T>> entryFolder,
+    private DefaultMutableTreeNode createPackageNode(Map.Entry<Path, List<T>> entryFolder,
                                                      Map<String, T> entriesRepository) {
-        String packagePath = entryFolder.getKey();
+        Path path = entryFolder.getKey();
+        String packagePath = path.toString();
         String folderName = FileUtilities.extractFolderName(packagePath);
         Settings settings = SettingsManager.getSettings();
 

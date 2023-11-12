@@ -77,7 +77,7 @@ class HullmodsTreePanel extends CSVDataTreePanel<HullmodCSVEntry>{
     protected void initWalkerListening() {
         EventBus.subscribe(event -> {
             if (event instanceof HullmodFoldersWalked checked) {
-                Map<String, List<HullmodCSVEntry>> hullmods = checked.hullmodsByPackage();
+                Map<Path, List<HullmodCSVEntry>> hullmods = checked.hullmodsByPackage();
                 if (hullmods == null) {
                     throw new RuntimeException("Hullmod data initialization failed: table data is NULL!");
                 }

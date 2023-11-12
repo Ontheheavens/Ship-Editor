@@ -61,7 +61,7 @@ public class PaintOrderController implements Painter {
         this.guidesPainters = new GuidesPainters(viewer);
         this.hotkeyPainter = new HotkeyHelpPainter();
 
-        Timer repaintTimer = new Timer(12, e -> {
+        Timer repaintTimer = new Timer(6, e -> {
             if (repaintQueued) {
                 repaintViewer();
             }

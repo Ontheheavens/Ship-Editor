@@ -60,11 +60,13 @@ public class EngineStylesPanel extends AbstractStylesPanel {
             contentContainer.setLayout(new BoxLayout(contentContainer, BoxLayout.PAGE_AXIS));
 
             JLabel engineLabel = new JLabel("Engine color:");
-            JPanel engineColorPanel = ComponentUtilities.createColorPropertyPanel(engineLabel, checked.getEngineColor());
+            JPanel engineColorPanel = ComponentUtilities.createColorPropertyPanel(engineLabel,
+                    checked.getEngineColor(), CONTENT_SIDE_PAD);
             contentContainer.add(engineColorPanel);
 
             JLabel contrailLabel = new JLabel("Contrail color:");
-            JPanel contrailColorPanel = ComponentUtilities.createColorPropertyPanel(contrailLabel, checked.getContrailColor());
+            JPanel contrailColorPanel = ComponentUtilities.createColorPropertyPanel(contrailLabel,
+                    checked.getContrailColor(), CONTENT_SIDE_PAD);
             contentContainer.add(contrailColorPanel);
 
             return contentContainer;

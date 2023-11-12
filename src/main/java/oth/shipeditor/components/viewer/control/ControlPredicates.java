@@ -19,7 +19,7 @@ public final class ControlPredicates {
     public static final double MAXIMUM_ZOOM = 1000.0;
     public static final double MINIMUM_ZOOM = 0.1;
 
-    public static final double ZOOMING_SPEED = 0.75;
+    public static final double ZOOMING_SPEED = 1.25;
     @SuppressWarnings("WeakerAccess")
     public static final double ROTATION_SPEED = 6.0;
     @Getter

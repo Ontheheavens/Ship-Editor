@@ -4,9 +4,9 @@ import lombok.Getter;
 import oth.shipeditor.representation.weapon.WeaponMount;
 import oth.shipeditor.representation.weapon.WeaponSize;
 import oth.shipeditor.representation.weapon.WeaponType;
+import oth.shipeditor.utility.components.ComponentUtilities;
 import oth.shipeditor.utility.components.widgets.Spinners;
 import oth.shipeditor.utility.objects.Pair;
-import oth.shipeditor.utility.components.ComponentUtilities;
 
 import javax.swing.*;
 import javax.swing.border.Border;
@@ -209,7 +209,7 @@ public class SlotCreationPane extends JPanel {
         JRadioButton button = new JRadioButton(type.getDisplayName());
         button.addActionListener(e -> defaultType = type);
 
-        JPanel panel = ComponentUtilities.createColorPropertyPanel(button, type.getColor());
+        JPanel panel = ComponentUtilities.createColorPropertyPanel(button, type.getColor(), 0);
         panel.setBorder(new EmptyBorder(4, 4, 0, 6));
         return new Pair<>(panel, button);
     }

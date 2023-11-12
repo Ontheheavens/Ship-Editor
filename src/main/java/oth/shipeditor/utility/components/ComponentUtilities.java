@@ -271,11 +271,11 @@ public final class ComponentUtilities {
         titleContainer.add(separator);
 
         titleContainer.setBorder(new FlatRoundBorder());
-        titleContainer.setBackground(Themes.getPanelBackgroundColor());
+        titleContainer.setBackground(Themes.getDarkerBackgroundColor());
         return titleContainer;
     }
 
-    public static JPanel createColorPropertyPanel(Component left, Color color) {
+    public static JPanel createColorPropertyPanel(Component left, Color color, int sidePadding) {
         JPanel container = new JPanel();
 
         container.setLayout(new BoxLayout(container, BoxLayout.LINE_AXIS));
@@ -284,7 +284,7 @@ public final class ComponentUtilities {
         JLabel colorIcon = ComponentUtilities.createColorIconLabel(color);
         colorIcon.setToolTipText(ColorUtilities.getColorBreakdown(color));
 
-        ComponentUtilities.layoutAsOpposites(container, left, colorIcon, 0);
+        ComponentUtilities.layoutAsOpposites(container, left, colorIcon, sidePadding);
         return container;
     }
 

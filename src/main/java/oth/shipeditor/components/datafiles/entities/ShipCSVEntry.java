@@ -2,10 +2,10 @@ package oth.shipeditor.components.datafiles.entities;
 
 import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
-import oth.shipeditor.communication.EventBus;
-import oth.shipeditor.communication.events.files.SkinFileOpened;
+import oth.shipeditor.components.viewer.layers.LayerManager;
 import oth.shipeditor.components.viewer.layers.ship.ShipLayer;
 import oth.shipeditor.components.viewer.layers.ship.ShipPainter;
+import oth.shipeditor.components.viewer.layers.ship.data.ShipHull;
 import oth.shipeditor.parsing.FileUtilities;
 import oth.shipeditor.parsing.loading.FileLoading;
 import oth.shipeditor.representation.ship.HullSize;
@@ -24,8 +24,8 @@ import java.awt.geom.AffineTransform;
 import java.awt.geom.Point2D;
 import java.io.File;
 import java.nio.file.Path;
-import java.util.*;
 import java.util.List;
+import java.util.*;
 
 /**
  * @author Ontheheavens
@@ -218,7 +218,10 @@ public class ShipCSVEntry implements CSVEntry, InstallableEntry {
         if (eligibleSkins.isEmpty()) return newLayer;
         for (SkinSpecFile skinSpecFile : eligibleSkins.values()) {
             if (skinSpecFile == null || skinSpecFile.isBase()) continue;
-            EventBus.publish(new SkinFileOpened(skinSpecFile, skinSpecFile == this.activeSkinSpecFile));
+
+            ShipHull data = newLayer.getHull();
+            boolean setAsActive = skinSpecFile == this.activeSkinSpecFile;
+            LayerManager.openSkinFile(newLayer, data, skinSpecFile, setAsActive);
         }
         return newLayer;
     }

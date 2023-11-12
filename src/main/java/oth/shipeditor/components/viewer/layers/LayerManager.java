@@ -197,7 +197,7 @@ public class LayerManager {
                 if (activeLayer != null && activeLayer instanceof ShipLayer checkedLayer) {
                     ShipHull data = checkedLayer.getHull();
                     if (data != null) {
-                        LayerManager.openSkinFile(checked, checkedLayer, data, skinSpecFile);
+                        LayerManager.openSkinFile(checkedLayer, data, skinSpecFile, checked.setAsActive());
                     } else {
                         throw new IllegalStateException("Skin file loaded onto a null ship data!");
                     }
@@ -209,8 +209,9 @@ public class LayerManager {
         });
     }
 
-    private static void openSkinFile(SkinFileOpened checkedEvent, ShipLayer checkedLayer,
-                                     ShipHull data, SkinSpecFile skinSpecFile) {
+    @SuppressWarnings("BooleanParameter")
+    public static void openSkinFile(ShipLayer checkedLayer, ShipHull data,
+                                    SkinSpecFile skinSpecFile, boolean setAsActive) {
         String hullID = data.getHullID();
         if (!hullID.equals(skinSpecFile.getBaseHullId())) {
             Path skinFilePath = skinSpecFile.getFilePath();
@@ -222,7 +223,7 @@ public class LayerManager {
             throw new IllegalStateException("Illegal skin file opening operation!");
         }
         ShipSkin created = checkedLayer.addSkin(skinSpecFile);
-        if (checkedEvent.setAsActive()) {
+        if (setAsActive) {
             ShipPainter shipPainter = checkedLayer.getPainter();
             shipPainter.setActiveSpec(ActiveShipSpec.SKIN, created);
         }

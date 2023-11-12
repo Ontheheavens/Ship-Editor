@@ -25,8 +25,7 @@ public class LoadWingDataAction extends LoadCSVDataAction<WingCSVEntry>{
     }
 
     @Override
-    protected void publishResult(Map<String, List<WingCSVEntry>> entriesByPackage) {
-        EventBus.publish(new WingDataLoaded(entriesByPackage));
+    protected void publishResult(Map<Path, List<WingCSVEntry>> entriesByPackage) {
         GameDataRepository data = SettingsManager.getGameData();
         if (!data.isShipDataLoaded()) {
             JOptionPane.showMessageDialog(null,
@@ -34,6 +33,8 @@ public class LoadWingDataAction extends LoadCSVDataAction<WingCSVEntry>{
                     StringValues.FILE_LOADING_ERROR,
                     JOptionPane.ERROR_MESSAGE);
         }
+        data.setWingEntriesByPackage(entriesByPackage);
+        EventBus.publish(new WingDataLoaded(entriesByPackage));
     }
 
     @Override

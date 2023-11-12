@@ -139,13 +139,13 @@ public class WeaponFilterPanel extends JPanel {
         }
     }
 
-    static Map<String, List<WeaponCSVEntry>> getFilteredEntries() {
+    static Map<Path, List<WeaponCSVEntry>> getFilteredEntries() {
         GameDataRepository gameData = SettingsManager.getGameData();
         Map<Path, List<WeaponCSVEntry>> weaponEntriesByPackage = gameData.getWeaponEntriesByPackage();
 
         if (weaponEntriesByPackage == null) return null;
 
-        Map<String, List<WeaponCSVEntry>> filteredResult = new HashMap<>();
+        Map<Path, List<WeaponCSVEntry>> filteredResult = new HashMap<>();
         for (Map.Entry<Path, List<WeaponCSVEntry>> entryPackage : weaponEntriesByPackage.entrySet()) {
             List<WeaponCSVEntry> entryList = entryPackage.getValue();
             List<WeaponCSVEntry> filteredList = entryList.stream()
@@ -157,7 +157,7 @@ public class WeaponFilterPanel extends JPanel {
                     .toList();
             if (!filteredList.isEmpty()) {
                 Path entryPackageKey = entryPackage.getKey();
-                filteredResult.put(entryPackageKey.toString(), filteredList);
+                filteredResult.put(entryPackageKey, filteredList);
             }
         }
         return filteredResult;

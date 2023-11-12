@@ -64,7 +64,7 @@ public class GameDataRepository {
 
     private Map<Path, List<HullmodCSVEntry>> hullmodEntriesByPackage;
 
-    private Map<Path, List<ShipSystemCSVEntry>> shipsystemEntriesByPackage;
+    private Map<Path, List<ShipSystemCSVEntry>> shipSystemEntriesByPackage;
 
     private Map<Path, List<WingCSVEntry>> wingEntriesByPackage;
 
@@ -115,18 +115,34 @@ public class GameDataRepository {
         this.allWeaponEntries = new HashMap<>();
     }
 
+
     public void setShipEntriesByPackage(Map<Path, List<ShipCSVEntry>> shipEntries) {
         this.shipEntriesByPackage = shipEntries;
         SettingsManager.announcePackages(shipEntries);
     }
 
-    public void setWeaponEntriesByPackage(Map<Path, List<WeaponCSVEntry>> pathListMap) {
-        this.weaponEntriesByPackage = pathListMap;
+    public void setWeaponEntriesByPackage(Map<Path, List<WeaponCSVEntry>> weaponEntries) {
+        this.weaponEntriesByPackage = weaponEntries;
         Map<Path, Boolean> filterEntries = new LinkedHashMap<>();
-        pathListMap.forEach((path, weaponCSVEntries) -> filterEntries.put(path, true));
+        weaponEntries.forEach((path, weaponCSVEntries) -> filterEntries.put(path, true));
 
-        SettingsManager.announcePackages(pathListMap);
+        SettingsManager.announcePackages(weaponEntries);
         WeaponFilterPanel.setPackageFilters(filterEntries);
+    }
+
+    public void setHullmodEntriesByPackage(Map<Path, List<HullmodCSVEntry>> hullmodEntries) {
+        this.hullmodEntriesByPackage = hullmodEntries;
+        SettingsManager.announcePackages(hullmodEntries);
+    }
+
+    public void setShipSystemEntriesByPackage(Map<Path, List<ShipSystemCSVEntry>> shipSystemEntries) {
+        this.shipSystemEntriesByPackage = shipSystemEntries;
+        SettingsManager.announcePackages(shipSystemEntries);
+    }
+
+    public void setWingEntriesByPackage(Map<Path, List<WingCSVEntry>> wingEntries) {
+        this.wingEntriesByPackage = wingEntries;
+        SettingsManager.announcePackages(wingEntries);
     }
 
     public static ShipCSVEntry retrieveShipCSVEntryByID(String baseHullID) {
@@ -185,9 +201,13 @@ public class GameDataRepository {
         ShipPainter shipPainter = shipLayer.getPainter();
 
         if (skinSpec != null) {
-            ShipSkin shipSkin = ShipSkin.createFromSpec(skinSpec);
-
-            shipPainter.setActiveSpec(ActiveShipSpec.SKIN, shipSkin);
+            for (ShipSkin skin : shipLayer.getSkins()) {
+                if (skin == null || skin.isBase()) continue;
+                String skinHullId = skin.getSkinHullId();
+                if (skinHullId.equals(skinSpec.getSkinHullId())) {
+                    shipPainter.setActiveSpec(ActiveShipSpec.SKIN, skin);
+                }
+            }
         }
 
         shipPainter.selectVariant(variant);

@@ -6,6 +6,7 @@ import org.kordamp.ikonli.fluentui.FluentUiRegularAL;
 import org.kordamp.ikonli.fluentui.FluentUiRegularMZ;
 import org.kordamp.ikonli.swing.FontIcon;
 import oth.shipeditor.communication.EventBus;
+import oth.shipeditor.communication.events.components.LayerTabUpdated;
 import oth.shipeditor.communication.events.components.SelectShipDataEntry;
 import oth.shipeditor.communication.events.components.WindowRepaintQueued;
 import oth.shipeditor.communication.events.files.HullFileOpened;
@@ -131,7 +132,9 @@ public final class ViewerLayersPanel extends SortableTabbedPane {
         });
         EventBus.subscribe(event -> {
             if (event instanceof ActiveLayerUpdated checked) {
-                this.handleTabUpdates(checked);
+                this.handleTabUpdates(checked.updated());
+            } else if (event instanceof LayerTabUpdated checked) {
+                this.handleTabUpdates(checked.layer());
             }
         });
         EventBus.subscribe(event -> {
@@ -150,8 +153,7 @@ public final class ViewerLayersPanel extends SortableTabbedPane {
         });
     }
 
-    private void handleTabUpdates(ActiveLayerUpdated event) {
-        ViewerLayer eventLayer = event.updated();
+    private void handleTabUpdates(ViewerLayer eventLayer) {
         LayerTab updated = tabIndex.get(eventLayer);
         if (updated instanceof ShipLayerTab checkedShipTab && eventLayer instanceof ShipLayer checkedLayer) {
             this.updateShipTab(checkedShipTab, checkedLayer);

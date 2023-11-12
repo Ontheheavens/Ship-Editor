@@ -110,6 +110,7 @@ public final class FileLoading {
             EventBus.publish(new LoadingActionFired(false));
             loadingInProgress = false;
             StaticController.reselectCurrentLayer();
+            SettingsManager.updateFileFromRuntime();
         });
 
         return allResults;
@@ -129,6 +130,7 @@ public final class FileLoading {
                 publishResult.thenRun(() -> {
                     EventBus.publish(new LoadingActionFired(false));
                     loadingInProgress = false;
+                    SettingsManager.updateFileFromRuntime();
                 });
             }
         };

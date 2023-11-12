@@ -74,7 +74,7 @@ public class WingsTreePanel extends CSVDataTreePanel<WingCSVEntry>{
     protected void initWalkerListening() {
         EventBus.subscribe(event -> {
             if (event instanceof WingDataLoaded checked) {
-                Map<String, List<WingCSVEntry>> wingsByPackage = checked.wingsByPackage();
+                Map<Path, List<WingCSVEntry>> wingsByPackage = checked.wingsByPackage();
                 if (wingsByPackage == null) {
                     throw new RuntimeException("Wing data initialization failed: table data is NULL!");
                 }
@@ -84,7 +84,7 @@ public class WingsTreePanel extends CSVDataTreePanel<WingCSVEntry>{
     }
 
     @Override
-    void populateEntries(Map<String, List<WingCSVEntry>> entriesByPackage) {
+    void populateEntries(Map<Path, List<WingCSVEntry>> entriesByPackage) {
         GameDataRepository data = SettingsManager.getGameData();
         if (!data.isShipDataLoaded()) return;
         super.populateEntries(entriesByPackage);
