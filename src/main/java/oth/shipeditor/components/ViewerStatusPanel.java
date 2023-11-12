@@ -245,7 +245,7 @@ final class ViewerStatusPanel extends JPanel {
                 return;
             }
             double value = (Double) zoomSpinner.getValue();
-            double newValue = value * Math.pow(1 + ControlPredicates.ZOOMING_SPEED, -e.getUnitsToScroll());
+            double newValue = value * Math.pow(1 + (ControlPredicates.ZOOMING_SPEED * 0.25d), -e.getUnitsToScroll());
             newValue = Math.min(maximum, Math.max(minimum, newValue));
             zoomSpinner.setValue(newValue);
         });

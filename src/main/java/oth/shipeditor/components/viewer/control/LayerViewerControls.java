@@ -71,6 +71,8 @@ public final class LayerViewerControls implements ViewerControl {
     @Getter
     private double rotationDegree;
 
+    private final SmoothZoomHandler zoomHandler = new SmoothZoomHandler();
+
     /**
      * @param parent Viewer which is manipulated via this instance of controls class.
      */
@@ -116,11 +118,6 @@ public final class LayerViewerControls implements ViewerControl {
         EventBus.subscribe(event -> {
             if (event instanceof ViewerRotationToggled checked) {
                 this.rotationEnabled = checked.isSelected();
-            }
-        });
-        EventBus.subscribe(event -> {
-            if (event instanceof ViewerZoomSet checked) {
-                this.setZoomExact(checked.level());
             }
         });
         EventBus.subscribe(event -> {
@@ -313,11 +310,26 @@ public final class LayerViewerControls implements ViewerControl {
             } else if (this.zoomLevel * factor <= min) {
                 this.setZoomAtLimit(x, y, min);
             } else {
-                this.parentViewer.zoom(x, y, factor, factor);
-                this.setZoomLevel(this.zoomLevel * factor);
+                zoomHandler.startZoom(x, y, this.zoomLevel * factor);
             }
         }
         this.refreshCursorPosition(e);
+    }
+
+    private void setZoomAtLimit(int x, int y, double limit) {
+        zoomHandler.startZoom(x, y, limit);
+    }
+
+    @Override
+    public void setZoomExact(double level) {
+        Point2D viewerMidPoint = parentViewer.getViewerMidpoint();
+        zoomHandler.startZoom(viewerMidPoint.getX(), viewerMidPoint.getY(), level);
+    }
+
+    private void setZoomLevel(double level) {
+        this.zoomLevel = level;
+        StaticController.setZoomLevel(level);
+        EventBus.publish(new ViewerZoomChanged());
     }
 
     public void rotateExact(double desiredDegrees) {
@@ -333,27 +345,6 @@ public final class LayerViewerControls implements ViewerControl {
     private void rotateViewer(double angleRadians) {
         Point2D midpoint = parentViewer.getViewerMidpoint();
         this.parentViewer.rotate(midpoint.getX(), midpoint.getY(), angleRadians);
-    }
-
-    @Override
-    public void setZoomExact(double level) {
-        double oldZoom = this.zoomLevel;
-        Point2D viewerMidPoint = parentViewer.getViewerMidpoint();
-        double factor = level / oldZoom;
-        this.parentViewer.zoom(viewerMidPoint.getX(), viewerMidPoint.getY(), factor, factor);
-        this.setZoomLevel(level);
-    }
-
-    private void setZoomAtLimit(int x, int y, double limit) {
-        double factor = limit / zoomLevel;
-        parentViewer.zoom(x, y, factor, factor);
-        this.setZoomLevel(limit);
-    }
-
-    private void setZoomLevel(double level) {
-        this.zoomLevel = level;
-        StaticController.setZoomLevel(level);
-        EventBus.publish(new ViewerZoomChanged());
     }
 
     public Point2D getAdjustedCursor() {
@@ -428,6 +419,52 @@ public final class LayerViewerControls implements ViewerControl {
         if (dragInProgress && closestMode) {
             updateViewerCursorState();
             EventBus.publish(new PointSelectQueued(null));
+        }
+    }
+
+    private final class SmoothZoomHandler {
+
+        private static final int DELAY_MS = 4;
+        private static final double SNAP = 0.025;
+
+        private final Timer zoomTimer;
+        private double targetZoomLevel;
+        private double currentZoomStep = 1;
+
+        private double targetX;
+        private double targetY;
+
+        private SmoothZoomHandler() {
+            zoomTimer = new Timer(DELAY_MS, e -> updateZoom());
+        }
+
+        void startZoom(double x, double y, double targetZoom) {
+            this.targetZoomLevel = targetZoom;
+            this.targetX = x;
+            this.targetY = y;
+
+            if (Math.abs(currentZoomStep - targetZoom) < SNAP) {
+                currentZoomStep = targetZoom;
+                setZoomLevel(currentZoomStep);
+            } else {
+                zoomTimer.start();
+            }
+        }
+
+        private void updateZoom() {
+            currentZoomStep += (targetZoomLevel - currentZoomStep) * 0.25;
+            setZoomLevel(currentZoomStep);
+            if (Math.abs(currentZoomStep - targetZoomLevel) < SNAP) {
+                currentZoomStep = targetZoomLevel;
+                setZoomLevel(currentZoomStep);
+                zoomTimer.stop();
+            }
+        }
+
+        private void setZoomLevel(double level) {
+            double factor = level / LayerViewerControls.this.zoomLevel;
+            LayerViewerControls.this.parentViewer.zoom(targetX, targetY, factor, factor);
+            LayerViewerControls.this.setZoomLevel(level);
         }
     }
 
