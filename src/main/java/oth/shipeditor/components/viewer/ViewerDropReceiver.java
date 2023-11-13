@@ -5,6 +5,7 @@ import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
 import oth.shipeditor.components.datafiles.entities.InstallableEntry;
 import oth.shipeditor.components.datafiles.entities.ShipCSVEntry;
+import oth.shipeditor.components.datafiles.entities.WeaponCSVEntry;
 import oth.shipeditor.components.datafiles.entities.transferable.TransferableEntry;
 import oth.shipeditor.components.instrument.EditorInstrument;
 import oth.shipeditor.components.viewer.control.ViewerControl;
@@ -95,6 +96,7 @@ public class ViewerDropReceiver extends DropTarget {
 
             DataFlavor filesFlavor = DataFlavor.javaFileListFlavor;
             DataFlavor shipFlavor = TransferableEntry.TRANSFERABLE_SHIP;
+            DataFlavor weaponFlavor = TransferableEntry.TRANSFERABLE_WEAPON;
             DataFlavor variantFlavor = TransferableEntry.TRANSFERABLE_VARIANT;
 
             if (flavorList.contains(filesFlavor)) {
@@ -112,6 +114,11 @@ public class ViewerDropReceiver extends DropTarget {
 
                 VariantFile variantFile = (VariantFile) transferable.getTransferData(variantFlavor);
                 ViewerDropReceiver.handleVariantFileDrop(dtde, variantFile);
+            } else if (flavorList.contains(weaponFlavor)) {
+                dtde.acceptDrop(DnDConstants.ACTION_COPY);
+
+                WeaponCSVEntry weaponEntry = (WeaponCSVEntry) transferable.getTransferData(weaponFlavor);
+                ViewerDropReceiver.handleWeaponEntryDrop(dtde, weaponEntry);
             }
         } catch (Exception ex) {
             dtde.dropComplete(false);
@@ -222,6 +229,27 @@ public class ViewerDropReceiver extends DropTarget {
                 FeaturesOverseer featuresOverseer = shipLayer.getFeaturesOverseer();
                 if (featuresOverseer != null) {
                     featuresOverseer.addModuleToSelectedSlot(variantFile);
+                    dtde.dropComplete(true);
+                } else {
+                    dtde.dropComplete(false);
+                }
+            } else {
+                dtde.dropComplete(false);
+            }
+        } catch (Exception exception) {
+            Errors.printToStream(exception);
+            dtde.dropComplete(false);
+        }
+        ViewerDropReceiver.finishDragToViewer();
+    }
+
+    private static void handleWeaponEntryDrop(DropTargetDropEvent dtde, WeaponCSVEntry weaponEntry) {
+        try {
+            ViewerLayer viewerLayer = StaticController.getActiveLayer();
+            if (viewerLayer instanceof ShipLayer shipLayer) {
+                FeaturesOverseer featuresOverseer = shipLayer.getFeaturesOverseer();
+                if (featuresOverseer != null) {
+                    featuresOverseer.addWeaponToSelectedSlot(weaponEntry);
                     dtde.dropComplete(true);
                 } else {
                     dtde.dropComplete(false);

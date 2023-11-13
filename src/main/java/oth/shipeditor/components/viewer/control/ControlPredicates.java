@@ -3,6 +3,7 @@ package oth.shipeditor.components.viewer.control;
 import de.javagl.viewer.InputEventPredicates;
 import de.javagl.viewer.Predicates;
 import lombok.Getter;
+import lombok.Setter;
 import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.viewer.control.*;
 
@@ -33,6 +34,9 @@ public final class ControlPredicates {
 
     @Getter
     private static boolean rotationRoundingEnabled = true;
+
+    @Getter @Setter
+    private static boolean selectionHoldingEnabled = true;
 
     @Getter
     private static int mirrorPointLinkageTolerance;

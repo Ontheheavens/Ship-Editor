@@ -10,6 +10,7 @@ import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.viewer.control.CursorSnappingToggled;
 import oth.shipeditor.communication.events.viewer.control.PointSelectionModeChange;
 import oth.shipeditor.communication.events.viewer.control.RotationRoundingToggled;
+import oth.shipeditor.components.viewer.control.ControlPredicates;
 import oth.shipeditor.components.viewer.control.PointSelectionMode;
 import oth.shipeditor.persistence.Settings;
 import oth.shipeditor.persistence.SettingsManager;
@@ -124,6 +125,15 @@ public final class PrimaryMenuBar extends JMenuBar {
 
         JMenuItem pointSelectionMode = PrimaryMenuBar.createPointSelectionModeOptions();
         editMenu.add(pointSelectionMode);
+
+        JCheckBoxMenuItem toggleSelectionHold = new JCheckBoxMenuItem("Toggle selection holding");
+        toggleSelectionHold.setIcon(FontIcon.of(FluentUiRegularMZ.POINT_SCAN_24, 16, Themes.getIconColor()));
+        toggleSelectionHold.setSelected(true);
+        toggleSelectionHold.setToolTipText("Enables CTRL-hold to prevent mouse motion from changing selection.");
+        toggleSelectionHold.addActionListener(event ->
+                        ControlPredicates.setSelectionHoldingEnabled(toggleSelectionHold.isSelected())
+        );
+        editMenu.add(toggleSelectionHold);
 
         toggleCursorSnap = new JCheckBoxMenuItem("Toggle cursor snapping");
         toggleCursorSnap.setIcon(FontIcon.of(FluentUiRegularAL.GROUP_20, 16, Themes.getIconColor()));

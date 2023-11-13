@@ -274,7 +274,8 @@ public final class LayerViewerControls implements ViewerControl {
         this.tryRadiusDrag(e);
         this.previousPoint.setLocation(x, y);
         this.parentViewer.setRepaintQueued();
-        if (ControlPredicates.getSelectionMode() == PointSelectionMode.CLOSEST && !e.isControlDown()) {
+        boolean selectionHoldActive = e.isControlDown() && ControlPredicates.isSelectionHoldingEnabled();
+        if (ControlPredicates.getSelectionMode() == PointSelectionMode.CLOSEST && !selectionHoldActive) {
             EventBus.publish(new PointSelectQueued(null));
         }
         if (ControlPredicates.changeAnglePredicate.test(e)) {
