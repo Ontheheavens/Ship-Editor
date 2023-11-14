@@ -66,10 +66,15 @@ final class SaveHullAction {
 
             ObjectMapper objectMapper = FileUtilities.getConfigured();
             HullSpecFile toSerialize = SaveHullAction.rebuildHullFile(shipLayer);
+            String errorMessage = "Hull file saving failed: {}";
+            if (toSerialize == null) {
+                log.error(errorMessage, result.getName());
+                return;
+            }
             try {
                 objectMapper.writeValue(result, toSerialize);
             } catch (IOException e) {
-                log.error("Hull file saving failed: {}", result.getName());
+                log.error(errorMessage, result.getName());
                 JOptionPane.showMessageDialog(null,
                         "Hull file saving failed, exception thrown at: " + result,
                         StringValues.FILE_SAVING_ERROR,
@@ -98,6 +103,7 @@ final class SaveHullAction {
                             "Ship ID: " + shipID,
                     StringValues.FILE_SAVING_ERROR,
                     JOptionPane.ERROR_MESSAGE);
+            return null;
         }
         result.setEngineSlots(serializableEngines);
 
@@ -160,6 +166,17 @@ final class SaveHullAction {
         result.setWidth(shipPainter.getSpriteWidth());
 
         HullStyle hullStyle = shipHull.getHullStyle();
+        if (hullStyle == null) {
+            String shipID = shipLayer.getShipID();
+            log.error("Hullstyle misconfiguration at hull serialization. Ship ID: {}",
+                    shipID);
+            JOptionPane.showMessageDialog(null,
+                    "Hullstyle misconfiguration at hull serialization. " +
+                            "Ship ID: " + shipID,
+                    StringValues.FILE_SAVING_ERROR,
+                    JOptionPane.ERROR_MESSAGE);
+            return null;
+        }
         result.setStyle(hullStyle.getHullStyleID());
         HullSize hullSize = shipHull.getHullSize();
         result.setHullSize(hullSize.toString());

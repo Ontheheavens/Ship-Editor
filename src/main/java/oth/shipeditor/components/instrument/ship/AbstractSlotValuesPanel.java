@@ -95,7 +95,7 @@ public abstract class AbstractSlotValuesPanel extends JPanel {
             right = editor;
 
             JPopupMenu contextMenu = getIDMenu(editor);
-            editor.setToolTipText("Right-click to generate");
+            editor.setToolTipText(StringValues.RIGHT_CLICK_TO_GENERATE);
             editor.addMouseListener(new MouseAdapter() {
                 @Override
                 public void mouseClicked(MouseEvent e) {
@@ -111,7 +111,7 @@ public abstract class AbstractSlotValuesPanel extends JPanel {
 
     private JPopupMenu getIDMenu(JTextField editor) {
         JPopupMenu contextMenu = new JPopupMenu();
-        JMenuItem createNextUniqueId = new JMenuItem("Create next unique ID");
+        JMenuItem createNextUniqueId = new JMenuItem(StringValues.CREATE_NEXT_UNIQUE_ID);
         createNextUniqueId.addActionListener(e -> {
             var layer = StaticController.getActiveLayer();
             if (!(layer instanceof ShipLayer shipLayer)) return;
