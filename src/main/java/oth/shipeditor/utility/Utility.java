@@ -3,6 +3,7 @@ package oth.shipeditor.utility;
 import lombok.extern.log4j.Log4j2;
 import oth.shipeditor.components.CoordsDisplayMode;
 import oth.shipeditor.components.viewer.entities.BaseWorldPoint;
+import oth.shipeditor.components.viewer.entities.WorldPoint;
 import oth.shipeditor.components.viewer.layers.LayerPainter;
 import oth.shipeditor.components.viewer.layers.ViewerLayer;
 import oth.shipeditor.components.viewer.layers.ship.ShipPainter;
@@ -299,6 +300,17 @@ public final class Utility {
         Path path = Paths.get(filename);
         Matcher matcher = FILE_EXTENSION.matcher(path.getFileName().toString());
         return matcher.replaceFirst("");
+    }
+
+    public static void flipPointHorizontally(WorldPoint toFlip, WorldPoint anchor) {
+        Utility.flipPointHorizontally(toFlip.getPosition(), anchor.getPosition());
+    }
+
+    private static void flipPointHorizontally(Point2D toFlip, Point2D anchor) {
+        double anchorX = anchor.getX();
+        double deltaX = toFlip.getX() - anchorX;
+        double newX = anchorX - deltaX;
+        toFlip.setLocation(newX, toFlip.getY());
     }
 
 }

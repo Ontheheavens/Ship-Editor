@@ -11,6 +11,7 @@ import oth.shipeditor.communication.events.viewer.ViewerRepaintQueued;
 import oth.shipeditor.communication.events.viewer.layers.ActiveLayerUpdated;
 import oth.shipeditor.communication.events.viewer.layers.ships.LayerShipDataInitialized;
 import oth.shipeditor.components.datafiles.entities.ShipCSVEntry;
+import oth.shipeditor.components.viewer.entities.BaseWorldPoint;
 import oth.shipeditor.components.viewer.entities.ShipCenterPoint;
 import oth.shipeditor.components.viewer.entities.bays.LaunchBay;
 import oth.shipeditor.components.viewer.entities.weapon.WeaponSlotPoint;
@@ -29,6 +30,7 @@ import oth.shipeditor.representation.GameDataRepository;
 import oth.shipeditor.representation.ship.HullSpecFile;
 import oth.shipeditor.representation.ship.ShipTypeHints;
 import oth.shipeditor.representation.ship.VariantFile;
+import oth.shipeditor.undo.EditDispatch;
 import oth.shipeditor.utility.graphics.Sprite;
 import oth.shipeditor.utility.text.StringValues;
 
@@ -54,11 +56,11 @@ public class ShipPainter extends LayerPainter {
 
     private static final char SPACE = ' ';
 
-    private BoundPointsPainter boundsPainter;
-
     private CenterPointPainter centerPointPainter;
 
     private ShieldPointPainter shieldPointPainter;
+
+    private BoundPointsPainter boundsPainter;
 
     private WeaponSlotPainter weaponSlotPainter;
 
@@ -256,6 +258,31 @@ public class ShipPainter extends LayerPainter {
     public void initFromHullSpec(HullSpecFile hullSpecFile) {
         this.createPointPainters();
         ShipPainterInitialization.loadHullData(this, hullSpecFile);
+    }
+
+    public List<BaseWorldPoint> getAllShipPoints() {
+        List<BaseWorldPoint> result = new ArrayList<>();
+
+        ShieldPointPainter shieldPainter = this.getShieldPointPainter();
+        result.add(shieldPainter.getShieldCenterPoint());
+
+        BoundPointsPainter boundPointsPainter = this.getBoundsPainter();
+        result.addAll(boundPointsPainter.getPointsIndex());
+
+        WeaponSlotPainter slotPainter = this.getWeaponSlotPainter();
+        result.addAll(slotPainter.getPointsIndex());
+
+        LaunchBayPainter launchBayPainter = this.getBayPainter();
+        result.addAll(launchBayPainter.getPointsIndex());
+
+        EngineSlotPainter engineSlotPainter = this.getEnginePainter();
+        result.addAll(engineSlotPainter.getPointsIndex());
+
+        return result;
+    }
+
+    public void flipShipPointsHorizontally() {
+        EditDispatch.postShipPointsFlipped(getAllShipPoints(), this.getShipCenter());
     }
 
     public ShipCenterPoint getShipCenter() {

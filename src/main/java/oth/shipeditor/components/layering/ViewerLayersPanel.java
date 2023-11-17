@@ -364,6 +364,11 @@ public final class ViewerLayersPanel extends SortableTabbedPane {
 
             menu.addSeparator();
 
+            JMenuItem flipPoints = new JMenuItem("Flip ship points");
+            flipPoints.setIcon(FontIcon.of(FluentUiRegularAL.FLIP_HORIZONTAL_24, 16, Themes.getIconColor()));
+            flipPoints.addActionListener(event -> shipPainter.flipShipPointsHorizontally());
+            menu.add(flipPoints);
+
             menu.add(TabContextListener.createPrintLayerOption(shipLayer));
 
             return menu;

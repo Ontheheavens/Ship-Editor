@@ -37,6 +37,7 @@ import oth.shipeditor.undo.edits.features.*;
 import oth.shipeditor.undo.edits.points.*;
 import oth.shipeditor.undo.edits.points.engines.*;
 import oth.shipeditor.undo.edits.points.slots.*;
+import oth.shipeditor.utility.Utility;
 import oth.shipeditor.utility.objects.Size2D;
 import oth.shipeditor.utility.overseers.StaticController;
 
@@ -500,6 +501,14 @@ public final class EditDispatch {
         var repainter = StaticController.getScheduler();
         repainter.queueViewerRepaint();
         repainter.queueModulesRepaint();
+    }
+
+    public static void postShipPointsFlipped(List<BaseWorldPoint> points, BaseWorldPoint anchor) {
+        Edit flipEdit = new PointsFlippedEdit(points, anchor);
+        UndoOverseer.post(flipEdit);
+        for (BaseWorldPoint point : points) {
+            Utility.flipPointHorizontally(point, anchor);
+        }
     }
 
     private static final class DefaultEditFinisher implements BusEventListener {
