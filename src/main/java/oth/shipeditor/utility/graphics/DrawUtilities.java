@@ -7,6 +7,7 @@ import oth.shipeditor.utility.overseers.StaticController;
 import java.awt.*;
 import java.awt.font.GlyphVector;
 import java.awt.geom.*;
+import java.awt.image.RenderedImage;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -344,6 +345,40 @@ public final class DrawUtilities {
 
         g.setComposite(old);
         g.setTransform(oldAT);
+    }
+
+    public static void drawSpriteBorders(Graphics2D g, AffineTransform worldToScreen,
+                                         RenderedImage sprite, Point2D anchor) {
+        int width = sprite.getWidth();
+        int height = sprite.getHeight();
+        Shape spriteBorder = new Rectangle2D.Double(anchor.getX(), anchor.getY(), width, height);
+        Shape transformed = worldToScreen.createTransformedShape(spriteBorder);
+
+        Stroke oldStroke = g.getStroke();
+        Paint oldPaint = g.getPaint();
+
+        g.setStroke(new BasicStroke(3));
+        g.setPaint(Color.BLACK);
+        g.draw(transformed);
+        g.setStroke(oldStroke);
+        g.setPaint(Color.WHITE);
+        g.draw(transformed);
+
+        g.setPaint(oldPaint);
+    }
+
+    public static void drawSpriteCenter(Graphics2D g, AffineTransform worldToScreen,
+                                         Point2D positionWorld) {
+        double worldSize = 0.5;
+        double thickness = 0.05;
+        double screenSize = 12;
+        DrawingParameters parameters = DrawingParameters.builder()
+                .withWorldSize(worldSize)
+                .withWorldThickness(thickness)
+                .withScreenSize(screenSize)
+                .withPaintColor(Color.BLACK)
+                .build();
+        DrawUtilities.drawDynamicCross(g, worldToScreen, positionWorld, parameters);
     }
 
 }

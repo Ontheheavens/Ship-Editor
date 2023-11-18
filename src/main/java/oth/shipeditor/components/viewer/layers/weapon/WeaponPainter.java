@@ -53,6 +53,8 @@ public class WeaponPainter extends LayerPainter {
     @Getter @Setter
     private ProjectilePainter projectilePainter;
 
+    private final AffineTransform cachedTransform = new AffineTransform();
+
     @SuppressWarnings("ThisEscapedInObjectConstruction")
     public WeaponPainter(ViewerLayer layer) {
         super(layer);
@@ -93,21 +95,21 @@ public class WeaponPainter extends LayerPainter {
 
     protected void paintContent(Graphics2D g, AffineTransform worldToScreen, double w, double h) {
         if (mount != WeaponMount.HIDDEN) {
-            this.drawSpritePart(g, weaponSprites.getUnderSprite(mount));
+            this.drawSpritePart(g, worldToScreen, weaponSprites.getUnderSprite(mount));
 
             if (hasHint(WeaponRenderHints.RENDER_BARREL_BELOW)) {
-                this.drawSpritePart(g, weaponSprites.getGunSprite(mount));
-                this.drawSpritePart(g, weaponSprites.getMainSprite(mount));
+                this.drawSpritePart(g, worldToScreen, weaponSprites.getGunSprite(mount));
+                this.drawSpritePart(g, worldToScreen, weaponSprites.getMainSprite(mount));
             } else {
-                this.drawSpritePart(g, weaponSprites.getMainSprite(mount));
-                this.drawSpritePart(g, weaponSprites.getGunSprite(mount));
+                this.drawSpritePart(g, worldToScreen, weaponSprites.getMainSprite(mount));
+                this.drawSpritePart(g, worldToScreen, weaponSprites.getGunSprite(mount));
             }
         }
 
         this.paintLoadedMissiles(g, worldToScreen, w, h);
 
         if (mount != WeaponMount.HIDDEN && drawGlow) {
-            this.drawSpritePart(g, weaponSprites.getGlowSprite(mount));
+            this.drawSpritePart(g, worldToScreen, weaponSprites.getGlowSprite(mount));
         }
     }
 
@@ -128,17 +130,21 @@ public class WeaponPainter extends LayerPainter {
         }
     }
 
-    private void drawSpritePart(Graphics2D g, Sprite part) {
+    private void drawSpritePart(Graphics2D g, AffineTransform worldToScreen, Sprite part) {
         if (part == null) return;
-        Point2D anchor = this.getAnchor();
+        Point2D anchor = this.getRotationAnchor();
         BufferedImage spriteImage = part.getImage();
 
-        AffineTransform transform = new AffineTransform();
-        transform.translate(anchor.getX(),  anchor.getY());
-        g.drawImage(spriteImage, transform, null);
+        Point2D center = WeaponSprites.getSpriteCenterDifference(spriteImage, this.getMount());
+        double positionX = anchor.getX() - center.getX();
+        double positionY = anchor.getY() - center.getY();
+
+        cachedTransform.setToIdentity();
+        cachedTransform.translate(positionX,  positionY);
+        g.drawImage(spriteImage, cachedTransform, null);
     }
 
-    public Point2D getWeaponCenter() {
+    private Point2D getWeaponCenter() {
         return weaponSprites.getWeaponCenter(mount);
     }
 

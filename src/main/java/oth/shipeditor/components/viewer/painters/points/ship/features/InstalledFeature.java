@@ -134,7 +134,6 @@ public final class InstalledFeature implements InstallableEntry {
         return result;
     }
 
-    @SuppressWarnings("ChainOfInstanceofChecks")
     void refreshPaintCircumstance(WeaponSlotPoint slotPoint) {
         LayerPainter painter = this.getFeaturePainter();
         painter.setShouldDrawPainter(false);
@@ -144,13 +143,9 @@ public final class InstalledFeature implements InstallableEntry {
         painter.setShouldDrawPainter(true);
 
         Point2D position = slotPoint.getPosition();
-        Point2D entityCenter = painter.getEntityCenter();
+        Point2D entityCenter = painter.getCenterAnchorDifference();
         if (painter instanceof WeaponPainter weaponPainter) {
-            entityCenter = weaponPainter.getWeaponCenter();
-
             weaponPainter.setMount(slotPoint.getWeaponMount());
-        } else if (painter instanceof ShipPainter shipPainter) {
-            entityCenter = shipPainter.getCenterAnchorDifference();
         }
         double x = position.getX() - entityCenter.getX();
         double y = position.getY() - entityCenter.getY();

@@ -17,10 +17,10 @@ import oth.shipeditor.components.viewer.entities.WorldPoint;
 import oth.shipeditor.components.viewer.layers.LayerPainter;
 import oth.shipeditor.components.viewer.layers.ship.ShipPainter;
 import oth.shipeditor.components.viewer.painters.points.ship.BoundPointsPainter;
+import oth.shipeditor.utility.graphics.Sprite;
 import oth.shipeditor.utility.overseers.StaticController;
 import oth.shipeditor.utility.Utility;
 import oth.shipeditor.utility.graphics.DrawUtilities;
-import oth.shipeditor.utility.graphics.DrawingParameters;
 import oth.shipeditor.utility.graphics.RectangleCorner;
 
 import java.awt.*;
@@ -227,7 +227,7 @@ public final class GuidesPainters {
             Point2D toDisplay = pointInput.getCoordinatesForDisplay();
 
             // Draw two lines centered on the sprite center.
-            SpriteCenterPainter.drawSpriteCenter(g, worldToScreen, spriteCenter);
+            DrawUtilities.drawSpriteCenter(g, worldToScreen, spriteCenter);
             String spriteCenterCoords = "Sprite Center (" + toDisplay.getX() + ", " + toDisplay.getY() + ")";
 
             DrawUtilities.drawWithConditionalOpacity(g, graphics2D -> {
@@ -235,20 +235,6 @@ public final class GuidesPainters {
                 label.setText(spriteCenterCoords);
                 label.paintText(graphics2D, worldToScreen);
             });
-        }
-
-        private static void drawSpriteCenter(Graphics2D g, AffineTransform worldToScreen,
-                                             Point2D positionWorld) {
-            double worldSize = 0.5;
-            double thickness = 0.05;
-            double screenSize = 12;
-            DrawingParameters parameters = DrawingParameters.builder()
-                    .withWorldSize(worldSize)
-                    .withWorldThickness(thickness)
-                    .withScreenSize(screenSize)
-                    .withPaintColor(Color.BLACK)
-                    .build();
-            DrawUtilities.drawDynamicCross(g, worldToScreen, positionWorld, parameters);
         }
 
     }
@@ -261,24 +247,12 @@ public final class GuidesPainters {
 
             LayerPainter layer = parent.getSelectedLayer();
             if (layer == null || layer.getSprite() == null) return;
-            RenderedImage shipSprite = layer.getSpriteImage();
+            Sprite sprite = layer.getSprite();
+            RenderedImage shipSprite = sprite.getImage();
             int width = shipSprite.getWidth();
             int height = shipSprite.getHeight();
             Point2D layerAnchor = layer.getAnchor();
-            Shape spriteBorder = new Rectangle((int) layerAnchor.getX(), (int) layerAnchor.getY(), width, height);
-            Shape transformed = worldToScreen.createTransformedShape(spriteBorder);
-
-            Stroke oldStroke = g.getStroke();
-            Paint oldPaint = g.getPaint();
-
-            g.setStroke(new BasicStroke(3));
-            g.setPaint(Color.BLACK);
-            g.draw(transformed);
-            g.setStroke(oldStroke);
-            g.setPaint(Color.WHITE);
-            g.draw(transformed);
-
-            g.setPaint(oldPaint);
+            DrawUtilities.drawSpriteBorders(g, worldToScreen, shipSprite, layerAnchor);
         }
 
     }

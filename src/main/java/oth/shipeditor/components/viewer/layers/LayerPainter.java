@@ -193,7 +193,14 @@ public abstract class LayerPainter implements Painter {
         return this.getSpriteCenter();
     }
 
-    @SuppressWarnings("WeakerAccess")
+    public Point2D getCenterAnchorDifference() {
+        Point2D layerAnchor = getAnchor();
+        Point2D rotationAnchor = this.getRotationAnchor();
+        double x = rotationAnchor.getX() - layerAnchor.getX();
+        double y = rotationAnchor.getY() - layerAnchor.getY();
+        return new Point2D.Double(x, y);
+    }
+
     public void rotateLayer(double rotationDegrees) {
         EditDispatch.postLayerRotated(this, this.getRotationRadians(), Math.toRadians(rotationDegrees));
     }

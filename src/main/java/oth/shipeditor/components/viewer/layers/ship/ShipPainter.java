@@ -312,14 +312,6 @@ public class ShipPainter extends LayerPainter {
         }
     }
 
-    public Point2D getCenterAnchorDifference() {
-        Point2D anchor = getAnchor();
-        Point2D rotationAnchor = this.getRotationAnchor();
-        double x = rotationAnchor.getX() - anchor.getX();
-        double y = rotationAnchor.getY() - anchor.getY();
-        return new Point2D.Double(x, y);
-    }
-
     public Point2D getCenterAnchor() {
         Point2D anchor = getAnchor();
         BufferedImage sprite = getSpriteImage();

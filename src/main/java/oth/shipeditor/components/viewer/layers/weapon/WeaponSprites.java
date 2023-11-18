@@ -7,6 +7,7 @@ import oth.shipeditor.utility.graphics.Sprite;
 
 import java.awt.geom.Point2D;
 import java.awt.image.BufferedImage;
+import java.awt.image.RenderedImage;
 
 /**
  * @author Ontheheavens
@@ -63,9 +64,21 @@ public class WeaponSprites {
         }
     }
 
-    Point2D getWeaponCenter(WeaponMount mount) {
+    static Point2D getSpriteCenterDifference(RenderedImage sprite, WeaponMount mount) {
         Point2D result = new Point2D.Double();
         final float centerRatio = 0.5f;
+        switch (mount) {
+            case HARDPOINT -> {
+                float centerY = 0.75f;
+                result = new Point2D.Double(sprite.getWidth() * centerRatio, sprite.getHeight() * centerY);
+            }
+            case TURRET, HIDDEN -> result = new Point2D.Double(sprite.getWidth() * centerRatio,
+                    sprite.getHeight() * centerRatio);
+        }
+        return result;
+    }
+
+    Point2D getWeaponCenter(WeaponMount mount) {
         switch (mount) {
             case HARDPOINT -> {
                 BufferedImage spriteImage;
@@ -74,22 +87,21 @@ public class WeaponSprites {
                 } else if (turretSprite != null) {
                     spriteImage = turretSprite.getImage();
                 } else {
-                    return new Point2D.Double(0, 0);
+                    break;
                 }
-                float centerY = 0.75f;
-                result = new Point2D.Double(spriteImage.getWidth() * centerRatio, spriteImage.getHeight() * centerY);
+                return WeaponSprites.getSpriteCenterDifference(spriteImage, mount);
             }
             case TURRET, HIDDEN -> {
                 BufferedImage spriteImage;
                 if (turretSprite != null) {
                     spriteImage = turretSprite.getImage();
                 } else {
-                    return new Point2D.Double(0, 0);
+                    break;
                 }
-                result = new Point2D.Double(spriteImage.getWidth() * centerRatio, spriteImage.getHeight() * centerRatio);
+                return WeaponSprites.getSpriteCenterDifference(spriteImage, mount);
             }
         }
-        return result;
+        return new Point2D.Double(0, 0);
     }
 
 }
