@@ -19,6 +19,7 @@ public final class Errors {
     }
 
     public static void initGlobalHandler() {
+        // This doesn't seem to actually catch any exceptions...
         Thread.UncaughtExceptionHandler globalExceptionHandler = new Handler();
         Thread.setDefaultUncaughtExceptionHandler(globalExceptionHandler);
     }
@@ -57,6 +58,7 @@ public final class Errors {
     private static class Handler implements Thread.UncaughtExceptionHandler {
 
         public void uncaughtException(Thread t, Throwable e) {
+            log.error("Exception caught with global handler!", e);
             Errors.printToStream(e);
         }
     }

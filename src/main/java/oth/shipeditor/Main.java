@@ -6,6 +6,7 @@ import oth.shipeditor.parsing.loading.FileLoading;
 import oth.shipeditor.persistence.Initializations;
 import oth.shipeditor.persistence.Settings;
 import oth.shipeditor.persistence.SettingsManager;
+import oth.shipeditor.utility.Errors;
 import oth.shipeditor.utility.text.StringConstants;
 import oth.shipeditor.utility.themes.Theme;
 import oth.shipeditor.utility.themes.Themes;
@@ -33,6 +34,7 @@ public final class Main {
         SwingUtilities.invokeLater(() -> {
             // These method calls are initialization block; the order of calls is important.
             StandardOutputRedirector.redirectStandardStreams();
+            Errors.initGlobalHandler();
             Initializations.initializeSettingsFile();
             Main.configureLaf();
             PrimaryWindow window = PrimaryWindow.create();

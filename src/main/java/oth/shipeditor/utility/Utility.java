@@ -2,6 +2,7 @@ package oth.shipeditor.utility;
 
 import lombok.extern.log4j.Log4j2;
 import oth.shipeditor.components.CoordsDisplayMode;
+import oth.shipeditor.components.viewer.entities.AngledPoint;
 import oth.shipeditor.components.viewer.entities.BaseWorldPoint;
 import oth.shipeditor.components.viewer.entities.WorldPoint;
 import oth.shipeditor.components.viewer.layers.LayerPainter;
@@ -304,6 +305,10 @@ public final class Utility {
 
     public static void flipPointHorizontally(WorldPoint toFlip, WorldPoint anchor) {
         Utility.flipPointHorizontally(toFlip.getPosition(), anchor.getPosition());
+        if (toFlip instanceof AngledPoint angledPoint) {
+            double flipped = Utility.flipAngle(angledPoint.getAngle());
+            angledPoint.setAngle(flipped);
+        }
     }
 
     private static void flipPointHorizontally(Point2D toFlip, Point2D anchor) {
