@@ -260,7 +260,7 @@ public class ShipPainter extends LayerPainter {
         ShipPainterInitialization.loadHullData(this, hullSpecFile);
     }
 
-    public List<BaseWorldPoint> getAllShipPoints() {
+    private List<BaseWorldPoint> getAllShipPoints() {
         List<BaseWorldPoint> result = new ArrayList<>();
 
         ShieldPointPainter shieldPainter = this.getShieldPointPainter();

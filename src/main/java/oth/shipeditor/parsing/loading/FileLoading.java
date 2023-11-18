@@ -382,7 +382,7 @@ public final class FileLoading {
                     csvData.add(row);
                 }
             }
-        } catch (Exception exception) {
+        } catch (Throwable exception) {
             log.error("Data CSV loading failed!");
             Errors.printToStream(exception);
             if (SettingsManager.areFileErrorPopupsEnabled()) {

@@ -2,6 +2,8 @@ package oth.shipeditor.components.datafiles.trees;
 
 import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
+import oth.shipeditor.communication.EventBus;
+import oth.shipeditor.communication.events.components.DataTreesReloadQueued;
 import oth.shipeditor.components.datafiles.OpenDataTarget;
 import oth.shipeditor.components.datafiles.entities.CSVEntry;
 import oth.shipeditor.components.viewer.layers.ship.FeaturesOverseer;
@@ -517,7 +519,7 @@ public abstract class DataTreePanel extends JPanel {
                     unpinPackage.addActionListener(event -> {
                         dataPackage.setPinned(false);
                         SettingsManager.updateFileFromRuntime();
-                        reload();
+                        EventBus.publish(new DataTreesReloadQueued());
                     });
                     menu.add(unpinPackage);
                 } else {
@@ -525,7 +527,7 @@ public abstract class DataTreePanel extends JPanel {
                     pinPackage.addActionListener(event -> {
                         dataPackage.setPinned(true);
                         SettingsManager.updateFileFromRuntime();
-                        reload();
+                        EventBus.publish(new DataTreesReloadQueued());
                     });
                     menu.add(pinPackage);
                 }
@@ -534,7 +536,7 @@ public abstract class DataTreePanel extends JPanel {
                 disablePackage.addActionListener(event -> {
                     dataPackage.setDisabled(true);
                     SettingsManager.updateFileFromRuntime();
-                    reload();
+                    EventBus.publish(new DataTreesReloadQueued());
                 });
                 menu.add(disablePackage);
 

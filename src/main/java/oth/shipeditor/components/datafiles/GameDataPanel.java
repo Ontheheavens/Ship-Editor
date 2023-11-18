@@ -2,6 +2,7 @@ package oth.shipeditor.components.datafiles;
 
 import lombok.extern.log4j.Log4j2;
 import oth.shipeditor.communication.EventBus;
+import oth.shipeditor.communication.events.components.DataTreesReloadQueued;
 import oth.shipeditor.communication.events.components.SelectShipDataEntry;
 import oth.shipeditor.communication.events.components.SelectWeaponDataEntry;
 import oth.shipeditor.communication.events.components.VariantDataTabSelected;
@@ -24,14 +25,24 @@ import java.awt.*;
 public class GameDataPanel extends JPanel {
 
     private final JTabbedPane dataTabsContainer;
+    private final HullsTreePanel hullsTreePanel;
+    private final WeaponsTreePanel weaponsTreePanel;
+    private final HullmodsTreePanel hullmodsTreePanel;
+    private final ShipSystemsTreePanel systemsTreePanel;
+    private final WingsTreePanel wingsTreePanel;
 
     public GameDataPanel() {
         dataTabsContainer = new JTabbedPane(SwingConstants.BOTTOM);
-        dataTabsContainer.addTab("Hulls", new HullsTreePanel());
-        dataTabsContainer.addTab("Weapons", new WeaponsTreePanel());
-        dataTabsContainer.addTab(StringValues.HULLMODS, new HullmodsTreePanel());
-        dataTabsContainer.addTab("Shipsystems", new ShipSystemsTreePanel());
-        dataTabsContainer.addTab(StringValues.WINGS, new WingsTreePanel());
+        hullsTreePanel = new HullsTreePanel();
+        dataTabsContainer.addTab("Hulls", hullsTreePanel);
+        weaponsTreePanel = new WeaponsTreePanel();
+        dataTabsContainer.addTab("Weapons", weaponsTreePanel);
+        hullmodsTreePanel = new HullmodsTreePanel();
+        dataTabsContainer.addTab(StringValues.HULLMODS, hullmodsTreePanel);
+        systemsTreePanel = new ShipSystemsTreePanel();
+        dataTabsContainer.addTab("Shipsystems", systemsTreePanel);
+        wingsTreePanel = new WingsTreePanel();
+        dataTabsContainer.addTab(StringValues.WINGS, wingsTreePanel);
         dataTabsContainer.addTab("Hull styles", new HullStylesPanel());
         dataTabsContainer.addTab("Engine styles", new EngineStylesPanel());
         dataTabsContainer.setTabLayoutPolicy(JTabbedPane.SCROLL_TAB_LAYOUT);
@@ -54,6 +65,13 @@ public class GameDataPanel extends JPanel {
                     } else if (variantDataTab == VariantDataTab.WINGS) {
                         selectWingsTab();
                     }
+                }
+                case DataTreesReloadQueued treesReload -> {
+                    hullsTreePanel.reload();
+                    weaponsTreePanel.reload();
+                    hullmodsTreePanel.reload();
+                    systemsTreePanel.reload();
+                    wingsTreePanel.reload();
                 }
                 default -> {}
             }

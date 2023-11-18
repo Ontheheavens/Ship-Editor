@@ -1,9 +1,6 @@
 package oth.shipeditor.representation.ship;
 
-import com.fasterxml.jackson.annotation.JsonAlias;
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.*;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import lombok.Getter;
@@ -26,6 +23,7 @@ import java.util.Map;
 @SuppressWarnings("ClassWithTooManyFields")
 @Getter @Setter
 @JsonSerialize(using = VariantFileSerializer.class)
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class VariantFile implements Variant {
 
     @JsonIgnore

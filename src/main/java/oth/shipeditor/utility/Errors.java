@@ -18,6 +18,11 @@ public final class Errors {
     private Errors() {
     }
 
+    public static void initGlobalHandler() {
+        Thread.UncaughtExceptionHandler globalExceptionHandler = new Handler();
+        Thread.setDefaultUncaughtExceptionHandler(globalExceptionHandler);
+    }
+
     public static void showFileError(String message) {
         Errors.showFileError(message, null);
     }
@@ -47,6 +52,13 @@ public final class Errors {
 
     public static void printToStream(Throwable throwable) {
         throwable.printStackTrace(StandardOutputRedirector.getErrorStreamProxy());
+    }
+
+    private static class Handler implements Thread.UncaughtExceptionHandler {
+
+        public void uncaughtException(Thread t, Throwable e) {
+            Errors.printToStream(e);
+        }
     }
 
 }
