@@ -192,7 +192,8 @@ public class BoundsPanel extends AbstractShipPropertiesPanel {
         };
 
         var opacityWidget = PainterVisibility.createVisibilityWidget(
-                readinessChecker, visibilityGetter, visibilitySetter, clearerListener, refresherListener
+                readinessChecker, visibilityGetter, visibilitySetter,
+                clearerListener, refresherListener
         );
 
         JLabel opacityLabel = opacityWidget.getFirst();

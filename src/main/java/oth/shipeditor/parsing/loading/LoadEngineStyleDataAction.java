@@ -7,6 +7,8 @@ import lombok.extern.log4j.Log4j2;
 import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.files.EngineStylesLoaded;
 import oth.shipeditor.parsing.FileUtilities;
+import oth.shipeditor.persistence.GameDataPackage;
+import oth.shipeditor.persistence.Settings;
 import oth.shipeditor.persistence.SettingsManager;
 import oth.shipeditor.representation.ship.EngineStyle;
 import oth.shipeditor.representation.GameDataRepository;
@@ -37,6 +39,12 @@ public class LoadEngineStyleDataAction extends DataLoadingAction {
 
         Map<String, EngineStyle> collectedEngineStyles = new LinkedHashMap<>();
         for (Map.Entry<Path, File> entry : engineStyleFiles.entrySet()) {
+            Settings settings = SettingsManager.getSettings();
+            GameDataPackage dataPackage = settings.getPackage(entry.getKey());
+            if (dataPackage != null && dataPackage.isDisabled()) {
+                continue;
+            }
+
             File styleFile = entry.getValue();
             log.trace("Engine style data file found in mod directory: {}", entry.getKey());
             Map<String, EngineStyle> stylesFromFile = LoadEngineStyleDataAction.loadEngineStyleFile(styleFile);

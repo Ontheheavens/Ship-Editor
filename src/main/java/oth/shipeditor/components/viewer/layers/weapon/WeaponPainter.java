@@ -104,9 +104,11 @@ public class WeaponPainter extends LayerPainter {
                 this.drawSpritePart(g, worldToScreen, weaponSprites.getMainSprite(mount));
                 this.drawSpritePart(g, worldToScreen, weaponSprites.getGunSprite(mount));
             }
-        }
 
-        this.paintLoadedMissiles(g, worldToScreen, w, h);
+            // Unsure whether loaded missiles of e.g. Sabot should render when mount is hidden.
+            // Hint usage is inconclusive.
+            this.paintLoadedMissiles(g, worldToScreen, w, h);
+        }
 
         if (mount != WeaponMount.HIDDEN && drawGlow) {
             this.drawSpritePart(g, worldToScreen, weaponSprites.getGlowSprite(mount));

@@ -38,6 +38,12 @@ class FileMenu extends JMenu {
         loadHullAsLayer.setText("Load ship file as layer");
         this.add(loadHullAsLayer);
 
+
+        JMenuItem loadSpriteAsHull = new JMenuItem(FileLoading.getLoadSpriteAsHull());
+        loadSpriteAsHull.setIcon(FontIcon.of(BoxiconsRegular.LAYER, 16, Themes.getIconColor()));
+        loadSpriteAsHull.setText("Load sprite as new hull");
+        this.add(loadSpriteAsHull);
+
         JMenuItem jsonCorrector = FileMenu.getJSONCorrector();
         jsonCorrector.setIcon(FontIcon.of(FluentUiRegularMZ.TEXT_GRAMMAR_OPTIONS_20, 16, Themes.getIconColor()));
         this.add(jsonCorrector);

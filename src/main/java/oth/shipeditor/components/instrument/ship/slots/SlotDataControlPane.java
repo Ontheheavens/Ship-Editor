@@ -1,35 +1,32 @@
 package oth.shipeditor.components.instrument.ship.slots;
 
-import oth.shipeditor.communication.EventBus;
-import oth.shipeditor.communication.events.viewer.ViewerRepaintQueued;
-import oth.shipeditor.components.instrument.ship.AbstractSlotValuesPanel;
-import oth.shipeditor.components.viewer.entities.weapon.SlotData;
+import oth.shipeditor.components.instrument.ship.shared.AbstractSlotValuesPanel;
 import oth.shipeditor.components.viewer.entities.weapon.WeaponSlotPoint;
+import oth.shipeditor.components.viewer.layers.LayerPainter;
+import oth.shipeditor.components.viewer.layers.ship.ShipLayer;
 import oth.shipeditor.components.viewer.layers.ship.ShipPainter;
 import oth.shipeditor.components.viewer.painters.points.ship.WeaponSlotPainter;
 import oth.shipeditor.representation.weapon.WeaponMount;
 import oth.shipeditor.representation.weapon.WeaponSize;
 import oth.shipeditor.representation.weapon.WeaponType;
+import oth.shipeditor.utility.Utility;
+import oth.shipeditor.utility.overseers.StaticController;
 
-import javax.swing.*;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
-import java.awt.event.ActionListener;
 import java.util.List;
 import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 
 /**
  * @author Ontheheavens
- * @since 11.08.2023
+ * @since 19.11.2023
  */
 public class SlotDataControlPane extends AbstractSlotValuesPanel {
 
     private final WeaponSlotList slotList;
 
-    @SuppressWarnings("TypeMayBeWeakened")
-    SlotDataControlPane(WeaponSlotPoint slotPoint, WeaponSlotList parent) {
-        super(slotPoint, true);
-        this.slotList = parent;
+    SlotDataControlPane(WeaponSlotList weaponSlotList) {
+        super(true);
+        this.slotList = weaponSlotList;
     }
 
     @Override
@@ -38,92 +35,74 @@ public class SlotDataControlPane extends AbstractSlotValuesPanel {
     }
 
     @Override
-    protected String getNextUniqueID(ShipPainter shipPainter) {
+    protected WeaponSlotPoint getSelectedFromLayer(LayerPainter layerPainter) {
+        return Utility.getSelectedFromLayer(layerPainter);
+    }
+
+    @Override
+    protected String getNextUniqueID() {
+        var layer = StaticController.getActiveLayer();
+        if (!(layer instanceof ShipLayer shipLayer)) return null;
+        var shipPainter = shipLayer.getPainter();
+        if (shipPainter == null || shipPainter.isUninitialized()) return null;
+
         var slotPainter = shipPainter.getWeaponSlotPainter();
         return slotPainter.generateUniqueSlotID();
     }
 
     @Override
-    protected ActionListener getTypeSelectorListener(JComboBox<WeaponType> typeSelector) {
-        return e -> this.actOnSelectedValues((weaponSlotPainter, weaponSlotPoints) -> {
-            WeaponType selectedType = (WeaponType) typeSelector.getSelectedItem();
-            weaponSlotPainter.changeSlotsTypeWithMirrorCheck(selectedType, weaponSlotPoints);
-        });
+    protected Consumer<String> getIDSetter() {
+        return slotID -> actOnSelectedValues((weaponSlotPainter, slotPoints) ->
+                        weaponSlotPainter.changeSlotsIDWithMirrorCheck(slotID, slotPoints));
     }
 
     @Override
-    protected ActionListener getMountSelectorListener(JComboBox<WeaponMount> mountSelector) {
-        return e -> this.actOnSelectedValues((weaponSlotPainter, weaponSlotPoints) -> {
-            WeaponMount selectedMount = (WeaponMount) mountSelector.getSelectedItem();
-            weaponSlotPainter.changeSlotsMountWithMirrorCheck(selectedMount, weaponSlotPoints);
-        });
+    protected Consumer<WeaponType> getTypeSetter() {
+        return type -> actOnSelectedValues((weaponSlotPainter, slotPoints) ->
+                weaponSlotPainter.changeSlotsTypeWithMirrorCheck(type, slotPoints));
     }
 
     @Override
-    protected ActionListener getSizeSelectorListener(JComboBox<WeaponSize> sizeSelector) {
-        return e -> this.actOnSelectedValues((weaponSlotPainter, weaponSlotPoints) -> {
-            WeaponSize selectedSize = (WeaponSize) sizeSelector.getSelectedItem();
-            weaponSlotPainter.changeSlotsSizeWithMirrorCheck(selectedSize, weaponSlotPoints);
-        });
+    protected Consumer<WeaponMount> getMountSetter() {
+        return mount -> this.actOnSelectedValues((weaponSlotPainter, weaponSlotPoints) ->
+                weaponSlotPainter.changeSlotsMountWithMirrorCheck(mount, weaponSlotPoints));
     }
 
     @Override
-    protected ChangeListener getAngleChangeListener(JSpinner spinner,
-                                                    SpinnerNumberModel spinnerNumberModel,
-                                                    SlotData slotPoint) {
-        return new ChangeListener() {
-            @Override
-            public void stateChanged(ChangeEvent e) {
-                WeaponSlotPoint weaponSlotPoint = (WeaponSlotPoint) slotPoint;
-                Number modelNumber = spinnerNumberModel.getNumber();
-                double current = modelNumber.doubleValue();
+    protected Consumer<WeaponSize> getSizeSetter() {
+        return size -> this.actOnSelectedValues((weaponSlotPainter, weaponSlotPoints) ->
+                weaponSlotPainter.changeSlotsSizeWithMirrorCheck(size, weaponSlotPoints));
+    }
 
-                ShipPainter slotParent = weaponSlotPoint.getParent();
-                WeaponSlotPainter weaponSlotPainter = slotParent.getWeaponSlotPainter();
-                weaponSlotPainter.changePointAngleWithMirrorCheck(weaponSlotPoint, current);
-
-                spinner.removeChangeListener(this);
-            }
+    @Override
+    protected Consumer<Double> getAngleSetter() {
+        return angle -> {
+            ShipPainter slotParent = getCachedLayerPainter();
+            WeaponSlotPainter weaponSlotPainter = slotParent.getWeaponSlotPainter();
+            WeaponSlotPoint selectedFromLayer = getSelectedFromLayer(slotParent);
+            weaponSlotPainter.changePointAngleWithMirrorCheck(selectedFromLayer, angle);
         };
     }
 
     @Override
-    protected ChangeListener getArcChangeListener(JSpinner spinner,
-                                                  SpinnerNumberModel spinnerNumberModel,
-                                                  SlotData slotPoint) {
-        return new ChangeListener() {
-            @Override
-            public void stateChanged(ChangeEvent e) {
-                WeaponSlotPoint weaponSlotPoint = (WeaponSlotPoint) slotPoint;
-
-                Number modelNumber = spinnerNumberModel.getNumber();
-                double current = modelNumber.doubleValue();
-                ShipPainter slotParent = weaponSlotPoint.getParent();
-                WeaponSlotPainter weaponSlotPainter = slotParent.getWeaponSlotPainter();
-                weaponSlotPainter.changeArcWithMirrorCheck(weaponSlotPoint, current);
-
-                spinner.removeChangeListener(this);
-            }
+    protected Consumer<Double> getArcSetter() {
+        return arc -> {
+            ShipPainter slotParent = getCachedLayerPainter();
+            WeaponSlotPainter weaponSlotPainter = slotParent.getWeaponSlotPainter();
+            WeaponSlotPoint selectedFromLayer = getSelectedFromLayer(slotParent);
+            weaponSlotPainter.changeArcWithMirrorCheck(selectedFromLayer, arc);
         };
     }
 
     @Override
-    protected ChangeListener getRenderOrderChangeListener(JSpinner spinner,
-                                                          SpinnerNumberModel spinnerNumberModel,
-                                                          SlotData slotPoint) {
-        return new ChangeListener() {
-            @Override
-            public void stateChanged(ChangeEvent e) {
-                WeaponSlotPoint weaponSlotPoint = (WeaponSlotPoint) slotPoint;
+    protected Consumer<Double> getRenderOrderSetter() {
+        return renderOrder -> {
+            ShipPainter slotParent = getCachedLayerPainter();
+            WeaponSlotPainter weaponSlotPainter = slotParent.getWeaponSlotPainter();
+            WeaponSlotPoint selectedFromLayer = getSelectedFromLayer(slotParent);
+            int renderOrderValue = renderOrder.intValue();
+            weaponSlotPainter.changeRenderOrderWithMirrorCheck(selectedFromLayer, renderOrderValue);
 
-                Number modelNumber = spinnerNumberModel.getNumber();
-                int current = modelNumber.intValue();
-                ShipPainter slotParent = weaponSlotPoint.getParent();
-                WeaponSlotPainter weaponSlotPainter = slotParent.getWeaponSlotPainter();
-                weaponSlotPainter.changeRenderOrderWithMirrorCheck(weaponSlotPoint, current);
-
-                spinner.removeChangeListener(this);
-            }
         };
     }
 
@@ -135,7 +114,6 @@ public class SlotDataControlPane extends AbstractSlotValuesPanel {
         List<WeaponSlotPoint> selectedValuesList = slotList.getSelectedValuesList();
         if (!selectedValuesList.isEmpty()) {
             action.accept(slotPainter, selectedValuesList);
-            EventBus.publish(new ViewerRepaintQueued());
         }
     }
 

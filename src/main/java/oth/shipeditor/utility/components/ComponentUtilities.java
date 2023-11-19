@@ -18,10 +18,7 @@ import oth.shipeditor.utility.text.StringValues;
 import oth.shipeditor.utility.themes.Themes;
 
 import javax.swing.*;
-import javax.swing.border.Border;
-import javax.swing.border.EmptyBorder;
-import javax.swing.border.MatteBorder;
-import javax.swing.border.TitledBorder;
+import javax.swing.border.*;
 import javax.swing.event.ChangeListener;
 import java.awt.*;
 import java.awt.event.ActionListener;
@@ -85,6 +82,15 @@ public final class ComponentUtilities {
         JSeparator separator = new JSeparator(SwingConstants.HORIZONTAL);
         separator.setMaximumSize(new Dimension(Integer.MAX_VALUE, height));
         panel.add(separator);
+    }
+
+    @SuppressWarnings("WeakerAccess")
+    public static void setPanelTopLineBorder(JPanel panel, int height) {
+        Border emptyBorder = new EmptyBorder(height, 0, 2, 0);
+        Border lineBorder = new MatteBorder(
+                new Insets(1, 0, 0,0), Themes.getBorderColor()
+        );
+        panel.setBorder(new CompoundBorder(emptyBorder, lineBorder));
     }
 
     private static JLabel createIconLabelWithBorder(Icon icon) {
@@ -295,9 +301,11 @@ public final class ComponentUtilities {
     public static<T> Pair<JPanel, JCheckBox> createReorderCheckboxPanel(SortableList<T> pointList) {
         JPanel container = new JPanel();
         container.setLayout(new BoxLayout(container, BoxLayout.LINE_AXIS));
-        container.setBorder(new EmptyBorder(2, 0, 2, 0));
+
+        ComponentUtilities.setPanelTopLineBorder(container, 6);
 
         JCheckBox reorderCheckbox = new JCheckBox("Reorder by drag");
+        reorderCheckbox.setBorder(new EmptyBorder(4, 0, 0, 0));
         reorderCheckbox.addItemListener(e -> {
             boolean reorderOn = reorderCheckbox.isSelected();
             pointList.setDragEnabled(reorderOn);

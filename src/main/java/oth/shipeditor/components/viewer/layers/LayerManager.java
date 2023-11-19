@@ -55,7 +55,7 @@ public class LayerManager {
         return layers.isEmpty();
     }
 
-    private void activateLastLayer() {
+    public void activateLastLayer() {
         ViewerLayer next = layers.get(layers.size() - 1);
         this.setActiveLayer(next);
     }
@@ -147,7 +147,9 @@ public class LayerManager {
                 ShipHull hull = checkedLayer.getHull();
                 if (hull != null) {
                     ShipCSVEntry shipEntry = GameDataRepository.retrieveShipCSVEntryByID(hull.getHullID());
-                    action.accept(hull, shipEntry.getHullSpecFile());
+                    if (shipEntry != null) {
+                        action.accept(hull, shipEntry.getHullSpecFile());
+                    }
                 }
             }
         });

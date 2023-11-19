@@ -4,120 +4,139 @@ import lombok.Getter;
 import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.components.SlotControlRepaintQueued;
 import oth.shipeditor.communication.events.components.SlotsPanelRepaintQueued;
-import oth.shipeditor.communication.events.viewer.layers.LayerWasSelected;
 import oth.shipeditor.communication.events.viewer.points.PointAddConfirmed;
 import oth.shipeditor.communication.events.viewer.points.PointRemovedConfirmed;
 import oth.shipeditor.communication.events.viewer.points.WeaponSlotInsertedConfirmed;
+import oth.shipeditor.components.instrument.ship.AbstractShipPropertiesPanel;
 import oth.shipeditor.components.viewer.entities.weapon.WeaponSlotPoint;
-import oth.shipeditor.components.viewer.layers.ViewerLayer;
-import oth.shipeditor.components.viewer.layers.ship.ShipLayer;
+import oth.shipeditor.components.viewer.layers.LayerPainter;
 import oth.shipeditor.components.viewer.layers.ship.ShipPainter;
 import oth.shipeditor.components.viewer.painters.PainterVisibility;
 import oth.shipeditor.components.viewer.painters.points.ship.WeaponSlotPainter;
-import oth.shipeditor.utility.objects.Pair;
 import oth.shipeditor.utility.components.ComponentUtilities;
+import oth.shipeditor.utility.objects.Pair;
 
 import javax.swing.*;
+import javax.swing.border.EmptyBorder;
 import java.awt.*;
-import java.awt.event.ActionListener;
+import java.util.Map;
+import java.util.function.BiConsumer;
+import java.util.function.BooleanSupplier;
+import java.util.function.Consumer;
+import java.util.function.Function;
 
 /**
  * @author Ontheheavens
- * @since 29.07.2023
+ * @since 19.11.2023
  */
-public class WeaponSlotListPanel extends JPanel {
+public class WeaponSlotListPanel extends AbstractShipPropertiesPanel {
 
     @Getter
-    private final WeaponSlotList slotPointContainer;
+    private WeaponSlotList slotPointContainer;
 
-    private final JCheckBox reorderCheckbox;
+    private SlotDataControlPane slotDataPane;
 
-    private DefaultListModel<WeaponSlotPoint> model = new DefaultListModel<>();
+    private JCheckBox reorderCheckbox;
 
-    private WeaponSlotPainter cachedPainter;
+    private DefaultListModel<WeaponSlotPoint> model;
 
     WeaponSlotListPanel() {
+        this.initPointListener();
+    }
+
+    private void refreshPointDataPane(WeaponSlotPoint slotPoint) {
+        ShipPainter painter = (ShipPainter) getCachedLayerPainter();
+        if (slotPoint != null) {
+            painter = slotPoint.getParent();
+        }
+        this.slotDataPane.refresh(painter);
+    }
+
+    @Override
+    public void refreshContent(LayerPainter layerPainter) {
+        DefaultListModel<WeaponSlotPoint> newModel = new DefaultListModel<>();
+
+        if (!(layerPainter instanceof ShipPainter shipPainter) || shipPainter.isUninitialized()) {
+            this.model = newModel;
+            this.slotPointContainer.setModel(newModel);
+
+            fireClearingListeners(layerPainter);
+            refreshPointDataPane(null);
+
+
+            this.slotPointContainer.setEnabled(false);
+            this.reorderCheckbox.setEnabled(false);
+            return;
+        }
+
+        WeaponSlotPainter weaponSlotPainter = shipPainter.getWeaponSlotPainter();
+        newModel.addAll(weaponSlotPainter.getPointsIndex());
+
+        this.model = newModel;
+        this.slotPointContainer.setModel(newModel);
+        this.slotPointContainer.setEnabled(true);
+        this.reorderCheckbox.setEnabled(true);
+
+        fireRefresherListeners(layerPainter);
+        refreshPointDataPane(weaponSlotPainter.getSelected());
+    }
+
+    @Override
+    protected void populateContent() {
         this.setLayout(new BorderLayout());
 
-        JPanel northContainer = new JPanel();
-        northContainer.setLayout(new BoxLayout(northContainer, BoxLayout.PAGE_AXIS));
+        this.model = new DefaultListModel<>();
+        this.slotPointContainer = new WeaponSlotList(model, this::refreshPointDataPane);
+        this.slotDataPane = new SlotDataControlPane(slotPointContainer);
 
-        JPanel visibilityWidgetContainer = this.createPainterVisibilityPanel();
-        northContainer.add(visibilityWidgetContainer);
+        JPanel northContainer = new JPanel(new BorderLayout());
+        var visibilityWidget = createSlotsVisibilityWidget();
+        Map<JLabel, JComponent> visibilityWidgetMap = Map.of(visibilityWidget.getFirst(), visibilityWidget.getSecond());
+        JPanel visibilityWidgetContainer = this.createWidgetsPanel(visibilityWidgetMap);
+        visibilityWidgetContainer.setBorder(new EmptyBorder(4, 0, 3, 0));
+        northContainer.add(visibilityWidgetContainer, BorderLayout.PAGE_START);
 
-        ComponentUtilities.addSeparatorToBoxPanel(northContainer);
-        northContainer.add(Box.createRigidArea(new Dimension(10, 3)));
+        ComponentUtilities.outfitPanelWithTitle(slotDataPane, "Slot Data");
+        northContainer.add(slotDataPane, BorderLayout.CENTER);
 
-        JPanel slotInfoPanel = new JPanel();
-        slotInfoPanel.setLayout(new BorderLayout());
-        northContainer.add(slotInfoPanel);
+        this.refreshPointDataPane(null);
 
-        slotPointContainer = new WeaponSlotList(model, slotInfoPanel);
-        slotPointContainer.refreshSlotControlPane();
         JScrollPane scrollableContainer = new JScrollPane(slotPointContainer);
-
-        ComponentUtilities.addSeparatorToBoxPanel(northContainer);
 
         Pair<JPanel, JCheckBox> reorderWidget = ComponentUtilities.createReorderCheckboxPanel(slotPointContainer);
         reorderCheckbox = reorderWidget.getSecond();
-        northContainer.add(reorderWidget.getFirst());
+        northContainer.add(reorderWidget.getFirst(), BorderLayout.PAGE_END);
 
         this.add(northContainer, BorderLayout.PAGE_START);
 
         this.add(scrollableContainer, BorderLayout.CENTER);
-
-        this.initLayerListeners();
-        this.initPointListener();
     }
 
-    private void initLayerListeners() {
+    @Override
+    protected void initLayerListeners() {
+        super.initLayerListeners();
         EventBus.subscribe(event -> {
             if (event instanceof SlotsPanelRepaintQueued) {
-                this.repaint();
-                slotPointContainer.refreshSlotControlPane();
+                this.refreshPointDataPane(null);
             }
         });
         EventBus.subscribe(event -> {
             if (event instanceof SlotControlRepaintQueued) {
-                if (cachedPainter != null) {
-                    WeaponSlotPoint cachedSelected = this.slotPointContainer.getSelectedValue();
+                WeaponSlotPainter cachedSlotPainter = getCachedSlotPainter();
+                if (cachedSlotPainter != null) {
+                    int[] cachedSelected = this.slotPointContainer.getSelectedIndices();
                     DefaultListModel<WeaponSlotPoint> newModel = new DefaultListModel<>();
-                    newModel.addAll(cachedPainter.getPointsIndex());
+                    newModel.addAll(cachedSlotPainter.getPointsIndex());
 
                     this.model = newModel;
                     this.slotPointContainer.setModel(newModel);
-                    this.slotPointContainer.setSelectedValue(cachedSelected, true);
+                    this.slotPointContainer.setSelectedIndices(cachedSelected);
+                    if (!this.model.isEmpty() && cachedSelected.length > 0) {
+                        this.slotPointContainer.ensureIndexIsVisible(cachedSelected[0]);
+                    }
                 }
 
-                slotPointContainer.refreshSlotControlPane();
-                slotPointContainer.repaint();
-            }
-        });
-        EventBus.subscribe(event -> {
-            if (event instanceof LayerWasSelected checked) {
-                ViewerLayer selected = checked.selected();
-                DefaultListModel<WeaponSlotPoint> newModel = new DefaultListModel<>();
-                if (!(selected instanceof ShipLayer checkedLayer)) {
-                    this.model = newModel;
-                    this.slotPointContainer.setModel(newModel);
-                    this.slotPointContainer.setEnabled(false);
-                    reorderCheckbox.setEnabled(false);
-                    return;
-                }
-                ShipPainter painter = checkedLayer.getPainter();
-                if (painter != null && !painter.isUninitialized()) {
-                    WeaponSlotPainter weaponSlotPainter = painter.getWeaponSlotPainter();
-                    cachedPainter = weaponSlotPainter;
-                    newModel.addAll(weaponSlotPainter.getPointsIndex());
-                    this.slotPointContainer.setEnabled(true);
-                    reorderCheckbox.setEnabled(true);
-                } else {
-                    this.slotPointContainer.setEnabled(false);
-                    reorderCheckbox.setEnabled(false);
-                }
-                this.model = newModel;
-                this.slotPointContainer.setModel(newModel);
-                slotPointContainer.refreshSlotControlPane();
+                this.refreshPointDataPane(null);
             }
         });
     }
@@ -127,33 +146,60 @@ public class WeaponSlotListPanel extends JPanel {
             if (event instanceof PointAddConfirmed checked && checked.point() instanceof WeaponSlotPoint point) {
                 model.addElement(point);
                 slotPointContainer.setSelectedIndex(model.indexOf(point));
+                this.refreshPointDataPane(null);
             }
         });
         EventBus.subscribe(event -> {
             if (event instanceof WeaponSlotInsertedConfirmed checked) {
                 model.insertElementAt(checked.toInsert(), checked.precedingIndex());
                 slotPointContainer.setSelectedIndex(model.indexOf(checked.toInsert()));
+                this.refreshPointDataPane(null);
             }
         });
         EventBus.subscribe(event -> {
             if (event instanceof PointRemovedConfirmed checked && checked.point() instanceof WeaponSlotPoint point) {
                 model.removeElement(point);
+                this.refreshPointDataPane(null);
             }
         });
     }
 
-    @SuppressWarnings("MethodMayBeStatic")
-    private JPanel createPainterVisibilityPanel() {
-        JComboBox<PainterVisibility> visibilityList = new JComboBox<>(PainterVisibility.values());
-        ActionListener selectionAction = e -> {
-            if (!(e.getSource() instanceof ShipPainter checked)) return;
-            WeaponSlotPainter slotPainter = checked.getWeaponSlotPainter();
-            PainterVisibility valueOfLayer = slotPainter.getVisibilityMode();
-            visibilityList.setSelectedItem(valueOfLayer);
+    private WeaponSlotPainter getCachedSlotPainter() {
+        LayerPainter cachedLayerPainter = getCachedLayerPainter();
+        if (cachedLayerPainter instanceof ShipPainter shipPainter && !shipPainter.isUninitialized()) {
+            return shipPainter.getWeaponSlotPainter();
+        }
+        return null;
+    }
+
+    private Pair<JLabel, JComboBox<PainterVisibility>> createSlotsVisibilityWidget() {
+        BooleanSupplier readinessChecker = this::isWidgetsReadyForInput;
+        Consumer<PainterVisibility> visibilitySetter = changedValue -> {
+            LayerPainter cachedLayerPainter = getCachedLayerPainter();
+            if (cachedLayerPainter != null) {
+                WeaponSlotPainter slotPainter = ((ShipPainter) cachedLayerPainter).getWeaponSlotPainter();
+                slotPainter.setVisibilityMode(changedValue);
+                processChange();
+            }
         };
 
-        return PainterVisibility.createVisibilityWidget(visibilityList,
-                WeaponSlotPainter.class, selectionAction, "");
+        BiConsumer<JComponent, Consumer<LayerPainter>> clearerListener = this::registerWidgetClearer;
+        BiConsumer<JComponent, Consumer<LayerPainter>> refresherListener = this::registerWidgetRefresher;
+
+        Function<LayerPainter, PainterVisibility> visibilityGetter = layerPainter -> {
+            WeaponSlotPainter slotPainter = ((ShipPainter) layerPainter).getWeaponSlotPainter();
+            return slotPainter.getVisibilityMode();
+        };
+
+        var opacityWidget = PainterVisibility.createVisibilityWidget(
+                readinessChecker, visibilityGetter, visibilitySetter,
+                clearerListener, refresherListener
+        );
+
+        JLabel opacityLabel = opacityWidget.getFirst();
+        opacityLabel.setText("Slots view");
+
+        return opacityWidget;
     }
 
 }

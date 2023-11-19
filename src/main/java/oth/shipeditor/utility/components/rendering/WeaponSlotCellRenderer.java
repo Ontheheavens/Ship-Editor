@@ -4,6 +4,7 @@ import com.formdev.flatlaf.ui.FlatLineBorder;
 import oth.shipeditor.components.viewer.entities.weapon.WeaponSlotPoint;
 import oth.shipeditor.representation.weapon.WeaponSize;
 import oth.shipeditor.representation.weapon.WeaponType;
+import oth.shipeditor.utility.Utility;
 import oth.shipeditor.utility.components.ComponentUtilities;
 
 import javax.swing.*;
@@ -50,6 +51,8 @@ public class WeaponSlotCellRenderer extends BoxPanelCellRenderer<WeaponSlotPoint
                                                   boolean isSelected, boolean cellHasFocus) {
         super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
 
+        setToolTipText("");
+
         WeaponType weaponType = value.getWeaponType();
         Icon color = ComponentUtilities.createIconFromColor(weaponType.getColor(), 10, 10);
         colorIcon.setIcon(color);
@@ -64,6 +67,14 @@ public class WeaponSlotCellRenderer extends BoxPanelCellRenderer<WeaponSlotPoint
 
         slotIDText.setForeground(foreground);
         positionText.setForeground(foreground);
+
+        String slotType = "Type: " + value.getWeaponType();
+        String slotMount = "Mount: " + value.getWeaponMount();
+        String slotSize = "Size: " + value.getWeaponSize();
+        String slotAngle = "Angle: " + value.getAngle();
+        String slotArc = "Arc: " + value.getArc();
+        String tooltipText = Utility.getWithLinebreaks(slotType, slotMount, slotSize, slotAngle, slotArc);
+        this.setToolTipText(tooltipText);
 
         slotIDText.setText(value.getId() +":");
         positionText.setText(value.getPositionText());

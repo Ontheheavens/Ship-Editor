@@ -87,7 +87,7 @@ public class ViewerDropReceiver extends DropTarget {
         draggedEntry = null;
     }
 
-    @SuppressWarnings({"unchecked", "AccessToStaticFieldLockedOnInstance"})
+    @SuppressWarnings({"unchecked", "AccessToStaticFieldLockedOnInstance", "IfStatementWithTooManyBranches"})
     public synchronized void drop(DropTargetDropEvent dtde) {
         try {
             Transferable transferable = dtde.getTransferable();
@@ -163,6 +163,7 @@ public class ViewerDropReceiver extends DropTarget {
         boolean hasModuleSlots = false;
         if (StaticController.getActiveLayer() instanceof ShipLayer targetLayer) {
             ShipPainter shipPainter = targetLayer.getPainter();
+            if (shipPainter == null || shipPainter.isUninitialized()) return false;
             WeaponSlotPainter weaponSlotPainter = shipPainter.getWeaponSlotPainter();
             hasModuleSlots = weaponSlotPainter.hasSlotsOfType(WeaponType.STATION_MODULE);
         }

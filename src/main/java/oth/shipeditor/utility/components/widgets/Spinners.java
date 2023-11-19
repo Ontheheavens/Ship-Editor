@@ -133,7 +133,7 @@ public final class Spinners {
         return container;
     }
 
-    private static JSpinner createWheelable(SpinnerNumberModel model) {
+    public static JSpinner createWheelable(SpinnerNumberModel model) {
         return Spinners.createWheelable(model, IncrementType.CHUNK);
     }
 

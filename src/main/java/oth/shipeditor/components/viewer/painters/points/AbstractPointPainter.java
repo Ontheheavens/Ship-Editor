@@ -312,11 +312,11 @@ public abstract class AbstractPointPainter implements Painter {
 
     public void removePoint(BaseWorldPoint point) {
         this.removePointFromIndex(point);
-        EventBus.publish(new PointRemovedConfirmed(point));
         if (this.selected == point) {
             this.setSelected(null);
         }
         point.setPointSelected(false);
+        EventBus.publish(new PointRemovedConfirmed(point));
     }
 
     @SuppressWarnings("BooleanMethodIsAlwaysInverted")

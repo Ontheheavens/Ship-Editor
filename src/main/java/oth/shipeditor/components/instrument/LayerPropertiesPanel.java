@@ -1,6 +1,7 @@
 package oth.shipeditor.components.instrument;
 
 import lombok.Getter;
+import lombok.Setter;
 import oth.shipeditor.components.viewer.layers.LayerPainter;
 import oth.shipeditor.utility.components.ComponentUtilities;
 
@@ -25,6 +26,7 @@ public abstract class LayerPropertiesPanel extends JPanel {
 
     private boolean widgetsReadyForInput;
 
+    @Setter
     private LayerPainter cachedLayerPainter;
 
     protected LayerPropertiesPanel() {

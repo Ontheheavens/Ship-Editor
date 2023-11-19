@@ -34,7 +34,6 @@ import java.util.function.BiConsumer;
  * @author Ontheheavens
  * @since 09.07.2023
  */
-@SuppressWarnings("OverlyCoupledClass")
 public final class StaticController {
 
     @Getter @Setter
@@ -184,17 +183,8 @@ public final class StaticController {
         ViewerLayer viewerLayer = StaticController.getActiveLayer();
         if (viewerLayer instanceof ShipLayer shipLayer) {
             var shipPainter = shipLayer.getPainter();
-            if (shipPainter == null || shipPainter.isUninitialized()) return null;
-            var slotPainter = shipPainter.getWeaponSlotPainter();
-
-            WeaponSlotPoint selected = slotPainter.getSelected();
-            var eligibleSlots = slotPainter.getEligibleForSelection();
-
-            if (selected != null && eligibleSlots.contains(selected)) {
-                return selected;
-            }
+            return Utility.getSelectedFromLayer(shipPainter);
         }
-
         return null;
     }
 

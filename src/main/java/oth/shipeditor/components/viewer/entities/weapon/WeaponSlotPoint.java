@@ -284,4 +284,9 @@ public class WeaponSlotPoint extends AngledPoint implements SlotPoint {
         return result;
     }
 
+    @Override
+    public String toString() {
+        return "WeaponSlotPoint #" + this.hashCode() + " (ID: " + this.getId() + ")";
+    }
+
 }

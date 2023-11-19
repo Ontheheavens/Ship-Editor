@@ -64,10 +64,7 @@ public class LaunchBaysTree extends DynamicWidthTree {
         EventBus.subscribe(event -> {
             if (event instanceof PointSelectedConfirmed checked) {
                 if (!(checked.point() instanceof LaunchPortPoint port)) return;
-                actOnPortPoint(port, node -> {
-                    this.expandTree();
-                    this.setSelectionPath(new TreePath(node.getPath()));
-                });
+                actOnPortPoint(port, node -> this.setSelectionPath(new TreePath(node.getPath())));
             }
         });
     }

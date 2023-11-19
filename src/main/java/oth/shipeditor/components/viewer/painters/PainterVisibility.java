@@ -53,18 +53,16 @@ public enum PainterVisibility {
         };
     }
 
-    @SuppressWarnings("StaticMethodOnlyUsedInOneClass")
-    public static ActionListener createActionListener(JComboBox<PainterVisibility> visibilityList,
-                                                      Class<? extends AbstractPointPainter> painterClass) {
+    private static ActionListener createActionListener(JComboBox<PainterVisibility> visibilityList,
+                                                       Class<? extends AbstractPointPainter> painterClass) {
         return e -> {
             PainterVisibility changedValue = (PainterVisibility) visibilityList.getSelectedItem();
             EventBus.publish(new PainterVisibilityChanged(painterClass, changedValue));
         };
     }
 
-    @SuppressWarnings("StaticMethodOnlyUsedInOneClass")
-    public static BusEventListener createBusEventListener(JComboBox<PainterVisibility> visibilityList,
-                                                          ActionListener selectionAction) {
+    private static BusEventListener createBusEventListener(JComboBox<PainterVisibility> visibilityList,
+                                                           ActionListener selectionAction) {
         return event -> {
             if (event instanceof LayerWasSelected checked) {
                 ViewerLayer selected = checked.selected();
@@ -89,8 +87,8 @@ public enum PainterVisibility {
     public static JPanel createVisibilityWidget(JComboBox<PainterVisibility> visibilityList,
                                                 Class<? extends AbstractPointPainter> painterClass,
                                                 ActionListener selectionAction, String labelName) {
-        ActionListener chooseAction = createActionListener(visibilityList, painterClass);
-        return createVisibilityWidgetRaw(visibilityList, chooseAction, selectionAction, labelName);
+        ActionListener chooseAction = PainterVisibility.createActionListener(visibilityList, painterClass);
+        return PainterVisibility.createVisibilityWidgetRaw(visibilityList, chooseAction, selectionAction, labelName);
     }
 
     public static JPanel createVisibilityWidgetRaw(JComboBox<PainterVisibility> visibilityList,
@@ -100,9 +98,9 @@ public enum PainterVisibility {
         JPanel widgetPanel = new JPanel();
         widgetPanel.setLayout(new GridBagLayout());
 
-        visibilityList.setRenderer(createCellRenderer());
+        visibilityList.setRenderer(PainterVisibility.createCellRenderer());
         visibilityList.addActionListener(chooseAction);
-        EventBus.subscribe(createBusEventListener(visibilityList, selectionAction));
+        EventBus.subscribe(PainterVisibility.createBusEventListener(visibilityList, selectionAction));
 
         visibilityList.setMaximumSize(visibilityList.getPreferredSize());
 
@@ -123,8 +121,8 @@ public enum PainterVisibility {
     public static Pair<JLabel, JComboBox<PainterVisibility>> createVisibilityWidget(
             BooleanSupplier widgetChecker, Function<LayerPainter, PainterVisibility> getter,
             Consumer<PainterVisibility> setter,
-            BiConsumer<JComponent, Consumer<LayerPainter>> clearerListener,
-            BiConsumer<JComponent, Consumer<LayerPainter>> refresherListener) {
+            BiConsumer<JComponent, Consumer<LayerPainter>> clearerRegistrar,
+            BiConsumer<JComponent, Consumer<LayerPainter>> refresherRegistrar) {
 
         JComboBox<PainterVisibility> visibilityList = new JComboBox<>(PainterVisibility.values());
         visibilityList.setRenderer(PainterVisibility.createCellRenderer());
@@ -140,12 +138,12 @@ public enum PainterVisibility {
             }
         });
 
-        clearerListener.accept(visibilityList, layer -> {
+        clearerRegistrar.accept(visibilityList, layer -> {
             visibilityList.setSelectedItem(PainterVisibility.SHOWN_WHEN_EDITED);
             visibilityList.setEnabled(false);
         });
 
-        refresherListener.accept(visibilityList, layerPainter -> {
+        refresherRegistrar.accept(visibilityList, layerPainter -> {
             visibilityList.setEnabled(true);
             visibilityList.setSelectedItem(getter.apply(layerPainter));
         });

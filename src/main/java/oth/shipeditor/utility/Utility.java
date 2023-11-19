@@ -5,6 +5,7 @@ import oth.shipeditor.components.CoordsDisplayMode;
 import oth.shipeditor.components.viewer.entities.AngledPoint;
 import oth.shipeditor.components.viewer.entities.BaseWorldPoint;
 import oth.shipeditor.components.viewer.entities.WorldPoint;
+import oth.shipeditor.components.viewer.entities.weapon.WeaponSlotPoint;
 import oth.shipeditor.components.viewer.layers.LayerPainter;
 import oth.shipeditor.components.viewer.layers.ViewerLayer;
 import oth.shipeditor.components.viewer.layers.ship.ShipPainter;
@@ -316,6 +317,21 @@ public final class Utility {
         double deltaX = toFlip.getX() - anchorX;
         double newX = anchorX - deltaX;
         toFlip.setLocation(newX, toFlip.getY());
+    }
+
+    public static WeaponSlotPoint getSelectedFromLayer(LayerPainter layerPainter) {
+        if (layerPainter instanceof ShipPainter shipPainter) {
+            if (shipPainter.isUninitialized()) return null;
+            var slotPainter = shipPainter.getWeaponSlotPainter();
+
+            WeaponSlotPoint selected = slotPainter.getSelected();
+            var eligibleSlots = slotPainter.getEligibleForSelection();
+
+            if (selected != null && eligibleSlots.contains(selected)) {
+                return selected;
+            }
+        }
+        return null;
     }
 
 }

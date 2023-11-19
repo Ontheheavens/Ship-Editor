@@ -78,6 +78,8 @@ public final class StringValues {
     public static final String SHIELD_RADIUS = "Shield radius:";
     public static final String CREATE_NEXT_UNIQUE_ID = "Create next unique ID";
     public static final String RIGHT_CLICK_TO_GENERATE = "Right-click to generate";
+    public static final String RIGHT_CLICK_TO_CHANGE_SPRITE = "Right-click to change sprite";
+    public static final String RIGHT_CLICK_TO_CHANGE_COLOR = "Right-click to change color";
 
     private StringValues() {
     }

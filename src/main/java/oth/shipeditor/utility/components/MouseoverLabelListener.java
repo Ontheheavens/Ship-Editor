@@ -29,7 +29,7 @@ public class MouseoverLabelListener extends MouseAdapter {
         this(menu, null, inputComponent, Themes.getPanelHighlightColor());
     }
 
-    public MouseoverLabelListener(JPopupMenu menu, JComponent inputComponent, Color color) {
+    MouseoverLabelListener(JPopupMenu menu, JComponent inputComponent, Color color) {
         this(menu, null, inputComponent, color);
     }
 
@@ -43,6 +43,9 @@ public class MouseoverLabelListener extends MouseAdapter {
     @Override
     public void mouseEntered(MouseEvent e) {
         super.mouseEntered(e);
+        if (!component.isEnabled()) {
+            return;
+        }
         if (popupMenu != null) {
             if (!popupMenu.isEnabled()) return;
         }
@@ -60,7 +63,7 @@ public class MouseoverLabelListener extends MouseAdapter {
     @Override
     public void mouseClicked(MouseEvent e) {
         if (popupMenu != null && SwingUtilities.isRightMouseButton(e)) {
-            if (!popupMenu.isEnabled()) return;
+            if (!popupMenu.isEnabled() || !component.isEnabled()) return;
             popupMenu.show(component, e.getX(), e.getY());
         } else if (SwingUtilities.isLeftMouseButton(e) && action != null) {
             action.run();

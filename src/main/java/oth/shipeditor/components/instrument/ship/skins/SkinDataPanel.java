@@ -12,6 +12,7 @@ import oth.shipeditor.components.viewer.layers.ship.data.ShipHull;
 import oth.shipeditor.components.viewer.layers.ship.data.ShipSkin;
 
 import javax.swing.*;
+import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.util.Collection;
 import java.util.Vector;
@@ -30,6 +31,7 @@ public class SkinDataPanel extends JPanel {
         this.setLayout(new BorderLayout());
         chooserContainer = new JPanel();
         chooserContainer.setLayout(new BoxLayout(chooserContainer, BoxLayout.PAGE_AXIS));
+        chooserContainer.setBorder(new EmptyBorder(4, 4, 4, 4));
         this.add(chooserContainer, BorderLayout.PAGE_START);
 
         infoPanel = new SkinInfoPanel();

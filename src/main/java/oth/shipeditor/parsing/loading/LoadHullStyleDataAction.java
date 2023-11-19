@@ -6,9 +6,12 @@ import lombok.extern.log4j.Log4j2;
 import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.files.HullStylesLoaded;
 import oth.shipeditor.parsing.FileUtilities;
+import oth.shipeditor.persistence.GameDataPackage;
+import oth.shipeditor.persistence.Settings;
 import oth.shipeditor.persistence.SettingsManager;
 import oth.shipeditor.representation.GameDataRepository;
 import oth.shipeditor.representation.ship.HullStyle;
+import oth.shipeditor.utility.Errors;
 import oth.shipeditor.utility.text.StringConstants;
 
 import java.io.File;
@@ -34,6 +37,12 @@ public class LoadHullStyleDataAction extends DataLoadingAction {
 
         Map<String, HullStyle> collectedHullStyles = new LinkedHashMap<>();
         for (Map.Entry<Path, File> entry : hullStyleFiles.entrySet()) {
+            Settings settings = SettingsManager.getSettings();
+            GameDataPackage dataPackage = settings.getPackage(entry.getKey());
+            if (dataPackage != null && dataPackage.isDisabled()) {
+                continue;
+            }
+
             File styleFile = entry.getValue();
             log.trace("Hullstyle data file found in mod directory: {}", entry.getKey());
             Map<String, HullStyle> stylesFromFile = LoadHullStyleDataAction.loadHullStyleFile(styleFile);
@@ -68,7 +77,7 @@ public class LoadHullStyleDataAction extends DataLoadingAction {
             }
 
         } catch (IOException e) {
-            e.printStackTrace();
+            Errors.printToStream(e);
         }
         return hullStyles;
     }

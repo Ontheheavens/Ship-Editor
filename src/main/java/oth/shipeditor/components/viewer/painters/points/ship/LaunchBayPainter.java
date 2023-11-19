@@ -8,6 +8,7 @@ import oth.shipeditor.communication.events.viewer.points.LaunchBayAddConfirmed;
 import oth.shipeditor.communication.events.viewer.points.LaunchBayRemoveConfirmed;
 import oth.shipeditor.communication.events.viewer.points.PointCreationQueued;
 import oth.shipeditor.components.instrument.EditorInstrument;
+import oth.shipeditor.components.viewer.PrimaryViewer;
 import oth.shipeditor.components.viewer.entities.BaseWorldPoint;
 import oth.shipeditor.components.viewer.entities.WorldPoint;
 import oth.shipeditor.components.viewer.entities.bays.LaunchBay;
@@ -56,6 +57,11 @@ public class LaunchBayPainter extends MirrorablePointPainter {
     }
 
     @Override
+    public LaunchPortPoint getSelected() {
+        return (LaunchPortPoint) super.getSelected();
+    }
+
+    @Override
     protected EditorInstrument getInstrumentType() {
         return EditorInstrument.LAUNCH_BAYS;
     }
@@ -72,7 +78,7 @@ public class LaunchBayPainter extends MirrorablePointPainter {
         Point2D position = event.position();
         String generatedID = this.generateUniqueBayID();
         if (addPortHotkeyPressed) {
-            LaunchPortPoint selected = (LaunchPortPoint) this.getSelected();
+            LaunchPortPoint selected = this.getSelected();
             if (selected != null) {
                 LaunchBay selectedBay = selected.getParentBay();
                 LaunchPortPoint newPort = new LaunchPortPoint(position, parentLayer, selectedBay);
@@ -170,6 +176,7 @@ public class LaunchBayPainter extends MirrorablePointPainter {
             List<LaunchPortPoint> portPoints = targetBay.getPortPoints();
             portPoints.add(checked);
             portsIndex.add(checked);
+            this.setSelected(checked);
         } else {
             throwIllegalPoint();
         }
@@ -216,7 +223,8 @@ public class LaunchBayPainter extends MirrorablePointPainter {
         Point2D finalWorldCursor = StaticController.getFinalWorldCursor();
         Point2D finalScreenCursor = worldToScreen.transform(finalWorldCursor, null);
         WorldPoint selected = this.getSelected();
-        if (selected != null) {
+        PrimaryViewer viewer = StaticController.getViewer();
+        if (selected != null && viewer.isCursorInViewer()) {
             Point2D selectedPosition = worldToScreen.transform(selected.getPosition(), null);
             DrawUtilities.drawScreenLine(g, selectedPosition, finalScreenCursor, Color.BLACK, 4.0f);
             DrawUtilities.drawScreenLine(g, selectedPosition, finalScreenCursor, Color.LIGHT_GRAY, 2.0f);

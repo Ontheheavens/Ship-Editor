@@ -41,7 +41,7 @@ import static oth.shipeditor.components.viewer.painters.PainterVisibility.SHOWN_
  * @author Ontheheavens
  * @since 25.07.2023
  */
-@SuppressWarnings({"OverlyCoupledClass", "OverlyComplexClass"})
+@SuppressWarnings({"OverlyCoupledClass", "OverlyComplexClass", "ClassWithTooManyMethods"})
 @Log4j2
 public class WeaponSlotPainter extends AngledPointPainter {
 
@@ -211,8 +211,12 @@ public class WeaponSlotPainter extends AngledPointPainter {
     }
 
     public String generateUniqueSlotID() {
+        return this.generateUniqueSlotID("WS");
+    }
+
+    private String generateUniqueSlotID(String prefix) {
         ShipPainter parentLayer = getParentLayer();
-        return parentLayer.generateUniqueSlotID("WS");
+        return parentLayer.generateUniqueSlotID(prefix);
     }
 
     private Set<WeaponSlotPoint> getSlotsWithCounterparts(Iterable<WeaponSlotPoint> slots) {
@@ -227,6 +231,14 @@ public class WeaponSlotPainter extends AngledPointPainter {
             }
         }
         return resultSet;
+    }
+
+    public void changeSlotsIDWithMirrorCheck(String inputIDText, Iterable<WeaponSlotPoint> slots) {
+        Collection<WeaponSlotPoint> slotsWithCounterparts = this.getSlotsWithCounterparts(slots);
+        for (WeaponSlotPoint slot : slotsWithCounterparts) {
+            String newID = generateUniqueSlotID(inputIDText);
+            EditDispatch.postSlotIDChanged(slot, newID);
+        }
     }
 
     public void changeSlotsTypeWithMirrorCheck(WeaponType inputType, Iterable<WeaponSlotPoint> slots) {
@@ -289,7 +301,7 @@ public class WeaponSlotPainter extends AngledPointPainter {
         }
         slotPoints.add(precedingIndex, checked);
         EventBus.publish(new WeaponSlotInsertedConfirmed(checked, precedingIndex));
-        log.info("Weapon slot inserted to painter: {}", checked);
+        log.trace("Weapon slot inserted to painter: {}", checked);
     }
 
     public void resetSkinSlotOverride() {

@@ -78,6 +78,8 @@ public final class FileLoading {
     public static final Action openShip = new OpenHullAction();
     @Getter
     private static final Action loadHullAsLayer = new LoadHullAsLayer();
+    @Getter
+    private static final Action loadSpriteAsHull = new LoadSpriteAsNewHull();
 
     @Getter
     private static boolean loadingInProgress;

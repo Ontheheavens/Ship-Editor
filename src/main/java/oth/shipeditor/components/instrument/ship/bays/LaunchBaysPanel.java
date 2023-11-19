@@ -1,90 +1,59 @@
 package oth.shipeditor.components.instrument.ship.bays;
 
-import lombok.extern.log4j.Log4j2;
 import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.components.BaysPanelRepaintQueued;
-import oth.shipeditor.communication.events.viewer.layers.LayerWasSelected;
 import oth.shipeditor.communication.events.viewer.points.LaunchBayAddConfirmed;
 import oth.shipeditor.communication.events.viewer.points.LaunchBayRemoveConfirmed;
 import oth.shipeditor.communication.events.viewer.points.PointAddConfirmed;
 import oth.shipeditor.communication.events.viewer.points.PointRemovedConfirmed;
+import oth.shipeditor.components.instrument.ship.AbstractShipPropertiesPanel;
 import oth.shipeditor.components.viewer.entities.bays.LaunchBay;
 import oth.shipeditor.components.viewer.entities.bays.LaunchPortPoint;
 import oth.shipeditor.components.viewer.entities.weapon.SlotPoint;
-import oth.shipeditor.components.viewer.layers.ViewerLayer;
-import oth.shipeditor.components.viewer.layers.ship.ShipLayer;
+import oth.shipeditor.components.viewer.layers.LayerPainter;
 import oth.shipeditor.components.viewer.layers.ship.ShipPainter;
 import oth.shipeditor.components.viewer.painters.PainterVisibility;
 import oth.shipeditor.components.viewer.painters.points.ship.LaunchBayPainter;
 import oth.shipeditor.utility.components.ComponentUtilities;
+import oth.shipeditor.utility.objects.Pair;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.tree.DefaultMutableTreeNode;
 import java.awt.*;
-import java.awt.event.ActionListener;
+import java.util.Map;
+import java.util.function.BiConsumer;
+import java.util.function.BooleanSupplier;
+import java.util.function.Consumer;
+import java.util.function.Function;
 
 /**
  * @author Ontheheavens
- * @since 13.08.2023
+ * @since 19.11.2023
  */
-@Log4j2
-public class LaunchBaysPanel extends JPanel {
+public class LaunchBaysPanel extends AbstractShipPropertiesPanel {
 
-    private final LaunchBaysTree baysTree;
+    private LaunchBaysTree baysTree;
 
-    private final JPanel bayDataPaneContainer;
-
-    private SlotPoint cachedPortSelection;
+    private BayDataControlPane bayDataPanel;
 
     public LaunchBaysPanel() {
-        this.setLayout(new BorderLayout());
-
-        baysTree = new LaunchBaysTree(new DefaultMutableTreeNode("Bays"), this::refreshBayControlPane);
-
-        JScrollPane scrollableContainer = new JScrollPane(baysTree);
-
-        JPanel northContainer = new JPanel();
-        northContainer.setLayout(new BoxLayout(northContainer, BoxLayout.PAGE_AXIS));
-
-        JPanel visibilityWidgetContainer = this.createPainterVisibilityPanel();
-        northContainer.add(visibilityWidgetContainer);
-
-        ComponentUtilities.addSeparatorToBoxPanel(northContainer);
-
-        bayDataPaneContainer = new JPanel();
-        bayDataPaneContainer.setLayout(new BorderLayout());
-        bayDataPaneContainer.setBorder(new EmptyBorder(3, 0, 4, 0));
-
-        northContainer.add(bayDataPaneContainer);
-
-        this.add(northContainer, BorderLayout.PAGE_START);
-
-        this.add(scrollableContainer, BorderLayout.CENTER);
         this.initPointListener();
-        this.initLayerListeners();
-
-        this.refreshBayControlPane(null);
     }
 
-    private void refreshBayControlPane(SlotPoint selectedPort) {
-        bayDataPaneContainer.removeAll();
-
-        cachedPortSelection = selectedPort;
-
-        JPanel bayControl = new BayDataControlPane(selectedPort);
-        bayDataPaneContainer.add(bayControl, BorderLayout.CENTER);
-
-        bayDataPaneContainer.revalidate();
-        bayDataPaneContainer.repaint();
+    private void refreshPointDataPane(SlotPoint slotPoint) {
+        ShipPainter painter = (ShipPainter) getCachedLayerPainter();
+        if (slotPoint instanceof LaunchPortPoint portPoint) {
+            painter = portPoint.getParent();
+        }
+        this.bayDataPanel.refresh(painter);
     }
 
     private void initPointListener() {
         EventBus.subscribe(event -> {
             if (event instanceof BaysPanelRepaintQueued) {
-                this.refreshBayControlPane(cachedPortSelection);
                 this.baysTree.reloadModel();
-                this.repaint();
+                this.refreshPointDataPane(null);
             }
         });
         EventBus.subscribe(event -> {
@@ -94,57 +63,102 @@ public class LaunchBaysPanel extends JPanel {
                 } else {
                     baysTree.insertBay(added, index);
                 }
+                this.refreshPointDataPane(null);
             }
         });
         EventBus.subscribe(event -> {
             if (event instanceof LaunchBayRemoveConfirmed checked) {
                 baysTree.removeBay(checked.removed());
+                this.refreshPointDataPane(null);
             }
         });
         EventBus.subscribe(event -> {
             if (event instanceof PointAddConfirmed checked && checked.point() instanceof LaunchPortPoint point) {
                 baysTree.addPort(point);
+                this.refreshPointDataPane(point);
             }
         });
         EventBus.subscribe(event -> {
             if (event instanceof PointRemovedConfirmed checked && checked.point() instanceof LaunchPortPoint point) {
                 baysTree.removePort(point);
+                this.refreshPointDataPane(point);
             }
         });
     }
 
-    private void initLayerListeners() {
-        EventBus.subscribe(event -> {
-            if (event instanceof LayerWasSelected checked) {
-                ViewerLayer selected = checked.selected();
-                baysTree.clearRoot();
-                if (!(selected instanceof ShipLayer checkedLayer)) {
-                    refreshBayControlPane(null);
-                    return;
-                }
-                ShipPainter painter = checkedLayer.getPainter();
-                if (painter != null && !painter.isUninitialized()) {
-                    LaunchBayPainter bayPainter = painter.getBayPainter();
-                    baysTree.repopulateTree(bayPainter);
-                    baysTree.repaint();
-                }
-                refreshBayControlPane(null);
-            }
-        });
+    @Override
+    public void refreshContent(LayerPainter layerPainter) {
+        baysTree.clearRoot();
+        if (!(layerPainter instanceof ShipPainter shipPainter) || shipPainter.isUninitialized()) {
+            fireClearingListeners(layerPainter);
+            refreshPointDataPane(null);
+            baysTree.setEnabled(false);
+            return;
+        }
+
+        baysTree.setEnabled(true);
+        LaunchBayPainter bayPainter = shipPainter.getBayPainter();
+        baysTree.repopulateTree(bayPainter);
+        baysTree.repaint();
+
+        fireRefresherListeners(layerPainter);
+        refreshPointDataPane(bayPainter.getSelected());
     }
 
-    @SuppressWarnings("MethodMayBeStatic")
-    private JPanel createPainterVisibilityPanel() {
-        JComboBox<PainterVisibility> visibilityList = new JComboBox<>(PainterVisibility.values());
-        ActionListener selectionAction = e -> {
-            if (!(e.getSource() instanceof ShipPainter checked)) return;
-            LaunchBayPainter bayPainter = checked.getBayPainter();
-            PainterVisibility valueOfLayer = bayPainter.getVisibilityMode();
-            visibilityList.setSelectedItem(valueOfLayer);
+    @Override
+    protected void populateContent() {
+        this.setLayout(new BorderLayout());
+
+        DefaultMutableTreeNode root = new DefaultMutableTreeNode("Bays");
+        baysTree = new LaunchBaysTree(root, this::refreshPointDataPane);
+
+        JScrollPane scrollableContainer = new JScrollPane(baysTree);
+
+        JPanel northContainer = new JPanel(new BorderLayout());
+        northContainer.setBorder(new EmptyBorder(0, 0, 4, 0));
+        var visibilityWidget = createBaysVisibilityWidget();
+        Map<JLabel, JComponent> visibilityWidgetMap = Map.of(visibilityWidget.getFirst(), visibilityWidget.getSecond());
+        JPanel visibilityWidgetContainer = this.createWidgetsPanel(visibilityWidgetMap);
+        visibilityWidgetContainer.setBorder(new EmptyBorder(4, 0, 3, 0));
+        northContainer.add(visibilityWidgetContainer, BorderLayout.PAGE_START);
+
+        this.bayDataPanel = new BayDataControlPane();
+        ComponentUtilities.outfitPanelWithTitle(bayDataPanel, "Bay Data");
+        northContainer.add(bayDataPanel, BorderLayout.CENTER);
+
+        this.add(northContainer, BorderLayout.PAGE_START);
+
+        this.add(scrollableContainer, BorderLayout.CENTER);
+    }
+
+    private Pair<JLabel, JComboBox<PainterVisibility>> createBaysVisibilityWidget() {
+        BooleanSupplier readinessChecker = this::isWidgetsReadyForInput;
+        Consumer<PainterVisibility> visibilitySetter = changedValue -> {
+            LayerPainter cachedLayerPainter = getCachedLayerPainter();
+            if (cachedLayerPainter != null) {
+                LaunchBayPainter bayPainter = ((ShipPainter) cachedLayerPainter).getBayPainter();
+                bayPainter.setVisibilityMode(changedValue);
+                processChange();
+            }
         };
 
-        return PainterVisibility.createVisibilityWidget(visibilityList,
-                LaunchBayPainter.class, selectionAction, "");
+        BiConsumer<JComponent, Consumer<LayerPainter>> clearerListener = this::registerWidgetClearer;
+        BiConsumer<JComponent, Consumer<LayerPainter>> refresherListener = this::registerWidgetRefresher;
+
+        Function<LayerPainter, PainterVisibility> visibilityGetter = layerPainter -> {
+            LaunchBayPainter bayPainter = ((ShipPainter) layerPainter).getBayPainter();
+            return bayPainter.getVisibilityMode();
+        };
+
+        var opacityWidget = PainterVisibility.createVisibilityWidget(
+                readinessChecker, visibilityGetter, visibilitySetter,
+                clearerListener, refresherListener
+        );
+
+        JLabel opacityLabel = opacityWidget.getFirst();
+        opacityLabel.setText("Bays view");
+
+        return opacityWidget;
     }
 
 }

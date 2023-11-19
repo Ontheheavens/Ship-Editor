@@ -3,8 +3,10 @@ package oth.shipeditor.components.instrument.ship.hull;
 import com.formdev.flatlaf.ui.FlatLineBorder;
 import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.components.LayerTabUpdated;
+import oth.shipeditor.components.viewer.PrimaryViewer;
 import oth.shipeditor.components.viewer.layers.ship.ShipLayer;
 import oth.shipeditor.components.viewer.layers.ship.data.ShipHull;
+import oth.shipeditor.parsing.loading.OpenSpriteAction;
 import oth.shipeditor.persistence.SettingsManager;
 import oth.shipeditor.representation.GameDataRepository;
 import oth.shipeditor.representation.ship.HullSize;
@@ -15,6 +17,7 @@ import oth.shipeditor.utility.graphics.ColorUtilities;
 import oth.shipeditor.utility.overseers.EventScheduler;
 import oth.shipeditor.utility.overseers.StaticController;
 import oth.shipeditor.utility.text.StringValues;
+import oth.shipeditor.utility.themes.Themes;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -26,6 +29,7 @@ import java.util.Map;
  * @author Ontheheavens
  * @since 26.10.2023
  */
+@SuppressWarnings("ClassWithTooManyFields")
 public class HullDataControlPanel extends JPanel {
 
     private ShipLayer cachedLayer;
@@ -35,6 +39,10 @@ public class HullDataControlPanel extends JPanel {
     private JLabel spritePathValue;
 
     private JLabel spriteNameValue;
+
+    private JLabel spritePathLabel;
+
+    private JLabel coversColorLabel;
 
     private JComboBox<HullStyle> styleSelector;
 
@@ -86,7 +94,7 @@ public class HullDataControlPanel extends JPanel {
         });
 
         ComponentUtilities.addLabelAndComponent(this, label, hullNameEditor,
-                2, RIGHT_PAD, 0, 1);
+                3, RIGHT_PAD, 0, 1);
     }
 
     private void addHullIDPanel() {
@@ -107,7 +115,7 @@ public class HullDataControlPanel extends JPanel {
         });
 
         ComponentUtilities.addLabelAndComponent(this, label, hullIDEditor,
-                2, RIGHT_PAD, 0, 2);
+                3, RIGHT_PAD, 0, 2);
     }
 
     private void addSizeSelector() {
@@ -144,7 +152,7 @@ public class HullDataControlPanel extends JPanel {
         });
 
         ComponentUtilities.addLabelAndComponent(this, selectorLabel, sizeSelector,
-                2, RIGHT_PAD, 0, 3);
+                3, RIGHT_PAD, 0, 3);
     }
 
     private void addStyleSelector() {
@@ -179,30 +187,57 @@ public class HullDataControlPanel extends JPanel {
         });
 
         ComponentUtilities.addLabelAndComponent(this, selectorLabel, styleSelector,
-                2, RIGHT_PAD, 0, 4);
+                3, RIGHT_PAD, 0, 4);
     }
 
     private void addSpriteNameLabel() {
         spritePathValue = new JLabel();
-        JLabel spritePathLabel = new JLabel("Sprite path:");
-        spritePathLabel.setBorder(new EmptyBorder(3, 0, 2, 0));
+        spritePathLabel = new JLabel("Sprite path:");
+        spritePathLabel.setBorder(new EmptyBorder(5, 0, 2, 0));
+
+        spritePathLabel.setToolTipText(StringValues.RIGHT_CLICK_TO_CHANGE_SPRITE);
+
+        JPopupMenu spriteChooserMenu = HullDataControlPanel.getSpriteChooserMenu();
+
+        spritePathLabel.addMouseListener(new MouseoverLabelListener(spriteChooserMenu, spritePathLabel));
+
+        Insets insets = ComponentUtilities.createLabelInsets();
+        insets.top = 1;
+        spritePathLabel.setBorder(ComponentUtilities.createLabelSimpleBorder(insets));
 
         ComponentUtilities.addLabelAndComponent(this, spritePathLabel,
-                spritePathValue, 2, 4, 0, 5);
+                spritePathValue, 0, 4, 0, 5);
 
         spriteNameValue = new JLabel();
         JLabel spriteNameLabel = new JLabel("Sprite name:");
         spriteNameLabel.setBorder(new EmptyBorder(5, 0, 6, 0));
 
         ComponentUtilities.addLabelAndComponent(this, spriteNameLabel,
-                spriteNameValue, 2, 4, 0, 6);
+                spriteNameValue, 3, 4, 0, 6);
+    }
+
+    private static JPopupMenu getSpriteChooserMenu() {
+        JPopupMenu spriteChooserMenu = new JPopupMenu();
+
+        JMenuItem changeSprite = new JMenuItem("Change sprite");
+        changeSprite.addActionListener(event -> {
+            var activeLayer = StaticController.getActiveLayer();
+            if (activeLayer instanceof ShipLayer shipLayer) {
+                OpenSpriteAction.openSpriteAndDo(sprite -> {
+                    PrimaryViewer viewer = StaticController.getViewer();
+                    viewer.loadSpriteToLayer(shipLayer, sprite);
+                });
+            }
+        });
+        spriteChooserMenu.add(changeSprite);
+        return spriteChooserMenu;
     }
 
     private void addCoversColorChooser() {
         coversColorValue = new JLabel();
-        JLabel coversColorLabel = new JLabel("Covers color:");
+        coversColorLabel = new JLabel("Covers color:");
 
-        coversColorLabel.setToolTipText("Right-click to change color");
+        coversColorLabel.setToolTipText(StringValues.RIGHT_CLICK_TO_CHANGE_COLOR);
         JPopupMenu colorChooserMenu = HullDataControlPanel.getColorChooserMenu();
         coversColorLabel.addMouseListener(new MouseoverLabelListener(colorChooserMenu, coversColorLabel));
 
@@ -227,16 +262,27 @@ public class HullDataControlPanel extends JPanel {
         readyForInput = false;
 
         spritePathValue.setText(StringValues.NOT_INITIALIZED);
+        spritePathValue.setForeground(Themes.getDisabledTextColor());
         spritePathValue.setToolTipText(StringValues.NOT_INITIALIZED);
 
         spriteNameValue.setText(StringValues.NOT_INITIALIZED);
+        spriteNameValue.setForeground(Themes.getDisabledTextColor());
         spriteNameValue.setToolTipText(StringValues.NOT_INITIALIZED);
+
+        spritePathLabel.setEnabled(false);
+        spritePathLabel.setToolTipText(null);
+        spritePathLabel.setBackground(Themes.getDarkerBackgroundColor());
+
+        coversColorLabel.setEnabled(false);
+        coversColorLabel.setToolTipText(null);
+        coversColorLabel.setBackground(Themes.getDarkerBackgroundColor());
 
         coversColorValue.setIcon(null);
         coversColorValue.setOpaque(false);
         coversColorValue.setBorder(new EmptyBorder(0, 2, 0, 2));
         coversColorValue.setBackground(null);
         coversColorValue.setToolTipText(null);
+        coversColorValue.setForeground(Themes.getDisabledTextColor());
         coversColorValue.setText(StringValues.NOT_INITIALIZED);
 
         styleSelector.setSelectedItem(null);
@@ -270,13 +316,24 @@ public class HullDataControlPanel extends JPanel {
         } else {
             coversColorValue.setText("Not defined");
         }
+        coversColorValue.setForeground(Themes.getTextColor());
+
+        spritePathLabel.setEnabled(true);
+        spritePathLabel.setToolTipText(StringValues.RIGHT_CLICK_TO_CHANGE_SPRITE);
+        spritePathLabel.setBackground(Themes.getPanelBackgroundColor());
+
+        coversColorLabel.setEnabled(true);
+        coversColorLabel.setToolTipText(StringValues.RIGHT_CLICK_TO_CHANGE_COLOR);
+        coversColorLabel.setBackground(Themes.getPanelBackgroundColor());
 
         String relativeSpritePath = layer.getRelativeSpritePath();
         spritePathValue.setText(relativeSpritePath);
+        spritePathValue.setForeground(Themes.getTextColor());
         spritePathValue.setToolTipText(relativeSpritePath);
 
         String spriteName = layer.getSpriteName();
         spriteNameValue.setText(spriteName);
+        spriteNameValue.setForeground(Themes.getTextColor());
         spriteNameValue.setToolTipText(spriteName);
 
         GameDataRepository gameData = SettingsManager.getGameData();
