@@ -312,13 +312,15 @@ public class VariantWeaponsTree extends DynamicWidthTree {
                 case InstalledFeature feature -> {
                     contextMenu = new JPopupMenu();
 
-                    JMenuItem uninstallFeature = new JMenuItem(StringValues.UNINSTALL_FEATURE);
-                    uninstallFeature.addActionListener(e -> {
-                        var group = feature.getParentGroup();
-                        EditDispatch.postFeatureUninstalled(group.getWeapons(), feature.getSlotID(),
-                                feature, null);
-                    });
-                    contextMenu.add(uninstallFeature);
+                    if (!feature.isContainedInBuiltIns()) {
+                        JMenuItem uninstallFeature = new JMenuItem(StringValues.UNINSTALL_FEATURE);
+                        uninstallFeature.addActionListener(e -> {
+                            var group = feature.getParentGroup();
+                            EditDispatch.postFeatureUninstalled(group.getWeapons(), feature.getSlotID(),
+                                    feature, null);
+                        });
+                        contextMenu.add(uninstallFeature);
+                    }
 
                     JMenuItem selectEntry = new JMenuItem(StringValues.SELECT_WEAPON_ENTRY);
                     selectEntry.addActionListener(event ->  {

@@ -4,8 +4,8 @@ import lombok.extern.log4j.Log4j2;
 import oth.shipeditor.communication.events.BusEvent;
 import oth.shipeditor.utility.Errors;
 
-import java.util.HashSet;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * This is a very simple implementation of EventBus-type Observer pattern, meant to decouple different parts of the app.
@@ -23,7 +23,7 @@ public final class EventBus {
     private final Set<BusEventListener> subscribers;
 
     private EventBus() {
-        this.subscribers = new HashSet<>();
+        this.subscribers = ConcurrentHashMap.newKeySet();
     }
 
     @SuppressWarnings("UnusedReturnValue")
@@ -41,10 +41,9 @@ public final class EventBus {
     }
 
     public static void publish(BusEvent event) {
-        Iterable<BusEventListener> receivers = new HashSet<>(bus.subscribers);
         try {
             // Without preventive error handling the debug is GNARLY here. Needs refactor to minimize looping time!
-            for (BusEventListener receiver : receivers) {
+            for (BusEventListener receiver : bus.subscribers) {
                 receiver.handleEvent(event);
             }
         } catch (Throwable throwable) {
