@@ -29,7 +29,7 @@ import java.util.Map;
  * @since 18.08.2023
  */
 @SuppressWarnings({"ClassWithTooManyFields", "ClassWithTooManyMethods"})
-public class EnginePoint extends AngledPoint {
+public class EnginePoint extends AngledPoint implements EngineData {
 
     private static final Paint SIZING_RECTANGLE = new Color(0, 0, 0, 20);
 
@@ -88,6 +88,21 @@ public class EnginePoint extends AngledPoint {
 
     public static BufferedImage getBaseFlameTexture() {
         return FLAME;
+    }
+
+    @Override
+    public Double getAngleBoxed() {
+        return angle;
+    }
+
+    @Override
+    public Double getLengthBoxed() {
+        return length;
+    }
+
+    @Override
+    public Double getWidthBoxed() {
+        return width;
     }
 
     public EngineStyle getStyle() {
@@ -163,6 +178,11 @@ public class EnginePoint extends AngledPoint {
 
     public double getContrailSize() {
         return contrailSize;
+    }
+
+    @Override
+    public Double getContrailSizeBoxed() {
+        return (double) contrailSize;
     }
 
     public Size2D getSize() {
@@ -261,7 +281,6 @@ public class EnginePoint extends AngledPoint {
                 Math.toRadians(transformedAngle), graphicsAction);
     }
 
-    @SuppressWarnings("MethodWithTooManyParameters")
     public static void drawRectangleStatically(Graphics2D g, AffineTransform worldToScreen, Point2D position,
                                                double rawAngle, double engineWidth, double engineLength) {
         double transformedAngle = Utility.transformAngle(rawAngle);

@@ -28,9 +28,9 @@ import java.util.function.Supplier;
  * @author Ontheheavens
  * @since 20.08.2023
  */
+@Getter
 public class EngineDataPanel extends JPanel {
 
-    @Getter
     private final EnginePoint selected;
 
     EngineDataPanel(EnginePoint point) {
@@ -57,7 +57,7 @@ public class EngineDataPanel extends JPanel {
         if (selected != null) {
             angle = selected::getAngle;
         }
-        JComponent selector = this.addValueSelector("Engine angle:", angle,
+        JComponent selector = this.addValueSelector(StringValues.ENGINE_ANGLE, angle,
                 -360, 360, action, 0);
 
         EngineDataOverride skinOverride = null;
@@ -83,7 +83,7 @@ public class EngineDataPanel extends JPanel {
         if (selected != null) {
             width = selected::getWidth;
         }
-        JComponent selector = this.addValueSelector("Engine width:", width,
+        JComponent selector = this.addValueSelector(StringValues.ENGINE_WIDTH, width,
                 0, Double.MAX_VALUE, action, 1);
 
         EngineDataOverride skinOverride = null;
@@ -109,7 +109,7 @@ public class EngineDataPanel extends JPanel {
         if (selected != null) {
             length = selected::getLength;
         }
-        JComponent selector = this.addValueSelector("Engine length:", length,
+        JComponent selector = this.addValueSelector(StringValues.ENGINE_LENGTH, length,
                 0, Double.MAX_VALUE, action, 2);
 
         EngineDataOverride skinOverride = null;
@@ -133,12 +133,12 @@ public class EngineDataPanel extends JPanel {
         if (selected != null) {
             contrail = selected::getContrailSize;
         }
-        this.addValueSelector("Contrail size:", contrail,
+        this.addValueSelector(StringValues.CONTRAIL_SIZE, contrail,
                 0, 128, 1, action, 3);
     }
 
     private void addStyleSelector() {
-        JLabel selectorLabel = new JLabel("Engine style:");
+        JLabel selectorLabel = new JLabel(StringValues.ENGINE_STYLE_LABEL);
         if (selected == null) {
             ComponentUtilities.addLabelAndComponent(this, selectorLabel, ComponentUtilities.getNoSelected(), 4);
             return;
@@ -170,7 +170,7 @@ public class EngineDataPanel extends JPanel {
             }
         } else {
             JTextField idField = new JTextField(selected.getStyleID());
-            idField.setToolTipText("Styles not loaded: defaulted to ID text");
+            idField.setToolTipText(StringValues.STYLES_NOT_LOADED_DEFAULTED_TO_ID_TEXT);
 
             idField.addActionListener(e -> {
                 String textValue = idField.getText();
@@ -181,14 +181,13 @@ public class EngineDataPanel extends JPanel {
             valueBox = idField;
 
             if (skinOverride != null && skinOverride.getStyleID() != null) {
-                idField.setToolTipText("Locked: style overridden by skin");
+                idField.setToolTipText(StringValues.LOCKED_STYLE_OVERRIDDEN_BY_SKIN);
                 idField.setEnabled(false);
             }
         }
         ComponentUtilities.addLabelAndComponent(this, selectorLabel, valueBox, 4);
     }
 
-    @SuppressWarnings("MethodWithTooManyParameters")
     private JComponent addValueSelector(String selectorLabelText, Supplier<Double> currentValue, double minValue,
                                   double maxValue, Consumer<Double> action, int position) {
         return addValueSelector(selectorLabelText, currentValue, minValue,

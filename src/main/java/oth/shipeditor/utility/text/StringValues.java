@@ -80,6 +80,13 @@ public final class StringValues {
     public static final String RIGHT_CLICK_TO_GENERATE = "Right-click to generate";
     public static final String RIGHT_CLICK_TO_CHANGE_SPRITE = "Right-click to change sprite";
     public static final String RIGHT_CLICK_TO_CHANGE_COLOR = "Right-click to change color";
+    public static final String LOCKED_STYLE_OVERRIDDEN_BY_SKIN = "Locked: style overridden by skin";
+    public static final String STYLES_NOT_LOADED_DEFAULTED_TO_ID_TEXT = "Styles not loaded: defaulted to ID text";
+    public static final String ENGINE_STYLE_LABEL = "Engine style:";
+    public static final String ENGINE_ANGLE = "Engine angle:";
+    public static final String ENGINE_WIDTH = "Engine width:";
+    public static final String ENGINE_LENGTH = "Engine length:";
+    public static final String CONTRAIL_SIZE = "Contrail size:";
 
     private StringValues() {
     }

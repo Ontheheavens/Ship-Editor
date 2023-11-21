@@ -14,7 +14,7 @@ import java.util.Map;
  * @since 22.08.2023
  */
 @Getter @Setter @Builder
-public class EngineDataOverride {
+public class EngineDataOverride implements EngineData {
 
     private Integer index;
 
@@ -27,6 +27,26 @@ public class EngineDataOverride {
     private String styleID;
 
     private EngineStyle style;
+
+    @Override
+    public Double getAngleBoxed() {
+        return angle;
+    }
+
+    @Override
+    public Double getLengthBoxed() {
+        return length;
+    }
+
+    @Override
+    public Double getWidthBoxed() {
+        return width;
+    }
+
+    @Override
+    public Double getContrailSizeBoxed() {
+        return null;
+    }
 
     public EngineStyle getStyle() {
         if (style != null) return style;

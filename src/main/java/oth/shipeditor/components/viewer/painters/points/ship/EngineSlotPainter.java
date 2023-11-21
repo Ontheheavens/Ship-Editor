@@ -18,9 +18,9 @@ import oth.shipeditor.components.viewer.layers.ship.data.ShipSkin;
 import oth.shipeditor.components.viewer.painters.points.AngledPointPainter;
 import oth.shipeditor.representation.ship.EngineStyle;
 import oth.shipeditor.undo.EditDispatch;
+import oth.shipeditor.utility.Utility;
 import oth.shipeditor.utility.objects.Size2D;
 import oth.shipeditor.utility.overseers.StaticController;
-import oth.shipeditor.utility.Utility;
 import oth.shipeditor.utility.text.StringConstants;
 
 import java.awt.*;
@@ -37,7 +37,6 @@ import java.util.Map;
  * @author Ontheheavens
  * @since 18.08.2023
  */
-@SuppressWarnings("OverlyCoupledClass")
 @Log4j2
 public class EngineSlotPainter extends AngledPointPainter {
 
@@ -68,6 +67,11 @@ public class EngineSlotPainter extends AngledPointPainter {
     public void setControlHotkeyPressed(boolean pressed) {
         this.controlHotkeyPressed = pressed;
         controlHotkeyStaticPressed = pressed;
+    }
+
+    @Override
+    public EnginePoint getSelected() {
+        return (EnginePoint) super.getSelected();
     }
 
     @Override
@@ -133,8 +137,6 @@ public class EngineSlotPainter extends AngledPointPainter {
             }
 
             this.changeEngineSizeWithMirrorCheck(checked, new Size2D(fullWidth, length));
-        } else if (selected !=null) {
-            throwIllegalPoint();
         }
     }
 

@@ -104,5 +104,10 @@ public abstract class LayerPropertiesPanel extends JPanel {
         refresherListeners.put(widget, refresher);
     }
 
+    protected void clearAllWidgetListeners() {
+        clearingListeners.clear();
+        refresherListeners.clear();
+    }
+
 
 }

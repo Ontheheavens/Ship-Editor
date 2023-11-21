@@ -2,42 +2,31 @@ package oth.shipeditor.components.instrument.ship.engines;
 
 import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.viewer.points.EnginePointsSorted;
-import oth.shipeditor.utility.components.containers.PointList;
 import oth.shipeditor.components.viewer.entities.engine.EnginePoint;
+import oth.shipeditor.utility.components.containers.PointList;
 import oth.shipeditor.utility.components.rendering.EngineCellRenderer;
 
 import javax.swing.*;
-import java.awt.*;
 import java.util.List;
+import java.util.function.Consumer;
 
 /**
  * @author Ontheheavens
- * @since 20.08.2023
+ * @since 21.11.2023
  */
-public class EngineList extends PointList<EnginePoint> {
+public class EngineList2 extends PointList<EnginePoint> {
 
-    private final JPanel infoPanel;
+    private final Consumer<EnginePoint> selectAction;
 
-    EngineList(ListModel<EnginePoint> dataModel, JPanel infoDataPanel) {
+    EngineList2(ListModel<EnginePoint> dataModel, Consumer<EnginePoint> pointSelectAction) {
         super(dataModel);
-        this.infoPanel = infoDataPanel;
         this.setCellRenderer(new EngineCellRenderer());
+        this.selectAction = pointSelectAction;
     }
 
     @Override
     protected void handlePointSelection(EnginePoint point) {
-        this.refreshEngineControlPane();
-    }
-
-    void refreshEngineControlPane() {
-        EnginePoint selected = this.getSelectedValue();
-        infoPanel.removeAll();
-
-        EngineDataPanel dataPanel = new EngineDataPanel(selected);
-        infoPanel.add(dataPanel, BorderLayout.CENTER);
-
-        infoPanel.revalidate();
-        infoPanel.repaint();
+        this.selectAction.accept(point);
     }
 
     @Override
