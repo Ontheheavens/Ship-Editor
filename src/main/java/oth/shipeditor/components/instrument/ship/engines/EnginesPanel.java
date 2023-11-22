@@ -3,105 +3,150 @@ package oth.shipeditor.components.instrument.ship.engines;
 import lombok.Getter;
 import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.components.EnginesPanelRepaintQueued;
-import oth.shipeditor.communication.events.viewer.layers.LayerWasSelected;
 import oth.shipeditor.communication.events.viewer.points.EngineInsertedConfirmed;
 import oth.shipeditor.communication.events.viewer.points.PointAddConfirmed;
 import oth.shipeditor.communication.events.viewer.points.PointRemovedConfirmed;
+import oth.shipeditor.components.instrument.ship.AbstractShipPropertiesPanel;
 import oth.shipeditor.components.viewer.entities.engine.EnginePoint;
-import oth.shipeditor.components.viewer.layers.ViewerLayer;
-import oth.shipeditor.components.viewer.layers.ship.ShipLayer;
+import oth.shipeditor.components.viewer.layers.LayerPainter;
 import oth.shipeditor.components.viewer.layers.ship.ShipPainter;
 import oth.shipeditor.components.viewer.painters.PainterVisibility;
 import oth.shipeditor.components.viewer.painters.points.ship.EngineSlotPainter;
-import oth.shipeditor.utility.objects.Pair;
 import oth.shipeditor.utility.components.ComponentUtilities;
+import oth.shipeditor.utility.objects.Pair;
 
 import javax.swing.*;
+import javax.swing.border.EmptyBorder;
 import java.awt.*;
-import java.awt.event.ActionListener;
+import java.util.Map;
+import java.util.function.BiConsumer;
+import java.util.function.BooleanSupplier;
+import java.util.function.Consumer;
+import java.util.function.Function;
 
 /**
  * @author Ontheheavens
- * @since 20.08.2023
+ * @since 22.11.2023
  */
-public class EnginesPanel extends JPanel {
+public class EnginesPanel extends AbstractShipPropertiesPanel {
 
     @Getter
-    private final EngineList enginesContainer;
+    private EngineList enginesContainer;
 
-    private final JCheckBox reorderCheckbox;
+    private EngineDataPanel dataPanel;
 
-    private DefaultListModel<EnginePoint> model = new DefaultListModel<>();
+    private JCheckBox reorderCheckbox;
 
-    private EngineSlotPainter cachedPainter;
+    private DefaultListModel<EnginePoint> model;
 
     public EnginesPanel() {
+        this.initPointListener();
+    }
+
+    @Override
+    public void refreshContent(LayerPainter layerPainter) {
+        DefaultListModel<EnginePoint> newModel = new DefaultListModel<>();
+
+        if (!(layerPainter instanceof ShipPainter shipPainter) || shipPainter.isUninitialized()) {
+            this.model = newModel;
+            this.enginesContainer.setModel(newModel);
+
+            fireClearingListeners(layerPainter);
+            refreshEngineControlPane(null);
+
+
+            this.enginesContainer.setEnabled(false);
+            this.reorderCheckbox.setEnabled(false);
+            return;
+        }
+
+        EngineSlotPainter enginePainter = shipPainter.getEnginePainter();
+        newModel.addAll(enginePainter.getPointsIndex());
+
+        this.model = newModel;
+        this.enginesContainer.setModel(newModel);
+        this.enginesContainer.setEnabled(true);
+        this.reorderCheckbox.setEnabled(true);
+
+        fireRefresherListeners(layerPainter);
+        refreshEngineControlPane(enginePainter.getSelected());
+    }
+
+    @Override
+    protected void populateContent() {
         this.setLayout(new BorderLayout());
 
-        JPanel northContainer = new JPanel();
-        northContainer.setLayout(new BoxLayout(northContainer, BoxLayout.PAGE_AXIS));
-        northContainer.add(this.createPainterVisibilityPanel());
+        this.model = new DefaultListModel<>();
+        this.enginesContainer = new EngineList(model, this::refreshEngineControlPane);
+        this.dataPanel = new EngineDataPanel();
 
-        ComponentUtilities.addSeparatorToBoxPanel(northContainer);
-        northContainer.add(Box.createRigidArea(new Dimension(10, 3)));
+        JPanel northContainer = new JPanel(new BorderLayout());
+        var visibilityWidget = createEnginesVisibilityWidget();
+        Map<JLabel, JComponent> visibilityWidgetMap = Map.of(visibilityWidget.getFirst(), visibilityWidget.getSecond());
+        JPanel visibilityWidgetContainer = this.createWidgetsPanel(visibilityWidgetMap);
+        visibilityWidgetContainer.setBorder(new EmptyBorder(4, 0, 3, 0));
+        northContainer.add(visibilityWidgetContainer, BorderLayout.PAGE_START);
 
-        JPanel infoPanel = new JPanel();
-        infoPanel.setLayout(new BorderLayout());
-        northContainer.add(infoPanel);
+        ComponentUtilities.outfitPanelWithTitle(dataPanel, "Engine Data");
+        northContainer.add(dataPanel, BorderLayout.CENTER);
 
-        enginesContainer = new EngineList(model, infoPanel);
-        this.enginesContainer.refreshEngineControlPane();
+        this.refreshEngineControlPane(null);
+
         JScrollPane scrollableContainer = new JScrollPane(enginesContainer);
-
-        ComponentUtilities.addSeparatorToBoxPanel(northContainer);
 
         Pair<JPanel, JCheckBox> reorderWidget = ComponentUtilities.createReorderCheckboxPanel(enginesContainer);
         reorderCheckbox = reorderWidget.getSecond();
-        reorderCheckbox.setToolTipText("Warning: reordering might affect skin engine overrides mapping!");
-        northContainer.add(reorderWidget.getFirst());
+        northContainer.add(reorderWidget.getFirst(), BorderLayout.PAGE_END);
 
         this.add(northContainer, BorderLayout.PAGE_START);
 
         this.add(scrollableContainer, BorderLayout.CENTER);
-
-        this.initPointListener();
-        this.initLayerListeners();
     }
 
-    @SuppressWarnings("MethodMayBeStatic")
-    private JPanel createPainterVisibilityPanel() {
-        JComboBox<PainterVisibility> visibilityList = new JComboBox<>(PainterVisibility.values());
-        ActionListener selectionAction = e -> {
-            if (!(e.getSource() instanceof ShipPainter checked)) return;
-            EngineSlotPainter enginePainter = checked.getEnginePainter();
-            PainterVisibility valueOfLayer = enginePainter.getVisibilityMode();
-            visibilityList.setSelectedItem(valueOfLayer);
-        };
+    private void refreshEngineControlPane(EnginePoint engine) {
+        ShipPainter painter = (ShipPainter) getCachedLayerPainter();
+        if (engine != null) {
+            painter = (ShipPainter) engine.getParent();
+        }
+        this.dataPanel.refresh(painter);
+    }
 
-        return PainterVisibility.createVisibilityWidget(visibilityList,
-                EngineSlotPainter.class, selectionAction, "");
+    private EngineSlotPainter getCachedEnginePainter() {
+        LayerPainter cachedLayerPainter = getCachedLayerPainter();
+        if (cachedLayerPainter instanceof ShipPainter shipPainter && !shipPainter.isUninitialized()) {
+            return shipPainter.getEnginePainter();
+        }
+        return null;
+    }
+
+    @Override
+    protected void initLayerListeners() {
+        super.initLayerListeners();
+        EventBus.subscribe(event -> {
+            if (event instanceof EnginesPanelRepaintQueued) {
+                EngineSlotPainter cachedEnginePainter = getCachedEnginePainter();
+                if (cachedEnginePainter != null) {
+                    int[] cachedSelected = this.enginesContainer.getSelectedIndices();
+                    DefaultListModel<EnginePoint> newModel = new DefaultListModel<>();
+                    newModel.addAll(cachedEnginePainter.getPointsIndex());
+
+                    this.model = newModel;
+                    this.enginesContainer.setModel(newModel);
+                    this.enginesContainer.setSelectedIndices(cachedSelected);
+                    if (!this.model.isEmpty() && cachedSelected.length > 0) {
+                        this.enginesContainer.ensureIndexIsVisible(cachedSelected[0]);
+                    }
+                }
+
+                this.refreshEngineControlPane(null);
+            }
+        });
     }
 
     private void initPointListener() {
         EventBus.subscribe(event -> {
-            if (event instanceof EnginesPanelRepaintQueued) {
-                if (cachedPainter != null) {
-                    EnginePoint cachedSelected = this.enginesContainer.getSelectedValue();
-                    DefaultListModel<EnginePoint> newModel = new DefaultListModel<>();
-                    newModel.addAll(cachedPainter.getPointsIndex());
-
-                    this.model = newModel;
-                    this.enginesContainer.setModel(newModel);
-                    this.enginesContainer.setSelectedValue(cachedSelected, true);
-                }
-                this.enginesContainer.refreshEngineControlPane();
-                this.repaint();
-            }
-        });
-        EventBus.subscribe(event -> {
-            if (event instanceof PointAddConfirmed checked && checked.point() instanceof EnginePoint point) {
-                model.addElement(point);
-                enginesContainer.setSelectedIndex(model.indexOf(point));
+            if (event instanceof PointRemovedConfirmed checked && checked.point() instanceof EnginePoint point) {
+                model.removeElement(point);
             }
         });
         EventBus.subscribe(event -> {
@@ -111,40 +156,41 @@ public class EnginesPanel extends JPanel {
             }
         });
         EventBus.subscribe(event -> {
-            if (event instanceof PointRemovedConfirmed checked && checked.point() instanceof EnginePoint point) {
-                model.removeElement(point);
+            if (event instanceof PointAddConfirmed checked && checked.point() instanceof EnginePoint point) {
+                model.addElement(point);
+                enginesContainer.setSelectedIndex(model.indexOf(point));
             }
         });
     }
 
-    private void initLayerListeners() {
-        EventBus.subscribe(event -> {
-            if (event instanceof LayerWasSelected checked) {
-                ViewerLayer selected = checked.selected();
-                DefaultListModel<EnginePoint> newModel = new DefaultListModel<>();
-                if (!(selected instanceof ShipLayer checkedLayer)) {
-                    reorderCheckbox.setEnabled(false);
-                    this.model = newModel;
-                    this.enginesContainer.setModel(newModel);
-                    this.enginesContainer.setEnabled(false);
-                    return;
-                }
-                ShipPainter painter = checkedLayer.getPainter();
-                if (painter != null && !painter.isUninitialized()) {
-                    EngineSlotPainter enginePainter = painter.getEnginePainter();
-                    cachedPainter = enginePainter;
-                    newModel.addAll(enginePainter.getPointsIndex());
-                    reorderCheckbox.setEnabled(true);
-                    this.enginesContainer.setEnabled(true);
-                } else {
-                    reorderCheckbox.setEnabled(false);
-                    this.enginesContainer.setEnabled(false);
-                }
-                this.model = newModel;
-                this.enginesContainer.setModel(newModel);
-                this.enginesContainer.refreshEngineControlPane();
+    private Pair<JLabel, JComboBox<PainterVisibility>> createEnginesVisibilityWidget() {
+        BooleanSupplier readinessChecker = this::isWidgetsReadyForInput;
+        Consumer<PainterVisibility> visibilitySetter = changedValue -> {
+            LayerPainter cachedLayerPainter = getCachedLayerPainter();
+            if (cachedLayerPainter != null) {
+                EngineSlotPainter enginePainter = ((ShipPainter) cachedLayerPainter).getEnginePainter();
+                enginePainter.setVisibilityMode(changedValue);
+                processChange();
             }
-        });
+        };
+
+        BiConsumer<JComponent, Consumer<LayerPainter>> clearerListener = this::registerWidgetClearer;
+        BiConsumer<JComponent, Consumer<LayerPainter>> refresherListener = this::registerWidgetRefresher;
+
+        Function<LayerPainter, PainterVisibility> visibilityGetter = layerPainter -> {
+            EngineSlotPainter enginePainter = ((ShipPainter) layerPainter).getEnginePainter();
+            return enginePainter.getVisibilityMode();
+        };
+
+        var opacityWidget = PainterVisibility.createVisibilityWidget(
+                readinessChecker, visibilityGetter, visibilitySetter,
+                clearerListener, refresherListener
+        );
+
+        JLabel opacityLabel = opacityWidget.getFirst();
+        opacityLabel.setText("Engines view");
+
+        return opacityWidget;
     }
 
 }
