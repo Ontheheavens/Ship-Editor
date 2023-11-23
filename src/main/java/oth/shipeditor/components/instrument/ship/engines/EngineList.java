@@ -7,6 +7,8 @@ import oth.shipeditor.utility.components.containers.PointList;
 import oth.shipeditor.utility.components.rendering.EngineCellRenderer;
 
 import javax.swing.*;
+import java.awt.datatransfer.DataFlavor;
+import java.awt.datatransfer.Transferable;
 import java.util.List;
 import java.util.function.Consumer;
 
@@ -15,6 +17,8 @@ import java.util.function.Consumer;
  * @since 21.11.2023
  */
 public class EngineList extends PointList<EnginePoint> {
+
+    private static final DataFlavor engineFlavor = new DataFlavor(EnginePoint.class, "Engine");
 
     private final Consumer<EnginePoint> selectAction;
 
@@ -32,6 +36,34 @@ public class EngineList extends PointList<EnginePoint> {
     @Override
     protected void publishPointsSorted(List<EnginePoint> rearrangedPoints) {
         EventBus.publish(new EnginePointsSorted(rearrangedPoints));
+    }
+
+    @Override
+    protected Transferable createTransferableFromEntry(EnginePoint entry) {
+        return new Transferable() {
+
+            private final EnginePoint engine = entry;
+
+            @Override
+            public DataFlavor[] getTransferDataFlavors() {
+                return new DataFlavor[] {engineFlavor};
+            }
+
+            @Override
+            public boolean isDataFlavorSupported(DataFlavor flavor) {
+                return flavor.equals(engineFlavor);
+            }
+
+            @Override
+            public Object getTransferData(DataFlavor flavor) {
+                return engine;
+            }
+        };
+    }
+
+    @Override
+    protected boolean isSupported(Transferable transferable) {
+        return transferable.isDataFlavorSupported(engineFlavor);
     }
 
 }

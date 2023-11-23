@@ -1,6 +1,8 @@
 package oth.shipeditor.components.instrument.ship.variant.hullmods;
 
 import oth.shipeditor.components.datafiles.entities.HullmodCSVEntry;
+import oth.shipeditor.components.datafiles.entities.transferable.TransferableEntry;
+import oth.shipeditor.components.datafiles.entities.transferable.TransferableHullmod;
 import oth.shipeditor.components.viewer.layers.ViewerLayer;
 import oth.shipeditor.components.viewer.layers.ship.ShipLayer;
 import oth.shipeditor.components.viewer.layers.ship.ShipPainter;
@@ -12,6 +14,7 @@ import oth.shipeditor.utility.overseers.StaticController;
 import javax.swing.*;
 import javax.swing.border.LineBorder;
 import java.awt.*;
+import java.awt.datatransfer.Transferable;
 import java.util.List;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
@@ -23,7 +26,7 @@ import java.util.function.Function;
  */
 class HullmodsListPanel extends JPanel{
 
-    private final HullmodsList modsList;
+    private final VariantHullmodsList modsList;
 
     private DefaultListModel<HullmodCSVEntry> modsModel;
 
@@ -32,7 +35,7 @@ class HullmodsListPanel extends JPanel{
     HullmodsListPanel(Function<ShipVariant, List<HullmodCSVEntry>> getter,
                       BiConsumer<ShipVariant, List<HullmodCSVEntry>> sortSetter) {
         this.modsModel = new DefaultListModel<>();
-        this.modsList = new HullmodsList(modsModel, sortSetter);
+        this.modsList = new VariantHullmodsList(modsModel, sortSetter);
         modsList.setBorder(new LineBorder(Color.LIGHT_GRAY));
         this.modsGetter = getter;
         this.setLayout(new BorderLayout());
@@ -66,7 +69,7 @@ class HullmodsListPanel extends JPanel{
         this.modsList.setModel(newModel);
     }
 
-    private class HullmodsList extends OrdnancedEntryList<HullmodCSVEntry> {
+    private class VariantHullmodsList extends OrdnancedEntryList<HullmodCSVEntry> {
 
         private final Consumer<HullmodCSVEntry> removeAction = entry ->
                 StaticController.actOnCurrentVariant((shipLayer, variant) -> {
@@ -74,8 +77,8 @@ class HullmodsListPanel extends JPanel{
                     EditDispatch.postHullmodRemoved(entryList, shipLayer, entry);
                 });
 
-        HullmodsList(ListModel<HullmodCSVEntry> dataModel,
-                     BiConsumer<ShipVariant, List<HullmodCSVEntry>> sortSetter) {
+        VariantHullmodsList(ListModel<HullmodCSVEntry> dataModel,
+                            BiConsumer<ShipVariant, List<HullmodCSVEntry>> sortSetter) {
             super(dataModel, updatedList ->
                     StaticController.actOnCurrentVariant((shipLayer, variant) -> {
                 var oldMods = modsGetter.apply(variant);
@@ -85,8 +88,37 @@ class HullmodsListPanel extends JPanel{
         }
 
         @Override
+        protected boolean confirmDrop(int targetIndex, HullmodCSVEntry entry) {
+            DefaultListModel<HullmodCSVEntry> model = this.getModel();
+            if (model.contains(entry)) {
+                int former = model.indexOf(entry);
+                model.remove(former);
+                model.add(Math.min(model.size(), targetIndex), entry);
+                setSelectedIndex(targetIndex);
+            } else {
+                super.confirmDrop(targetIndex, entry);
+            }
+            return true;
+        }
+
+        @Override
+        public DefaultListModel<HullmodCSVEntry> getModel() {
+            return (DefaultListModel<HullmodCSVEntry>) super.getModel();
+        }
+
+        @Override
         protected Consumer<HullmodCSVEntry> getRemoveAction() {
             return removeAction;
+        }
+
+        @Override
+        protected Transferable createTransferableFromEntry(HullmodCSVEntry entry) {
+            return new TransferableHullmod(entry, this);
+        }
+
+        @Override
+        protected boolean isSupported(Transferable transferable) {
+            return transferable.getTransferDataFlavors()[0].equals(TransferableEntry.TRANSFERABLE_MOD);
         }
 
     }

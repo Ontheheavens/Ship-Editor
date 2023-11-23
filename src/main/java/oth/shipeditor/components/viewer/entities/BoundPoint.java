@@ -5,6 +5,7 @@ import oth.shipeditor.components.viewer.layers.ship.ShipPainter;
 import oth.shipeditor.utility.overseers.StaticController;
 import oth.shipeditor.utility.graphics.DrawUtilities;
 import oth.shipeditor.utility.graphics.ShapeUtilities;
+import oth.shipeditor.utility.text.StringValues;
 
 import java.awt.*;
 import java.awt.geom.AffineTransform;
@@ -49,7 +50,7 @@ public class BoundPoint extends BaseWorldPoint {
 
     @Override
     public String getNameForLabel() {
-        return "Bound";
+        return StringValues.BOUND;
     }
 
     @Override

@@ -2,12 +2,14 @@ package oth.shipeditor.utility.components.containers;
 
 import lombok.Getter;
 import lombok.Setter;
+import oth.shipeditor.utility.Errors;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
+import java.awt.datatransfer.UnsupportedFlavorException;
 import java.awt.dnd.*;
+import java.io.IOException;
 import java.util.function.Consumer;
 
 /**
@@ -15,11 +17,8 @@ import java.util.function.Consumer;
  * @since 25.07.2023
  */
 @SuppressWarnings("NoopMethodInAbstractClass")
-public abstract class SortableList<E> extends JList<E> implements DragGestureListener, DragSourceListener, Transferable {
+public abstract class SortableList<E> extends JList<E> implements DragGestureListener, DragSourceListener {
 
-    private static final String NAME = "Sortable Entry";
-    private static final String MIME_TYPE = DataFlavor.javaJVMLocalObjectMimeType;
-    private static final DataFlavor FLAVOR = new DataFlavor(MIME_TYPE, NAME);
     private static final Color EVEN_BGC = new Color(0xF0_F0_F0);
     private final Rectangle targetLine = new Rectangle();
     private int draggedIndex = -1;
@@ -37,6 +36,17 @@ public abstract class SortableList<E> extends JList<E> implements DragGestureLis
     }
 
     protected abstract void sortListModel();
+
+    protected abstract Transferable createTransferableFromEntry(E entry);
+
+    protected abstract boolean isSupported(Transferable transferable);
+
+    protected boolean confirmDrop(int targetIndex, E entry) {
+        DefaultListModel<E> model = (DefaultListModel<E>) getModel();
+        model.add(targetIndex, entry);
+        setSelectedIndex(targetIndex);
+        return true;
+    }
 
     protected void actOnSelectedEntry(Consumer<E> action) {
         int index = this.getSelectedIndex();
@@ -81,13 +91,16 @@ public abstract class SortableList<E> extends JList<E> implements DragGestureLis
     @Override
     public void dragGestureRecognized(DragGestureEvent dge) {
         if (!dragEnabled) return;
-        boolean oneOrMore = getSelectedIndices().length > 1;
+        boolean moreThanOne = getSelectedIndices().length > 1;
         draggedIndex = locationToIndex(dge.getDragOrigin());
-        if (oneOrMore || draggedIndex < 0) {
+        if (moreThanOne || draggedIndex < 0) {
             return;
         }
         try {
-            dge.startDrag(DragSource.DefaultMoveDrop, this, this);
+            ListModel<E> listModel = this.getModel();
+            E toDrag = listModel.getElementAt(draggedIndex);
+            Transferable transferable = createTransferableFromEntry(toDrag);
+            dge.startDrag(DragSource.DefaultMoveDrop, transferable, this);
         } catch (InvalidDnDOperationException ex) {
             throw new IllegalStateException(ex);
         }
@@ -117,21 +130,6 @@ public abstract class SortableList<E> extends JList<E> implements DragGestureLis
     public void dropActionChanged(DragSourceDragEvent dsde) {
     }
 
-    @Override
-    public Object getTransferData(DataFlavor flavor) {
-        return this;
-    }
-
-    @Override
-    public DataFlavor[] getTransferDataFlavors() {
-        return new DataFlavor[]{FLAVOR};
-    }
-
-    @Override
-    public boolean isDataFlavorSupported(DataFlavor flavor) {
-        return NAME.equals(flavor.getHumanPresentableName());
-    }
-
     private final class ItemDropTargetListener extends DropTargetAdapter {
 
         @Override
@@ -153,11 +151,6 @@ public abstract class SortableList<E> extends JList<E> implements DragGestureLis
         @Override
         public void dragOver(DropTargetDragEvent dtde) {
             if (isDragAcceptable(dtde)) {
-                Rectangle rect = getCellBounds(0, 0);
-                if (rect == null) {
-                    dtde.rejectDrag();
-                    return;
-                }
                 dtde.acceptDrag(dtde.getDropAction());
             }
             else {
@@ -170,8 +163,14 @@ public abstract class SortableList<E> extends JList<E> implements DragGestureLis
 
         private void initTargetLine(Point p) {
             Rectangle rect = getCellBounds(0, 0);
-            int cellHeight = rect.height;
             int lineHeight = 2;
+            if (rect == null) {
+                targetIndex = 0;
+                targetLine.setSize(SortableList.this.getWidth(), lineHeight);
+                targetLine.setLocation(0, 0);
+                return;
+            }
+            int cellHeight = rect.height;
             ListModel<E> model = getModel();
             int modelSize = model.getSize();
             targetIndex = -1;
@@ -190,23 +189,43 @@ public abstract class SortableList<E> extends JList<E> implements DragGestureLis
             }
         }
 
+        @SuppressWarnings("unchecked")
         @Override
         public void drop(DropTargetDropEvent dtde) {
             DefaultListModel<E> model = (DefaultListModel<E>) getModel();
             if (isDropAcceptable(dtde) && targetIndex >= 0) {
-                E draggedElement = model.get(draggedIndex);
-                if (targetIndex == draggedIndex) {
-                    setSelectedIndex(targetIndex);
-                }
-                else if (targetIndex < draggedIndex) {
-                    model.remove(draggedIndex);
-                    model.add(targetIndex, draggedElement);
-                    setSelectedIndex(targetIndex);
-                }
-                else {
-                    model.add(targetIndex, draggedElement);
-                    model.remove(draggedIndex);
-                    setSelectedIndex(targetIndex - 1);
+                if (draggedIndex == -1 || model.isEmpty()) {
+                    E entry;
+                    try {
+                        Transferable transferable = dtde.getTransferable();
+                        entry = (E) transferable.getTransferData(transferable.getTransferDataFlavors()[0]);
+                    } catch (UnsupportedFlavorException | IOException e) {
+                        Errors.printToStream(e);
+                        dtde.dropComplete(false);
+                        targetIndex = -1;
+                        return;
+                    }
+                    boolean confirmed = confirmDrop(targetIndex, entry);
+                    if (!confirmed) {
+                        dtde.dropComplete(false);
+                        targetIndex = -1;
+                        return;
+                    };
+                } else {
+                    E draggedElement = model.get(draggedIndex);
+                    if (targetIndex == draggedIndex) {
+                        setSelectedIndex(targetIndex);
+                    }
+                    else if (targetIndex < draggedIndex) {
+                        model.remove(draggedIndex);
+                        model.add(targetIndex, draggedElement);
+                        setSelectedIndex(targetIndex);
+                    }
+                    else {
+                        model.add(targetIndex, draggedElement);
+                        model.remove(draggedIndex);
+                        setSelectedIndex(targetIndex - 1);
+                    }
                 }
                 sortListModel();
                 dtde.dropComplete(true);
@@ -216,16 +235,16 @@ public abstract class SortableList<E> extends JList<E> implements DragGestureLis
             }
             dtde.dropComplete(false);
             targetIndex = -1;
+            draggedIndex = -1;
             repaint();
         }
 
         private boolean isDragAcceptable(DropTargetDragEvent e) {
-            return isDataFlavorSupported(e.getCurrentDataFlavors()[0]);
+            return isSupported(e.getTransferable());
         }
 
         private boolean isDropAcceptable(DropTargetDropEvent e) {
-            Transferable transferable = e.getTransferable();
-            return isDataFlavorSupported(transferable.getTransferDataFlavors()[0]);
+            return isSupported(e.getTransferable());
         }
 
     }

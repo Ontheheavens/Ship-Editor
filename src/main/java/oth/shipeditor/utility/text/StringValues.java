@@ -87,6 +87,7 @@ public final class StringValues {
     public static final String ENGINE_WIDTH = "Engine width:";
     public static final String ENGINE_LENGTH = "Engine length:";
     public static final String CONTRAIL_SIZE = "Contrail size:";
+    public static final String BOUND = "Bound";
 
     private StringValues() {
     }

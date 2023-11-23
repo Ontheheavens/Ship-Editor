@@ -4,6 +4,8 @@ import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.components.VariantPanelRepaintQueued;
 import oth.shipeditor.communication.events.viewer.layers.LayerWasSelected;
 import oth.shipeditor.components.datafiles.entities.WingCSVEntry;
+import oth.shipeditor.components.datafiles.entities.transferable.TransferableEntry;
+import oth.shipeditor.components.datafiles.entities.transferable.TransferableWing;
 import oth.shipeditor.components.viewer.layers.ViewerLayer;
 import oth.shipeditor.components.viewer.layers.ship.ShipLayer;
 import oth.shipeditor.components.viewer.layers.ship.ShipPainter;
@@ -16,6 +18,7 @@ import oth.shipeditor.utility.text.StringValues;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.datatransfer.Transferable;
 import java.util.List;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
@@ -243,6 +246,16 @@ class VariantWingsPanel extends JPanel {
             menu.add(remove);
 
             return menu;
+        }
+
+        @Override
+        protected Transferable createTransferableFromEntry(WingCSVEntry entry) {
+            return new TransferableWing(entry);
+        }
+
+        @Override
+        protected boolean isSupported(Transferable transferable) {
+            return transferable.getTransferDataFlavors()[0].equals(TransferableEntry.TRANSFERABLE_WING);
         }
 
     }
