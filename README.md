@@ -3,6 +3,10 @@ Visualizer and editor of object data in JSON and CSV format. Developed as utilit
 
 Forum thread: https://fractalsoftworks.com/forum/index.php?topic=28239.0
 
+![CodeFactor Grade](https://img.shields.io/codefactor/grade/github/ontheheavens/ship-editor?style=flat-square&label=Code%20Quality) ![GitHub code size in bytes](https://img.shields.io/github/languages/code-size/ontheheavens/ship-editor?style=flat-square&label=Code%20Size)
+
+
+
 ## Stack:
 
  - Java 19
