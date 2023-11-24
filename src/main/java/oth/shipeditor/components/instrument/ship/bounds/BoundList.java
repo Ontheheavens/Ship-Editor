@@ -46,9 +46,12 @@ final class BoundList extends PointList<BoundPoint> {
 
             private final BoundPoint bound = entry;
 
+            private final DataFlavor sourceFlavor = new DataFlavor(BoundList.this.getClass(),
+                    String.valueOf(BoundList.this.hashCode()));
+
             @Override
             public DataFlavor[] getTransferDataFlavors() {
-                return new DataFlavor[] {boundFlavor};
+                return new DataFlavor[] {boundFlavor, sourceFlavor};
             }
 
             @Override

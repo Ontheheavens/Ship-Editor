@@ -10,8 +10,8 @@ import java.awt.datatransfer.DataFlavor;
  */
 public class TransferableShip extends TransferableEntry {
 
-    public TransferableShip(ShipCSVEntry data) {
-        super(data);
+    public TransferableShip(ShipCSVEntry data, Object source) {
+        super(data, source);
     }
 
     @Override

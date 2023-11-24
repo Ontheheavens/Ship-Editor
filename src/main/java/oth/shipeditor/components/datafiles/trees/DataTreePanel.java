@@ -90,7 +90,7 @@ public abstract class DataTreePanel extends JPanel {
         variantLine.add(selector);
 
         DragSource dragSource = DragSource.getDefaultDragSource();
-        DragGestureListener gestureListener = new LabelDragListener(variant);
+        DragGestureListener gestureListener = new LabelDragListener(variant, variantFileLabel);
         dragSource.createDefaultDragGestureRecognizer(variantFileLabel,
                 DnDConstants.ACTION_COPY, gestureListener);
     }

@@ -6,6 +6,7 @@ import oth.shipeditor.utility.Errors;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
 import java.awt.datatransfer.UnsupportedFlavorException;
 import java.awt.dnd.*;
@@ -41,6 +42,7 @@ public abstract class SortableList<E> extends JList<E> implements DragGestureLis
 
     protected abstract boolean isSupported(Transferable transferable);
 
+    @SuppressWarnings({"ParameterHidesMemberVariable", "BooleanMethodNameMustStartWithQuestion"})
     protected boolean confirmDrop(int targetIndex, E entry) {
         DefaultListModel<E> model = (DefaultListModel<E>) getModel();
         model.add(targetIndex, entry);
@@ -194,11 +196,18 @@ public abstract class SortableList<E> extends JList<E> implements DragGestureLis
         public void drop(DropTargetDropEvent dtde) {
             DefaultListModel<E> model = (DefaultListModel<E>) getModel();
             if (isDropAcceptable(dtde) && targetIndex >= 0) {
-                if (draggedIndex == -1 || model.isEmpty()) {
+                Transferable transferable = dtde.getTransferable();
+                DataFlavor[] dataFlavors = transferable.getTransferDataFlavors();
+
+                String hashCodeContainer = dataFlavors[1].getHumanPresentableName();
+                int hash = SortableList.this.hashCode();
+                String hashCodeText = String.valueOf(hash);
+                boolean fromOutside = !hashCodeContainer.equals(hashCodeText);
+
+                if (fromOutside || draggedIndex == -1 || model.isEmpty()) {
                     E entry;
                     try {
-                        Transferable transferable = dtde.getTransferable();
-                        entry = (E) transferable.getTransferData(transferable.getTransferDataFlavors()[0]);
+                        entry = (E) transferable.getTransferData(dataFlavors[0]);
                     } catch (UnsupportedFlavorException | IOException e) {
                         Errors.printToStream(e);
                         dtde.dropComplete(false);

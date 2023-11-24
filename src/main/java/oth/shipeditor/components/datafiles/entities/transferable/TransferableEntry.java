@@ -18,6 +18,8 @@ public abstract class TransferableEntry implements Transferable {
 
     private final Object nodeData;
 
+    private final DataFlavor sourceFlavor;
+
     public static final DataFlavor TRANSFERABLE_SHIP = new DataFlavor(ShipCSVEntry.class,
             "Ship Entry");
 
@@ -33,15 +35,17 @@ public abstract class TransferableEntry implements Transferable {
     public static final DataFlavor TRANSFERABLE_WING = new DataFlavor(WingCSVEntry.class,
             "Wing Entry");
 
-    TransferableEntry(Object data) {
+    TransferableEntry(Object data, Object source) {
         this.nodeData = data;
+        this.sourceFlavor = new DataFlavor(source.getClass(),
+                String.valueOf(source.hashCode()));
     }
 
     protected abstract DataFlavor getTypeFlavor();
 
     @Override
     public DataFlavor[] getTransferDataFlavors() {
-        return new DataFlavor[]{getTypeFlavor()};
+        return new DataFlavor[]{getTypeFlavor(), sourceFlavor};
     }
 
     @Override

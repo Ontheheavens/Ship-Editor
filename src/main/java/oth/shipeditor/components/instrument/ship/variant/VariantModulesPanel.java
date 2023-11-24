@@ -11,7 +11,6 @@ import oth.shipeditor.communication.events.components.VariantModulesRepaintQueue
 import oth.shipeditor.communication.events.viewer.points.PointSelectedConfirmed;
 import oth.shipeditor.components.datafiles.entities.CSVEntry;
 import oth.shipeditor.components.datafiles.entities.ShipCSVEntry;
-import oth.shipeditor.components.datafiles.entities.transferable.TransferableEntry;
 import oth.shipeditor.components.instrument.EditorInstrument;
 import oth.shipeditor.components.instrument.ship.shared.InstalledFeatureList;
 import oth.shipeditor.components.viewer.entities.weapon.WeaponSlotPoint;
@@ -35,6 +34,7 @@ import javax.swing.border.Border;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.LineBorder;
 import java.awt.*;
+import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
 import java.util.Collection;
 import java.util.Map;
@@ -237,7 +237,12 @@ public class VariantModulesPanel extends AbstractVariantPanel{
 
         @Override
         protected boolean isSupported(Transferable transferable) {
-            return transferable.getTransferDataFlavors()[0].equals(TransferableEntry.TRANSFERABLE_VARIANT);
+            DataFlavor[] dataFlavors = transferable.getTransferDataFlavors();
+            boolean isFeature = dataFlavors[0].equals(featureFlavor);
+
+            String humanPresentableName = dataFlavors[1].getHumanPresentableName();
+            boolean isSameList = humanPresentableName.equals(String.valueOf(this.hashCode()));
+            return isFeature && isSameList;
         }
 
         @Override

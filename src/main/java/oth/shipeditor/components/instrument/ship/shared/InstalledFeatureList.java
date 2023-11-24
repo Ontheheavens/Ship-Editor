@@ -6,11 +6,7 @@ import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.components.SelectWeaponDataEntry;
 import oth.shipeditor.communication.events.viewer.points.PointSelectQueued;
 import oth.shipeditor.components.datafiles.entities.CSVEntry;
-import oth.shipeditor.components.datafiles.entities.ShipCSVEntry;
 import oth.shipeditor.components.datafiles.entities.WeaponCSVEntry;
-import oth.shipeditor.components.datafiles.entities.transferable.TransferableEntry;
-import oth.shipeditor.components.datafiles.entities.transferable.TransferableShip;
-import oth.shipeditor.components.datafiles.entities.transferable.TransferableWeapon;
 import oth.shipeditor.components.viewer.entities.weapon.SlotData;
 import oth.shipeditor.components.viewer.layers.ship.ShipLayer;
 import oth.shipeditor.components.viewer.painters.points.ship.WeaponSlotPainter;
@@ -22,6 +18,7 @@ import oth.shipeditor.utility.text.StringValues;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
+import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -46,6 +43,9 @@ public class InstalledFeatureList extends SortableList<InstalledFeature> {
     private final Consumer<InstalledFeature> uninstaller;
 
     private final Consumer<Map<String, InstalledFeature>> sorter;
+
+    protected final DataFlavor featureFlavor = new DataFlavor(InstalledFeature.class,
+            "Installed Feature");
 
     public InstalledFeatureList(ListModel<InstalledFeature> dataModel, WeaponSlotPainter painter,
                                 Consumer<InstalledFeature> removeAction,
@@ -137,16 +137,32 @@ public class InstalledFeatureList extends SortableList<InstalledFeature> {
     @Override
     protected Transferable createTransferableFromEntry(InstalledFeature entry) {
         CSVEntry dataEntry = entry.getDataEntry();
-        if (dataEntry instanceof WeaponCSVEntry weaponEntry) {
-            return new TransferableWeapon(weaponEntry);
-        } else {
-            return new TransferableShip((ShipCSVEntry) dataEntry);
-        }
+        return new Transferable() {
+            private final InstalledFeature feature = entry;
+
+            private final DataFlavor sourceFlavor = new DataFlavor(InstalledFeatureList.this.getClass(),
+                    String.valueOf(InstalledFeatureList.this.hashCode()));
+
+            @Override
+            public DataFlavor[] getTransferDataFlavors() {
+                return new DataFlavor[] {featureFlavor, sourceFlavor};
+            }
+
+            @Override
+            public boolean isDataFlavorSupported(DataFlavor flavor) {
+                return flavor.equals(featureFlavor);
+            }
+
+            @Override
+            public Object getTransferData(DataFlavor flavor) {
+                return feature;
+            }
+        };
     }
 
     @Override
     protected boolean isSupported(Transferable transferable) {
-        return transferable.getTransferDataFlavors()[0].equals(TransferableEntry.TRANSFERABLE_WEAPON);
+        return transferable.getTransferDataFlavors()[0].equals(featureFlavor);
     }
 
     private class FeatureContextMenuListener extends MouseAdapter {

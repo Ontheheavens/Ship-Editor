@@ -44,9 +44,12 @@ public class EngineList extends PointList<EnginePoint> {
 
             private final EnginePoint engine = entry;
 
+            private final DataFlavor sourceFlavor = new DataFlavor(EngineList.this.getClass(),
+                    String.valueOf(EngineList.this.hashCode()));
+
             @Override
             public DataFlavor[] getTransferDataFlavors() {
-                return new DataFlavor[] {engineFlavor};
+                return new DataFlavor[] {engineFlavor, sourceFlavor};
             }
 
             @Override

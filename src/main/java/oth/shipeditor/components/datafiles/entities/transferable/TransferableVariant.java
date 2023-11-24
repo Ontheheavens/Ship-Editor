@@ -10,8 +10,8 @@ import java.awt.datatransfer.DataFlavor;
  */
 public class TransferableVariant extends TransferableEntry{
 
-    public TransferableVariant(VariantFile variant) {
-        super(variant);
+    public TransferableVariant(VariantFile variant, Object source) {
+        super(variant, source);
     }
 
     @Override

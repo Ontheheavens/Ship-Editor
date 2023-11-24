@@ -41,15 +41,15 @@ public class TreeDataGestureListener implements DragGestureListener {
             Transferable transferable;
             switch (userObject) {
                 case ShipCSVEntry shipEntry -> {
-                    transferable = new TransferableShip(shipEntry);
+                    transferable = new TransferableShip(shipEntry, tree);
                     ViewerDropReceiver.commenceDragToViewer(shipEntry);
                 }
                 case WeaponCSVEntry weaponEntry -> {
-                    transferable = new TransferableWeapon(weaponEntry);
+                    transferable = new TransferableWeapon(weaponEntry, tree);
                     ViewerDropReceiver.commenceDragToViewer(weaponEntry);
                 }
                 case HullmodCSVEntry hullmodEntry -> transferable = new TransferableHullmod(hullmodEntry, tree);
-                case WingCSVEntry wingEntry -> transferable = new TransferableWing(wingEntry);
+                case WingCSVEntry wingEntry -> transferable = new TransferableWing(wingEntry, tree);
                 default -> {
                     ViewerDropReceiver.finishDragToViewer();
                     return;

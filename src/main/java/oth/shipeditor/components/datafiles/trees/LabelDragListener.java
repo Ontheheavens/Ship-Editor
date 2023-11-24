@@ -20,13 +20,16 @@ class LabelDragListener implements DragGestureListener {
 
     private final VariantFile variant;
 
-    LabelDragListener(VariantFile variantFile) {
+    private final Object parentSource;
+
+    LabelDragListener(VariantFile variantFile, Object source) {
         this.variant = variantFile;
+        this.parentSource = source;
     }
 
     @Override
     public void dragGestureRecognized(DragGestureEvent dge) {
-        Transferable transferable = new TransferableVariant(variant);
+        Transferable transferable = new TransferableVariant(variant, parentSource);
 
         String baseHullID = GameDataRepository.getBaseHullID(variant.getShipHullId());
         ShipCSVEntry shipEntry = GameDataRepository.retrieveShipCSVEntryByID(baseHullID);

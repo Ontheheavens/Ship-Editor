@@ -3,6 +3,7 @@ package oth.shipeditor.components.instrument.ship.slots;
 import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.viewer.points.SlotPointsSorted;
 import oth.shipeditor.components.datafiles.trees.WeaponFilterPanel;
+import oth.shipeditor.components.instrument.ship.engines.EngineList;
 import oth.shipeditor.components.viewer.entities.weapon.WeaponSlotPoint;
 import oth.shipeditor.utility.components.containers.PointList;
 import oth.shipeditor.utility.components.rendering.WeaponSlotCellRenderer;
@@ -46,9 +47,12 @@ public class WeaponSlotList extends PointList<WeaponSlotPoint> {
 
             private final WeaponSlotPoint slot = entry;
 
+            private final DataFlavor sourceFlavor = new DataFlavor(WeaponSlotList.this.getClass(),
+                    String.valueOf(WeaponSlotList.this.hashCode()));
+
             @Override
             public DataFlavor[] getTransferDataFlavors() {
-                return new DataFlavor[] {slotFlavor};
+                return new DataFlavor[] {slotFlavor, sourceFlavor};
             }
 
             @Override

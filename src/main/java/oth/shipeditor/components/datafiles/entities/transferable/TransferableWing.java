@@ -10,8 +10,8 @@ import java.awt.datatransfer.DataFlavor;
  */
 public class TransferableWing extends TransferableEntry {
 
-    public TransferableWing(WingCSVEntry data) {
-        super(data);
+    public TransferableWing(WingCSVEntry data, Object source) {
+        super(data, source);
     }
 
     @Override

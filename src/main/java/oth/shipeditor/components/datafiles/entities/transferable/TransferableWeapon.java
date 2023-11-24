@@ -10,8 +10,8 @@ import java.awt.datatransfer.DataFlavor;
  */
 public class TransferableWeapon extends TransferableEntry {
 
-    public TransferableWeapon(WeaponCSVEntry data) {
-        super(data);
+    public TransferableWeapon(WeaponCSVEntry data, Object source) {
+        super(data, source);
     }
 
     @Override

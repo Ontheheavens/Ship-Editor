@@ -250,7 +250,7 @@ class VariantWingsPanel extends JPanel {
 
         @Override
         protected Transferable createTransferableFromEntry(WingCSVEntry entry) {
-            return new TransferableWing(entry);
+            return new TransferableWing(entry, this);
         }
 
         @Override

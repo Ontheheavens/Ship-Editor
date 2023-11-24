@@ -1,6 +1,5 @@
 package oth.shipeditor.components.datafiles.entities.transferable;
 
-import lombok.Getter;
 import oth.shipeditor.components.datafiles.entities.HullmodCSVEntry;
 
 import java.awt.datatransfer.DataFlavor;
@@ -11,12 +10,8 @@ import java.awt.datatransfer.DataFlavor;
  */
 public class TransferableHullmod extends TransferableEntry {
 
-    @Getter
-    private final Object dragSource;
-
     public TransferableHullmod(HullmodCSVEntry data, Object source) {
-        super(data);
-        this.dragSource = source;
+        super(data, source);
     }
 
     @Override
