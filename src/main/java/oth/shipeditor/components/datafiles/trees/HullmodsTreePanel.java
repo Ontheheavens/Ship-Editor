@@ -109,16 +109,6 @@ class HullmodsTreePanel extends CSVDataTreePanel<HullmodCSVEntry>{
     }
 
     @Override
-    protected String getTooltipForEntry(Object entry) {
-        if (entry instanceof HullmodCSVEntry checked) {
-            return "<html>" +
-                    "<p>" + "Hullmod ID: " + checked.getHullmodID() + "</p>" +
-                    "</html>";
-        }
-        return super.getTooltipForEntry(entry);
-    }
-
-    @Override
     JPopupMenu getContextMenu() {
         JPopupMenu menu = super.getContextMenu();
         DefaultMutableTreeNode cachedSelectForMenu = getCachedSelectForMenu();

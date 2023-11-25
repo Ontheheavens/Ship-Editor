@@ -4,6 +4,7 @@ import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
 import oth.shipeditor.parsing.loading.FileLoading;
 import oth.shipeditor.representation.ship.HullSize;
+import oth.shipeditor.utility.Utility;
 import oth.shipeditor.utility.components.ComponentUtilities;
 import oth.shipeditor.utility.text.StringConstants;
 import oth.shipeditor.utility.text.StringValues;
@@ -59,6 +60,12 @@ public class HullmodCSVEntry implements OrdnancedCSVEntry {
     @Override
     public String getEntryName() {
         return toString();
+    }
+
+    @Override
+    public String getMultilineTooltip() {
+        String entryID = "Hullmod ID: " + this.getHullmodID();
+        return Utility.getWithLinebreaks(entryID);
     }
 
     @Override

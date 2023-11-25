@@ -95,7 +95,7 @@ public final class ShipLayerInfoPanel extends AbstractLayerInfoPanel {
         for (SlotData slot : slots) {
             WeaponSize weaponSize = slot.getWeaponSize();
             WeaponType weaponType = slot.getWeaponType();
-            String slotConfig = weaponSize.getDisplayName() + " " + weaponType.getDisplayName();
+            String slotConfig = weaponSize.getDisplayedName() + " " + weaponType.getDisplayedName();
             slotConfigSummary.put(slotConfig, slotConfigSummary.getOrDefault(slotConfig, 0) + 1);
         }
         return slotConfigSummary;

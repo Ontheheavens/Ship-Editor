@@ -199,7 +199,7 @@ public class WeaponSlotPoint extends AngledPoint implements SlotPoint {
 
     public String getNameForLabel() {
         WeaponType type = getWeaponType();
-        return type.getDisplayName();
+        return type.getDisplayedName();
     }
 
     @Override

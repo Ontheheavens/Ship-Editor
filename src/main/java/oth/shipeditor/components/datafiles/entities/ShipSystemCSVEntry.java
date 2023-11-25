@@ -2,6 +2,7 @@ package oth.shipeditor.components.datafiles.entities;
 
 import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
+import oth.shipeditor.utility.Utility;
 import oth.shipeditor.utility.text.StringConstants;
 import oth.shipeditor.utility.text.StringValues;
 
@@ -29,6 +30,12 @@ public class ShipSystemCSVEntry implements CSVEntry {
         packageFolderPath = folder;
         this.tableFilePath = tablePath;
         shipSystemID = this.rowData.get("id");
+    }
+
+    @Override
+    public String getMultilineTooltip() {
+        String entryID = "Shipsystem ID: " + this.getShipSystemID();
+        return Utility.getWithLinebreaks(entryID);
     }
 
     @Override

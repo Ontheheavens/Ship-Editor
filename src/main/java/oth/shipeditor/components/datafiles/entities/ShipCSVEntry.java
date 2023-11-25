@@ -92,6 +92,24 @@ public class ShipCSVEntry implements CSVEntry, InstallableEntry {
         return getHullID();
     }
 
+    @Override
+    public String getMultilineTooltip() {
+        return this.getMultilineTooltip(new String[0]);
+    }
+
+    @SuppressWarnings("OverloadedVarargsMethod")
+    public String getMultilineTooltip(String... additional) {
+        List<String> lines = new ArrayList<>(2);
+        String entryID = "Hull ID: " + this.getHullID();
+        String size =  "Hull size: " +  this.getSize();
+        lines.add(entryID);
+        lines.add(size);
+        if (additional != null && additional.length > 0) {
+            lines.addAll(List.of(additional));
+        }
+        return Utility.getWithLinebreaks(lines.toArray(new String[0]));
+    }
+
     public String getShipName() {
         if (activeSkinSpecFile != null && !activeSkinSpecFile.isBase()) {
             return activeSkinSpecFile.getHullName();

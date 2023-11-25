@@ -57,10 +57,13 @@ public abstract class CSVDataTreePanel<T extends CSVEntry> extends DataTreePanel
 
     }
 
+    @SuppressWarnings("ChainOfInstanceofChecks")
     @Override
     protected String getTooltipForEntry(Object entry) {
         if (entry instanceof GameDataPackage dataPackage) {
             return DataTreePanel.getTooltipForPackage(dataPackage);
+        } else if (entry instanceof CSVEntry checked) {
+            return checked.getMultilineTooltip();
         }
         return null;
     }

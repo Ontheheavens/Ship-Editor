@@ -256,7 +256,7 @@ public class WeaponFilterPanel extends JPanel {
             buttonContainer.setBorder(new EmptyBorder(4, 0, 0, 0));
 
             JCheckBox checkBox = new JCheckBox();
-            checkBox.setText(type.getDisplayName());
+            checkBox.setText(type.getDisplayedName());
             checkBox.setSelected(TYPE_FILTERS.get(type));
             checkBox.addActionListener(e -> {
                 if (checkBox.isSelected()) {
@@ -297,7 +297,7 @@ public class WeaponFilterPanel extends JPanel {
             buttonContainer.setBorder(new EmptyBorder(4, 0, 0, 0));
 
             JCheckBox checkBox = new JCheckBox();
-            checkBox.setText(size.getDisplayName());
+            checkBox.setText(size.getDisplayedName());
             checkBox.setSelected(SIZE_FILTERS.get(size));
             checkBox.addActionListener(e -> {
                 if (checkBox.isSelected()) {

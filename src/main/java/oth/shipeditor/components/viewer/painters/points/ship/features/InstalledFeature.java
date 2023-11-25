@@ -4,12 +4,14 @@ import lombok.Getter;
 import lombok.Setter;
 import oth.shipeditor.components.datafiles.entities.CSVEntry;
 import oth.shipeditor.components.datafiles.entities.InstallableEntry;
+import oth.shipeditor.components.datafiles.entities.ShipCSVEntry;
 import oth.shipeditor.components.datafiles.entities.WeaponCSVEntry;
 import oth.shipeditor.components.viewer.entities.weapon.WeaponSlotPoint;
 import oth.shipeditor.components.viewer.layers.LayerPainter;
 import oth.shipeditor.components.viewer.layers.ship.ShipPainter;
 import oth.shipeditor.components.viewer.layers.weapon.WeaponPainter;
 import oth.shipeditor.components.viewer.painters.points.AbstractPointPainter;
+import oth.shipeditor.representation.SizeEnum;
 import oth.shipeditor.representation.weapon.WeaponMount;
 import oth.shipeditor.representation.weapon.WeaponSpecFile;
 import oth.shipeditor.representation.weapon.WeaponType;
@@ -66,6 +68,23 @@ public final class InstalledFeature implements InstallableEntry {
         if (entry instanceof InstallableEntry) {
             return new InstalledFeature(slot, id, painter, entry);
         } else throw new IllegalArgumentException("Illegal data entry passed for installable feature!");
+    }
+
+    public WeaponType getWeaponType() {
+        if (dataEntry instanceof WeaponCSVEntry weaponEntry) {
+            return weaponEntry.getType();
+        } else {
+            return WeaponType.STATION_MODULE;
+        }
+    }
+
+    public SizeEnum getSize() {
+        if (dataEntry instanceof WeaponCSVEntry weaponEntry) {
+            return weaponEntry.getSize();
+        } else {
+            ShipCSVEntry shipEntry = (ShipCSVEntry) dataEntry;
+            return shipEntry.getSize();
+        }
     }
 
     public int getOPCost() {

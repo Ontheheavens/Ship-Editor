@@ -6,9 +6,12 @@ import org.kordamp.ikonli.swing.FontIcon;
 import oth.shipeditor.components.datafiles.entities.CSVEntry;
 import oth.shipeditor.components.instrument.ship.shared.InstalledFeatureList;
 import oth.shipeditor.components.viewer.entities.weapon.SlotData;
+import oth.shipeditor.components.viewer.entities.weapon.WeaponSlotPoint;
 import oth.shipeditor.components.viewer.layers.ship.ShipLayer;
 import oth.shipeditor.components.viewer.painters.points.ship.features.InstalledFeature;
 import oth.shipeditor.components.viewer.painters.points.ship.WeaponSlotPainter;
+import oth.shipeditor.representation.SizeEnum;
+import oth.shipeditor.representation.ship.HullSize;
 import oth.shipeditor.representation.weapon.WeaponSize;
 import oth.shipeditor.representation.weapon.WeaponType;
 import oth.shipeditor.utility.components.ComponentUtilities;
@@ -29,6 +32,8 @@ public class InstalledFeatureCellRenderer extends BoxPanelCellRenderer<Installed
     private final JLabel slotIDText;
 
     private final JLabel featureIDText;
+    private final JLabel featureTypeIcon;
+    private final JLabel featureSizeIcon;
 
     public InstalledFeatureCellRenderer() {
         slotTypeIcon = new JLabel();
@@ -42,15 +47,24 @@ public class InstalledFeatureCellRenderer extends BoxPanelCellRenderer<Installed
         slotIDText = new JLabel();
         slotIDText.setBorder(new EmptyBorder(0, 4, 0, 0));
 
-        featureIDText = new JLabel();
-
         JPanel leftContainer = getLeftContainer();
         leftContainer.add(slotSizeIcon);
         leftContainer.add(slotTypeIcon);
         leftContainer.add(slotIDText);
 
+        featureIDText = new JLabel();
+
+        featureTypeIcon = new JLabel();
+        featureTypeIcon.setOpaque(true);
+        featureTypeIcon.setBorder(new FlatLineBorder(new Insets(2, 2, 2, 2), Color.GRAY));
+        featureTypeIcon.setBackground(Color.LIGHT_GRAY);
+
+        featureSizeIcon = new JLabel();
+
         JPanel rightContainer = getRightContainer();
         rightContainer.add(featureIDText);
+        rightContainer.add(featureTypeIcon);
+        rightContainer.add(featureSizeIcon);
     }
 
     @Override
@@ -72,26 +86,7 @@ public class InstalledFeatureCellRenderer extends BoxPanelCellRenderer<Installed
         }
 
         if (slotPoint != null) {
-            WeaponType weaponType = slotPoint.getWeaponType();
-            Icon color = ComponentUtilities.createIconFromColor(weaponType.getColor(), 10, 10);
-            slotTypeIcon.setIcon(color);
-            slotTypeIcon.setBorder(new FlatLineBorder(new Insets(2, 2, 2, 2), Color.GRAY));
-
-            slotIDText.setBorder(new EmptyBorder(0, 4, 0, 0));
-
-            WeaponSize size = slotPoint.getWeaponSize();
-            slotSizeIcon.setVisible(true);
-            slotSizeIcon.setIcon(size.getIcon());
-
-            if (!slotPoint.canFit(value)) {
-                foreground = Color.RED;
-                setToolTipText(StringValues.INVALIDATED_WEAPON_UNFIT_FOR_SLOT);
-            } else if (featureList.isBelongsToBaseHullBuiltIns()) {
-                // This is not a good way to solve the issue conceptually, but I don't see a better solution at the moment.
-                // Ideally, cell renderer shouldn't care about what list of what features it displays;
-                // However, it needs to, because it should display removal and override status provided by skin.
-                handleSkinChanges(slotPainter, slotPoint);
-            }
+            foreground = populateSlotInfo(value, slotPoint, foreground, featureList, slotPainter);
         } else {
             Color errorColor = Color.RED;
             this.setWarningIcon(errorColor);
@@ -109,8 +104,50 @@ public class InstalledFeatureCellRenderer extends BoxPanelCellRenderer<Installed
 
         CSVEntry dataEntry = value.getDataEntry();
         featureIDText.setText(dataEntry.toString());
+        featureIDText.setBorder(new EmptyBorder(0, 0, 0, 3));
+
+        this.setToolTipText(dataEntry.getMultilineTooltip());
+
+        WeaponType featureType = value.getWeaponType();
+        Icon color = ComponentUtilities.createIconFromColor(featureType.getColor(), 10, 10);
+        featureTypeIcon.setIcon(color);
+        featureTypeIcon.setBorder(new FlatLineBorder(new Insets(2, 2, 2, 2), Color.GRAY));
+
+        SizeEnum size = value.getSize();
+        FontIcon sizeIcon = size.getIcon();
+        if (size instanceof HullSize hullSize) {
+            sizeIcon = hullSize.getResizedIcon(19);
+        }
+        featureSizeIcon.setIcon(sizeIcon);
 
         return this;
+    }
+
+    private Color populateSlotInfo(InstalledFeature value, WeaponSlotPoint slotPoint,
+                                   Color foreground, InstalledFeatureList featureList,
+                                   WeaponSlotPainter slotPainter) {
+        Color foregroundColor = foreground;
+        WeaponType weaponType = slotPoint.getWeaponType();
+        Icon color = ComponentUtilities.createIconFromColor(weaponType.getColor(), 10, 10);
+        slotTypeIcon.setIcon(color);
+        slotTypeIcon.setBorder(new FlatLineBorder(new Insets(2, 2, 2, 2), Color.GRAY));
+
+        slotIDText.setBorder(new EmptyBorder(0, 4, 0, 0));
+
+        WeaponSize size = slotPoint.getWeaponSize();
+        slotSizeIcon.setVisible(true);
+        slotSizeIcon.setIcon(size.getIcon());
+
+        if (!slotPoint.canFit(value)) {
+            foregroundColor = Color.RED;
+            setToolTipText(StringValues.INVALIDATED_WEAPON_UNFIT_FOR_SLOT);
+        } else if (featureList.isBelongsToBaseHullBuiltIns()) {
+            // This is not a good way to solve the issue conceptually, but I don't see a better solution at the moment.
+            // Ideally, cell renderer shouldn't care about what list of what features it displays;
+            // However, it needs to, because it should display removal and override status provided by skin.
+            handleSkinChanges(slotPainter, slotPoint);
+        }
+        return foregroundColor;
     }
 
     private void setWarningIcon(Color color) {

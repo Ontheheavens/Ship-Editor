@@ -1,8 +1,10 @@
 package oth.shipeditor.representation.ship;
 
 import lombok.Getter;
+import org.kordamp.ikonli.Ikon;
 import org.kordamp.ikonli.boxicons.BoxiconsRegular;
 import org.kordamp.ikonli.swing.FontIcon;
+import oth.shipeditor.representation.SizeEnum;
 import oth.shipeditor.utility.text.StringValues;
 import oth.shipeditor.utility.themes.Themes;
 
@@ -12,20 +14,16 @@ import oth.shipeditor.utility.themes.Themes;
  */
 @Getter
 @SuppressWarnings("NonSerializableFieldInSerializableClass")
-public enum HullSize {
+public enum HullSize implements SizeEnum {
 
-    DEFAULT(FontIcon.of(BoxiconsRegular.DICE_1,
-            16, Themes.getIconColor()), 0, StringValues.DEFAULT),
-    FIGHTER(FontIcon.of(BoxiconsRegular.DICE_1,
-            16, Themes.getIconColor()), 0, "Fighter"),
-    FRIGATE(FontIcon.of(BoxiconsRegular.DICE_2,
-            16, Themes.getIconColor()), 10, "Frigate"),
-    DESTROYER(FontIcon.of(BoxiconsRegular.DICE_3,
-            16, Themes.getIconColor()), 20, "Destroyer"),
-    CRUISER(FontIcon.of(BoxiconsRegular.DICE_4,
-            16, Themes.getIconColor()), 30, "Cruiser"),
-    CAPITAL_SHIP(FontIcon.of(BoxiconsRegular.DICE_5,
-            16, Themes.getIconColor()), 50, "Capital");
+    DEFAULT(BoxiconsRegular.DICE_1, 0, StringValues.DEFAULT),
+    FIGHTER(BoxiconsRegular.DICE_1, 0, "Fighter"),
+    FRIGATE(BoxiconsRegular.DICE_2, 10, "Frigate"),
+    DESTROYER(BoxiconsRegular.DICE_3, 20, "Destroyer"),
+    CRUISER(BoxiconsRegular.DICE_4, 30, "Cruiser"),
+    CAPITAL_SHIP(BoxiconsRegular.DICE_5, 50, "Capital");
+
+    private final Ikon ikonTemplate;
 
     private final FontIcon icon;
 
@@ -33,8 +31,13 @@ public enum HullSize {
 
     private final String displayedName;
 
-    HullSize(FontIcon fontIcon, int fluxCap, String name) {
-        this.icon = fontIcon;
+    public FontIcon getResizedIcon(int size) {
+        return FontIcon.of(ikonTemplate, size, Themes.getIconColor());
+    }
+
+    HullSize(Ikon ikon, int fluxCap, String name) {
+        this.ikonTemplate = ikon;
+        this.icon = FontIcon.of(ikonTemplate, 16, Themes.getIconColor());
         this.maxFluxRegulators = fluxCap;
         this.displayedName = name;
     }

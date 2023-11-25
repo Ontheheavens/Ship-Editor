@@ -3,15 +3,15 @@ package oth.shipeditor.representation.weapon;
 import lombok.Getter;
 import org.kordamp.ikonli.boxicons.BoxiconsRegular;
 import org.kordamp.ikonli.swing.FontIcon;
+import oth.shipeditor.representation.SizeEnum;
 import oth.shipeditor.utility.themes.Themes;
-
-import javax.swing.*;
 
 /**
  * @author Ontheheavens
  * @since 26.07.2023
  */
-public enum WeaponSize {
+@Getter
+public enum WeaponSize implements SizeEnum {
 
     // TODO: dynamic getter of icons to account for selection color and size change.
 
@@ -22,20 +22,16 @@ public enum WeaponSize {
     LARGE("LARGE", "Large",
             FontIcon.of(BoxiconsRegular.DICE_3, 19, Themes.getIconColor()), 3);
 
-    @Getter
     private final String id;
-    @Getter
-    private final String displayName;
+    private final String displayedName;
 
-    @Getter
     private final int numericSize;
 
-    @Getter
-    private final Icon icon;
+    private final FontIcon icon;
 
-    WeaponSize(String serialized, String name, Icon iconImage, int numeric) {
+    WeaponSize(String serialized, String name, FontIcon iconImage, int numeric) {
         this.id = serialized;
-        this.displayName = name;
+        this.displayedName = name;
         this.numericSize = numeric;
         this.icon = iconImage;
     }

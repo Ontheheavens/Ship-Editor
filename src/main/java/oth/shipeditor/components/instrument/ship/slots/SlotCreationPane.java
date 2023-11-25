@@ -181,7 +181,7 @@ public class SlotCreationPane extends JPanel {
         ButtonGroup selectorButtons = new ButtonGroup();
 
         for (WeaponSize size : sizes) {
-            JRadioButton button = new JRadioButton(size.getDisplayName());
+            JRadioButton button = new JRadioButton(size.getDisplayedName());
             button.addActionListener(e -> defaultSize = size);
 
             container.add(SlotCreationPane.createSlotKindPane(selectorButtons, button));
@@ -206,7 +206,7 @@ public class SlotCreationPane extends JPanel {
     }
 
     private static Pair<JPanel, JRadioButton> createSlotTypeButton(WeaponType type) {
-        JRadioButton button = new JRadioButton(type.getDisplayName());
+        JRadioButton button = new JRadioButton(type.getDisplayedName());
         button.addActionListener(e -> defaultType = type);
 
         JPanel panel = ComponentUtilities.createColorPropertyPanel(button, type.getColor(), 0);

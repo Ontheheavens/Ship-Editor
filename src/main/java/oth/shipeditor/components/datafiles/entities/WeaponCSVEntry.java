@@ -73,6 +73,16 @@ public class WeaponCSVEntry implements CSVEntry, InstallableEntry {
         this.specFile = weaponSpecFile;
     }
 
+    @Override
+    public String getMultilineTooltip() {
+        String entryID = StringValues.WEAPON_ID + this.getWeaponID();
+        WeaponType weaponType = this.getType();
+        String type =  "Weapon type: " + weaponType.getDisplayedName();
+        WeaponSize weaponSize = this.getSize();
+        String size =  "Weapon size: " + weaponSize.getDisplayedName();
+        return Utility.getWithLinebreaks(entryID, type, size);
+    }
+
     public WeaponType getType() {
         WeaponType mountTypeOverride = specFile.getMountTypeOverride();
         if (mountTypeOverride != null) {
@@ -316,12 +326,12 @@ public class WeaponCSVEntry implements CSVEntry, InstallableEntry {
 
         WeaponSize weaponSize = this.getSize();
         JLabel sizeLabel = new JLabel(weaponSize.getIcon());
-        sizeLabel.setToolTipText(weaponSize.getDisplayName());
+        sizeLabel.setToolTipText(weaponSize.getDisplayedName());
         weaponPickPanel.add(sizeLabel);
 
         WeaponType weaponType = this.getType();
         JLabel typeLabel = ComponentUtilities.createColorIconLabel(weaponType.getColor());
-        typeLabel.setToolTipText(weaponType.getDisplayName());
+        typeLabel.setToolTipText(weaponType.getDisplayedName());
         weaponPickPanel.add(typeLabel);
 
         JLabel text = new JLabel(this.toString());

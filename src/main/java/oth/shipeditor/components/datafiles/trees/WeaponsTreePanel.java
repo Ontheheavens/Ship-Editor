@@ -14,7 +14,6 @@ import oth.shipeditor.persistence.Settings;
 import oth.shipeditor.persistence.SettingsManager;
 import oth.shipeditor.representation.GameDataRepository;
 import oth.shipeditor.representation.weapon.ProjectileSpecFile;
-import oth.shipeditor.representation.weapon.WeaponSize;
 import oth.shipeditor.representation.weapon.WeaponSpecFile;
 import oth.shipeditor.representation.weapon.WeaponType;
 import oth.shipeditor.utility.Utility;
@@ -415,19 +414,6 @@ public class WeaponsTreePanel extends CSVDataTreePanel<WeaponCSVEntry>{
         Object userObject = node.getUserObject();
         if (!(userObject instanceof WeaponCSVEntry checked)) return null;
         return checked;
-    }
-
-    @Override
-    protected String getTooltipForEntry(Object entry) {
-        if (entry instanceof WeaponCSVEntry checked) {
-            String weaponID = StringValues.WEAPON_ID + checked.getWeaponID();
-            WeaponType weaponType = checked.getType();
-            String type =  "Weapon type: " + weaponType.getDisplayName();
-            WeaponSize weaponSize = checked.getSize();
-            String size =  "Weapon size: " + weaponSize.getDisplayName();
-            return Utility.getWithLinebreaks(weaponID, type, size);
-        }
-        return super.getTooltipForEntry(entry);
     }
 
     @Override

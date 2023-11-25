@@ -64,11 +64,7 @@ class HullsTreePanel extends DataTreePanel {
             if (StaticController.getEditorMode() == EditorInstrument.VARIANT_MODULES) {
                 dragHint = "(Drag to install as module)";
             }
-            return "<html>" +
-                    "<p>" + "Hull size: " + hullSpecFileFile.getHullSize() + "</p>" +
-                    "<p>" + "Hull ID: " + shipEntry.getHullID() + "</p>" +
-                    "<p>" + dragHint + "</p>" +
-                    "</html>";
+            return shipEntry.getMultilineTooltip(dragHint);
         } else if (entry instanceof GameDataPackage dataPackage) {
             return DataTreePanel.getTooltipForPackage(dataPackage);
         }

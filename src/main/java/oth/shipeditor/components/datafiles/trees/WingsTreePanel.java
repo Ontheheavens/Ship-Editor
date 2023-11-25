@@ -248,16 +248,6 @@ public class WingsTreePanel extends CSVDataTreePanel<WingCSVEntry>{
     }
 
     @Override
-    protected String getTooltipForEntry(Object entry) {
-        if (entry instanceof WingCSVEntry checked) {
-            return "<html>" +
-                    "<p>" + "Wing ID: " + checked.getWingID() + "</p>" +
-                    "</html>";
-        }
-        return super.getTooltipForEntry(entry);
-    }
-
-    @Override
     protected Class<?> getEntryClass() {
         return WingCSVEntry.class;
     }

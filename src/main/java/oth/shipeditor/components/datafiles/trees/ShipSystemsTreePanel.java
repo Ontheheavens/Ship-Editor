@@ -85,16 +85,6 @@ class ShipSystemsTreePanel extends CSVDataTreePanel<ShipSystemCSVEntry>{
     }
 
     @Override
-    protected String getTooltipForEntry(Object entry) {
-        if (entry instanceof ShipSystemCSVEntry checked) {
-            return "<html>" +
-                    "<p>" + "Shipsystem ID: " + checked.getShipSystemID() + "</p>" +
-                    "</html>";
-        }
-        return super.getTooltipForEntry(entry);
-    }
-
-    @Override
     protected Class<?> getEntryClass() {
         return ShipSystemCSVEntry.class;
     }

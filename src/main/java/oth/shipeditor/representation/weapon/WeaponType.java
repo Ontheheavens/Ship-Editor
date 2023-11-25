@@ -32,11 +32,11 @@ public enum WeaponType {
 
     private final Color color;
 
-    private final String displayName;
+    private final String displayedName;
 
     WeaponType(String serialized, String name, Color tone) {
         this.id = serialized;
-        this.displayName = name;
+        this.displayedName = name;
         this.color = tone;
     }
 

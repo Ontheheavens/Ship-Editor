@@ -191,7 +191,6 @@ public abstract class SortableList<E> extends JList<E> implements DragGestureLis
             }
         }
 
-        @SuppressWarnings("unchecked")
         @Override
         public void drop(DropTargetDropEvent dtde) {
             DefaultListModel<E> model = (DefaultListModel<E>) getModel();
@@ -205,47 +204,58 @@ public abstract class SortableList<E> extends JList<E> implements DragGestureLis
                 boolean fromOutside = !hashCodeContainer.equals(hashCodeText);
 
                 if (fromOutside || draggedIndex == -1 || model.isEmpty()) {
-                    E entry;
-                    try {
-                        entry = (E) transferable.getTransferData(dataFlavors[0]);
-                    } catch (UnsupportedFlavorException | IOException e) {
-                        Errors.printToStream(e);
-                        dtde.dropComplete(false);
-                        targetIndex = -1;
-                        return;
-                    }
-                    boolean confirmed = confirmDrop(targetIndex, entry);
-                    if (!confirmed) {
-                        dtde.dropComplete(false);
-                        targetIndex = -1;
-                        return;
-                    };
+                    if (checkOutsideDropFailure(dtde, transferable, dataFlavors)) return;
                 } else {
-                    E draggedElement = model.get(draggedIndex);
-                    if (targetIndex == draggedIndex) {
-                        setSelectedIndex(targetIndex);
-                    }
-                    else if (targetIndex < draggedIndex) {
-                        model.remove(draggedIndex);
-                        model.add(targetIndex, draggedElement);
-                        setSelectedIndex(targetIndex);
-                    }
-                    else {
-                        model.add(targetIndex, draggedElement);
-                        model.remove(draggedIndex);
-                        setSelectedIndex(targetIndex - 1);
-                    }
+                    commenceLocalDrop(model);
                 }
                 sortListModel();
                 dtde.dropComplete(true);
-            }
-            else {
+            } else {
                 dtde.dropComplete(false);
             }
             dtde.dropComplete(false);
             targetIndex = -1;
             draggedIndex = -1;
             repaint();
+        }
+
+        private void commenceLocalDrop(DefaultListModel<E> model) {
+            E draggedElement = model.get(draggedIndex);
+            if (targetIndex == draggedIndex) {
+                setSelectedIndex(targetIndex);
+            }
+            else if (targetIndex < draggedIndex) {
+                model.remove(draggedIndex);
+                model.add(targetIndex, draggedElement);
+                setSelectedIndex(targetIndex);
+            }
+            else {
+                model.add(targetIndex, draggedElement);
+                model.remove(draggedIndex);
+                setSelectedIndex(targetIndex - 1);
+            }
+        }
+
+        @SuppressWarnings("unchecked")
+        private boolean checkOutsideDropFailure(DropTargetDropEvent dtde,
+                                                Transferable transferable,
+                                                DataFlavor[] dataFlavors) {
+            E entry;
+            try {
+                entry = (E) transferable.getTransferData(dataFlavors[0]);
+            } catch (UnsupportedFlavorException | IOException e) {
+                Errors.printToStream(e);
+                dtde.dropComplete(false);
+                targetIndex = -1;
+                return true;
+            }
+            boolean confirmed = confirmDrop(targetIndex, entry);
+            if (!confirmed) {
+                dtde.dropComplete(false);
+                targetIndex = -1;
+                return true;
+            }
+            return false;
         }
 
         private boolean isDragAcceptable(DropTargetDragEvent e) {

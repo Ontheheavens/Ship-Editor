@@ -73,6 +73,12 @@ public class WingCSVEntry implements OrdnancedCSVEntry {
         return allVariants.get(variantID);
     }
 
+    @Override
+    public String getMultilineTooltip() {
+        String entryID = "Wing ID: " + this.getWingID();
+        return Utility.getWithLinebreaks(entryID);
+    }
+
     private ShipSpecFile retrieveSpec() {
         VariantFile variantFile = retrieveMemberVariant();
 

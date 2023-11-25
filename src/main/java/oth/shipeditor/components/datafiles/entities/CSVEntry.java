@@ -13,6 +13,8 @@ public interface CSVEntry {
 
     String getID();
 
+    String getMultilineTooltip();
+
     Path getPackageFolderPath();
 
     Path getTableFilePath();
