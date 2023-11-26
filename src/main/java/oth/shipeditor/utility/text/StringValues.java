@@ -88,6 +88,10 @@ public final class StringValues {
     public static final String ENGINE_LENGTH = "Engine length:";
     public static final String CONTRAIL_SIZE = "Contrail size:";
     public static final String BOUND = "Bound";
+    public static final String BASE_BUILT_INS = "Base built-ins";
+    public static final String REMOVED_BY_SKIN = "Removed by skin";
+    public static final String TOTAL_SHIP_BAYS = "Total ship bays:";
+    public static final String TOTAL_BUILT_IN_WINGS = "Total built-in wings:";
 
     private StringValues() {
     }

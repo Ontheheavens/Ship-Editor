@@ -74,6 +74,10 @@ public final class Themes {
         return UIManager.getColor("List.background");
     }
 
+    public static Color getListDisabledColor() {
+        return UIManager.getColor("ComboBox.disabledBackground");
+    }
+
     private static Color getTabColor() {
         return UIManager.getColor("TabbedPane.background");
     }

@@ -170,7 +170,6 @@ class HullmodsTreePanel extends CSVDataTreePanel<HullmodCSVEntry>{
         } else return null;
     }
 
-    @SuppressWarnings({"ExtractMethodRecommender", "OverlyComplexMethod"})
     private void populateBuiltInOptions(JPopupMenu menu, HullmodCSVEntry entry) {
         EditorInstrument targetMode = EditorInstrument.BUILT_IN_MODS;
         JMenuItem addToHullBuiltIns = new JMenuItem("Add to hull built-ins");
@@ -189,24 +188,15 @@ class HullmodsTreePanel extends CSVDataTreePanel<HullmodCSVEntry>{
         }
         menu.add(addToHullBuiltIns);
 
-        JMenuItem addToSkinAdded = new JMenuItem("Add to skin built-ins");
-        addToSkinAdded.addActionListener(e -> {
-            if (activeLayer instanceof ShipLayer checkedLayer) {
-
-                ShipPainter shipPainter = checkedLayer.getPainter();
-                if (shipPainter == null || shipPainter.isUninitialized()) return;
-                var skin = shipPainter.getActiveSkin();
-                if (skin == null || skin.isBase()) return;
-
-                var skinAdded = skin.getBuiltInMods();
-                commenceModAddition(skinAdded, checkedLayer, entry);
-            }
-        });
-        if (DataTreePanel.isCurrentSkinNotEligible() || HullmodsTreePanel.isNotActiveInstrument(targetMode)) {
-            addToSkinAdded.setEnabled(false);
-        }
+        JMenuItem addToSkinAdded = createSkinAddedOption(entry, activeLayer, targetMode);
         menu.add(addToSkinAdded);
 
+        JMenuItem addToSkinRemoved = createSkinRemovedOption(entry, activeLayer, targetMode);
+        menu.add(addToSkinRemoved);
+    }
+
+    private JMenuItem createSkinRemovedOption(HullmodCSVEntry entry,
+                                              ViewerLayer activeLayer, EditorInstrument targetMode) {
         JMenuItem addToSkinRemoved = new JMenuItem("Add to skin built-in removals");
         addToSkinRemoved.addActionListener(e -> {
             if (activeLayer instanceof ShipLayer checkedLayer) {
@@ -223,7 +213,28 @@ class HullmodsTreePanel extends CSVDataTreePanel<HullmodCSVEntry>{
         if (DataTreePanel.isCurrentSkinNotEligible() || HullmodsTreePanel.isNotActiveInstrument(targetMode)) {
             addToSkinRemoved.setEnabled(false);
         }
-        menu.add(addToSkinRemoved);
+        return addToSkinRemoved;
+    }
+
+    private JMenuItem createSkinAddedOption(HullmodCSVEntry entry,
+                                            ViewerLayer activeLayer, EditorInstrument targetMode) {
+        JMenuItem addToSkinAdded = new JMenuItem("Add to skin built-ins");
+        addToSkinAdded.addActionListener(e -> {
+            if (activeLayer instanceof ShipLayer checkedLayer) {
+
+                ShipPainter shipPainter = checkedLayer.getPainter();
+                if (shipPainter == null || shipPainter.isUninitialized()) return;
+                var skin = shipPainter.getActiveSkin();
+                if (skin == null || skin.isBase()) return;
+
+                var skinAdded = skin.getBuiltInMods();
+                commenceModAddition(skinAdded, checkedLayer, entry);
+            }
+        });
+        if (DataTreePanel.isCurrentSkinNotEligible() || HullmodsTreePanel.isNotActiveInstrument(targetMode)) {
+            addToSkinAdded.setEnabled(false);
+        }
+        return addToSkinAdded;
     }
 
     private void commenceModAddition(List<HullmodCSVEntry> list, ShipLayer shipLayer, HullmodCSVEntry entry) {

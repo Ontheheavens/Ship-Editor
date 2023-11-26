@@ -109,6 +109,8 @@ public final class ShipSkin {
 
     private List<HullmodCSVEntry> removeBuiltInMods;
 
+    private List<WingCSVEntry> removeBuiltInWings;
+
     private List<String> removeBuiltInWeapons;
 
     private List<HullmodCSVEntry> builtInMods;
@@ -388,6 +390,22 @@ public final class ShipSkin {
             return this;
         }
 
+        public Builder withRemoveBuiltInWings(Collection<String> removeBuiltInWings) {
+            if (removeBuiltInWings == null) {
+                skin.removeBuiltInWings = new ArrayList<>();
+                return this;
+            }
+            GameDataRepository gameData = SettingsManager.getGameData();
+            Map<String, WingCSVEntry> allWingEntries = gameData.getAllWingEntries();
+            List<WingCSVEntry> removeList = new ArrayList<>(removeBuiltInWings.size());
+            removeBuiltInWings.forEach(wingID -> {
+                WingCSVEntry wingEntry = allWingEntries.get(wingID);
+                removeList.add(wingEntry);
+            });
+            skin.removeBuiltInWings = removeList;
+            return this;
+        }
+
         public Builder withRemoveBuiltInWeapons(List<String> removeBuiltInWeapons) {
             if (removeBuiltInWeapons == null) return this;
             skin.removeBuiltInWeapons = removeBuiltInWeapons;
@@ -515,6 +533,7 @@ public final class ShipSkin {
                 .withRemoveWeaponSlots(skinSpecFile.getRemoveWeaponSlots())
                 .withRemoveEngineSlots(skinSpecFile.getRemoveEngineSlots())
                 .withRemoveBuiltInMods(skinSpecFile.getRemoveBuiltInMods())
+                .withRemoveBuiltInWings(skinSpecFile.getRemoveBuiltInWings())
                 .withRemoveBuiltInWeapons(skinSpecFile.getRemoveBuiltInWeapons())
                 .withBuiltInMods(skinSpecFile.getBuiltInMods())
                 .withBuiltInWeapons(skinSpecFile.getBuiltInWeapons())

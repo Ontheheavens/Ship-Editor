@@ -24,8 +24,6 @@ import java.awt.*;
 @Getter
 public abstract class AbstractBuiltInsPanel extends JPanel {
 
-    static final String REMOVED_BY_SKIN = "Removed by skin";
-
     @Setter
     private ShipLayer cachedLayer;
 

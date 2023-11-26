@@ -19,6 +19,7 @@ import oth.shipeditor.components.viewer.layers.LayerPainter;
 import oth.shipeditor.components.viewer.layers.ViewerLayer;
 import oth.shipeditor.components.viewer.layers.ship.ShipLayer;
 import oth.shipeditor.components.viewer.layers.ship.data.ShipHull;
+import oth.shipeditor.components.viewer.layers.ship.data.ShipSkin;
 import oth.shipeditor.components.viewer.layers.ship.data.ShipVariant;
 import oth.shipeditor.parsing.FileUtilities;
 import oth.shipeditor.representation.ship.HullSize;
@@ -28,12 +29,14 @@ import java.awt.*;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Point2D;
 import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 
 /**
  * Convenience class for static access to active layer and whatever other global features need to be accessed.
  * @author Ontheheavens
  * @since 09.07.2023
  */
+@SuppressWarnings("OverlyCoupledClass")
 public final class StaticController {
 
     @Getter @Setter
@@ -159,6 +162,25 @@ public final class StaticController {
             if (variant == null || variant.isEmpty()) return;
 
             action.accept(shipLayer, variant);
+        }
+    }
+
+    public static void actOnCurrentSkin(BiConsumer<ShipLayer, ShipSkin> action) {
+        if (activeLayer instanceof ShipLayer shipLayer) {
+            var shipPainter = shipLayer.getPainter();
+            if (shipPainter == null || shipPainter.isUninitialized()) return;
+            var skin = shipPainter.getActiveSkin();
+            if (skin == null || skin.isBase()) return;
+
+            action.accept(shipLayer, skin);
+        }
+    }
+
+    public static void actOnCurrentShip(Consumer<ShipLayer> action) {
+        if (activeLayer instanceof ShipLayer shipLayer) {
+            var shipPainter = shipLayer.getPainter();
+            if (shipPainter == null || shipPainter.isUninitialized()) return;
+            action.accept(shipLayer);
         }
     }
 

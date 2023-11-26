@@ -3,6 +3,7 @@ package oth.shipeditor.utility.components.containers;
 import lombok.Getter;
 import lombok.Setter;
 import oth.shipeditor.utility.Errors;
+import oth.shipeditor.utility.themes.Themes;
 
 import javax.swing.*;
 import java.awt.*;
@@ -36,6 +37,16 @@ public abstract class SortableList<E> extends JList<E> implements DragGestureLis
         DragSource.getDefaultDragSource().createDefaultDragGestureRecognizer(this, actionCopyOrMove, this);
     }
 
+    @Override
+    public void setEnabled(boolean enabled) {
+        super.setEnabled(enabled);
+        if (enabled) {
+            this.setBackground(Themes.getListBackgroundColor());
+        } else {
+            this.setBackground(Themes.getListDisabledColor());
+        }
+    }
+
     protected abstract void sortListModel();
 
     protected abstract Transferable createTransferableFromEntry(E entry);
@@ -44,6 +55,7 @@ public abstract class SortableList<E> extends JList<E> implements DragGestureLis
 
     @SuppressWarnings({"ParameterHidesMemberVariable", "BooleanMethodNameMustStartWithQuestion"})
     protected boolean confirmDrop(int targetIndex, E entry) {
+        if (!this.isEnabled()) return false;
         DefaultListModel<E> model = (DefaultListModel<E>) getModel();
         model.add(targetIndex, entry);
         setSelectedIndex(targetIndex);
@@ -92,7 +104,7 @@ public abstract class SortableList<E> extends JList<E> implements DragGestureLis
 
     @Override
     public void dragGestureRecognized(DragGestureEvent dge) {
-        if (!dragEnabled) return;
+        if (!dragEnabled || !this.isEnabled()) return;
         boolean moreThanOne = getSelectedIndices().length > 1;
         draggedIndex = locationToIndex(dge.getDragOrigin());
         if (moreThanOne || draggedIndex < 0) {
@@ -259,11 +271,11 @@ public abstract class SortableList<E> extends JList<E> implements DragGestureLis
         }
 
         private boolean isDragAcceptable(DropTargetDragEvent e) {
-            return isSupported(e.getTransferable());
+            return SortableList.this.isEnabled() && isSupported(e.getTransferable());
         }
 
         private boolean isDropAcceptable(DropTargetDropEvent e) {
-            return isSupported(e.getTransferable());
+            return SortableList.this.isEnabled() && isSupported(e.getTransferable());
         }
 
     }

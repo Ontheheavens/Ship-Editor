@@ -190,9 +190,16 @@ public class VariantWeaponsTree extends DynamicWidthTree {
         if (currentPath != null) {
             Object node = currentPath.getLastPathComponent();
             if (node instanceof CustomTreeNode customTreeNode) {
-                String id = customTreeNode.getFirstLineTip();
-                String tip = customTreeNode.getSecondLineTip();
-                return Utility.getWithLinebreaks(id, tip);
+                Object data = customTreeNode.getUserObject();
+                if (data instanceof InstalledFeature feature) {
+                    CSVEntry dataEntry = feature.getDataEntry();
+                    return dataEntry.getMultilineTooltip();
+                } else {
+                    String id = customTreeNode.getFirstLineTip();
+                    String tip = customTreeNode.getSecondLineTip();
+                    return Utility.getWithLinebreaks(id, tip);
+                }
+
             }
         }
         return null;

@@ -4,26 +4,23 @@ import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.components.VariantPanelRepaintQueued;
 import oth.shipeditor.communication.events.viewer.layers.LayerWasSelected;
 import oth.shipeditor.components.datafiles.entities.WingCSVEntry;
-import oth.shipeditor.components.datafiles.entities.transferable.TransferableEntry;
-import oth.shipeditor.components.datafiles.entities.transferable.TransferableWing;
+import oth.shipeditor.components.instrument.ship.shared.WingsList;
 import oth.shipeditor.components.viewer.layers.ViewerLayer;
 import oth.shipeditor.components.viewer.layers.ship.ShipLayer;
 import oth.shipeditor.components.viewer.layers.ship.ShipPainter;
 import oth.shipeditor.components.viewer.layers.ship.data.ShipVariant;
 import oth.shipeditor.undo.EditDispatch;
+import oth.shipeditor.utility.Utility;
 import oth.shipeditor.utility.components.ComponentUtilities;
-import oth.shipeditor.utility.components.containers.OrdnancedEntryList;
 import oth.shipeditor.utility.overseers.StaticController;
 import oth.shipeditor.utility.text.StringValues;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.datatransfer.Transferable;
 import java.util.List;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Function;
-import java.util.function.Supplier;
 
 /**
  * @author Ontheheavens
@@ -57,7 +54,21 @@ class VariantWingsPanel extends JPanel {
         this.wingsGetter = ShipVariant::getWings;
 
         this.wingsModel = new DefaultListModel<>();
-        this.wingsList = new WingsList(wingsModel, sortSetter);
+
+        BiConsumer<Integer, WingCSVEntry> removeAction = (entryIndex, wingCSVEntry) ->
+                StaticController.actOnCurrentVariant((shipLayer, variant) -> {
+                    var entryList = wingsGetter.apply(variant);
+                    EditDispatch.postWingRemoved(entryList, shipLayer, wingCSVEntry, entryIndex);
+                });
+
+        Consumer<List<WingCSVEntry>> sortAction = updatedList ->
+                StaticController.actOnCurrentVariant((shipLayer, variant) -> {
+                    var oldWings = wingsGetter.apply(variant);
+                    EditDispatch.postWingsSorted(oldWings, updatedList, shipLayer,
+                            list -> sortSetter.accept(variant, list));
+                });
+
+        this.wingsList = new WingsList(removeAction, wingsModel, sortAction);
 
         JScrollPane scroller = new JScrollPane(wingsList);
         JScrollBar verticalScrollBar = scroller.getVerticalScrollBar();
@@ -93,12 +104,12 @@ class VariantWingsPanel extends JPanel {
         // Empty placeholder to create some padding - is a quick hack, consider for proper rewrite later!
         ComponentUtilities.addLabelAndComponent(infoPanel, new JLabel(), new JLabel(), 3);
 
-        JLabel totalBaysLabel = new JLabel("Total ship bays:");
+        JLabel totalBaysLabel = new JLabel(StringValues.TOTAL_SHIP_BAYS);
         totalBayCount = new JLabel();
 
         ComponentUtilities.addLabelAndComponent(infoPanel, totalBaysLabel, totalBayCount, 4);
 
-        JLabel totalBuiltInsLabel = new JLabel("Total built-in wings:");
+        JLabel totalBuiltInsLabel = new JLabel(StringValues.TOTAL_BUILT_IN_WINGS);
         builtInWingsCount = new JLabel();
 
         ComponentUtilities.addLabelAndComponent(infoPanel, totalBuiltInsLabel, builtInWingsCount, 5);
@@ -126,28 +137,16 @@ class VariantWingsPanel extends JPanel {
         });
     }
 
-    private static String translateIntegerValue(Supplier<Integer> getter) {
-        String notInitialized = StringValues.NOT_INITIALIZED;
-        int value = getter.get();
-        String textResult;
-        if (value == -1) {
-            textResult = notInitialized;
-        } else {
-            textResult = String.valueOf(value);
-        }
-        return textResult;
-    }
-
     private void refreshLayerInfo(ViewerLayer selected) {
         String notInitialized = StringValues.NOT_INITIALIZED;
 
         if (selected instanceof ShipLayer shipLayer) {
 
-            String totalOP = VariantWingsPanel.translateIntegerValue(shipLayer::getTotalOP);
+            String totalOP = Utility.translateIntegerValue(shipLayer::getTotalOP);
             shipOPCap.setText(totalOP);
-            String totalBays = VariantWingsPanel.translateIntegerValue(shipLayer::getBayCount);
+            String totalBays = Utility.translateIntegerValue(shipLayer::getBayCount);
             totalBayCount.setText(totalBays);
-            String totalBuiltIns =  VariantWingsPanel.translateIntegerValue(shipLayer::getBuiltInWingsCount);
+            String totalBuiltIns =  Utility.translateIntegerValue(shipLayer::getBuiltInWingsCount);
             builtInWingsCount.setText(totalBuiltIns);
 
             var activeVariant = shipLayer.getActiveVariant();
@@ -198,66 +197,6 @@ class VariantWingsPanel extends JPanel {
         }
         this.wingsModel = newModel;
         this.wingsList.setModel(newModel);
-    }
-
-    private class WingsList extends OrdnancedEntryList<WingCSVEntry> {
-
-        private final BiConsumer<Integer, WingCSVEntry> removeAction = (entryIndex, wingCSVEntry) ->
-                StaticController.actOnCurrentVariant((shipLayer, variant) -> {
-            var entryList = wingsGetter.apply(variant);
-            EditDispatch.postWingRemoved(entryList, shipLayer, wingCSVEntry, entryIndex);
-        });
-
-        WingsList(ListModel<WingCSVEntry> dataModel,
-                     BiConsumer<ShipVariant, List<WingCSVEntry>> sortSetter) {
-            super(dataModel, updatedList ->
-                    StaticController.actOnCurrentVariant((shipLayer, variant) -> {
-                        var oldWings = wingsGetter.apply(variant);
-                        EditDispatch.postWingsSorted(oldWings, updatedList, shipLayer,
-                                list -> sortSetter.accept(variant, list));
-                    }));
-        }
-
-        BiConsumer<Integer, WingCSVEntry> getWingRemoveAction() {
-            return removeAction;
-        }
-
-        @Override
-        protected Consumer<WingCSVEntry> getRemoveAction() {
-            return null;
-        }
-
-        void actOnSelectedWing(BiConsumer<Integer, WingCSVEntry> action) {
-            int index = this.getSelectedIndex();
-            if (index != -1) {
-                ListModel<WingCSVEntry> listModel = this.getModel();
-                WingCSVEntry feature = listModel.getElementAt(index);
-                action.accept(index, feature);
-            }
-        }
-
-        protected JPopupMenu getContextMenu() {
-            WingCSVEntry selected = getSelectedValue();
-            if (selected == null) return null;
-
-            JPopupMenu menu = new JPopupMenu();
-            JMenuItem remove = new JMenuItem("Remove wing");
-            remove.addActionListener(event -> actOnSelectedWing(getWingRemoveAction()));
-            menu.add(remove);
-
-            return menu;
-        }
-
-        @Override
-        protected Transferable createTransferableFromEntry(WingCSVEntry entry) {
-            return new TransferableWing(entry, this);
-        }
-
-        @Override
-        protected boolean isSupported(Transferable transferable) {
-            return transferable.getTransferDataFlavors()[0].equals(TransferableEntry.TRANSFERABLE_WING);
-        }
-
     }
 
 }

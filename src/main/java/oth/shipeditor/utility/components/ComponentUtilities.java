@@ -499,4 +499,10 @@ public final class ComponentUtilities {
         return hintPanel;
     }
 
+    public static JPanel createDragInfoPanel() {
+        FontIcon hintIcon = FontIcon.of(FluentUiRegularAL.INFO_28, 28, Themes.getIconColor());
+        String hintText = "Drag and drop from game data widget to add entries.";
+        return ComponentUtilities.createHintPanel(hintText, hintIcon);
+    }
+
 }

@@ -20,11 +20,11 @@ import java.awt.*;
  */
 public class VariantHullmodsPanel extends JPanel {
 
-    private final HullmodsListPanel normalModsPanel;
+    private final VariantHullmodsListPane normalModsPanel;
 
-    private final HullmodsListPanel permaModsPanel;
+    private final VariantHullmodsListPane permaModsPanel;
 
-    private final HullmodsListPanel sModsPanel;
+    private final VariantHullmodsListPane sModsPanel;
 
     private JLabel shipOPCap;
 
@@ -35,18 +35,26 @@ public class VariantHullmodsPanel extends JPanel {
     public VariantHullmodsPanel() {
         this.setLayout(new BorderLayout());
 
-        this.normalModsPanel = new HullmodsListPanel(ShipVariant::getHullMods, ShipVariant::setHullMods);
+        this.normalModsPanel = new VariantHullmodsListPane(ShipVariant::getHullMods, ShipVariant::setHullMods);
         ComponentUtilities.outfitPanelWithTitle(normalModsPanel, "Normal");
-        this.permaModsPanel = new HullmodsListPanel(ShipVariant::getPermaMods, ShipVariant::setPermaMods);
+        this.permaModsPanel = new VariantHullmodsListPane(ShipVariant::getPermaMods, ShipVariant::setPermaMods);
         ComponentUtilities.outfitPanelWithTitle(permaModsPanel, "Permanent");
-        this.sModsPanel = new HullmodsListPanel(ShipVariant::getSMods, ShipVariant::setSMods);
+        this.sModsPanel = new VariantHullmodsListPane(ShipVariant::getSMods, ShipVariant::setSMods);
         ComponentUtilities.outfitPanelWithTitle(sModsPanel, "S-Mods");
 
-        JPanel container = new JPanel();
-        container.setLayout(new BoxLayout(container, BoxLayout.PAGE_AXIS));
-        container.add(normalModsPanel);
-        container.add(permaModsPanel);
-        container.add(sModsPanel);
+        JPanel container = new JPanel(new GridBagLayout());
+        GridBagConstraints constraints = new GridBagConstraints();
+        constraints.fill = GridBagConstraints.BOTH;
+        constraints.weighty = 0.33;
+        constraints.weightx = 1;
+        constraints.ipady = 40;
+        constraints.gridy = 0;
+
+        container.add(normalModsPanel, constraints);
+        constraints.gridy = 1;
+        container.add(permaModsPanel, constraints);
+        constraints.gridy = 2;
+        container.add(sModsPanel, constraints);
 
         JScrollPane scroller = new JScrollPane(container);
         JScrollBar verticalScrollBar = scroller.getVerticalScrollBar();

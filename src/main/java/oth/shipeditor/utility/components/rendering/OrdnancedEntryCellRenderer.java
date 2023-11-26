@@ -77,6 +77,8 @@ public class OrdnancedEntryCellRenderer extends PanelListCellRenderer<OrdnancedC
             ordnanceLabel.setText("OP: " + ordnanceCost);
         }
 
+        this.setToolTipText(value.getMultilineTooltip());
+
         return this;
     }
 

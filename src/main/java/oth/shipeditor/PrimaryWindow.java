@@ -17,9 +17,7 @@ import oth.shipeditor.utility.overseers.StaticController;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionListener;
-import java.awt.event.ComponentAdapter;
-import java.awt.event.ComponentEvent;
+import java.awt.event.*;
 
 /**
  * @author Ontheheavens
@@ -65,6 +63,7 @@ public final class PrimaryWindow extends JFrame {
 
         PrimaryWindow.configureTooltips();
         this.addComponentListener(new ResizingPersistenceListener());
+
         this.pack();
     }
 

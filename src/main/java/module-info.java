@@ -109,5 +109,9 @@ module oth.shipeditor {
     opens oth.shipeditor.utility.components.containers;
     exports oth.shipeditor.components.instrument.ship.hull;
     opens oth.shipeditor.components.instrument.ship.hull;
+    exports oth.shipeditor.components.instrument.ship.builtins.hullmods;
+    opens oth.shipeditor.components.instrument.ship.builtins.hullmods;
+    exports oth.shipeditor.components.instrument.ship.builtins.wings;
+    opens oth.shipeditor.components.instrument.ship.builtins.wings;
 
 }
