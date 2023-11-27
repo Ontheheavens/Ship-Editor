@@ -80,7 +80,10 @@ public class InstalledFeatureCellRenderer extends BoxPanelCellRenderer<Installed
         var slotPoint = slotPainter.getSlotByID(slotID);
 
         Color foreground = list.getForeground();
-        setToolTipText("");
+
+        CSVEntry dataEntry = value.getDataEntry();
+        this.setToolTipText(dataEntry.getMultilineTooltip());
+
         if (isSelected) {
             foreground = list.getSelectionForeground();
         }
@@ -102,11 +105,8 @@ public class InstalledFeatureCellRenderer extends BoxPanelCellRenderer<Installed
 
         slotIDText.setText(slotID +":");
 
-        CSVEntry dataEntry = value.getDataEntry();
         featureIDText.setText(dataEntry.toString());
         featureIDText.setBorder(new EmptyBorder(0, 0, 0, 3));
-
-        this.setToolTipText(dataEntry.getMultilineTooltip());
 
         WeaponType featureType = value.getWeaponType();
         Icon color = ComponentUtilities.createIconFromColor(featureType.getColor(), 10, 10);

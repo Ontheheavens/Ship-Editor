@@ -9,7 +9,6 @@ import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.BusEvent;
 import oth.shipeditor.communication.events.viewer.ViewerRepaintQueued;
 import oth.shipeditor.communication.events.viewer.layers.PainterOpacityChangeQueued;
-import oth.shipeditor.communication.events.viewer.layers.PainterVisibilityChanged;
 import oth.shipeditor.communication.events.viewer.points.*;
 import oth.shipeditor.components.viewer.control.ControlPredicates;
 import oth.shipeditor.components.viewer.control.PointSelectionMode;
@@ -17,8 +16,8 @@ import oth.shipeditor.components.viewer.entities.BaseWorldPoint;
 import oth.shipeditor.components.viewer.entities.WorldPoint;
 import oth.shipeditor.components.viewer.painters.PainterVisibility;
 import oth.shipeditor.undo.EditDispatch;
-import oth.shipeditor.utility.overseers.StaticController;
 import oth.shipeditor.utility.Utility;
+import oth.shipeditor.utility.overseers.StaticController;
 
 import java.awt.*;
 import java.awt.geom.AffineTransform;
@@ -133,17 +132,6 @@ public abstract class AbstractPointPainter implements Painter {
         };
         listeners.add(painterOpacityListener);
         EventBus.subscribe(painterOpacityListener);
-        BusEventListener painterVisibilityListener = event -> {
-            // TODO: remove this stuff after refactor, widgets should modify painter directly.
-            if (event instanceof PainterVisibilityChanged checked) {
-                Class<? extends AbstractPointPainter> painterClass = checked.painterClass();
-                if (!painterClass.isInstance(this) || !isParentLayerActive()) return;
-                this.setVisibilityMode(checked.changed());
-                EventBus.publish(new ViewerRepaintQueued());
-            }
-        };
-        listeners.add(painterVisibilityListener);
-        EventBus.subscribe(painterVisibilityListener);
     }
 
     public void dragPointWithMirrorCheck(Point2D changedPosition) {

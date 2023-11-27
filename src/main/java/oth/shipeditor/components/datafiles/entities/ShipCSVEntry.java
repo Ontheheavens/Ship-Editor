@@ -74,7 +74,10 @@ public class ShipCSVEntry implements CSVEntry, InstallableEntry {
         String cellData = rowData.get(StringConstants.HINTS);
         if (cellData != null && !cellData.isEmpty()) {
             Iterable<String> hintsText = new ArrayList<>(Arrays.asList(Utility.SPLIT_BY_COMMA.split(cellData)));
-            hintsText.forEach(hintText -> result.add(ShipTypeHints.valueOf(hintText)));
+            hintsText.forEach(hintText -> {
+                ShipTypeHints typeHint = ShipTypeHints.valueOf(hintText.trim());
+                result.add(typeHint);
+            });
         }
         return result;
     }

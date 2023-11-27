@@ -103,10 +103,26 @@ public class TreePanelCellRenderer extends JPanel implements TreeCellRenderer {
         initialized = true;
     }
 
-    @SuppressWarnings({"ChainOfInstanceofChecks", "OverlyComplexMethod"})
     public void updateUI() {
         super.updateUI();
 
+        setUIProperties();
+
+        fillBackground = UIManager.getBoolean("Tree.rendererFillBackground");
+        if (!initialized || getBorder() instanceof UIResource)  {
+            Insets margins = UIManager.getInsets("Tree.rendererMargins");
+            if (margins != null) {
+                setBorder(new BorderUIResource.EmptyBorderUIResource(margins));
+            } else {
+                setBorder(new BorderUIResource.EmptyBorderUIResource(0, 0, 0, 0));
+            }
+        }
+
+        setName("Tree.cellRenderer");
+    }
+
+    @SuppressWarnings({"OverlyComplexMethod", "ChainOfInstanceofChecks"})
+    private void setUIProperties() {
         if (!initialized || (getLeafIcon() instanceof UIResource)) {
             setLeafIcon(UIManager.getIcon("Tree.leafIcon"));
         }
@@ -131,18 +147,6 @@ public class TreePanelCellRenderer extends JPanel implements TreeCellRenderer {
         if (!initialized || (getBorderSelectionColor() instanceof UIResource)) {
             setBorderSelectionColor(UIManager.getColor("Tree.selectionBorderColor"));
         }
-
-        fillBackground = UIManager.getBoolean("Tree.rendererFillBackground");
-        if (!initialized || getBorder() instanceof UIResource)  {
-            Insets margins = UIManager.getInsets("Tree.rendererMargins");
-            if (margins != null) {
-                setBorder(new BorderUIResource.EmptyBorderUIResource(margins));
-            } else {
-                setBorder(new BorderUIResource.EmptyBorderUIResource(0, 0, 0, 0));
-            }
-        }
-
-        setName("Tree.cellRenderer");
     }
 
     @Override

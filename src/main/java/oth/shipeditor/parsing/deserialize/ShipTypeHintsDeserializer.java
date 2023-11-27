@@ -26,7 +26,7 @@ public class ShipTypeHintsDeserializer extends JsonDeserializer<List<ShipTypeHin
             while (p.nextToken() != JsonToken.END_ARRAY) {
                 if (p.currentToken() == JsonToken.VALUE_STRING) {
                     String enumString = p.getText();
-                    ShipTypeHints hint = ShipTypeHints.valueOf(enumString);
+                    ShipTypeHints hint = ShipTypeHints.valueOf(enumString.trim());
                     hints.add(hint);
                 }
             }

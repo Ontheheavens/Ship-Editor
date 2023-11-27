@@ -4,11 +4,9 @@ import lombok.Getter;
 import oth.shipeditor.communication.BusEventListener;
 import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.viewer.layers.LayerWasSelected;
-import oth.shipeditor.communication.events.viewer.layers.PainterVisibilityChanged;
 import oth.shipeditor.components.viewer.layers.LayerPainter;
 import oth.shipeditor.components.viewer.layers.ViewerLayer;
 import oth.shipeditor.components.viewer.layers.ship.ShipPainter;
-import oth.shipeditor.components.viewer.painters.points.AbstractPointPainter;
 import oth.shipeditor.utility.components.ComponentUtilities;
 import oth.shipeditor.utility.objects.Pair;
 import oth.shipeditor.utility.text.StringValues;
@@ -53,14 +51,6 @@ public enum PainterVisibility {
         };
     }
 
-    private static ActionListener createActionListener(JComboBox<PainterVisibility> visibilityList,
-                                                       Class<? extends AbstractPointPainter> painterClass) {
-        return e -> {
-            PainterVisibility changedValue = (PainterVisibility) visibilityList.getSelectedItem();
-            EventBus.publish(new PainterVisibilityChanged(painterClass, changedValue));
-        };
-    }
-
     private static BusEventListener createBusEventListener(JComboBox<PainterVisibility> visibilityList,
                                                            ActionListener selectionAction) {
         return event -> {
@@ -82,13 +72,6 @@ public enum PainterVisibility {
                 }
             }
         };
-    }
-
-    public static JPanel createVisibilityWidget(JComboBox<PainterVisibility> visibilityList,
-                                                Class<? extends AbstractPointPainter> painterClass,
-                                                ActionListener selectionAction, String labelName) {
-        ActionListener chooseAction = PainterVisibility.createActionListener(visibilityList, painterClass);
-        return PainterVisibility.createVisibilityWidgetRaw(visibilityList, chooseAction, selectionAction, labelName);
     }
 
     public static JPanel createVisibilityWidgetRaw(JComboBox<PainterVisibility> visibilityList,

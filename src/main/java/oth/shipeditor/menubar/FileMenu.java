@@ -89,7 +89,8 @@ class FileMenu extends JMenu {
                     throw new RuntimeException(ex);
                 }
             }
-        }); return jsonCorrector;
+        });
+        return jsonCorrector;
     }
 
 }

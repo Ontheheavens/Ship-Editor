@@ -395,7 +395,7 @@ public class ShipPainter extends LayerPainter {
         return null;
     }
 
-    @SuppressWarnings({"BooleanParameter", "OverlyComplexMethod"})
+    @SuppressWarnings("BooleanParameter")
     public Map<String, InstalledFeature> getBuiltInsWithSkin(boolean includeDecorative,
                                                              boolean includeNonDecorative) {
         Map<String, InstalledFeature> builtIns = this.getBuiltInWeapons();
@@ -414,25 +414,30 @@ public class ShipPainter extends LayerPainter {
         }
 
         if (activeSkin != null && !activeSkin.isBase()) {
-            var removedBuiltIns = activeSkin.getRemoveBuiltInWeapons();
-            if (removedBuiltIns != null) {
-                removedBuiltIns.forEach(result::remove);
-            }
-
-            var addedBuiltIns = activeSkin.getInitializedBuiltIns();
-            if (!addedBuiltIns.isEmpty()) {
-                addedBuiltIns.forEach((slotID, feature) -> {
-                    boolean isSlotDecorative = slotPainter.isSlotDecorative(slotID);
-                    if (isSlotDecorative && includeDecorative) {
-                        result.put(slotID, feature);
-                    } else if (slotPainter.getSlotByID(slotID) != null && !isSlotDecorative && includeNonDecorative) {
-                        result.put(slotID, feature);
-                    }
-                });
-            }
+            addSkinEntriesToBuiltInList(includeDecorative, includeNonDecorative, result, slotPainter);
         }
 
         return result;
+    }
+
+    private void addSkinEntriesToBuiltInList(boolean includeDecorative, boolean includeNonDecorative,
+                                             Map<String, InstalledFeature> result, WeaponSlotPainter slotPainter) {
+        var removedBuiltIns = activeSkin.getRemoveBuiltInWeapons();
+        if (removedBuiltIns != null) {
+            removedBuiltIns.forEach(result::remove);
+        }
+
+        var addedBuiltIns = activeSkin.getInitializedBuiltIns();
+        if (!addedBuiltIns.isEmpty()) {
+            addedBuiltIns.forEach((slotID, feature) -> {
+                boolean isSlotDecorative = slotPainter.isSlotDecorative(slotID);
+                if (isSlotDecorative && includeDecorative) {
+                    result.put(slotID, feature);
+                } else if (slotPainter.getSlotByID(slotID) != null && !isSlotDecorative && includeNonDecorative) {
+                    result.put(slotID, feature);
+                }
+            });
+        }
     }
 
     private Map<String, InstalledFeature> getAllLoadedInstallables() {

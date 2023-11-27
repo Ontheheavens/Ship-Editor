@@ -42,8 +42,6 @@ import java.util.function.Consumer;
 @SuppressWarnings("OverlyCoupledClass")
 public abstract class AbstractWeaponsPanel extends AbstractBuiltInsPanel {
 
-    // TODO: All of this will need refactoring with more modern LayerPropertiesPanel techniques.
-
     private JPanel weaponPickPanel;
 
     private JPanel northContainer;
