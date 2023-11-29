@@ -8,7 +8,6 @@ import oth.shipeditor.communication.events.viewer.points.PointSelectQueued;
 import oth.shipeditor.components.datafiles.entities.CSVEntry;
 import oth.shipeditor.components.datafiles.entities.WeaponCSVEntry;
 import oth.shipeditor.components.viewer.entities.weapon.SlotData;
-import oth.shipeditor.components.viewer.layers.ship.ShipLayer;
 import oth.shipeditor.components.viewer.painters.points.ship.WeaponSlotPainter;
 import oth.shipeditor.components.viewer.painters.points.ship.features.InstalledFeature;
 import oth.shipeditor.utility.components.containers.SortableList;
@@ -30,15 +29,12 @@ import java.util.function.Consumer;
  * @author Ontheheavens
  * @since 17.09.2023
  */
-public class InstalledFeatureList extends SortableList<InstalledFeature> {
+public class InstalledFeatureList2 extends SortableList<InstalledFeature> {
 
     private boolean propagationBlock;
 
     @Getter @Setter
     private boolean belongsToBaseHullBuiltIns;
-
-    @Getter
-    private final WeaponSlotPainter slotPainter;
 
     private final Consumer<InstalledFeature> uninstaller;
 
@@ -47,11 +43,10 @@ public class InstalledFeatureList extends SortableList<InstalledFeature> {
     protected static final DataFlavor FEATURE_FLAVOR = new DataFlavor(InstalledFeature.class,
             "Installed Feature");
 
-    public InstalledFeatureList(ListModel<InstalledFeature> dataModel, WeaponSlotPainter painter,
-                                Consumer<InstalledFeature> removeAction,
-                                Consumer<Map<String, InstalledFeature>> sortAction) {
+    public InstalledFeatureList2(ListModel<InstalledFeature> dataModel,
+                                 Consumer<InstalledFeature> removeAction,
+                                 Consumer<Map<String, InstalledFeature>> sortAction) {
         super(dataModel);
-        this.slotPainter = painter;
         this.uninstaller = removeAction;
         this.sorter = sortAction;
         this.addListSelectionListener(e -> {
@@ -60,13 +55,17 @@ public class InstalledFeatureList extends SortableList<InstalledFeature> {
                 propagationBlock = false;
                 return;
             }
-            this.actOnSelectedEntry(InstalledFeatureList::selectSlotPoint);
+            this.actOnSelectedEntry(InstalledFeatureList2::selectSlotPoint);
         });
         this.addMouseListener(new FeatureContextMenuListener());
-        this.setCellRenderer(InstalledFeatureList.createCellRenderer());
+        this.setCellRenderer(InstalledFeatureList2.createCellRenderer());
         int margin = 3;
         this.setBorder(new EmptyBorder(margin, margin, margin, margin));
         this.setDragEnabled(true);
+    }
+
+    public static WeaponSlotPainter getSlotPainter() {
+        return StaticController.getSelectedSlotPainter();
     }
 
     protected void handleEntrySelection(InstalledFeature feature) {}
@@ -80,16 +79,11 @@ public class InstalledFeatureList extends SortableList<InstalledFeature> {
      * existing slot point in active layer.
      */
     private static void selectSlotPoint(InstalledFeature feature) {
-        var activeLayer = StaticController.getActiveLayer();
-        if (activeLayer instanceof ShipLayer shipLayer) {
-            var shipPainter = shipLayer.getPainter();
-            if (shipPainter == null || shipPainter.isUninitialized()) return;
-            var slotPainter = shipPainter.getWeaponSlotPainter();
+        var slotPainter = InstalledFeatureList2.getSlotPainter();
+        if (slotPainter != null) {
             var slotPoint = slotPainter.getSlotByID(feature.getSlotID());
             if (slotPoint == null) return;
             EventBus.publish(new PointSelectQueued(slotPoint));
-            var repainter = StaticController.getScheduler();
-            repainter.queueViewerRepaint();
         }
     }
 
@@ -140,8 +134,8 @@ public class InstalledFeatureList extends SortableList<InstalledFeature> {
         return new Transferable() {
             private final InstalledFeature feature = entry;
 
-            private final DataFlavor sourceFlavor = new DataFlavor(InstalledFeatureList.this.getClass(),
-                    String.valueOf(InstalledFeatureList.this.hashCode()));
+            private final DataFlavor sourceFlavor = new DataFlavor(InstalledFeatureList2.this.getClass(),
+                    String.valueOf(InstalledFeatureList2.this.hashCode()));
 
             @Override
             public DataFlavor[] getTransferDataFlavors() {
@@ -186,7 +180,7 @@ public class InstalledFeatureList extends SortableList<InstalledFeature> {
                 setSelectedIndex(locationToIndex(e.getPoint()));
                 JPopupMenu menu = getContextMenu();
                 if (menu != null) {
-                    menu.show(InstalledFeatureList.this, e.getPoint().x, e.getPoint().y);
+                    menu.show(InstalledFeatureList2.this, e.getPoint().x, e.getPoint().y);
                 }
             }
         }

@@ -6,11 +6,12 @@ import lombok.extern.log4j.Log4j2;
 import org.apache.commons.collections4.map.ListOrderedMap;
 import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.Events;
-import oth.shipeditor.communication.events.components.SkinPanelRepaintQueued;
+import oth.shipeditor.communication.events.components.InstrumentRepaintQueued;
 import oth.shipeditor.communication.events.viewer.ViewerRepaintQueued;
 import oth.shipeditor.communication.events.viewer.layers.ActiveLayerUpdated;
 import oth.shipeditor.communication.events.viewer.layers.ships.LayerShipDataInitialized;
 import oth.shipeditor.components.datafiles.entities.ShipCSVEntry;
+import oth.shipeditor.components.instrument.EditorInstrument;
 import oth.shipeditor.components.viewer.entities.BaseWorldPoint;
 import oth.shipeditor.components.viewer.entities.ShipCenterPoint;
 import oth.shipeditor.components.viewer.entities.bays.LaunchBay;
@@ -210,7 +211,8 @@ public class ShipPainter extends LayerPainter {
         if (parentLayer != null) {
             EventBus.publish(new ActiveLayerUpdated(parentLayer));
         }
-        EventBus.publish(new SkinPanelRepaintQueued());
+        EventBus.publish(new InstrumentRepaintQueued(EditorInstrument.SKIN_DATA));
+        EventBus.publish(new InstrumentRepaintQueued(EditorInstrument.SKIN_SLOTS));
         Events.repaintShipView();
     }
 

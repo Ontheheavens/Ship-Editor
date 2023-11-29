@@ -3,8 +3,7 @@ package oth.shipeditor.utility.overseers;
 import lombok.Getter;
 import lombok.Setter;
 import oth.shipeditor.communication.EventBus;
-import oth.shipeditor.communication.events.components.BoundsPanelRepaintQueued;
-import oth.shipeditor.communication.events.components.CenterPanelsRepaintQueued;
+import oth.shipeditor.communication.events.components.InstrumentRepaintQueued;
 import oth.shipeditor.communication.events.viewer.control.ViewerCursorMoved;
 import oth.shipeditor.communication.events.viewer.layers.LayerWasSelected;
 import oth.shipeditor.communication.events.viewer.status.CoordsModeChanged;
@@ -21,6 +20,7 @@ import oth.shipeditor.components.viewer.layers.ship.ShipLayer;
 import oth.shipeditor.components.viewer.layers.ship.data.ShipHull;
 import oth.shipeditor.components.viewer.layers.ship.data.ShipSkin;
 import oth.shipeditor.components.viewer.layers.ship.data.ShipVariant;
+import oth.shipeditor.components.viewer.painters.points.ship.WeaponSlotPainter;
 import oth.shipeditor.parsing.FileUtilities;
 import oth.shipeditor.representation.ship.HullSize;
 import oth.shipeditor.utility.Utility;
@@ -148,8 +148,9 @@ public final class StaticController {
         EventBus.subscribe(event -> {
             if (event instanceof CoordsModeChanged checked) {
                 coordsMode = checked.newMode();
-                EventBus.publish(new BoundsPanelRepaintQueued());
-                EventBus.publish(new CenterPanelsRepaintQueued());
+                EventBus.publish(new InstrumentRepaintQueued(EditorInstrument.BOUNDS));
+                EventBus.publish(new InstrumentRepaintQueued(EditorInstrument.COLLISION));
+                EventBus.publish(new InstrumentRepaintQueued(EditorInstrument.SHIELD));
             }
         });
     }
@@ -196,6 +197,16 @@ public final class StaticController {
         }
 
         return size;
+    }
+
+    public static WeaponSlotPainter getSelectedSlotPainter() {
+        var viewerLayer = StaticController.getActiveLayer();
+        if (viewerLayer instanceof ShipLayer shipLayer) {
+            var shipPainter = shipLayer.getPainter();
+            if (shipPainter == null || shipPainter.isUninitialized()) return null;
+            return shipPainter.getWeaponSlotPainter();
+        }
+        return null;
     }
 
     /**

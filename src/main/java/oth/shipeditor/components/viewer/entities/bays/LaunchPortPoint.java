@@ -3,7 +3,7 @@ package oth.shipeditor.components.viewer.entities.bays;
 import lombok.Getter;
 import lombok.Setter;
 import oth.shipeditor.communication.EventBus;
-import oth.shipeditor.communication.events.components.BaysPanelRepaintQueued;
+import oth.shipeditor.communication.events.components.InstrumentRepaintQueued;
 import oth.shipeditor.communication.events.viewer.ViewerRepaintQueued;
 import oth.shipeditor.components.instrument.EditorInstrument;
 import oth.shipeditor.components.viewer.entities.BaseWorldPoint;
@@ -54,12 +54,12 @@ public class LaunchPortPoint extends BaseWorldPoint implements SlotPoint {
         ShipPainter parent = this.getParent();
         if (!parent.isGeneratedIDUnassigned(newId)) {
             EventBus.publish(new ViewerRepaintQueued());
-            EventBus.publish(new BaysPanelRepaintQueued());
+            EventBus.publish(new InstrumentRepaintQueued(EditorInstrument.LAUNCH_BAYS));
             return;
         }
         parentBay.setId(newId);
         EventBus.publish(new ViewerRepaintQueued());
-        EventBus.publish(new BaysPanelRepaintQueued());
+        EventBus.publish(new InstrumentRepaintQueued(EditorInstrument.LAUNCH_BAYS));
     }
 
     @Override

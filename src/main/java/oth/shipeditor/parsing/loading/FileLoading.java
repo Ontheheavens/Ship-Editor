@@ -385,7 +385,7 @@ public final class FileLoading {
                 }
             }
         } catch (Throwable exception) {
-            log.error("Data CSV loading failed!");
+            log.error("Data CSV loading failed: {}", csvFile.getAbsolutePath());
             Errors.printToStream(exception);
             if (SettingsManager.areFileErrorPopupsEnabled()) {
                 Errors.showFileError("Failed to parse CSV table (likely semantic errors), " +

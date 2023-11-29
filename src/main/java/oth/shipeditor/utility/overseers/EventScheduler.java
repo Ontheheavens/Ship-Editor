@@ -1,109 +1,57 @@
 package oth.shipeditor.utility.overseers;
 
 import oth.shipeditor.communication.EventBus;
-import oth.shipeditor.communication.events.components.*;
+import oth.shipeditor.communication.events.components.InstrumentRepaintQueued;
 import oth.shipeditor.communication.events.viewer.ViewerRepaintQueued;
 import oth.shipeditor.communication.events.viewer.layers.ActiveLayerUpdated;
+import oth.shipeditor.components.instrument.EditorInstrument;
 
 import javax.swing.*;
+import java.util.EnumMap;
+import java.util.Map;
 
 /**
  * @author Ontheheavens
  * @since 04.09.2023
  */
-@SuppressWarnings("ClassWithTooManyFields")
 public class EventScheduler {
 
     private boolean viewerRepaintQueued;
 
-    private boolean layerPropertiesRepaintQueued;
-
-    private boolean centerPanelsRepaintQueued;
-
-    private boolean boundsPanelRepaintQueued;
-
-    private boolean baysPanelRepaintQueued;
-
-    private boolean enginesPanelRepaintQueued;
-
-    private boolean skinPanelRepaintQueued;
-
-    private boolean slotControlRepaintQueued;
-
-    private boolean slotsPanelRepaintQueued;
-
-    private boolean builtInsPanelRepaintQueued;
-
-    private boolean variantsPanelRepaintQueued;
-
-    private boolean variantModulesRepaintQueued;
-
-    private boolean moduleControlRepaintQueued;
-
     private boolean activeLayerUpdateQueued;
 
-    @SuppressWarnings({"OverlyCoupledMethod", "OverlyComplexMethod"})
+    private final Map<EditorInstrument, Boolean> instrumentRepaintStatus;
+
     EventScheduler() {
-        Timer repaintTimer = new Timer(8, e -> {
-            if (viewerRepaintQueued) {
-                EventBus.publish(new ViewerRepaintQueued());
-                viewerRepaintQueued = false;
-            }
-            if (layerPropertiesRepaintQueued) {
-                EventBus.publish(new LayerPropertiesRepaintQueued());
-                layerPropertiesRepaintQueued = false;
-            }
-            if (centerPanelsRepaintQueued) {
-                EventBus.publish(new CenterPanelsRepaintQueued());
-                centerPanelsRepaintQueued = false;
-            }
-            if (boundsPanelRepaintQueued) {
-                EventBus.publish(new BoundsPanelRepaintQueued());
-                boundsPanelRepaintQueued = false;
-            }
-            if (baysPanelRepaintQueued) {
-                EventBus.publish(new BaysPanelRepaintQueued());
-                baysPanelRepaintQueued = false;
-            }
-            if (enginesPanelRepaintQueued) {
-                EventBus.publish(new EnginesPanelRepaintQueued());
-                enginesPanelRepaintQueued = false;
-            }
-            if (skinPanelRepaintQueued) {
-                EventBus.publish(new SkinPanelRepaintQueued());
-                skinPanelRepaintQueued = false;
-            }
-            if (slotControlRepaintQueued) {
-                EventBus.publish(new SlotControlRepaintQueued());
-                slotControlRepaintQueued = false;
-            }
-            if (slotsPanelRepaintQueued) {
-                EventBus.publish(new SlotsPanelRepaintQueued());
-                slotsPanelRepaintQueued = false;
-            }
-            if (builtInsPanelRepaintQueued) {
-                EventBus.publish(new BuiltInsPanelsRepaintQueued());
-                builtInsPanelRepaintQueued = false;
-            }
-            if (variantsPanelRepaintQueued) {
-                EventBus.publish(new VariantPanelRepaintQueued());
-                variantsPanelRepaintQueued = false;
-            }
-            if (variantModulesRepaintQueued) {
-                EventBus.publish(new VariantModulesRepaintQueued());
-                variantModulesRepaintQueued = false;
-            }
-            if (moduleControlRepaintQueued) {
-                EventBus.publish(new ModuleControlRefreshQueued());
-                moduleControlRepaintQueued = false;
-            }
-            if (activeLayerUpdateQueued) {
-                EventBus.publish(new ActiveLayerUpdated(StaticController.getActiveLayer()));
-                activeLayerUpdateQueued = false;
-            }
-        });
+        instrumentRepaintStatus = new EnumMap<>(EditorInstrument.class);
+
+        for (EditorInstrument instrument : EditorInstrument.values()) {
+            instrumentRepaintStatus.put(instrument, false);
+        }
+
+        Timer repaintTimer = new Timer(8, e -> advanceEvents());
         repaintTimer.setRepeats(true);
         repaintTimer.start();
+    }
+
+    private void advanceEvents() {
+        if (viewerRepaintQueued) {
+            EventBus.publish(new ViewerRepaintQueued());
+            viewerRepaintQueued = false;
+        }
+        if (activeLayerUpdateQueued) {
+            EventBus.publish(new ActiveLayerUpdated(StaticController.getActiveLayer()));
+            activeLayerUpdateQueued = false;
+        }
+
+        for (Map.Entry<EditorInstrument, Boolean> entry : instrumentRepaintStatus.entrySet()) {
+            Boolean repaintQueued = entry.getValue();
+            if (repaintQueued) {
+                EditorInstrument editorInstrument = entry.getKey();
+                EventBus.publish(new InstrumentRepaintQueued(editorInstrument));
+                instrumentRepaintStatus.put(editorInstrument, false);
+            }
+        }
     }
 
     public void queueViewerRepaint() {
@@ -111,53 +59,49 @@ public class EventScheduler {
     }
 
     public void queueLayerPropertiesRepaint() {
-        this.layerPropertiesRepaintQueued = true;
+        this.instrumentRepaintStatus.put(EditorInstrument.LAYER, true);
     }
 
     public void queueCenterPanelsRepaint() {
-        this.centerPanelsRepaintQueued = true;
+        this.instrumentRepaintStatus.put(EditorInstrument.COLLISION, true);
+        this.instrumentRepaintStatus.put(EditorInstrument.SHIELD, true);
     }
 
     public void queueBoundsPanelRepaint() {
-        this.boundsPanelRepaintQueued = true;
+        this.instrumentRepaintStatus.put(EditorInstrument.BOUNDS, true);
     }
 
     public void queueBaysPanelRepaint() {
-        this.baysPanelRepaintQueued = true;
+        this.instrumentRepaintStatus.put(EditorInstrument.LAUNCH_BAYS, true);
     }
 
     public void queueEnginesPanelRepaint() {
-        this.enginesPanelRepaintQueued = true;
+        this.instrumentRepaintStatus.put(EditorInstrument.ENGINES, true);
     }
 
-    @SuppressWarnings("unused")
-    public void queueSkinPanelRepaint() {
-        this.skinPanelRepaintQueued = true;
-    }
 
-    public void queueSlotControlRepaint() {
-        this.slotControlRepaintQueued = true;
-    }
-
-    @SuppressWarnings("unused")
     public void queueSlotsPanelRepaint() {
-        this.slotsPanelRepaintQueued = true;
+        this.instrumentRepaintStatus.put(EditorInstrument.WEAPON_SLOTS, true);
     }
 
     public void queueBuiltInsRepaint() {
-        this.builtInsPanelRepaintQueued = true;
+        this.instrumentRepaintStatus.put(EditorInstrument.DECORATIVES, true);
+        this.instrumentRepaintStatus.put(EditorInstrument.BUILT_IN_WEAPONS, true);
+        this.instrumentRepaintStatus.put(EditorInstrument.BUILT_IN_MODS, true);
+        this.instrumentRepaintStatus.put(EditorInstrument.BUILT_IN_WINGS, true);
     }
 
     public void queueVariantsRepaint() {
-        this.variantsPanelRepaintQueued = true;
+        this.instrumentRepaintStatus.put(EditorInstrument.VARIANT_DATA, true);
+        this.instrumentRepaintStatus.put(EditorInstrument.VARIANT_WEAPONS, true);
     }
 
     public void queueModulesRepaint() {
-        this.variantModulesRepaintQueued = true;
+        this.instrumentRepaintStatus.put(EditorInstrument.VARIANT_MODULES, true);
     }
 
     public void queueModuleControlRepaint() {
-        this.moduleControlRepaintQueued = true;
+        this.instrumentRepaintStatus.put(EditorInstrument.VARIANT_MODULES, true);
     }
 
     public void queueActiveLayerUpdate() {

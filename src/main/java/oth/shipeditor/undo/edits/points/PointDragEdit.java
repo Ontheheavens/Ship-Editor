@@ -69,7 +69,7 @@ public final class PointDragEdit extends AbstractEdit implements PointEdit {
         switch (point.getAssociatedMode()) {
             case BOUNDS -> repainter.queueBoundsPanelRepaint();
             case COLLISION, SHIELD -> repainter.queueCenterPanelsRepaint();
-            case WEAPON_SLOTS -> repainter.queueSlotControlRepaint();
+            case WEAPON_SLOTS -> repainter.queueSlotsPanelRepaint();
             case ENGINES -> repainter.queueEnginesPanelRepaint();
             case LAUNCH_BAYS -> repainter.queueBaysPanelRepaint();
         }

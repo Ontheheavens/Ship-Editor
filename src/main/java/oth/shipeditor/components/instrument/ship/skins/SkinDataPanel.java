@@ -1,9 +1,10 @@
 package oth.shipeditor.components.instrument.ship.skins;
 
 import oth.shipeditor.communication.EventBus;
-import oth.shipeditor.communication.events.components.SkinPanelRepaintQueued;
+import oth.shipeditor.communication.events.components.InstrumentRepaintQueued;
 import oth.shipeditor.communication.events.viewer.layers.ActiveLayerUpdated;
 import oth.shipeditor.communication.events.viewer.layers.LayerWasSelected;
+import oth.shipeditor.components.instrument.EditorInstrument;
 import oth.shipeditor.components.viewer.layers.ViewerLayer;
 import oth.shipeditor.components.viewer.layers.ship.ShipLayer;
 import oth.shipeditor.components.viewer.layers.ship.ShipPainter;
@@ -111,8 +112,10 @@ public class SkinDataPanel extends JPanel {
             }
         });
         EventBus.subscribe(event -> {
-            if (event instanceof SkinPanelRepaintQueued) {
-                this.repaint();
+            if (event instanceof InstrumentRepaintQueued(EditorInstrument editorMode)) {
+                if (editorMode == EditorInstrument.SKIN_DATA) {
+                    this.repaint();
+                }
             }
         });
     }

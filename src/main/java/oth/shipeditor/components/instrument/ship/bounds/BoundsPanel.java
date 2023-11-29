@@ -2,10 +2,11 @@ package oth.shipeditor.components.instrument.ship.bounds;
 
 import lombok.Getter;
 import oth.shipeditor.communication.EventBus;
-import oth.shipeditor.communication.events.components.BoundsPanelRepaintQueued;
+import oth.shipeditor.communication.events.components.InstrumentRepaintQueued;
 import oth.shipeditor.communication.events.viewer.points.BoundInsertedConfirmed;
 import oth.shipeditor.communication.events.viewer.points.PointAddConfirmed;
 import oth.shipeditor.communication.events.viewer.points.PointRemovedConfirmed;
+import oth.shipeditor.components.instrument.EditorInstrument;
 import oth.shipeditor.components.instrument.ship.AbstractShipPropertiesPanel;
 import oth.shipeditor.components.viewer.entities.BoundPoint;
 import oth.shipeditor.components.viewer.layers.LayerPainter;
@@ -46,17 +47,19 @@ public class BoundsPanel extends AbstractShipPropertiesPanel {
 
     private void initPointListeners() {
         EventBus.subscribe(event -> {
-            if (event instanceof BoundsPanelRepaintQueued) {
-                LayerPainter cachedLayerPainter = getCachedLayerPainter();
-                if (cachedLayerPainter != null) {
-                    DefaultListModel<BoundPoint> newModel = new DefaultListModel<>();
-                    BoundPointsPainter boundsPainter = ((ShipPainter) cachedLayerPainter).getBoundsPainter();
-                    newModel.addAll(boundsPainter.getPointsIndex());
+            if (event instanceof InstrumentRepaintQueued(EditorInstrument editorMode)) {
+                if (editorMode == EditorInstrument.BOUNDS) {
+                    LayerPainter cachedLayerPainter = getCachedLayerPainter();
+                    if (cachedLayerPainter != null) {
+                        DefaultListModel<BoundPoint> newModel = new DefaultListModel<>();
+                        BoundPointsPainter boundsPainter = ((ShipPainter) cachedLayerPainter).getBoundsPainter();
+                        newModel.addAll(boundsPainter.getPointsIndex());
 
-                    this.model = newModel;
-                    this.boundList.setModel(newModel);
+                        this.model = newModel;
+                        this.boundList.setModel(newModel);
+                    }
+                    this.refresh(cachedLayerPainter);
                 }
-                this.refresh(cachedLayerPainter);
             }
         });
         EventBus.subscribe(event -> {

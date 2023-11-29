@@ -3,13 +3,19 @@ package oth.shipeditor.components.instrument;
 import lombok.Getter;
 import lombok.Setter;
 import oth.shipeditor.components.viewer.layers.LayerPainter;
+import oth.shipeditor.components.viewer.painters.PainterVisibility;
+import oth.shipeditor.components.viewer.painters.points.AbstractPointPainter;
 import oth.shipeditor.utility.components.ComponentUtilities;
+import oth.shipeditor.utility.objects.Pair;
 
 import javax.swing.*;
 import java.awt.*;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.function.BiConsumer;
+import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
+import java.util.function.Function;
 
 /**
  * This class is the preferred way of implementing various property panels like hull/skin data values.
@@ -107,6 +113,36 @@ public abstract class LayerPropertiesPanel extends JPanel {
     protected void clearAllWidgetListeners() {
         clearingListeners.clear();
         refresherListeners.clear();
+    }
+
+    protected Pair<JLabel, JComboBox<PainterVisibility>> createVisibilityWidget(Function<LayerPainter,
+            AbstractPointPainter> getter) {
+        BooleanSupplier readinessChecker = this::isWidgetsReadyForInput;
+        Consumer<PainterVisibility> visibilitySetter = changedValue -> {
+            LayerPainter layerPainter = getCachedLayerPainter();
+            if (layerPainter != null) {
+                AbstractPointPainter pointPainter = getter.apply(layerPainter);
+                if (pointPainter != null) {
+                    pointPainter.setVisibilityMode(changedValue);
+                    processChange();
+                } else {
+                    throw new IllegalStateException("Invalid usage of visibility widget!");
+                }
+            }
+        };
+
+        BiConsumer<JComponent, Consumer<LayerPainter>> clearerListener = this::registerWidgetClearer;
+        BiConsumer<JComponent, Consumer<LayerPainter>> refresherListener = this::registerWidgetRefresher;
+
+        Function<LayerPainter, PainterVisibility> visibilityGetter = layerPainter -> {
+            AbstractPointPainter pointPainter = getter.apply(cachedLayerPainter);
+            return pointPainter.getVisibilityMode();
+        };
+
+        return PainterVisibility.createVisibilityWidget(
+                readinessChecker, visibilityGetter,
+                visibilitySetter, clearerListener, refresherListener
+        );
     }
 
 

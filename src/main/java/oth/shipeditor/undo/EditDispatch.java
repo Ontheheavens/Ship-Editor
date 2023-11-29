@@ -126,7 +126,7 @@ public final class EditDispatch {
         UndoOverseer.post(rearrangeEdit);
         pointPainter.setSlotPoints(changed);
         var repainter = StaticController.getScheduler();
-        repainter.queueSlotControlRepaint();
+        repainter.queueSlotsPanelRepaint();
     }
 
     public static void postEnginesRearranged(EngineSlotPainter pointPainter,
@@ -194,7 +194,7 @@ public final class EditDispatch {
         slotPoint.setAngle(updated);
         var repainter = StaticController.getScheduler();
         repainter.queueViewerRepaint();
-        repainter.queueSlotControlRepaint();
+        repainter.queueSlotsPanelRepaint();
         repainter.queueBaysPanelRepaint();
     }
 
@@ -243,7 +243,7 @@ public final class EditDispatch {
         slotPoint.setArc(updated);
         var repainter = StaticController.getScheduler();
         repainter.queueViewerRepaint();
-        repainter.queueSlotControlRepaint();
+        repainter.queueSlotsPanelRepaint();
         repainter.queueBaysPanelRepaint();
     }
 
@@ -264,7 +264,7 @@ public final class EditDispatch {
         slotPoint.setRenderOrderMod(updated);
         var repainter = StaticController.getScheduler();
         repainter.queueViewerRepaint();
-        repainter.queueSlotControlRepaint();
+        repainter.queueSlotsPanelRepaint();
         repainter.queueBaysPanelRepaint();
     }
 
@@ -313,7 +313,7 @@ public final class EditDispatch {
         UndoOverseer.post(renameEdit);
         point.changeSlotID(newID);
         var repainter = StaticController.getScheduler();
-        repainter.queueSlotControlRepaint();
+        repainter.queueSlotsPanelRepaint();
         repainter.queueBuiltInsRepaint();
     }
 
@@ -324,7 +324,7 @@ public final class EditDispatch {
         point.setWeaponType(newType);
         var repainter = StaticController.getScheduler();
         repainter.queueViewerRepaint();
-        repainter.queueSlotControlRepaint();
+        repainter.queueSlotsPanelRepaint();
         repainter.queueBuiltInsRepaint();
     }
 
@@ -335,7 +335,7 @@ public final class EditDispatch {
         point.setWeaponMount(newMount);
         var repainter = StaticController.getScheduler();
         repainter.queueViewerRepaint();
-        repainter.queueSlotControlRepaint();
+        repainter.queueSlotsPanelRepaint();
     }
 
     public static void postSlotSizeChanged(SlotData point, WeaponSize newSize) {
@@ -345,7 +345,7 @@ public final class EditDispatch {
         point.setWeaponSize(newSize);
         var repainter = StaticController.getScheduler();
         repainter.queueViewerRepaint();
-        repainter.queueSlotControlRepaint();
+        repainter.queueSlotsPanelRepaint();
         repainter.queueBuiltInsRepaint();
         repainter.queueBaysPanelRepaint();
     }

@@ -1,8 +1,9 @@
 package oth.shipeditor.components.instrument.ship.engines;
 
 import oth.shipeditor.communication.EventBus;
-import oth.shipeditor.communication.events.components.EnginesPanelRepaintQueued;
+import oth.shipeditor.communication.events.components.InstrumentRepaintQueued;
 import oth.shipeditor.communication.events.files.EngineStylesLoaded;
+import oth.shipeditor.components.instrument.EditorInstrument;
 import oth.shipeditor.components.instrument.LayerPropertiesPanel;
 import oth.shipeditor.components.viewer.entities.engine.EngineData;
 import oth.shipeditor.components.viewer.entities.engine.EngineDataOverride;
@@ -215,7 +216,7 @@ public class EngineDataPanel extends LayerPropertiesPanel {
                 EngineSlotPainter enginePainter = slotParent.getEnginePainter();
                 EnginePoint selected = enginePainter.getSelected();
                 selected.setStyleID(textValue);
-                EventBus.publish(new EnginesPanelRepaintQueued());
+                EventBus.publish(new InstrumentRepaintQueued(EditorInstrument.ENGINES));
             });
 
             widget = idField;

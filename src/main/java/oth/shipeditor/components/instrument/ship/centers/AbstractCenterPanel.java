@@ -1,7 +1,8 @@
 package oth.shipeditor.components.instrument.ship.centers;
 
 import oth.shipeditor.communication.EventBus;
-import oth.shipeditor.communication.events.components.CenterPanelsRepaintQueued;
+import oth.shipeditor.communication.events.components.InstrumentRepaintQueued;
+import oth.shipeditor.components.instrument.EditorInstrument;
 import oth.shipeditor.components.instrument.ship.AbstractShipPropertiesPanel;
 import oth.shipeditor.utility.overseers.StaticController;
 
@@ -15,10 +16,14 @@ public abstract class AbstractCenterPanel extends AbstractShipPropertiesPanel {
     protected void initLayerListeners() {
         super.initLayerListeners();
         EventBus.subscribe(event -> {
-            if (event instanceof CenterPanelsRepaintQueued) {
-                this.handleRefreshFromLayer(StaticController.getActiveLayer());
+            if (event instanceof InstrumentRepaintQueued(EditorInstrument editorMode)) {
+                if (editorMode == getMode()) {
+                    this.handleRefreshFromLayer(StaticController.getActiveLayer());
+                }
             }
         });
     }
+
+    protected abstract EditorInstrument getMode();
 
 }

@@ -1,4 +1,4 @@
-package oth.shipeditor.components.instrument.ship.variant;
+package oth.shipeditor.components.instrument.ship.variant.modules;
 
 import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.viewer.ViewerRepaintQueued;
@@ -29,6 +29,8 @@ class ModuleControlPanel extends JPanel {
     private final JPanel visibilitiesPanel;
 
     private final JPanel anchorWidgetWrapper;
+
+    // TODO for 30.11.23 - start refactoring from here!
 
     ModuleControlPanel(InstalledFeature feature, VariantModulesPanel modulesPanel) {
         this.module = feature;
@@ -140,7 +142,7 @@ class ModuleControlPanel extends JPanel {
     }
 
     private void actOnSelectedModules(Consumer<ShipPainter> action) {
-        VariantModulesPanel.ModuleList moduleList = parent.getModulesList();
+        ModuleList moduleList = parent.getModulesList();
         if (moduleList == null) return;
         List<InstalledFeature> selectedValuesList = moduleList.getSelectedValuesList();
         if (selectedValuesList != null && !selectedValuesList.isEmpty()) {

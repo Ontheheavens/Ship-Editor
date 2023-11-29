@@ -30,7 +30,7 @@ public class SlotAngleSet extends AbstractEdit {
         slotPoint.setAngle(oldAngle);
         var repainter = StaticController.getScheduler();
         repainter.queueViewerRepaint();
-        repainter.queueSlotControlRepaint();
+        repainter.queueSlotsPanelRepaint();
         repainter.queueBaysPanelRepaint();
     }
 
@@ -40,7 +40,7 @@ public class SlotAngleSet extends AbstractEdit {
         redoSubEdits();
         var repainter = StaticController.getScheduler();
         repainter.queueViewerRepaint();
-        repainter.queueSlotControlRepaint();
+        repainter.queueSlotsPanelRepaint();
         repainter.queueBaysPanelRepaint();
     }
 

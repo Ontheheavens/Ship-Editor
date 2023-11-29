@@ -1,11 +1,12 @@
 package oth.shipeditor.components.instrument.ship.bays;
 
 import oth.shipeditor.communication.EventBus;
-import oth.shipeditor.communication.events.components.BaysPanelRepaintQueued;
+import oth.shipeditor.communication.events.components.InstrumentRepaintQueued;
 import oth.shipeditor.communication.events.viewer.points.LaunchBayAddConfirmed;
 import oth.shipeditor.communication.events.viewer.points.LaunchBayRemoveConfirmed;
 import oth.shipeditor.communication.events.viewer.points.PointAddConfirmed;
 import oth.shipeditor.communication.events.viewer.points.PointRemovedConfirmed;
+import oth.shipeditor.components.instrument.EditorInstrument;
 import oth.shipeditor.components.instrument.ship.AbstractShipPropertiesPanel;
 import oth.shipeditor.components.viewer.entities.bays.LaunchBay;
 import oth.shipeditor.components.viewer.entities.bays.LaunchPortPoint;
@@ -51,9 +52,11 @@ public class LaunchBaysPanel extends AbstractShipPropertiesPanel {
 
     private void initPointListener() {
         EventBus.subscribe(event -> {
-            if (event instanceof BaysPanelRepaintQueued) {
-                this.baysTree.reloadModel();
-                this.refreshPointDataPane(null);
+            if (event instanceof InstrumentRepaintQueued(EditorInstrument editorMode)) {
+                if (editorMode == EditorInstrument.LAUNCH_BAYS) {
+                    this.baysTree.reloadModel();
+                    this.refreshPointDataPane(null);
+                }
             }
         });
         EventBus.subscribe(event -> {

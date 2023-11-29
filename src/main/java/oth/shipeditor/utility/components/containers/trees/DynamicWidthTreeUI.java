@@ -74,7 +74,7 @@ public class DynamicWidthTreeUI extends FlatTreeUI {
 
     @SuppressWarnings("OverlyComplexMethod")
     @Override
-    public void paint( Graphics g, JComponent c ) {
+    public void paint(Graphics g, JComponent c) {
         // This one has cyclomatic complexity and indentation both through the roof, and it's not of my doing:
         // Took it from vanilla Swing as-is.
 

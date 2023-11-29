@@ -3,10 +3,11 @@ package oth.shipeditor.components.instrument.ship.variant;
 import org.kordamp.ikonli.fluentui.FluentUiRegularAL;
 import org.kordamp.ikonli.swing.FontIcon;
 import oth.shipeditor.communication.EventBus;
-import oth.shipeditor.communication.events.components.VariantPanelRepaintQueued;
+import oth.shipeditor.communication.events.components.InstrumentRepaintQueued;
 import oth.shipeditor.communication.events.components.WeaponEntryPicked;
 import oth.shipeditor.communication.events.viewer.points.PointSelectedConfirmed;
 import oth.shipeditor.components.datafiles.entities.WeaponCSVEntry;
+import oth.shipeditor.components.instrument.EditorInstrument;
 import oth.shipeditor.components.viewer.layers.ViewerLayer;
 import oth.shipeditor.components.viewer.layers.ship.FeaturesOverseer;
 import oth.shipeditor.components.viewer.layers.ship.ShipLayer;
@@ -70,9 +71,11 @@ public class VariantWeaponsPanel extends AbstractVariantPanel {
             }
         });
         EventBus.subscribe(event -> {
-            if (event instanceof VariantPanelRepaintQueued) {
-                this.refreshPanel(StaticController.getActiveLayer());
-                this.refreshWeaponPicker();
+            if (event instanceof InstrumentRepaintQueued(EditorInstrument editorMode)) {
+                if (editorMode == EditorInstrument.VARIANT_WEAPONS) {
+                    this.refreshPanel(StaticController.getActiveLayer());
+                    this.refreshWeaponPicker();
+                }
             }
         });
         EventBus.subscribe(event -> {

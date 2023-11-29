@@ -1,5 +1,6 @@
 package oth.shipeditor.components.instrument.ship.centers;
 
+import oth.shipeditor.components.instrument.EditorInstrument;
 import oth.shipeditor.components.viewer.entities.ShieldCenterPoint;
 import oth.shipeditor.components.viewer.layers.LayerPainter;
 import oth.shipeditor.components.viewer.layers.ship.ShipPainter;
@@ -42,6 +43,11 @@ public class ShieldPanel extends AbstractCenterPanel {
 
         fireRefresherListeners(layerPainter);
         shieldCenterWidget.refresh(layerPainter);
+    }
+
+    @Override
+    protected EditorInstrument getMode() {
+        return EditorInstrument.SHIELD;
     }
 
     @Override

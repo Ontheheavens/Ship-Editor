@@ -59,7 +59,7 @@ public class LaunchPortsSortEdit extends AbstractEdit {
             if (!baysList.contains(recipient)) {
                 recipientPainter.insertBay(recipient, cachedBayIndex);
             }
-        };
+        }
 
         if (StaticController.getEditorMode() == EditorInstrument.LAUNCH_BAYS) {
             // This is not optimal from performance standpoint, since the reselection triggers a very broad response;

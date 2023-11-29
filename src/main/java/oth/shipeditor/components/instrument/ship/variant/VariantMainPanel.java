@@ -2,7 +2,8 @@ package oth.shipeditor.components.instrument.ship.variant;
 
 import lombok.extern.log4j.Log4j2;
 import oth.shipeditor.communication.EventBus;
-import oth.shipeditor.communication.events.components.VariantPanelRepaintQueued;
+import oth.shipeditor.communication.events.components.InstrumentRepaintQueued;
+import oth.shipeditor.components.instrument.EditorInstrument;
 import oth.shipeditor.components.viewer.layers.ViewerLayer;
 import oth.shipeditor.components.viewer.layers.ship.ShipLayer;
 import oth.shipeditor.components.viewer.layers.ship.ShipPainter;
@@ -253,8 +254,10 @@ public class VariantMainPanel extends AbstractVariantPanel {
     protected void initLayerListeners() {
         super.initLayerListeners();
         EventBus.subscribe(event -> {
-            if (event instanceof VariantPanelRepaintQueued) {
-                this.refreshOrdnanceInfo(selectedLayer);
+            if (event instanceof InstrumentRepaintQueued(EditorInstrument editorMode)) {
+                if (editorMode == EditorInstrument.VARIANT_DATA) {
+                    this.refreshOrdnanceInfo(selectedLayer);
+                }
             }
         });
     }

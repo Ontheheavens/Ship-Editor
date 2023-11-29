@@ -4,7 +4,7 @@ import org.kordamp.ikonli.fluentui.FluentUiRegularAL;
 import org.kordamp.ikonli.swing.FontIcon;
 import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.BusEvent;
-import oth.shipeditor.communication.events.components.BuiltInsPanelsRepaintQueued;
+import oth.shipeditor.communication.events.components.InstrumentRepaintQueued;
 import oth.shipeditor.communication.events.components.WeaponEntryPicked;
 import oth.shipeditor.communication.events.viewer.ViewerRepaintQueued;
 import oth.shipeditor.communication.events.viewer.points.PointSelectedConfirmed;
@@ -53,7 +53,7 @@ public abstract class AbstractWeaponsPanel extends AbstractBuiltInsPanel {
     protected void initLayerListeners() {
         super.initLayerListeners();
         EventBus.subscribe(event -> {
-            if (AbstractWeaponsPanel.isRepaintEvent(event)) {
+            if (this.isRepaintEvent(event)) {
                 this.refreshPanel(getCachedLayer());
                 this.refreshWeaponPicker();
             }
@@ -136,8 +136,11 @@ public abstract class AbstractWeaponsPanel extends AbstractBuiltInsPanel {
         this.add(northContainer, BorderLayout.PAGE_START);
     }
 
-    private static boolean isRepaintEvent(BusEvent event) {
-        return event instanceof BuiltInsPanelsRepaintQueued;
+    private boolean isRepaintEvent(BusEvent event) {
+        if (event instanceof InstrumentRepaintQueued instrumentRepaint) {
+            return instrumentRepaint.editorMode() == getMode();
+        }
+        return false;
     }
 
     @Override

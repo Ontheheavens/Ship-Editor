@@ -1,9 +1,10 @@
 package oth.shipeditor.components.instrument.ship.variant;
 
 import oth.shipeditor.communication.EventBus;
-import oth.shipeditor.communication.events.components.VariantPanelRepaintQueued;
+import oth.shipeditor.communication.events.components.InstrumentRepaintQueued;
 import oth.shipeditor.communication.events.viewer.layers.LayerWasSelected;
 import oth.shipeditor.components.datafiles.entities.WingCSVEntry;
+import oth.shipeditor.components.instrument.EditorInstrument;
 import oth.shipeditor.components.instrument.ship.shared.WingsList;
 import oth.shipeditor.components.viewer.layers.ViewerLayer;
 import oth.shipeditor.components.viewer.layers.ship.ShipLayer;
@@ -131,8 +132,10 @@ class VariantWingsPanel extends JPanel {
             }
         });
         EventBus.subscribe(event -> {
-            if (event instanceof VariantPanelRepaintQueued) {
-                this.refreshLayerInfo(StaticController.getActiveLayer());
+            if (event instanceof InstrumentRepaintQueued(EditorInstrument editorMode)) {
+                if (editorMode == EditorInstrument.VARIANT_DATA) {
+                    this.refreshLayerInfo(StaticController.getActiveLayer());
+                }
             }
         });
     }

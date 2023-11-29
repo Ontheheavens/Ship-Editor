@@ -2,11 +2,11 @@ package oth.shipeditor.components.instrument.ship.slots;
 
 import lombok.Getter;
 import oth.shipeditor.communication.EventBus;
-import oth.shipeditor.communication.events.components.SlotControlRepaintQueued;
-import oth.shipeditor.communication.events.components.SlotsPanelRepaintQueued;
+import oth.shipeditor.communication.events.components.InstrumentRepaintQueued;
 import oth.shipeditor.communication.events.viewer.points.PointAddConfirmed;
 import oth.shipeditor.communication.events.viewer.points.PointRemovedConfirmed;
 import oth.shipeditor.communication.events.viewer.points.WeaponSlotInsertedConfirmed;
+import oth.shipeditor.components.instrument.EditorInstrument;
 import oth.shipeditor.components.instrument.ship.AbstractShipPropertiesPanel;
 import oth.shipeditor.components.viewer.entities.weapon.WeaponSlotPoint;
 import oth.shipeditor.components.viewer.layers.LayerPainter;
@@ -116,12 +116,10 @@ public class WeaponSlotListPanel extends AbstractShipPropertiesPanel {
     protected void initLayerListeners() {
         super.initLayerListeners();
         EventBus.subscribe(event -> {
-            if (event instanceof SlotsPanelRepaintQueued) {
-                this.refreshPointDataPane(null);
-            }
-        });
-        EventBus.subscribe(event -> {
-            if (event instanceof SlotControlRepaintQueued) {
+            if (event instanceof InstrumentRepaintQueued(EditorInstrument editorMode)) {
+                if (editorMode != EditorInstrument.WEAPON_SLOTS) {
+                    return;
+                }
                 WeaponSlotPainter cachedSlotPainter = getCachedSlotPainter();
                 if (cachedSlotPainter != null) {
                     int[] cachedSelected = this.slotPointContainer.getSelectedIndices();

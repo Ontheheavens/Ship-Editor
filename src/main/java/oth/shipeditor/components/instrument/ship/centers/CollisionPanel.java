@@ -1,9 +1,11 @@
 package oth.shipeditor.components.instrument.ship.centers;
 
+import oth.shipeditor.components.instrument.EditorInstrument;
 import oth.shipeditor.components.viewer.entities.ShipCenterPoint;
 import oth.shipeditor.components.viewer.layers.LayerPainter;
 import oth.shipeditor.components.viewer.layers.ship.ShipPainter;
 import oth.shipeditor.components.viewer.painters.PainterVisibility;
+import oth.shipeditor.components.viewer.painters.points.AbstractPointPainter;
 import oth.shipeditor.components.viewer.painters.points.ship.CenterPointPainter;
 import oth.shipeditor.undo.EditDispatch;
 import oth.shipeditor.utility.components.ComponentUtilities;
@@ -48,6 +50,11 @@ public class CollisionPanel extends AbstractCenterPanel {
         shipCenterWidget.refresh(layerPainter);
         moduleAnchorWidget.setCenterPainter(((ShipPainter) layerPainter).getCenterPointPainter());
         moduleAnchorWidget.refresh(layerPainter);
+    }
+
+    @Override
+    protected EditorInstrument getMode() {
+        return EditorInstrument.COLLISION;
     }
 
     @Override
@@ -123,27 +130,14 @@ public class CollisionPanel extends AbstractCenterPanel {
     }
 
     private Pair<JLabel, JComboBox<PainterVisibility>> createCollisionVisibilityWidget() {
-        BooleanSupplier readinessChecker = this::isWidgetsReadyForInput;
-        Consumer<PainterVisibility> visibilitySetter = changedValue -> {
-            LayerPainter cachedLayerPainter = getCachedLayerPainter();
-            if (cachedLayerPainter != null) {
-                CenterPointPainter centerPointPainter = ((ShipPainter) cachedLayerPainter).getCenterPointPainter();
-                centerPointPainter.setVisibilityMode(changedValue);
-                processChange();
+        Function<LayerPainter, AbstractPointPainter> painterGetter = layerPainter -> {
+            if (layerPainter instanceof ShipPainter shipPainter) {
+                return shipPainter.getCenterPointPainter();
             }
+            return null;
         };
 
-        BiConsumer<JComponent, Consumer<LayerPainter>> clearerListener = this::registerWidgetClearer;
-        BiConsumer<JComponent, Consumer<LayerPainter>> refresherListener = this::registerWidgetRefresher;
-
-        Function<LayerPainter, PainterVisibility> visibilityGetter = layerPainter -> {
-            CenterPointPainter centerPointPainter = ((ShipPainter) layerPainter).getCenterPointPainter();
-            return centerPointPainter.getVisibilityMode();
-        };
-
-        var opacityWidget = PainterVisibility.createVisibilityWidget(
-                readinessChecker, visibilityGetter, visibilitySetter, clearerListener, refresherListener
-        );
+        var opacityWidget = createVisibilityWidget(painterGetter);
 
         JLabel opacityLabel = opacityWidget.getFirst();
         opacityLabel.setText(StringValues.COLLISION_VIEW);

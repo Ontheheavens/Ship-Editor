@@ -2,10 +2,11 @@ package oth.shipeditor.components.instrument.ship.engines;
 
 import lombok.Getter;
 import oth.shipeditor.communication.EventBus;
-import oth.shipeditor.communication.events.components.EnginesPanelRepaintQueued;
+import oth.shipeditor.communication.events.components.InstrumentRepaintQueued;
 import oth.shipeditor.communication.events.viewer.points.EngineInsertedConfirmed;
 import oth.shipeditor.communication.events.viewer.points.PointAddConfirmed;
 import oth.shipeditor.communication.events.viewer.points.PointRemovedConfirmed;
+import oth.shipeditor.components.instrument.EditorInstrument;
 import oth.shipeditor.components.instrument.ship.AbstractShipPropertiesPanel;
 import oth.shipeditor.components.viewer.entities.engine.EnginePoint;
 import oth.shipeditor.components.viewer.layers.LayerPainter;
@@ -123,7 +124,10 @@ public class EnginesPanel extends AbstractShipPropertiesPanel {
     protected void initLayerListeners() {
         super.initLayerListeners();
         EventBus.subscribe(event -> {
-            if (event instanceof EnginesPanelRepaintQueued) {
+            if (event instanceof InstrumentRepaintQueued(EditorInstrument editorMode)) {
+                if (editorMode != EditorInstrument.ENGINES) {
+                    return;
+                }
                 EngineSlotPainter cachedEnginePainter = getCachedEnginePainter();
                 if (cachedEnginePainter != null) {
                     int[] cachedSelected = this.enginesContainer.getSelectedIndices();

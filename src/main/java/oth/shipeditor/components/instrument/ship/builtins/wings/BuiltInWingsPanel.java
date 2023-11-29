@@ -1,8 +1,9 @@
 package oth.shipeditor.components.instrument.ship.builtins.wings;
 
 import oth.shipeditor.communication.EventBus;
-import oth.shipeditor.communication.events.components.VariantPanelRepaintQueued;
+import oth.shipeditor.communication.events.components.InstrumentRepaintQueued;
 import oth.shipeditor.communication.events.viewer.layers.LayerWasSelected;
+import oth.shipeditor.components.instrument.EditorInstrument;
 import oth.shipeditor.components.viewer.layers.ViewerLayer;
 import oth.shipeditor.components.viewer.layers.ship.ShipLayer;
 import oth.shipeditor.components.viewer.layers.ship.data.ShipHull;
@@ -105,8 +106,10 @@ public class BuiltInWingsPanel extends JPanel {
             }
         });
         EventBus.subscribe(event -> {
-            if (event instanceof VariantPanelRepaintQueued) {
-                this.refreshLayerInfo(StaticController.getActiveLayer());
+            if (event instanceof InstrumentRepaintQueued(EditorInstrument editorMode)) {
+                if (editorMode == EditorInstrument.BUILT_IN_WINGS) {
+                    this.refreshLayerInfo(StaticController.getActiveLayer());
+                }
             }
         });
     }

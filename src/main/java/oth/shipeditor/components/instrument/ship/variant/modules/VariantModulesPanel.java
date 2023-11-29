@@ -1,18 +1,14 @@
-package oth.shipeditor.components.instrument.ship.variant;
+package oth.shipeditor.components.instrument.ship.variant.modules;
 
 import lombok.Getter;
 import org.kordamp.ikonli.fluentui.FluentUiRegularAL;
 import org.kordamp.ikonli.swing.FontIcon;
 import oth.shipeditor.communication.EventBus;
-import oth.shipeditor.communication.events.components.ModuleControlRefreshQueued;
-import oth.shipeditor.communication.events.components.SelectShipDataEntry;
+import oth.shipeditor.communication.events.components.InstrumentRepaintQueued;
 import oth.shipeditor.communication.events.components.ShipEntryPicked;
-import oth.shipeditor.communication.events.components.VariantModulesRepaintQueued;
 import oth.shipeditor.communication.events.viewer.points.PointSelectedConfirmed;
-import oth.shipeditor.components.datafiles.entities.CSVEntry;
-import oth.shipeditor.components.datafiles.entities.ShipCSVEntry;
 import oth.shipeditor.components.instrument.EditorInstrument;
-import oth.shipeditor.components.instrument.ship.shared.InstalledFeatureList;
+import oth.shipeditor.components.instrument.ship.variant.AbstractVariantPanel;
 import oth.shipeditor.components.viewer.entities.weapon.WeaponSlotPoint;
 import oth.shipeditor.components.viewer.layers.ViewerLayer;
 import oth.shipeditor.components.viewer.layers.ship.FeaturesOverseer;
@@ -20,7 +16,6 @@ import oth.shipeditor.components.viewer.layers.ship.ShipLayer;
 import oth.shipeditor.components.viewer.layers.ship.ShipPainter;
 import oth.shipeditor.components.viewer.layers.ship.data.ShipHull;
 import oth.shipeditor.components.viewer.layers.ship.data.ShipVariant;
-import oth.shipeditor.components.viewer.painters.points.ship.WeaponSlotPainter;
 import oth.shipeditor.components.viewer.painters.points.ship.features.InstalledFeature;
 import oth.shipeditor.representation.ship.VariantFile;
 import oth.shipeditor.undo.EditDispatch;
@@ -34,9 +29,6 @@ import javax.swing.border.Border;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.LineBorder;
 import java.awt.*;
-import java.awt.datatransfer.DataFlavor;
-import java.awt.datatransfer.Transferable;
-import java.util.Collection;
 import java.util.Map;
 import java.util.function.Consumer;
 
@@ -44,7 +36,7 @@ import java.util.function.Consumer;
  * @author Ontheheavens
  * @since 02.10.2023
  */
-public class VariantModulesPanel extends AbstractVariantPanel{
+public class VariantModulesPanel extends AbstractVariantPanel {
 
     private final JPanel contentPanel;
 
@@ -103,19 +95,18 @@ public class VariantModulesPanel extends AbstractVariantPanel{
     protected void initLayerListeners() {
         super.initLayerListeners();
         EventBus.subscribe(event -> {
-            if (event instanceof VariantModulesRepaintQueued) {
-                this.refreshPanel(StaticController.getActiveLayer());
-                this.refreshModulePicker();
+            if (event instanceof InstrumentRepaintQueued(EditorInstrument editorMode)) {
+                if (editorMode == EditorInstrument.VARIANT_MODULES) {
+                    this.refreshPanel(StaticController.getActiveLayer());
+                    this.refreshModulePicker();
+                    // TODO: remember, immutability in module widgets needs to go!
+                    this.refreshControlPanel();
+                }
             }
         });
         EventBus.subscribe(event -> {
             if (event instanceof ShipEntryPicked) {
                 this.refreshModulePicker();
-            }
-        });
-        EventBus.subscribe(event -> {
-            if (event instanceof ModuleControlRefreshQueued) {
-                this.refreshControlPanel();
             }
         });
     }
@@ -174,7 +165,7 @@ public class VariantModulesPanel extends AbstractVariantPanel{
         ShipVariant activeVariant = painter.getActiveVariant();
 
         if (activeVariant != null && !activeVariant.isEmpty()) {
-            var listContainer = this.getModuleList(activeVariant, painter);
+            var listContainer = this.createModuleList();
 
             JScrollPane scroller = new JScrollPane(listContainer);
             contentPanel.add(scroller, BorderLayout.CENTER);
@@ -202,64 +193,27 @@ public class VariantModulesPanel extends AbstractVariantPanel{
         controlPanel.repaint();
     }
 
-    private ModuleList getModuleList(ShipVariant activeVariant, ShipPainter painter) {
-        Map<String, InstalledFeature> fittedModules = activeVariant.getFittedModules();
-        Collection<InstalledFeature> modules = fittedModules.values();
+    private ModuleList createModuleList() {
 
         DefaultListModel<InstalledFeature> listModel = new DefaultListModel<>();
-        listModel.addAll(modules);
 
-        Consumer<InstalledFeature> removeAction = entry ->
-                EditDispatch.postFeatureUninstalled(fittedModules,
-                        entry.getSlotID(), entry, null);
+        Consumer<InstalledFeature> removeAction = feature ->
+                StaticController.actOnCurrentVariant((shipLayer, variant) -> {
+                    Map<String, InstalledFeature> fittedModules = variant.getFittedModules();
+                    if (fittedModules == null) {
+                        return;
+                    }
+                    EditDispatch.postFeatureUninstalled(fittedModules,
+                            feature.getSlotID(), feature, null);
+                });
 
-        var slotPainter = painter.getWeaponSlotPainter();
+        Consumer<Map<String, InstalledFeature>> sortAction = rearranged ->
+                StaticController.actOnCurrentVariant((shipLayer, variant) ->
+                        variant.sortModules(rearranged));
 
-        modulesList = new ModuleList(listModel, slotPainter, removeAction, activeVariant);
+        modulesList = new ModuleList(this::refreshControlPanel, listModel, removeAction, sortAction);
         modulesList.setBorder(new LineBorder(Color.LIGHT_GRAY));
         return modulesList;
-    }
-
-    @SuppressWarnings("ProtectedInnerClass")
-    protected final class ModuleList extends InstalledFeatureList {
-
-        private ModuleList(ListModel<InstalledFeature> dataModel,
-                           WeaponSlotPainter painter,
-                           Consumer<InstalledFeature> removeAction,
-                           ShipVariant activeVariant) {
-            super(dataModel, painter, removeAction, activeVariant::sortModules);
-        }
-
-        @Override
-        protected void handleEntrySelection(InstalledFeature feature) {
-            refreshControlPanel();
-        }
-
-        @Override
-        protected boolean isSupported(Transferable transferable) {
-            DataFlavor[] dataFlavors = transferable.getTransferDataFlavors();
-            boolean isFeature = dataFlavors[0].equals(featureFlavor);
-
-            String humanPresentableName = dataFlavors[1].getHumanPresentableName();
-            boolean isSameList = humanPresentableName.equals(String.valueOf(this.hashCode()));
-            return isFeature && isSameList;
-        }
-
-        @Override
-        protected JMenuItem getSelectEntryOption(InstalledFeature selected) {
-            JMenuItem selectEntry = new JMenuItem(StringValues.SELECT_SHIP_ENTRY);
-            selectEntry.addActionListener(event -> actOnSelectedEntry(feature -> {
-                CSVEntry dataEntry = feature.getDataEntry();
-                if (dataEntry instanceof ShipCSVEntry shipEntry) {
-                    EventBus.publish(new SelectShipDataEntry(shipEntry));
-                }
-            }));
-            if (!(selected.getDataEntry() instanceof ShipCSVEntry)) {
-                selectEntry.setEnabled(false);
-            }
-            return selectEntry;
-        }
-
     }
 
 }

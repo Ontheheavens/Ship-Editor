@@ -8,10 +8,10 @@ import javax.swing.*;
  * @author Ontheheavens
  * @since 27.09.2023
  */
-abstract class AbstractVariantPanel extends RefreshablePanel {
+public abstract class AbstractVariantPanel extends RefreshablePanel {
 
     @SuppressWarnings("MethodMayBeStatic")
-    JPanel createContentPlaceholder() {
+    protected JPanel createContentPlaceholder() {
         JPanel container = new JPanel();
         container.setLayout(new BoxLayout(container, BoxLayout.LINE_AXIS));
 

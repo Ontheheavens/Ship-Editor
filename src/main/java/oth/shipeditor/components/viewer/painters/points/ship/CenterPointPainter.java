@@ -5,7 +5,7 @@ import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
 import oth.shipeditor.communication.BusEventListener;
 import oth.shipeditor.communication.EventBus;
-import oth.shipeditor.communication.events.components.CenterPanelsRepaintQueued;
+import oth.shipeditor.communication.events.components.InstrumentRepaintQueued;
 import oth.shipeditor.communication.events.viewer.ViewerRepaintQueued;
 import oth.shipeditor.communication.events.viewer.points.InstrumentModeChanged;
 import oth.shipeditor.communication.events.viewer.points.RadiusDragQueued;
@@ -80,8 +80,9 @@ public class CenterPointPainter extends SinglePointPainter {
         List<BusEventListener> listeners = getListeners();
         BusEventListener modeListener = event -> {
             if (event instanceof InstrumentModeChanged checked) {
-                this.setInteractionEnabled(checked.newMode() == EditorInstrument.COLLISION);
-                EventBus.publish(new CenterPanelsRepaintQueued());
+                EditorInstrument editorInstrument = EditorInstrument.COLLISION;
+                this.setInteractionEnabled(checked.newMode() == editorInstrument);
+                EventBus.publish(new InstrumentRepaintQueued(editorInstrument));
             }
         };
         listeners.add(modeListener);

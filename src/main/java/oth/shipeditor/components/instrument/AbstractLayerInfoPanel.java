@@ -1,7 +1,7 @@
 package oth.shipeditor.components.instrument;
 
 import oth.shipeditor.communication.EventBus;
-import oth.shipeditor.communication.events.components.LayerPropertiesRepaintQueued;
+import oth.shipeditor.communication.events.components.InstrumentRepaintQueued;
 import oth.shipeditor.communication.events.viewer.layers.LayerWasSelected;
 import oth.shipeditor.components.viewer.layers.LayerPainter;
 import oth.shipeditor.components.viewer.layers.ViewerLayer;
@@ -32,8 +32,10 @@ public abstract class AbstractLayerInfoPanel extends JPanel {
         EventBus.subscribe(event -> {
             if (event instanceof LayerWasSelected checked) {
                 handleLayerSelected(checked.selected());
-            } else if (event instanceof LayerPropertiesRepaintQueued) {
-                handleLayerSelected(StaticController.getActiveLayer());
+            } else if (event instanceof InstrumentRepaintQueued(EditorInstrument editorMode)) {
+                if (editorMode == EditorInstrument.LAYER) {
+                    handleLayerSelected(StaticController.getActiveLayer());
+                }
             }
         });
     }

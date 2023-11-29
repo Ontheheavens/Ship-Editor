@@ -140,7 +140,7 @@ public class WeaponSlotPoint extends AngledPoint implements SlotPoint {
         if (!parent.isGeneratedIDUnassigned(newId)) {
             EventScheduler repainter = StaticController.getScheduler();
             repainter.queueViewerRepaint();
-            repainter.queueSlotControlRepaint();
+            repainter.queueSlotsPanelRepaint();
             repainter.queueBuiltInsRepaint();
             return;
         }
@@ -149,7 +149,7 @@ public class WeaponSlotPoint extends AngledPoint implements SlotPoint {
         WeaponSlotPainter.setSlotOverrideFromSkin(this, parent.getActiveSkin());
         EventScheduler repainter = StaticController.getScheduler();
         repainter.queueViewerRepaint();
-        repainter.queueSlotControlRepaint();
+        repainter.queueSlotsPanelRepaint();
         repainter.queueBuiltInsRepaint();
     }
 
