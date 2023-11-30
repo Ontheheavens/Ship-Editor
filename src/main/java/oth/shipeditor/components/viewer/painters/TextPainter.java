@@ -39,6 +39,10 @@ public class TextPainter {
     }
 
     public void paintText(Graphics2D g, AffineTransform worldToScreen, Font font) {
+        paintText(g, worldToScreen, font, Color.WHITE);
+    }
+
+    public void paintText(Graphics2D g, AffineTransform worldToScreen, Font font, Color fill) {
         if (text == null || text.isEmpty()) return;
 
         double anchorOffsetX = 25;
@@ -68,7 +72,7 @@ public class TextPainter {
 
         Shape bounds = delegateTransform.createTransformedShape(glyphVector.getLogicalBounds());
 
-        DrawUtilities.paintOutlinedText(g, bounds, transformedText, null);
+        DrawUtilities.paintOutlinedText(g, bounds, transformedText, null, fill);
     }
 
 }

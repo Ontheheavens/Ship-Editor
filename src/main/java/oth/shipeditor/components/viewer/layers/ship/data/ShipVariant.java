@@ -120,8 +120,17 @@ public class ShipVariant implements Variant {
         return variantFilePath.getFileName().toString();
     }
 
-    public void ensureBuiltInsAreFitted(ShipPainter painter) {
+    public void ensureBuiltInsSync(ShipPainter painter) {
         var builtIns = painter.getBuiltInsWithSkin(false, true);
+
+        Map<String, InstalledFeature> fittedWeapons = this.getAllFittedWeapons();
+        fittedWeapons.forEach((slotID, feature) -> {
+            if (feature.isContainedInBuiltIns() && !builtIns.containsValue(feature)) {
+                FittedWeaponGroup parentGroup = feature.getParentGroup();
+                parentGroup.removeBySlotID(slotID);
+            }
+        });
+
         builtIns.forEach((slotID, feature) -> {
             FittedWeaponGroup groupWithFit = this.getGroupWithExistingMapping(feature.getSlotID());
             if (groupWithFit != null) {

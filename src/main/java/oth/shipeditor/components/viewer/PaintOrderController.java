@@ -14,6 +14,7 @@ import oth.shipeditor.components.viewer.layers.ViewerLayer;
 import oth.shipeditor.components.viewer.layers.ship.ShipPainter;
 import oth.shipeditor.components.viewer.painters.GuidesPainters;
 import oth.shipeditor.components.viewer.painters.HotkeyHelpPainter;
+import oth.shipeditor.components.viewer.painters.TextPainter;
 import oth.shipeditor.components.viewer.painters.points.AbstractPointPainter;
 import oth.shipeditor.components.viewer.painters.points.ship.MarkPointsPainter;
 import oth.shipeditor.representation.weapon.WeaponMount;
@@ -50,6 +51,8 @@ public class PaintOrderController implements Painter {
 
     @Getter @Setter
     private static boolean showBackgroundImage = true;
+
+    private static final TextPainter draggedEntityText = new TextPainter();
 
     @Setter
     private boolean repaintQueued;
@@ -112,7 +115,7 @@ public class PaintOrderController implements Painter {
     }
 
 
-    @SuppressWarnings("ChainOfInstanceofChecks")
+    @SuppressWarnings({"ChainOfInstanceofChecks", "IfStatementWithTooManyBranches"})
     private static void paintDraggedEntity(Graphics2D g, AffineTransform worldToScreen, double w, double h) {
         InstallableEntry dragged = ViewerDropReceiver.getDraggedEntry();
         Point2D currentCursor = StaticController.getCorrectedWithoutRotate();
@@ -130,18 +133,36 @@ public class PaintOrderController implements Painter {
             mount = selectedWeaponSlot.getWeaponMount();
         }
 
+        EditorInstrument editorMode = StaticController.getEditorMode();
+
+        boolean doesFit = false;
+        draggedEntityText.setWorldPosition(currentCursor);
+
         if (dragged instanceof ShipCSVEntry shipEntry) {
             double conditionalAngle = rotation;
-            if (StaticController.getEditorMode() != EditorInstrument.VARIANT_MODULES) {
+            if (editorMode != EditorInstrument.VARIANT_MODULES) {
                 conditionalAngle = 0;
             }
             shipEntry.paintEntry(g, worldToScreen, conditionalAngle, currentCursor);
-            return;
-        }
-
-        if (dragged instanceof WeaponCSVEntry weaponEntry) {
+        } else if (dragged instanceof WeaponCSVEntry weaponEntry) {
             weaponEntry.paintEntry(g, worldToScreen,
                     rotation, currentCursor, mount);
+
+            Font font = Utility.getOrbitron(12);
+
+            if (editorMode != EditorInstrument.BUILT_IN_WEAPONS && editorMode != EditorInstrument.VARIANT_WEAPONS) {
+                draggedEntityText.setText("Not in install mode");
+                draggedEntityText.paintText(g, worldToScreen, font, Color.GRAY);
+            } else if (selectedWeaponSlot == null) {
+                draggedEntityText.setText("Slot not selected");
+                draggedEntityText.paintText(g, worldToScreen, font, Color.GRAY);
+            } else if (!selectedWeaponSlot.canFit(weaponEntry)) {
+                draggedEntityText.setText("Unfit for slot");
+                draggedEntityText.paintText(g, worldToScreen, font, Color.RED);
+            } else {
+                draggedEntityText.setText("Can install");
+                draggedEntityText.paintText(g, worldToScreen, font, Color.GREEN);
+            }
         }
     }
 

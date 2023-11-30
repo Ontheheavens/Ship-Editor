@@ -224,13 +224,19 @@ public final class DrawUtilities {
         return ShapeUtilities.translateShape(glyphVector.getVisualBounds(),x, y);
     }
 
+    public static void paintOutlinedText(Graphics2D g, Shape bounds, Shape textShapeTransformed,
+                                         Stroke strokeInput) {
+        Color fillColor = Color.WHITE;
+        DrawUtilities.paintOutlinedText(g,  bounds, textShapeTransformed, strokeInput, fillColor);
+    }
+
     /**
      * @param bounds will be used to draw shaded background of text.
      * @param strokeInput if null, default BasicStroke of 2.5 will be used, with round caps and joins.
      */
-    public static void paintOutlinedText(Graphics2D g, Shape bounds, Shape textShapeTransformed, Stroke strokeInput) {
+    public static void paintOutlinedText(Graphics2D g, Shape bounds, Shape textShapeTransformed,
+                                         Stroke strokeInput, Paint fillColor) {
         Color outlineColor = Color.BLACK;
-        Color fillColor = Color.WHITE;
 
         Stroke stroke = strokeInput;
         if (stroke == null) {

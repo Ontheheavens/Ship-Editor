@@ -207,7 +207,7 @@ public class VariantWeaponsTree extends DynamicWidthTree {
 
     void repopulateTree(ShipVariant variant, ShipLayer layer) {
         ShipPainter shipPainter = layer.getPainter();
-        variant.ensureBuiltInsAreFitted(shipPainter);
+        variant.ensureBuiltInsSync(shipPainter);
 
         final var weaponGroups = variant.getWeaponGroups();
         for (FittedWeaponGroup group : weaponGroups) {

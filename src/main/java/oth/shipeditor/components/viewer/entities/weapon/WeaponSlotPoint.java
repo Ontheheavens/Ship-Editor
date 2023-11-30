@@ -250,11 +250,15 @@ public class WeaponSlotPoint extends AngledPoint implements SlotPoint {
         }
     }
 
+    public boolean canFit(CSVEntry dataEntry) {
+        return WeaponType.isValidForSlot(this, dataEntry);
+    }
+
     @SuppressWarnings("BooleanMethodIsAlwaysInverted")
     public boolean canFit(InstalledFeature feature) {
         CSVEntry dataEntry = feature.getDataEntry();
         if (dataEntry == null) return false;
-        return WeaponType.isValidForSlot(this, dataEntry);
+        return canFit(dataEntry);
     }
 
     public double getOffsetRelativeToAxis() {
