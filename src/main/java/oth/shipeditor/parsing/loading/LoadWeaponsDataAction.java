@@ -59,9 +59,12 @@ public class LoadWeaponsDataAction extends DataLoadingAction {
             }
 
             Map<String, WeaponCSVEntry> weaponsFromPackage = LoadWeaponsDataAction.walkWeaponsFolder(folder);
-            allWeapons.putAll(weaponsFromPackage);
-            List<WeaponCSVEntry> entries = new ArrayList<>(weaponsFromPackage.values());
-            entryListsByPackage.put(folder, entries);
+
+            if (weaponsFromPackage != null) {
+                allWeapons.putAll(weaponsFromPackage);
+                List<WeaponCSVEntry> entries = new ArrayList<>(weaponsFromPackage.values());
+                entryListsByPackage.put(folder, entries);
+            }
         }
 
         return () -> {
@@ -114,6 +117,11 @@ public class LoadWeaponsDataAction extends DataLoadingAction {
         log.trace("Parsing weapon CSV data at: {}..", weaponTablePath);
         List<Map<String, String>> csvData = FileLoading.parseCSVTable(weaponTablePath);
         log.trace("Weapon CSV data at {} retrieved successfully.", weaponTablePath);
+
+        if (csvData == null) {
+            log.info("Weapon folder without CSV table at: {}", folder.toString());
+            return null;
+        }
 
         List<File> weaponFiles = FileLoading.fetchFilesWithExtension(weaponTablePath.getParent(), "wpn");
         Map<String, WeaponSpecFile> mappedWeaponSpecs = new HashMap<>();

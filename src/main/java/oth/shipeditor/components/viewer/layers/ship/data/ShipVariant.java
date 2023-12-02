@@ -31,7 +31,7 @@ import java.util.*;
  * @author Ontheheavens
  * @since 28.08.2023
  */
-@SuppressWarnings({"ClassWithTooManyFields", "ClassWithTooManyMethods", "OverlyCoupledClass"})
+@SuppressWarnings({"ClassWithTooManyFields", "ClassWithTooManyMethods", "OverlyCoupledClass", "OverlyComplexClass"})
 @Getter @Setter
 public class ShipVariant implements Variant {
 
@@ -127,9 +127,14 @@ public class ShipVariant implements Variant {
         fittedWeapons.forEach((slotID, feature) -> {
             if (feature.isContainedInBuiltIns() && !builtIns.containsValue(feature)) {
                 FittedWeaponGroup parentGroup = feature.getParentGroup();
-                parentGroup.removeBySlotID(slotID);
+                ListOrderedMap<String, InstalledFeature> installedWeapons = parentGroup.getWeapons();
+                installedWeapons.remove(slotID);
             }
         });
+
+        if (builtIns == null || builtIns.isEmpty()) {
+            return;
+        }
 
         builtIns.forEach((slotID, feature) -> {
             FittedWeaponGroup groupWithFit = this.getGroupWithExistingMapping(feature.getSlotID());
@@ -285,7 +290,7 @@ public class ShipVariant implements Variant {
 
         var installedModules = file.getModules();
         if (installedModules != null) {
-            fittedModules = new LinkedHashMap<>();
+            fittedModules = new ListOrderedMap<>();
             installedModules.forEach((slotID, variantID) -> {
                 VariantFile variant = GameDataRepository.getVariantByID(variantID);
                 InstalledFeature moduleFeature = GameDataRepository.createModuleFromVariant(slotID, variant);

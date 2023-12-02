@@ -1,5 +1,6 @@
 package oth.shipeditor.representation.ship;
 
+import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -7,6 +8,7 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import lombok.Getter;
 import lombok.Setter;
+import oth.shipeditor.parsing.deserialize.ModulesDeserializer;
 import oth.shipeditor.parsing.deserialize.Point2DArrayDeserializer;
 import oth.shipeditor.parsing.deserialize.Point2DDeserializer;
 import oth.shipeditor.parsing.serialize.BaseNumberSerializer;
@@ -101,6 +103,11 @@ public class HullSpecFile implements ShipSpecFile {
     @JsonProperty(StringConstants.BUILT_IN_WINGS)
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private String[] builtInWings = new String[0];
+
+    @JsonAlias(StringConstants.MODULES)
+    @JsonProperty("builtInModules")
+    @JsonDeserialize(using = ModulesDeserializer.class)
+    private Map<String, String> builtInModules;
 
     @JsonProperty("weaponSlots")
     private WeaponSlot[] weaponSlots = new WeaponSlot[0];

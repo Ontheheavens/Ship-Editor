@@ -81,7 +81,9 @@ class LoadShipDataAction extends DataLoadingAction {
                 continue;
             }
             Pair<Path, List<ShipCSVEntry>> packageShipData = LoadShipDataAction.walkHullFolder(folder.toString(), allSkins);
-            allEntriesByPackage.put(packageShipData.getFirst(), packageShipData.getSecond());
+            if (packageShipData != null) {
+                allEntriesByPackage.put(packageShipData.getFirst(), packageShipData.getSecond());
+            }
         }
 
         return () -> {
@@ -131,6 +133,11 @@ class LoadShipDataAction extends DataLoadingAction {
 
         log.trace("Parsing ship CSV data at: {}..", shipTablePath);
         List<Map<String, String>> csvData = FileLoading.parseCSVTable(shipTablePath);
+
+        if (csvData == null) {
+            log.info("Hull folder without CSV table at: {}", folderPath.toString());
+            return null;
+        }
         log.trace("Ship CSV data at {} retrieved successfully.", shipTablePath);
 
         log.trace("Bulk fetching hull files at: {}...", folderPath);

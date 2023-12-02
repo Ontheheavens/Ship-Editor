@@ -41,7 +41,9 @@ abstract class LoadCSVDataAction<T extends CSVEntry> extends DataLoadingAction {
 
             log.trace("Loading CSV table from package: {}", folder.getKey());
             List<T> entriesList = loadPackage(folder.getKey(), folder.getValue());
-            entriesByPackage.putIfAbsent(folder.getKey(), entriesList);
+            if (entriesList != null) {
+                entriesByPackage.putIfAbsent(folder.getKey(), entriesList);
+            }
         }
         return () -> publishResult(entriesByPackage);
     }
@@ -58,6 +60,11 @@ abstract class LoadCSVDataAction<T extends CSVEntry> extends DataLoadingAction {
         Path dataFilePath = table.toPath();
 
         List<Map<String, String>> csvData = parseTable(dataFilePath);
+
+        if (csvData == null) {
+            log.info("Datafiles folder without CSV table at: {}", folderPath.toString());
+            return null;
+        }
 
         List<T> entryList = new ArrayList<>(csvData.size());
         for (Map<String, String> row : csvData) {

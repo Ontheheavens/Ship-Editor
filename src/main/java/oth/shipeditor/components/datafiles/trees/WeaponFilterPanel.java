@@ -11,6 +11,7 @@ import oth.shipeditor.persistence.SettingsManager;
 import oth.shipeditor.representation.GameDataRepository;
 import oth.shipeditor.representation.weapon.WeaponSize;
 import oth.shipeditor.representation.weapon.WeaponType;
+import oth.shipeditor.utility.Errors;
 import oth.shipeditor.utility.components.ComponentUtilities;
 
 import javax.swing.*;
@@ -178,6 +179,11 @@ public class WeaponFilterPanel extends JPanel {
 
     private static boolean shouldDisplayByType(WeaponCSVEntry entry) {
         WeaponType weaponType = entry.getType();
+        if (weaponType == null) {
+            NullPointerException exception = new NullPointerException("Weapon type not found!");
+            Errors.showFileError("Null weapon type was found in weapon spec: " + entry.getWeaponID(), exception);
+            Errors.printToStream(exception);
+        }
         return TYPE_FILTERS.get(weaponType);
     }
 

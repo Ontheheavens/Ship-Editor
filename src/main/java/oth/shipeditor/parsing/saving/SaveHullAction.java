@@ -122,6 +122,12 @@ final class SaveHullAction {
             result.setBuiltInWeapons(serializableBuiltInWeapons);
         }
 
+        @SuppressWarnings("LocalVariableNamingConvention")
+        Map<String, String> serializableBuiltInModules = SaveHullAction.rebuildBuiltInModules(shipLayer);
+        if (serializableBuiltInModules != null) {
+            result.setBuiltInModules(serializableBuiltInModules);
+        }
+
         String[] serializableBuiltInMods = SaveHullAction.rebuildBuiltInMods(shipHull);
         if (serializableBuiltInMods != null) {
             result.setBuiltInMods(serializableBuiltInMods);
@@ -379,12 +385,23 @@ final class SaveHullAction {
         if (runtimeWeapons == null || runtimeWeapons.isEmpty()) {
             return null;
         } else {
-
             Map<String, String> serializableWeapons = new ListOrderedMap<>();
-
             runtimeWeapons.forEach((slotID, feature) -> serializableWeapons.put(slotID, feature.getID()));
-
             return serializableWeapons;
+        }
+    }
+
+    private static Map<String, String> rebuildBuiltInModules(ShipLayer shipLayer) {
+        ShipPainter shipPainter = shipLayer.getPainter();
+
+        var builtInModules = shipPainter.getBuiltInModules();
+
+        if (builtInModules == null || builtInModules.isEmpty()) {
+            return null;
+        } else {
+            Map<String, String> serializableModules = new ListOrderedMap<>();
+            builtInModules.forEach((slotID, feature) -> serializableModules.put(slotID, feature.getID()));
+            return serializableModules;
         }
     }
 

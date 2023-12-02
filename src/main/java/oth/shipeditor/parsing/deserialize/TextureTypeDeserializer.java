@@ -19,6 +19,11 @@ public class TextureTypeDeserializer extends JsonDeserializer<List<String>> {
         if (p.isExpectedStartArrayToken()) {
             // Deserialize array.
             return p.readValueAs(new TypeReference<List<String>>() {});
+        } else if (p.isExpectedStartObjectToken()) {
+            Object value = p.readValueAs(new TypeReference<>() {
+            });
+            // This is not going to work if there are indeed curly braces used to enclose array.
+            return new ArrayList<>();
         } else {
             // Deserialize single value as a list.
             String singleValue = p.getValueAsString();

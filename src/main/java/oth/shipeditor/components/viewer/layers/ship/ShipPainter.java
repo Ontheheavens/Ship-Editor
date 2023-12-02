@@ -72,6 +72,10 @@ public class ShipPainter extends LayerPainter {
     @Setter
     private Map<String, InstalledFeature> builtInWeapons;
 
+    // TODO: no editing functionality at the moment, only deserialization/serialization supported!
+    @Setter
+    private Map<String, InstalledFeature> builtInModules;
+
     private InstalledFeaturePainter installablesPainter;
 
     /**

@@ -14,6 +14,7 @@ import oth.shipeditor.components.instrument.EditorInstrument;
 import oth.shipeditor.components.viewer.entities.weapon.SlotData;
 import oth.shipeditor.components.viewer.entities.weapon.WeaponSlotPoint;
 import oth.shipeditor.components.viewer.layers.ship.data.ShipSkin;
+import oth.shipeditor.components.viewer.layers.ship.data.ShipVariant;
 import oth.shipeditor.components.viewer.layers.ship.data.Variant;
 import oth.shipeditor.components.viewer.layers.weapon.WeaponPainter;
 import oth.shipeditor.components.viewer.painters.points.ship.WeaponSlotPainter;
@@ -411,13 +412,22 @@ public class FeaturesOverseer {
         var shipPainter = parent.getPainter();
         var activeSkin = shipPainter.getActiveSkin();
         String slotID = selected.getId();
+
+        ShipVariant activeVariant = shipPainter.getActiveVariant();
+
         if (activeSkin != null && !activeSkin.isBase()) {
             var skinBuiltIns = activeSkin.getBuiltInWeapons();
+
+            FeaturesOverseer.removeExistingBeforeInstall(skinBuiltIns, activeVariant, slotID);
+
             FeaturesOverseer.commenceInstall(slotID, forInstall, skinBuiltIns,
                     activeSkin::invalidateBuiltIns);
         } else {
             // Currently this adds a new entry to the built-ins map without any sorting; perhaps refactor later.
             var baseBuiltIns = shipPainter.getBuiltInWeapons();
+
+            FeaturesOverseer.removeExistingBeforeInstall(baseBuiltIns, activeVariant, slotID);
+
             WeaponSpecFile specFile = forInstall.getSpecFile();
             WeaponPainter weaponPainter = forInstall.createPainterFromEntry(null, specFile);
             InstalledFeature feature = InstalledFeature.of(slotID, forInstall.getWeaponID(),
@@ -426,7 +436,23 @@ public class FeaturesOverseer {
 
             FeaturesOverseer.commenceInstall(slotID, feature, baseBuiltIns, null);
         }
+    }
 
+    private static <T extends InstallableEntry> void removeExistingBeforeInstall(Map<String, T> collection,
+                                                                                 ShipVariant activeVariant,
+                                                                                 String slotID) {
+        T existingBuiltIn = collection.get(slotID);
+        if (existingBuiltIn != null) {
+            EditDispatch.postFeatureUninstalled(collection, slotID, existingBuiltIn, null);
+        } else if (activeVariant != null) {
+            FittedWeaponGroup targetGroup = activeVariant.getGroupWithExistingMapping(slotID);
+            Map<String, InstalledFeature> groupWeapons;
+            if (targetGroup != null) {
+                groupWeapons = targetGroup.getWeapons();
+                InstalledFeature existing = groupWeapons.get(slotID);
+                EditDispatch.postFeatureUninstalled(groupWeapons, slotID, existing, null);
+            }
+        }
     }
 
     private static <T extends InstallableEntry> void commenceInstall(String slotID, T entry,

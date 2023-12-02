@@ -1,6 +1,7 @@
 package oth.shipeditor.components.viewer.layers.ship;
 
 import lombok.extern.log4j.Log4j2;
+import org.apache.commons.collections4.map.ListOrderedMap;
 import oth.shipeditor.components.datafiles.entities.WeaponCSVEntry;
 import oth.shipeditor.components.viewer.entities.BoundPoint;
 import oth.shipeditor.components.viewer.entities.bays.LaunchBay;
@@ -15,12 +16,14 @@ import oth.shipeditor.representation.ship.EngineSlot;
 import oth.shipeditor.representation.ship.EngineStyle;
 import oth.shipeditor.representation.GameDataRepository;
 import oth.shipeditor.representation.ship.HullSpecFile;
+import oth.shipeditor.representation.ship.VariantFile;
 import oth.shipeditor.representation.weapon.*;
 import oth.shipeditor.utility.Errors;
 import oth.shipeditor.utility.text.StringConstants;
 
 import java.awt.geom.Point2D;
 import java.util.Arrays;
+import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.stream.Stream;
@@ -231,6 +234,19 @@ public final class ShipPainterInitialization {
             }
 
         });
+
+        var builtInModules = hullSpecFile.getBuiltInModules();
+        if (builtInModules != null) {
+            Map<String, InstalledFeature> runtimeModules = new ListOrderedMap<>();
+            builtInModules.forEach((slotID, variantID) -> {
+                VariantFile variant = GameDataRepository.getVariantByID(variantID);
+                InstalledFeature moduleFeature = GameDataRepository.createModuleFromVariant(slotID, variant);
+                runtimeModules.put(slotID, moduleFeature);
+            });
+
+            shipPainter.setBuiltInModules(runtimeModules);
+        }
+
     }
 
     /**

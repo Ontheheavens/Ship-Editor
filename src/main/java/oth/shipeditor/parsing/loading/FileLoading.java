@@ -261,6 +261,11 @@ public final class FileLoading {
         WeaponSpecFile weaponSpecFile = FileLoading.loadDataFile(file, ".wpn", WeaponSpecFile.class);
         if (weaponSpecFile != null) {
             weaponSpecFile.setWeaponSpecFilePath(file.toPath());
+
+            if (weaponSpecFile.getType() == null) {
+                log.error("Weapon type is NULL in: {}", file.getName());
+            }
+
         }
         return weaponSpecFile;
     }
@@ -374,6 +379,11 @@ public final class FileLoading {
 
         CsvSchema csvSchema = CsvSchema.emptySchema().withHeader();
         File csvFile = path.toFile();
+
+        if (!csvFile.isFile()) {
+            return null;
+        }
+
         List<Map<String, String>> csvData = new ArrayList<>();
         try (MappingIterator<Map<String, String>> iterator = csvMapper.readerFor(Map.class)
                 .with(csvSchema)
