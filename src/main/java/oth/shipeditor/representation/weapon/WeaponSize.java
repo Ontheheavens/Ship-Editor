@@ -27,6 +27,7 @@ public enum WeaponSize implements SizeEnum {
 
     private final int numericSize;
 
+    @SuppressWarnings("NonSerializableFieldInSerializableClass")
     private final FontIcon icon;
 
     WeaponSize(String serialized, String name, FontIcon iconImage, int numeric) {

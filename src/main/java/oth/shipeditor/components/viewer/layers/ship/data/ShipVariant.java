@@ -253,6 +253,15 @@ public class ShipVariant implements Variant {
         return result;
     }
 
+    public List<InstalledFeature> getAllFittedWeaponsList() {
+        List<InstalledFeature> result = new ArrayList<>();
+        for (FittedWeaponGroup weaponGroup : weaponGroups) {
+            var weaponsInGroup = weaponGroup.getWeapons();
+            result.addAll(weaponsInGroup.valueList());
+        }
+        return result;
+    }
+
     public void initialize(VariantFile file) {
         this.setVariantId(file.getVariantId());
         this.setShipHullId(file.getHullId());

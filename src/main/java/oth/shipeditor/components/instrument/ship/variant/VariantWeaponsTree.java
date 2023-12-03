@@ -486,7 +486,7 @@ public class VariantWeaponsTree extends DynamicWidthTree {
             var slot = getSlotPoint(feature);
             CSVEntry dataEntry = feature.getDataEntry();
 
-            lowerRightLabel.setText(dataEntry.toString());
+            lowerRightLabel.setText(feature.getName());
             treeNode.setFirstLineTip(StringValues.WEAPON_ID + feature.getFeatureID());
 
             if (feature.isContainedInBuiltIns()) {

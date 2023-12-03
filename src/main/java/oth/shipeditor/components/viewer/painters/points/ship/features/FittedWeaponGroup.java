@@ -35,6 +35,14 @@ public class FittedWeaponGroup {
         this.weapons = new ListOrderedMap<>();
     }
 
+    public void addFitting(String slotID, InstalledFeature weapon) {
+        weapons.put(slotID, weapon);
+    }
+
+    public boolean containsFitting(InstalledFeature feature) {
+        return weapons.containsValue(feature);
+    }
+
     public String getIndexToDisplay() {
         List<FittedWeaponGroup> weaponGroups = parent.getWeaponGroups();
         return "#" + (weaponGroups.indexOf(this) + 1);

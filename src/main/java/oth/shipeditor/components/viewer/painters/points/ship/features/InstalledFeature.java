@@ -110,6 +110,10 @@ public final class InstalledFeature implements InstallableEntry {
         return false;
     }
 
+    public String getName() {
+        return dataEntry.toString();
+    }
+
     @SuppressWarnings("ChainOfInstanceofChecks")
     int computeRenderOrder(WeaponSlotPoint slotPoint) {
         int result = Integer.MIN_VALUE;
@@ -197,5 +201,6 @@ public final class InstalledFeature implements InstallableEntry {
     public String getID() {
         return featureID;
     }
+
 
 }

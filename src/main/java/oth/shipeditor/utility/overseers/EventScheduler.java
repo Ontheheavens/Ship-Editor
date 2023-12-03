@@ -96,6 +96,10 @@ public class EventScheduler {
         this.instrumentRepaintStatus.put(EditorInstrument.VARIANT_WEAPONS, true);
     }
 
+    public void queueVariantWeaponsRepaint() {
+        this.instrumentRepaintStatus.put(EditorInstrument.VARIANT_WEAPONS, true);
+    }
+
     public void queueModulesRepaint() {
         this.instrumentRepaintStatus.put(EditorInstrument.VARIANT_MODULES, true);
     }

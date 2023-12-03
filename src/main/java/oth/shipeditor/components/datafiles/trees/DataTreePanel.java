@@ -359,9 +359,9 @@ public abstract class DataTreePanel extends JPanel {
                 return 1;
             }
 
-            String name1 = firstNode.toString();
-            String name2 = secondNode.toString();
-            return name1.compareToIgnoreCase(name2);
+            String firstFolderName = firstDataPackage.getFolderName();
+            String secondFolderName = secondDataPackage.getFolderName();
+            return firstFolderName.compareToIgnoreCase(secondFolderName);
         });
 
         rootNode.removeAllChildren();

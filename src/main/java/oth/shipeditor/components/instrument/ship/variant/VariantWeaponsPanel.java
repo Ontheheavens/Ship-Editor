@@ -15,12 +15,14 @@ import oth.shipeditor.components.viewer.layers.ship.ShipPainter;
 import oth.shipeditor.components.viewer.layers.ship.data.ShipHull;
 import oth.shipeditor.components.viewer.layers.ship.data.ShipVariant;
 import oth.shipeditor.utility.components.ComponentUtilities;
+import oth.shipeditor.utility.components.dialog.DialogUtilities;
 import oth.shipeditor.utility.components.rendering.CustomTreeNode;
 import oth.shipeditor.utility.overseers.StaticController;
 import oth.shipeditor.utility.text.StringValues;
 import oth.shipeditor.utility.themes.Themes;
 
 import javax.swing.*;
+import javax.swing.border.EmptyBorder;
 import java.awt.*;
 
 /**
@@ -125,6 +127,15 @@ public class VariantWeaponsPanel extends AbstractVariantPanel {
         if (activeVariant != null && !activeVariant.isEmpty()) {
             weaponsTree.setSlotPainter(painter.getWeaponSlotPainter());
             weaponsTree.repopulateTree(activeVariant, checkedLayer);
+
+            JPanel buttonContainer = new JPanel(new BorderLayout());
+            buttonContainer.setBorder(new EmptyBorder(4, 4, 0, 4));
+
+            JButton rearrangeGroups = new JButton("Rearrange weapons");
+            rearrangeGroups.addActionListener(e -> DialogUtilities.showWeaponGroupsDialog(activeVariant));
+
+            buttonContainer.add(rearrangeGroups, BorderLayout.CENTER);
+            northPanel.add(buttonContainer, BorderLayout.PAGE_START);
 
             northPanel.add(VariantWeaponsPanel.createDataSummary(checkedLayer, activeVariant),
                     BorderLayout.CENTER);
