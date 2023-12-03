@@ -277,9 +277,11 @@ public final class Utility {
     }
 
     private static String findRelativePath(Path baseFolder, Path fullPath) {
-        Path relativePath = baseFolder.relativize(fullPath);
-        if (!relativePath.isAbsolute()) {
-            return relativePath.toString().replace("\\", "/");
+        if (fullPath.startsWith(baseFolder)) {
+            Path relativePath = baseFolder.relativize(fullPath).normalize();
+            if (!relativePath.isAbsolute()) {
+                return relativePath.toString().replace("\\", "/");
+            }
         }
         return null;
     }

@@ -91,8 +91,10 @@ public class ModuleAnchorPanel extends PointLocationWidget {
     @SuppressWarnings("SuspiciousNameCombination")
     @Override
     protected TwinSpinnerPanel createSpinnerPanel(Point2D initialPoint, Consumer<Point2D> pointSetter) {
-        return Spinners.createLocationSpinners(initialPoint, retrieveGetter(), pointSetter,
+        TwinSpinnerPanel spinnerPanel = Spinners.createLocationSpinners(initialPoint, retrieveGetter(), pointSetter,
                 StringValues.Y_COORDINATE, StringValues.X_COORDINATE);
+        spinnerPanel.setToolTipText("Position offset for ship center");
+        return spinnerPanel;
     }
 
     @Override

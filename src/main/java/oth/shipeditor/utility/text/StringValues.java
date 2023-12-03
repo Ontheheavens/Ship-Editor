@@ -92,6 +92,13 @@ public final class StringValues {
     public static final String REMOVED_BY_SKIN = "Removed by skin";
     public static final String TOTAL_SHIP_BAYS = "Total ship bays:";
     public static final String TOTAL_BUILT_IN_WINGS = "Total built-in wings:";
+    public static final String SLOT_NOT_SELECTED = "Slot not selected";
+    public static final String UNFIT_FOR_SLOT = "Unfit for slot";
+    public static final String CAN_INSTALL = "Can install";
+    public static final String INSTALLED_FEATURE = "Installed Feature";
+    public static final String SLOTS_VIEW = "Slots view";
+    public static final String BOUNDS_VIEW = "Bounds view";
+    public static final String POINT_LOCATION_IN_WORLD_COORDINATES = "Point location in world coordinates";
 
     private StringValues() {
     }

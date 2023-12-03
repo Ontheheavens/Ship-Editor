@@ -4,10 +4,7 @@ import oth.shipeditor.components.datafiles.entities.HullmodCSVEntry;
 import oth.shipeditor.components.datafiles.entities.ShipCSVEntry;
 import oth.shipeditor.components.datafiles.entities.WeaponCSVEntry;
 import oth.shipeditor.components.datafiles.entities.WingCSVEntry;
-import oth.shipeditor.components.datafiles.entities.transferable.TransferableHullmod;
-import oth.shipeditor.components.datafiles.entities.transferable.TransferableShip;
-import oth.shipeditor.components.datafiles.entities.transferable.TransferableWeapon;
-import oth.shipeditor.components.datafiles.entities.transferable.TransferableWing;
+import oth.shipeditor.components.datafiles.entities.transferable.*;
 import oth.shipeditor.components.viewer.ViewerDragListener;
 import oth.shipeditor.components.viewer.ViewerDropReceiver;
 
@@ -42,11 +39,11 @@ public class TreeDataGestureListener implements DragGestureListener {
             switch (userObject) {
                 case ShipCSVEntry shipEntry -> {
                     transferable = new TransferableShip(shipEntry, tree);
-                    ViewerDropReceiver.commenceDragToViewer(shipEntry);
+                    ViewerDropReceiver.commenceDragToViewer(shipEntry, TransferableEntry.TRANSFERABLE_SHIP);
                 }
                 case WeaponCSVEntry weaponEntry -> {
                     transferable = new TransferableWeapon(weaponEntry, tree);
-                    ViewerDropReceiver.commenceDragToViewer(weaponEntry);
+                    ViewerDropReceiver.commenceDragToViewer(weaponEntry, TransferableEntry.TRANSFERABLE_WEAPON);
                 }
                 case HullmodCSVEntry hullmodEntry -> transferable = new TransferableHullmod(hullmodEntry, tree);
                 case WingCSVEntry wingEntry -> transferable = new TransferableWing(wingEntry, tree);

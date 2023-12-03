@@ -46,7 +46,10 @@ public abstract class PointLocationWidget extends LayerPropertiesPanel {
     protected abstract boolean isLayerPainterEligible(LayerPainter layerPainter);
 
     protected TwinSpinnerPanel createSpinnerPanel(Point2D initialPoint, Consumer<Point2D> pointSetter) {
-        return Spinners.createLocationSpinners(initialPoint, retrieveGetter(), pointSetter);
+        TwinSpinnerPanel spinnerPanel = Spinners.createLocationSpinners(initialPoint,
+                retrieveGetter(), pointSetter);
+        spinnerPanel.setToolTipText(StringValues.POINT_LOCATION_IN_WORLD_COORDINATES);
+        return spinnerPanel;
     }
 
     @Override
@@ -63,7 +66,6 @@ public abstract class PointLocationWidget extends LayerPropertiesPanel {
         };
 
         twinSpinnerPanel = createSpinnerPanel(initialPoint, pointSetter);
-        twinSpinnerPanel.setToolTipText("Point location in world coordinates");
 
         registerWidgetListeners(twinSpinnerPanel, layer -> {
             twinSpinnerPanel.clear();

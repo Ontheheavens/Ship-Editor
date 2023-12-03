@@ -1,6 +1,9 @@
 package oth.shipeditor.components.instrument.ship.variant;
 
-import oth.shipeditor.components.instrument.ship.RefreshablePanel;
+import oth.shipeditor.communication.EventBus;
+import oth.shipeditor.communication.events.viewer.layers.ActiveLayerUpdated;
+import oth.shipeditor.communication.events.viewer.layers.LayerWasSelected;
+import oth.shipeditor.components.viewer.layers.ViewerLayer;
 
 import javax.swing.*;
 
@@ -8,18 +11,23 @@ import javax.swing.*;
  * @author Ontheheavens
  * @since 27.09.2023
  */
-public abstract class AbstractVariantPanel extends RefreshablePanel {
+public abstract class AbstractVariantPanel extends JPanel {
 
-    @SuppressWarnings("MethodMayBeStatic")
-    protected JPanel createContentPlaceholder() {
-        JPanel container = new JPanel();
-        container.setLayout(new BoxLayout(container, BoxLayout.LINE_AXIS));
+    AbstractVariantPanel() {
+        initLayerListeners();
+    }
 
-        JLabel placeholder = new JLabel("Variant not initialized");
-        container.add(Box.createHorizontalGlue());
-        container.add(placeholder);
-        container.add(Box.createHorizontalGlue());
-        return container;
+    public abstract void refreshPanel(ViewerLayer selected);
+
+    @SuppressWarnings("ChainOfInstanceofChecks")
+    protected void initLayerListeners() {
+        EventBus.subscribe(event -> {
+            if (event instanceof LayerWasSelected(var old, var selected)) {
+                this.refreshPanel(selected);
+            } else if (event instanceof ActiveLayerUpdated(var updated)) {
+                this.refreshPanel(updated);
+            }
+        });
     }
 
 }

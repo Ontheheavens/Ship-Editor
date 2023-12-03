@@ -1,6 +1,7 @@
 package oth.shipeditor.components.datafiles.trees;
 
 import oth.shipeditor.components.datafiles.entities.ShipCSVEntry;
+import oth.shipeditor.components.datafiles.entities.transferable.TransferableEntry;
 import oth.shipeditor.components.datafiles.entities.transferable.TransferableVariant;
 import oth.shipeditor.components.viewer.ViewerDragListener;
 import oth.shipeditor.components.viewer.ViewerDropReceiver;
@@ -34,7 +35,7 @@ class LabelDragListener implements DragGestureListener {
         String baseHullID = GameDataRepository.getBaseHullID(variant.getShipHullId());
         ShipCSVEntry shipEntry = GameDataRepository.retrieveShipCSVEntryByID(baseHullID);
 
-        ViewerDropReceiver.commenceDragToViewer(shipEntry);
+        ViewerDropReceiver.commenceDragToViewer(shipEntry, TransferableEntry.TRANSFERABLE_VARIANT);
         dge.startDrag(DragSource.DefaultMoveDrop, transferable, new ViewerDragListener());
     }
 

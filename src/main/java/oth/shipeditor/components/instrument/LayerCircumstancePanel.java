@@ -129,8 +129,10 @@ public class LayerCircumstancePanel extends LayerPropertiesPanel {
 
         @Override
         protected TwinSpinnerPanel createSpinnerPanel(Point2D initialPoint, Consumer<Point2D> pointSetter) {
-            return Spinners.createLocationSpinners(initialPoint, retrieveGetter(), pointSetter,
+            TwinSpinnerPanel spinnerPanel = Spinners.createLocationSpinners(initialPoint, retrieveGetter(), pointSetter,
                     StringValues.X_COORDINATE, StringValues.Y_COORDINATE, 1.0d);
+            spinnerPanel.setToolTipText(StringValues.POINT_LOCATION_IN_WORLD_COORDINATES);
+            return spinnerPanel;
         }
 
         @Override

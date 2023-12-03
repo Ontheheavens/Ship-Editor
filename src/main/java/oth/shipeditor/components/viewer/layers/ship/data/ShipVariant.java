@@ -64,7 +64,7 @@ public class ShipVariant implements Variant {
 
     private List<WingCSVEntry> wings = new ArrayList<>();
 
-    private Map<String, InstalledFeature> fittedModules;
+    private ListOrderedMap<String, InstalledFeature> fittedModules;
 
     private List<FittedWeaponGroup> weaponGroups = new ArrayList<>();
 
@@ -104,6 +104,15 @@ public class ShipVariant implements Variant {
         }
 
         return result;
+    }
+
+    public List<InstalledFeature> getFittedModulesList() {
+        return fittedModules.valueList();
+    }
+
+    private void setFittedModules(Map<String, InstalledFeature> modules) {
+        this.fittedModules = new ListOrderedMap<>();
+        this.fittedModules.putAll(modules);
     }
 
     public void removeWeaponGroup(FittedWeaponGroup group) {

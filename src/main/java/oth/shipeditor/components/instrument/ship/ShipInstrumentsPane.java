@@ -21,8 +21,8 @@ import oth.shipeditor.components.instrument.ship.skins.SkinDataPanel;
 import oth.shipeditor.components.instrument.ship.skins.SkinSlotOverridesPanel;
 import oth.shipeditor.components.instrument.ship.slots.WeaponSlotsPanel;
 import oth.shipeditor.components.instrument.ship.variant.VariantDataPanel;
-import oth.shipeditor.components.instrument.ship.variant.modules.VariantModulesPanel;
 import oth.shipeditor.components.instrument.ship.variant.VariantWeaponsPanel;
+import oth.shipeditor.components.instrument.ship.variant.modules.VariantModulesPanel;
 
 import javax.swing.*;
 import java.util.HashMap;

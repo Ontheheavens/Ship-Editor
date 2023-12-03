@@ -8,7 +8,6 @@ import oth.shipeditor.communication.events.viewer.points.PointSelectQueued;
 import oth.shipeditor.components.datafiles.entities.CSVEntry;
 import oth.shipeditor.components.datafiles.entities.WeaponCSVEntry;
 import oth.shipeditor.components.viewer.entities.weapon.SlotData;
-import oth.shipeditor.components.viewer.layers.ship.ShipLayer;
 import oth.shipeditor.components.viewer.painters.points.ship.WeaponSlotPainter;
 import oth.shipeditor.components.viewer.painters.points.ship.features.InstalledFeature;
 import oth.shipeditor.utility.components.containers.SortableList;
@@ -37,21 +36,17 @@ public class InstalledFeatureList extends SortableList<InstalledFeature> {
     @Getter @Setter
     private boolean belongsToBaseHullBuiltIns;
 
-    @Getter
-    private final WeaponSlotPainter slotPainter;
-
     private final Consumer<InstalledFeature> uninstaller;
 
     private final Consumer<Map<String, InstalledFeature>> sorter;
 
     protected static final DataFlavor FEATURE_FLAVOR = new DataFlavor(InstalledFeature.class,
-            "Installed Feature");
+            StringValues.INSTALLED_FEATURE);
 
-    public InstalledFeatureList(ListModel<InstalledFeature> dataModel, WeaponSlotPainter painter,
+    public InstalledFeatureList(ListModel<InstalledFeature> dataModel,
                                 Consumer<InstalledFeature> removeAction,
                                 Consumer<Map<String, InstalledFeature>> sortAction) {
         super(dataModel);
-        this.slotPainter = painter;
         this.uninstaller = removeAction;
         this.sorter = sortAction;
         this.addListSelectionListener(e -> {
@@ -69,6 +64,10 @@ public class InstalledFeatureList extends SortableList<InstalledFeature> {
         this.setDragEnabled(true);
     }
 
+    public static WeaponSlotPainter getSlotPainter() {
+        return StaticController.getSelectedSlotPainter();
+    }
+
     protected void handleEntrySelection(InstalledFeature feature) {}
 
     private static ListCellRenderer<InstalledFeature> createCellRenderer() {
@@ -80,16 +79,11 @@ public class InstalledFeatureList extends SortableList<InstalledFeature> {
      * existing slot point in active layer.
      */
     private static void selectSlotPoint(InstalledFeature feature) {
-        var activeLayer = StaticController.getActiveLayer();
-        if (activeLayer instanceof ShipLayer shipLayer) {
-            var shipPainter = shipLayer.getPainter();
-            if (shipPainter == null || shipPainter.isUninitialized()) return;
-            var slotPainter = shipPainter.getWeaponSlotPainter();
+        var slotPainter = InstalledFeatureList.getSlotPainter();
+        if (slotPainter != null) {
             var slotPoint = slotPainter.getSlotByID(feature.getSlotID());
             if (slotPoint == null) return;
             EventBus.publish(new PointSelectQueued(slotPoint));
-            var repainter = StaticController.getScheduler();
-            repainter.queueViewerRepaint();
         }
     }
 

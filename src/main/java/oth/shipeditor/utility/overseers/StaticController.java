@@ -17,6 +17,7 @@ import oth.shipeditor.components.viewer.layers.LayerManager;
 import oth.shipeditor.components.viewer.layers.LayerPainter;
 import oth.shipeditor.components.viewer.layers.ViewerLayer;
 import oth.shipeditor.components.viewer.layers.ship.ShipLayer;
+import oth.shipeditor.components.viewer.layers.ship.ShipPainter;
 import oth.shipeditor.components.viewer.layers.ship.data.ShipHull;
 import oth.shipeditor.components.viewer.layers.ship.data.ShipSkin;
 import oth.shipeditor.components.viewer.layers.ship.data.ShipVariant;
@@ -36,7 +37,7 @@ import java.util.function.Consumer;
  * @author Ontheheavens
  * @since 09.07.2023
  */
-@SuppressWarnings("OverlyCoupledClass")
+@SuppressWarnings({"OverlyCoupledClass", "ClassWithTooManyMethods"})
 public final class StaticController {
 
     @Getter @Setter
@@ -207,6 +208,17 @@ public final class StaticController {
             return shipPainter.getWeaponSlotPainter();
         }
         return null;
+    }
+
+    public static boolean isShipLayerActive() {
+        ViewerLayer viewerLayer = StaticController.getActiveLayer();
+        if (viewerLayer == null) {
+            return false;
+        }
+        if (viewerLayer.getPainter() instanceof ShipPainter shipPainter) {
+            return !shipPainter.isUninitialized();
+        }
+        return false;
     }
 
     /**

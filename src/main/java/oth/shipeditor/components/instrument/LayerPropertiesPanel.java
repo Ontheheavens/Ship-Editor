@@ -117,6 +117,11 @@ public abstract class LayerPropertiesPanel extends JPanel {
 
     protected Pair<JLabel, JComboBox<PainterVisibility>> createVisibilityWidget(Function<LayerPainter,
             AbstractPointPainter> getter) {
+        return createVisibilityWidget(getter, null);
+    }
+
+    protected Pair<JLabel, JComboBox<PainterVisibility>> createVisibilityWidget(Function<LayerPainter,
+            AbstractPointPainter> getter, Consumer<PainterVisibility> additionalAction) {
         BooleanSupplier readinessChecker = this::isWidgetsReadyForInput;
         Consumer<PainterVisibility> visibilitySetter = changedValue -> {
             LayerPainter layerPainter = getCachedLayerPainter();
@@ -128,6 +133,9 @@ public abstract class LayerPropertiesPanel extends JPanel {
                 } else {
                     throw new IllegalStateException("Invalid usage of visibility widget!");
                 }
+            }
+            if (additionalAction != null) {
+                additionalAction.accept(changedValue);
             }
         };
 

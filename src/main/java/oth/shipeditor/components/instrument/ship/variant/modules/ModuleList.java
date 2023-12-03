@@ -4,7 +4,7 @@ import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.components.SelectShipDataEntry;
 import oth.shipeditor.components.datafiles.entities.CSVEntry;
 import oth.shipeditor.components.datafiles.entities.ShipCSVEntry;
-import oth.shipeditor.components.instrument.ship.shared.InstalledFeatureList2;
+import oth.shipeditor.components.instrument.ship.shared.InstalledFeatureList;
 import oth.shipeditor.components.viewer.painters.points.ship.features.InstalledFeature;
 import oth.shipeditor.utility.text.StringValues;
 
@@ -18,13 +18,13 @@ import java.util.function.Consumer;
  * @author Ontheheavens
  * @since 29.11.2023
  */
-public final class ModuleList extends InstalledFeatureList2 {
+public final class ModuleList extends InstalledFeatureList {
 
     private final Runnable refresher;
 
-    public ModuleList(Runnable refreshAction, ListModel<InstalledFeature> dataModel,
-                      Consumer<InstalledFeature> removeAction,
-                      Consumer<Map<String, InstalledFeature>> sortAction) {
+    ModuleList(Runnable refreshAction, ListModel<InstalledFeature> dataModel,
+               Consumer<InstalledFeature> removeAction,
+               Consumer<Map<String, InstalledFeature>> sortAction) {
         super(dataModel, removeAction, sortAction);
         this.refresher = refreshAction;
     }

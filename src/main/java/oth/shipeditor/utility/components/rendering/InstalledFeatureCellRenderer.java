@@ -8,8 +8,8 @@ import oth.shipeditor.components.instrument.ship.shared.InstalledFeatureList;
 import oth.shipeditor.components.viewer.entities.weapon.SlotData;
 import oth.shipeditor.components.viewer.entities.weapon.WeaponSlotPoint;
 import oth.shipeditor.components.viewer.layers.ship.ShipLayer;
-import oth.shipeditor.components.viewer.painters.points.ship.features.InstalledFeature;
 import oth.shipeditor.components.viewer.painters.points.ship.WeaponSlotPainter;
+import oth.shipeditor.components.viewer.painters.points.ship.features.InstalledFeature;
 import oth.shipeditor.representation.SizeEnum;
 import oth.shipeditor.representation.ship.HullSize;
 import oth.shipeditor.representation.weapon.WeaponSize;
@@ -75,8 +75,9 @@ public class InstalledFeatureCellRenderer extends BoxPanelCellRenderer<Installed
 
         String slotID = value.getSlotID();
 
+
         InstalledFeatureList featureList = (InstalledFeatureList) list;
-        var slotPainter = featureList.getSlotPainter();
+        var slotPainter = InstalledFeatureList.getSlotPainter();
         var slotPoint = slotPainter.getSlotByID(slotID);
 
         Color foreground = list.getForeground();

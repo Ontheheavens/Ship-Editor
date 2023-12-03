@@ -2,9 +2,8 @@ package oth.shipeditor.components.instrument.ship.builtins.weapons;
 
 import oth.shipeditor.components.instrument.EditorInstrument;
 import oth.shipeditor.components.viewer.layers.ship.FeaturesOverseer;
-import oth.shipeditor.components.viewer.painters.PainterVisibility;
+import oth.shipeditor.components.viewer.layers.ship.ShipLayer;
 import oth.shipeditor.components.viewer.painters.points.ship.features.InstalledFeature;
-import oth.shipeditor.components.viewer.painters.points.ship.features.InstalledFeaturePainter;
 
 import java.util.Map;
 import java.util.function.Consumer;
@@ -21,37 +20,26 @@ public class DecorativesPanel extends AbstractWeaponsPanel {
     }
 
     @Override
-    protected PainterVisibility getVisibilityOfBuiltInKind(InstalledFeaturePainter painter) {
-        return painter.getDecorativesVisibility();
-    }
-
-    @Override
-    protected void setVisibilityOfBuiltInKind(InstalledFeaturePainter painter, PainterVisibility visibility) {
-        painter.setDecorativesVisibility(visibility);
-    }
-
-    @Override
-    protected String getPlaceholderText() {
-        return "Hull has no built-in decoratives";
-    }
-
-    @Override
-    protected Map<String, InstalledFeature> getBaseHullFilteredEntries(FeaturesOverseer featuresOverseer) {
+    Map<String, InstalledFeature> getBaseHullFilteredEntries(ShipLayer shipLayer) {
+        FeaturesOverseer featuresOverseer = shipLayer.getFeaturesOverseer();
         return featuresOverseer.getDecorativesFromBaseHull();
     }
 
     @Override
-    protected Consumer<Map<String, InstalledFeature>> getBaseHullSortAction(FeaturesOverseer featuresOverseer) {
-        return featuresOverseer::setBaseBuiltInsWithNewDecos;
-    }
-
-    @Override
-    protected Map<String, InstalledFeature> getSkinFilteredEntries(FeaturesOverseer featuresOverseer) {
+    Map<String, InstalledFeature> getSkinFilteredEntries(ShipLayer shipLayer) {
+        FeaturesOverseer featuresOverseer = shipLayer.getFeaturesOverseer();
         return featuresOverseer.getDecorativesFromSkin();
     }
 
     @Override
-    protected Consumer<Map<String, InstalledFeature>> getSkinSortAction(FeaturesOverseer featuresOverseer) {
+    Consumer<Map<String, InstalledFeature>> getBaseHullSortAction(ShipLayer shipLayer) {
+        FeaturesOverseer featuresOverseer = shipLayer.getFeaturesOverseer();
+        return featuresOverseer::setBaseBuiltInsWithNewDecos;
+    }
+
+    @Override
+    Consumer<Map<String, InstalledFeature>> getSkinSortAction(ShipLayer shipLayer) {
+        FeaturesOverseer featuresOverseer = shipLayer.getFeaturesOverseer();
         return featuresOverseer::setSkinBuiltInsWithNewDecos;
     }
 

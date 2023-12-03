@@ -15,6 +15,7 @@ import java.util.Map;
  * @author Ontheheavens
  * @since 19.07.2023
  */
+@SuppressWarnings("ClassWithTooManyMethods")
 @Log4j2
 public final class DrawUtilities {
 
@@ -39,10 +40,10 @@ public final class DrawUtilities {
         g.setColor(originalColor);
     }
 
-    public static void drawDynamicCross(Graphics2D g,
-                                        AffineTransform worldToScreen,
-                                        Point2D positionWorld,
-                                        DrawingParameters miscParameters) {
+    private static void drawDynamicCross(Graphics2D g,
+                                         AffineTransform worldToScreen,
+                                         Point2D positionWorld,
+                                         DrawingParameters miscParameters) {
         double worldSize = miscParameters.getWorldSize();
         double minScreenSize = miscParameters.getScreenSize();
 
@@ -224,8 +225,8 @@ public final class DrawUtilities {
         return ShapeUtilities.translateShape(glyphVector.getVisualBounds(),x, y);
     }
 
-    public static void paintOutlinedText(Graphics2D g, Shape bounds, Shape textShapeTransformed,
-                                         Stroke strokeInput) {
+    private static void paintOutlinedText(Graphics2D g, Shape bounds, Shape textShapeTransformed,
+                                          Stroke strokeInput) {
         Color fillColor = Color.WHITE;
         DrawUtilities.paintOutlinedText(g,  bounds, textShapeTransformed, strokeInput, fillColor);
     }
@@ -319,6 +320,10 @@ public final class DrawUtilities {
     public static void paintInstallableGhost(Graphics2D g, AffineTransform worldToScreen,
                                              double rotation, Point2D targetLocation,
                                              Sprite sprite)  {
+        if (sprite == null) {
+            return;
+        }
+
         AffineTransform oldAT = g.getTransform();
 
         var spriteImage = sprite.getImage();

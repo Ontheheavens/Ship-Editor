@@ -418,15 +418,16 @@ public class FeaturesOverseer {
         if (activeSkin != null && !activeSkin.isBase()) {
             var skinBuiltIns = activeSkin.getBuiltInWeapons();
 
-            FeaturesOverseer.removeExistingBeforeInstall(skinBuiltIns, activeVariant, slotID);
+            Runnable invalidator = activeSkin::invalidateBuiltIns;
+            FeaturesOverseer.removeExistingBeforeInstall(skinBuiltIns, activeVariant, slotID, invalidator);
 
             FeaturesOverseer.commenceInstall(slotID, forInstall, skinBuiltIns,
-                    activeSkin::invalidateBuiltIns);
+                    invalidator);
         } else {
             // Currently this adds a new entry to the built-ins map without any sorting; perhaps refactor later.
             var baseBuiltIns = shipPainter.getBuiltInWeapons();
 
-            FeaturesOverseer.removeExistingBeforeInstall(baseBuiltIns, activeVariant, slotID);
+            FeaturesOverseer.removeExistingBeforeInstall(baseBuiltIns, activeVariant, slotID, null);
 
             WeaponSpecFile specFile = forInstall.getSpecFile();
             WeaponPainter weaponPainter = forInstall.createPainterFromEntry(null, specFile);
@@ -440,10 +441,10 @@ public class FeaturesOverseer {
 
     private static <T extends InstallableEntry> void removeExistingBeforeInstall(Map<String, T> collection,
                                                                                  ShipVariant activeVariant,
-                                                                                 String slotID) {
+                                                                                 String slotID, Runnable builtInInvalidator) {
         T existingBuiltIn = collection.get(slotID);
         if (existingBuiltIn != null) {
-            EditDispatch.postFeatureUninstalled(collection, slotID, existingBuiltIn, null);
+            EditDispatch.postFeatureUninstalled(collection, slotID, existingBuiltIn, builtInInvalidator);
         } else if (activeVariant != null) {
             FittedWeaponGroup targetGroup = activeVariant.getGroupWithExistingMapping(slotID);
             Map<String, InstalledFeature> groupWeapons;

@@ -12,17 +12,16 @@ import oth.shipeditor.components.viewer.entities.weapon.WeaponSlotPoint;
 import oth.shipeditor.components.viewer.layers.LayerPainter;
 import oth.shipeditor.components.viewer.layers.ship.ShipPainter;
 import oth.shipeditor.components.viewer.painters.PainterVisibility;
+import oth.shipeditor.components.viewer.painters.points.AbstractPointPainter;
 import oth.shipeditor.components.viewer.painters.points.ship.WeaponSlotPainter;
 import oth.shipeditor.utility.components.ComponentUtilities;
 import oth.shipeditor.utility.objects.Pair;
+import oth.shipeditor.utility.text.StringValues;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.util.Map;
-import java.util.function.BiConsumer;
-import java.util.function.BooleanSupplier;
-import java.util.function.Consumer;
 import java.util.function.Function;
 
 /**
@@ -171,31 +170,17 @@ public class WeaponSlotListPanel extends AbstractShipPropertiesPanel {
     }
 
     private Pair<JLabel, JComboBox<PainterVisibility>> createSlotsVisibilityWidget() {
-        BooleanSupplier readinessChecker = this::isWidgetsReadyForInput;
-        Consumer<PainterVisibility> visibilitySetter = changedValue -> {
-            LayerPainter cachedLayerPainter = getCachedLayerPainter();
-            if (cachedLayerPainter != null) {
-                WeaponSlotPainter slotPainter = ((ShipPainter) cachedLayerPainter).getWeaponSlotPainter();
-                slotPainter.setVisibilityMode(changedValue);
-                processChange();
+        Function<LayerPainter, AbstractPointPainter> painterGetter = layerPainter -> {
+            if (layerPainter instanceof ShipPainter shipPainter) {
+                return shipPainter.getWeaponSlotPainter();
             }
+            return null;
         };
 
-        BiConsumer<JComponent, Consumer<LayerPainter>> clearerListener = this::registerWidgetClearer;
-        BiConsumer<JComponent, Consumer<LayerPainter>> refresherListener = this::registerWidgetRefresher;
-
-        Function<LayerPainter, PainterVisibility> visibilityGetter = layerPainter -> {
-            WeaponSlotPainter slotPainter = ((ShipPainter) layerPainter).getWeaponSlotPainter();
-            return slotPainter.getVisibilityMode();
-        };
-
-        var opacityWidget = PainterVisibility.createVisibilityWidget(
-                readinessChecker, visibilityGetter, visibilitySetter,
-                clearerListener, refresherListener
-        );
+        var opacityWidget = createVisibilityWidget(painterGetter);
 
         JLabel opacityLabel = opacityWidget.getFirst();
-        opacityLabel.setText("Slots view");
+        opacityLabel.setText(StringValues.SLOTS_VIEW);
 
         return opacityWidget;
     }

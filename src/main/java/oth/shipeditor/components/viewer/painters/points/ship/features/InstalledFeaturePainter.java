@@ -83,6 +83,11 @@ public final class InstalledFeaturePainter {
             builtIns.forEach(toPrepare::putIfAbsent);
         }
 
+        var builtInModules = painter.getBuiltInModules();
+        if (builtInModules != null) {
+            builtInModules.forEach(toPrepare::putIfAbsent);
+        }
+
         ShipVariant shipVariant = painter.getActiveVariant();
         if (shipVariant != null && !shipVariant.isEmpty()) {
             var modules = shipVariant.getFittedModules();

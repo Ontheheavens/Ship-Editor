@@ -3,28 +3,19 @@ package oth.shipeditor.components.viewer;
 import de.javagl.viewer.Painter;
 import lombok.Getter;
 import lombok.Setter;
-import oth.shipeditor.components.datafiles.entities.InstallableEntry;
-import oth.shipeditor.components.datafiles.entities.ShipCSVEntry;
-import oth.shipeditor.components.datafiles.entities.WeaponCSVEntry;
-import oth.shipeditor.components.instrument.EditorInstrument;
-import oth.shipeditor.components.viewer.entities.weapon.WeaponSlotPoint;
 import oth.shipeditor.components.viewer.layers.LayerManager;
 import oth.shipeditor.components.viewer.layers.LayerPainter;
 import oth.shipeditor.components.viewer.layers.ViewerLayer;
-import oth.shipeditor.components.viewer.layers.ship.ShipPainter;
+import oth.shipeditor.components.viewer.painters.DraggedObjectsPainter;
 import oth.shipeditor.components.viewer.painters.GuidesPainters;
 import oth.shipeditor.components.viewer.painters.HotkeyHelpPainter;
-import oth.shipeditor.components.viewer.painters.TextPainter;
 import oth.shipeditor.components.viewer.painters.points.AbstractPointPainter;
 import oth.shipeditor.components.viewer.painters.points.ship.MarkPointsPainter;
-import oth.shipeditor.representation.weapon.WeaponMount;
 import oth.shipeditor.utility.Utility;
-import oth.shipeditor.utility.overseers.StaticController;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.geom.AffineTransform;
-import java.awt.geom.Point2D;
 import java.awt.image.BufferedImage;
 import java.util.List;
 
@@ -52,7 +43,8 @@ public class PaintOrderController implements Painter {
     @Getter @Setter
     private static boolean showBackgroundImage = true;
 
-    private static final TextPainter draggedEntityText = new TextPainter();
+    @SuppressWarnings("TypeMayBeWeakened")
+    private final DraggedObjectsPainter draggedObjectsPainter = new DraggedObjectsPainter();
 
     @Setter
     private boolean repaintQueued;
@@ -108,65 +100,14 @@ public class PaintOrderController implements Painter {
         PaintOrderController.paintIfPresent(g, worldToScreen, w, h, miscPointsPainter);
 
         if (ViewerDropReceiver.isDragToViewerInProgress() && parent.isCursorInViewer()) {
-            PaintOrderController.paintDraggedEntity(g, worldToScreen, w, h);
+            draggedObjectsPainter.paint(g, worldToScreen, w, h);
         }
 
         PaintOrderController.paintIfPresent(g, worldToScreen, w, h, hotkeyPainter);
     }
 
-
-    @SuppressWarnings({"ChainOfInstanceofChecks", "IfStatementWithTooManyBranches"})
-    private static void paintDraggedEntity(Graphics2D g, AffineTransform worldToScreen, double w, double h) {
-        InstallableEntry dragged = ViewerDropReceiver.getDraggedEntry();
-        Point2D currentCursor = StaticController.getCorrectedWithoutRotate();
-
-        double rotation = 0;
-        WeaponMount mount = WeaponMount.TURRET;
-        WeaponSlotPoint selectedWeaponSlot = StaticController.getSelectedAndEligibleSlot();
-        if (selectedWeaponSlot != null) {
-            rotation = selectedWeaponSlot.getAngle();
-            ShipPainter weaponSlotParent = selectedWeaponSlot.getParent();
-            double rotationRadians = weaponSlotParent.getRotationRadians();
-            rotation -= Math.toDegrees(rotationRadians);
-
-            rotation = Utility.flipAngle(rotation);
-            mount = selectedWeaponSlot.getWeaponMount();
-        }
-
-        EditorInstrument editorMode = StaticController.getEditorMode();
-
-        boolean doesFit = false;
-        draggedEntityText.setWorldPosition(currentCursor);
-
-        if (dragged instanceof ShipCSVEntry shipEntry) {
-            double conditionalAngle = rotation;
-            if (editorMode != EditorInstrument.VARIANT_MODULES) {
-                conditionalAngle = 0;
-            }
-            shipEntry.paintEntry(g, worldToScreen, conditionalAngle, currentCursor);
-        } else if (dragged instanceof WeaponCSVEntry weaponEntry) {
-            weaponEntry.paintEntry(g, worldToScreen,
-                    rotation, currentCursor, mount);
-
-            Font font = Utility.getOrbitron(12);
-
-            if (editorMode != EditorInstrument.BUILT_IN_WEAPONS && editorMode != EditorInstrument.VARIANT_WEAPONS) {
-                draggedEntityText.setText("Not in install mode");
-                draggedEntityText.paintText(g, worldToScreen, font, Color.GRAY);
-            } else if (selectedWeaponSlot == null) {
-                draggedEntityText.setText("Slot not selected");
-                draggedEntityText.paintText(g, worldToScreen, font, Color.GRAY);
-            } else if (!selectedWeaponSlot.canFit(weaponEntry)) {
-                draggedEntityText.setText("Unfit for slot");
-                draggedEntityText.paintText(g, worldToScreen, font, Color.RED);
-            } else {
-                draggedEntityText.setText("Can install");
-                draggedEntityText.paintText(g, worldToScreen, font, Color.GREEN);
-            }
-        }
-    }
-
-    private static void paintIfPresent(Graphics2D g, AffineTransform worldToScreen, double w, double h, Painter painter) {
+    private static void paintIfPresent(Graphics2D g, AffineTransform worldToScreen,
+                                       double w, double h, Painter painter) {
         if (painter != null) {
             painter.paint(g, worldToScreen, w, h);
         }

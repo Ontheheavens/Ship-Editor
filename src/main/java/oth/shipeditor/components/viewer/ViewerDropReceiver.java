@@ -1,7 +1,6 @@
 package oth.shipeditor.components.viewer;
 
 import lombok.Getter;
-import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
 import oth.shipeditor.components.datafiles.entities.InstallableEntry;
 import oth.shipeditor.components.datafiles.entities.ShipCSVEntry;
@@ -41,8 +40,11 @@ public class ViewerDropReceiver extends DropTarget {
 
     private final PrimaryViewer viewer;
 
-    @Getter @Setter
+    @Getter
     private static InstallableEntry draggedEntry;
+
+    @Getter
+    private static DataFlavor currentFlavor;
 
     @Getter
     private static boolean dragToViewerInProgress;
@@ -73,9 +75,10 @@ public class ViewerDropReceiver extends DropTarget {
     }
 
     @SuppressWarnings("SynchronizedMethod")
-    public static synchronized void commenceDragToViewer(InstallableEntry dragged) {
+    public static synchronized void commenceDragToViewer(InstallableEntry dragged, DataFlavor flavor) {
         dragToViewerInProgress = true;
         draggedEntry = dragged;
+        currentFlavor = flavor;
 
         PrimaryViewer viewer = StaticController.getViewer();
         viewer.setCursorInViewer(false);
@@ -85,6 +88,7 @@ public class ViewerDropReceiver extends DropTarget {
     public static synchronized void finishDragToViewer() {
         dragToViewerInProgress = false;
         draggedEntry = null;
+        currentFlavor = null;
     }
 
     @SuppressWarnings({"unchecked", "AccessToStaticFieldLockedOnInstance", "IfStatementWithTooManyBranches"})
