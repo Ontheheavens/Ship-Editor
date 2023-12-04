@@ -5,8 +5,6 @@ Forum thread: https://fractalsoftworks.com/forum/index.php?topic=28239.0
 
 [![CodeFactor Grade](https://img.shields.io/codefactor/grade/github/ontheheavens/ship-editor?style=flat-square&label=Code%20Quality)](https://www.codefactor.io/repository/github/ontheheavens/ship-editor) ![GitHub code size in bytes](https://img.shields.io/github/languages/code-size/ontheheavens/ship-editor?style=flat-square&label=Code%20Size)
 
-
-
 ## Stack:
 
  - Java 19
@@ -21,6 +19,32 @@ Forum thread: https://fractalsoftworks.com/forum/index.php?topic=28239.0
  - JavaGL: https://github.com/javagl/Viewer
  - Ikonli: https://github.com/kordamp/ikonli
  - Flatlaf: https://github.com/JFormDesigner/FlatLaf
+
+## Release Note 04.12.23:
+
+![](showcase/history/Sample%208.png)
+
+### Releases:
+
+- First release (MVP): 29.10.23 - v.0.7
+- Four subsequent updates: 0.7.1 to 0.7.4
+
+### Implemented:
+
+- Print ship layers option.
+- Rolling file logging.
+- Game package system: can now pin and disable packages, persists between sessions.
+- Checkerboard background image, Photoshop-style.
+- Themes system and dark mode.
+- Layer loading via ship entry drag-and-drop.
+- Automatic skin and variant selection when dragging variant to viewer.
+- Module install via drag-and-drop.
+- Window dimensions persist between sessions.
+- Data walker supports symlinks.
+- Smooth zooming.
+- Drag-and-drop for all major entries: ships, variants, modules, weapons, hullmods, wings.
+- Option to flip ship points coordinates and angles.
+- Dedicated weapon groups rearranging widget.
 
 ## Development Note 17.10.23:
 
