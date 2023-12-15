@@ -87,7 +87,12 @@ public class DraggedObjectsPainter implements Painter {
     private void paintShipEntryHints(Graphics2D g, AffineTransform worldToScreen, CSVEntry shipEntry,
                                      boolean isModuleMode, WeaponSlotPoint selectedWeaponSlot, Font font) {
         if (isModuleMode && StaticController.isShipLayerActive()) {
-            paintSlotStatus(g, worldToScreen, selectedWeaponSlot, font, shipEntry);
+            if (StaticController.isShipVariantActive()) {
+                paintSlotStatus(g, worldToScreen, selectedWeaponSlot, font, shipEntry);
+            } else {
+                draggedEntityText.setText("No active variant");
+                draggedEntityText.paintText(g, worldToScreen, font, Color.RED);
+            }
         } else {
             DataFlavor draggedFlavor = ViewerDropReceiver.getCurrentFlavor();
             if (draggedFlavor != null) {

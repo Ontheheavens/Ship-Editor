@@ -221,6 +221,22 @@ public final class StaticController {
         return false;
     }
 
+    public static boolean isShipVariantActive() {
+        ViewerLayer viewerLayer = StaticController.getActiveLayer();
+        if (viewerLayer == null) {
+            return false;
+        }
+        if (viewerLayer.getPainter() instanceof ShipPainter shipPainter) {
+            boolean uninitialized = shipPainter.isUninitialized();
+            if (uninitialized) {
+                return false;
+            }
+            var variant = shipPainter.getActiveVariant();
+            return variant != null && !variant.isEmpty();
+        }
+        return false;
+    }
+
     /**
      * @return selected slot from a currently active layer, with instrument mode eligibility checks.
      */
