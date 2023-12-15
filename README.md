@@ -20,10 +20,6 @@ Forum thread: https://fractalsoftworks.com/forum/index.php?topic=28239.0
  - Ikonli: https://github.com/kordamp/ikonli
  - Flatlaf: https://github.com/JFormDesigner/FlatLaf
 
-## Class structure:
-
-![](showcase/Class%20Structure.jpg)
-
 ## Release Note 04.12.23:
 
 ![](showcase/history/Sample%208.png)
