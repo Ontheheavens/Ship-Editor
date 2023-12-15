@@ -19,10 +19,10 @@ import java.io.File;
 @Log4j2
 public class OpenHullAction extends AbstractAction {
 
-    public static void openHullAndDo(ActionListener action) {
+    static void openHullAndDo(ActionListener action) {
         JFileChooser shipDataChooser = FileUtilities.getHullFileChooser();
         int returnVal = shipDataChooser.showOpenDialog(null);
-        FileUtilities.lastDirectory = shipDataChooser.getCurrentDirectory();
+        FileUtilities.setLastShipDirectory(shipDataChooser.getCurrentDirectory());
         if (returnVal == JFileChooser.APPROVE_OPTION) {
             ActionEvent event = new ActionEvent(shipDataChooser, ActionEvent.ACTION_PERFORMED, null);
             action.actionPerformed(event);

@@ -10,8 +10,10 @@ import oth.shipeditor.components.viewer.painters.points.ship.features.FireMode;
 import oth.shipeditor.components.viewer.painters.points.ship.features.FittedWeaponGroup;
 import oth.shipeditor.components.viewer.painters.points.ship.features.InstalledFeature;
 import oth.shipeditor.parsing.FileUtilities;
+import oth.shipeditor.representation.GameDataRepository;
 import oth.shipeditor.representation.ship.SpecWeaponGroup;
 import oth.shipeditor.representation.ship.VariantFile;
+import oth.shipeditor.utility.Errors;
 import oth.shipeditor.utility.text.StringConstants;
 import oth.shipeditor.utility.text.StringValues;
 
@@ -19,6 +21,7 @@ import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -35,11 +38,27 @@ final class SaveVariantAction {
     private SaveVariantAction() {
     }
 
-    @SuppressWarnings("CallToPrintStackTrace")
     static void saveVariant(ShipVariant variant) {
         JFileChooser fileChooser = SaveVariantAction.getSaveVariantFileChooser();
+
+        File currentDirectory = fileChooser.getCurrentDirectory();
+        File initial = new File(currentDirectory, variant.getVariantId());
+        fileChooser.setSelectedFile(initial);
+
+        VariantFile existing = GameDataRepository.getVariantByID(variant.getVariantId());
+        if (existing != null) {
+            Path specFilePath = existing.getVariantFilePath();
+            File originalPath = specFilePath.toFile();
+            if (originalPath.isFile()) {
+                fileChooser.setSelectedFile(originalPath);
+            }
+        }
+
         int returnVal = fileChooser.showSaveDialog(null);
-        FileUtilities.setLastDirectory(fileChooser.getCurrentDirectory());
+
+        File lastVariantDirectory = fileChooser.getCurrentDirectory();
+        FileUtilities.setLastVariantDirectory(lastVariantDirectory);
+        FileUtilities.setLastGeneralDirectory(lastVariantDirectory);
 
         if (returnVal == JFileChooser.APPROVE_OPTION) {
             String extension = ((FileNameExtensionFilter) fileChooser.getFileFilter()).getExtensions()[0];
@@ -57,7 +76,7 @@ final class SaveVariantAction {
                         "Variant file saving failed, exception thrown at: " + result,
                         StringValues.FILE_SAVING_ERROR,
                         JOptionPane.ERROR_MESSAGE);
-                e.printStackTrace();
+                Errors.printToStream(e);
             }
         }
     }
@@ -126,7 +145,15 @@ final class SaveVariantAction {
     private static JFileChooser getSaveVariantFileChooser() {
         FileNameExtensionFilter variantFileFilter = new FileNameExtensionFilter(
                 "JSON variant files", StringConstants.VARIANT);
-        return FileUtilities.getFileChooser(variantFileFilter);
+
+        JFileChooser fileChooser = FileUtilities.getFileChooser(variantFileFilter);
+
+        File directory = FileUtilities.getLastVariantDirectory();
+        if (directory != null) {
+            fileChooser.setCurrentDirectory(directory);
+        }
+
+        return fileChooser;
     }
 
 }

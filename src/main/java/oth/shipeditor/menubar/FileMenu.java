@@ -71,9 +71,15 @@ class FileMenu extends JMenu {
         jsonCorrector.setToolTipText("Fixes semantically incorrect JSON, then saves it to the same location");
         jsonCorrector.addActionListener(e -> {
             JFileChooser fileChooser = FileUtilities.getFileChooser();
+
+            File directory = FileUtilities.getLastGeneralDirectory();
+            if (directory != null) {
+                fileChooser.setCurrentDirectory(directory);
+            }
+
             int returnVal = fileChooser.showOpenDialog(null);
             File currentDirectory = fileChooser.getCurrentDirectory();
-            FileUtilities.lastDirectory = currentDirectory;
+            FileUtilities.setLastGeneralDirectory(currentDirectory);
             if (returnVal == JFileChooser.APPROVE_OPTION) {
                 File file = fileChooser.getSelectedFile();
 

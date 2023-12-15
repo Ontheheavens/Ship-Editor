@@ -18,10 +18,8 @@ import oth.shipeditor.components.viewer.layers.ship.ShipPainter;
 import oth.shipeditor.components.viewer.layers.ship.data.ShipHull;
 import oth.shipeditor.components.viewer.painters.points.ship.*;
 import oth.shipeditor.parsing.FileUtilities;
-import oth.shipeditor.representation.ship.EngineSlot;
-import oth.shipeditor.representation.ship.HullSize;
-import oth.shipeditor.representation.ship.HullSpecFile;
-import oth.shipeditor.representation.ship.HullStyle;
+import oth.shipeditor.representation.GameDataRepository;
+import oth.shipeditor.representation.ship.*;
 import oth.shipeditor.representation.weapon.WeaponMount;
 import oth.shipeditor.representation.weapon.WeaponSize;
 import oth.shipeditor.representation.weapon.WeaponSlot;
@@ -36,6 +34,7 @@ import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.geom.Point2D;
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -54,9 +53,26 @@ final class SaveHullAction {
 
     @SuppressWarnings("CallToPrintStackTrace")
     static void saveHullFromLayer(ShipLayer shipLayer) {
-        JFileChooser fileChooser = SaveHullAction.getSaveHullFileChooser();
+        JFileChooser fileChooser =  FileUtilities.getHullFileChooser();
+
+        File currentDirectory = fileChooser.getCurrentDirectory();
+        ShipHull shipHull = shipLayer.getHull();
+        File initial = new File(currentDirectory, shipHull.getHullID());
+        fileChooser.setSelectedFile(initial);
+
+        ShipSpecFile existing = GameDataRepository.retrieveSpecByID(shipHull.getHullID());
+        if (existing instanceof HullSpecFile hullSpecFile) {
+            Path specFilePath = hullSpecFile.getFilePath();
+            File originalPath = specFilePath.toFile();
+            if (originalPath.isFile()) {
+                fileChooser.setSelectedFile(originalPath);
+            }
+        }
+
         int returnVal = fileChooser.showSaveDialog(null);
-        FileUtilities.setLastDirectory(fileChooser.getCurrentDirectory());
+        File lastShipDirectory = fileChooser.getCurrentDirectory();
+        FileUtilities.setLastShipDirectory(lastShipDirectory);
+        FileUtilities.setLastGeneralDirectory(lastShipDirectory);
 
         if (returnVal == JFileChooser.APPROVE_OPTION) {
             String extension = ((FileNameExtensionFilter) fileChooser.getFileFilter()).getExtensions()[0];
@@ -419,12 +435,6 @@ final class SaveHullAction {
 
             return serializableMods;
         }
-    }
-
-    private static JFileChooser getSaveHullFileChooser() {
-        FileNameExtensionFilter shipFileFilter = new FileNameExtensionFilter(
-                StringValues.JSON_SHIP_FILES, "ship");
-        return FileUtilities.getFileChooser(shipFileFilter);
     }
 
 }

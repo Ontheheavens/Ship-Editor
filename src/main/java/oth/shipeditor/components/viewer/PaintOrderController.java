@@ -148,26 +148,23 @@ public class PaintOrderController implements Painter {
         int cellSize = 10;
         BufferedImage image = new BufferedImage(imageWidth, imageHeight, BufferedImage.TYPE_INT_ARGB);
         Graphics2D g2d = image.createGraphics();
-
         int rows = imageWidth / cellSize;
         int cols = imageHeight / cellSize;
-
         for (int row = 0; row < rows; row++) {
-            for (int col = 0; col < cols; col++) {
-                if ((row + col) % 2 == 0) {
-                    g2d.setColor(Color.WHITE);
-                } else {
-                    g2d.setColor(Color.LIGHT_GRAY);
-                }
-
-                int x = col * cellSize;
-                int y = row * cellSize;
-
-                g2d.fillRect(x, y, cellSize, cellSize);
-            }
+            PaintOrderController.drawRow(g2d, row, cols, cellSize);
         }
         g2d.dispose();
         return image;
+    }
+
+    private static void drawRow(Graphics2D g2d, int row, int cols, int cellSize) {
+        for (int col = 0; col < cols; col++) {
+            Color color = (row + col) % 2 == 0 ? Color.WHITE : Color.LIGHT_GRAY;
+            int x = col * cellSize;
+            int y = row * cellSize;
+            g2d.setColor(color);
+            g2d.fillRect(x, y, cellSize, cellSize);
+        }
     }
 
 }

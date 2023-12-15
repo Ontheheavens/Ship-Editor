@@ -45,9 +45,17 @@ public final class FileUtilities {
 
     public static final String OPEN_COMMAND_CANCELLED_BY_USER = "Open command cancelled by user.";
 
-    @SuppressWarnings("StaticNonFinalField")
     @Getter @Setter
-    public static File lastDirectory;
+    private static File lastSpriteDirectory;
+
+    @Getter @Setter
+    private static File lastShipDirectory;
+
+    @Getter @Setter
+    private static File lastVariantDirectory;
+
+    @Getter @Setter
+    private static File lastGeneralDirectory;
 
     static {
         mapper = new ObjectMapper();
@@ -154,7 +162,7 @@ public final class FileUtilities {
         Path coreFolderPath = SettingsManager.getCoreFolderPath();
         JFileChooser fileChooser = new JFileChooser(coreFolderPath.toString());
 
-        File directory = FileUtilities.getLastDirectory();
+        File directory = FileUtilities.getLastGeneralDirectory();
         if (directory != null) {
             fileChooser.setCurrentDirectory(directory);
         }
@@ -167,13 +175,29 @@ public final class FileUtilities {
     public static JFileChooser getImageChooser() {
         FileNameExtensionFilter pngFilter = new FileNameExtensionFilter(
                 "PNG Image", "png");
-        return FileUtilities.getFileChooser(pngFilter);
+
+        JFileChooser fileChooser = FileUtilities.getFileChooser(pngFilter);
+
+        File directory = FileUtilities.getLastSpriteDirectory();
+        if (directory != null) {
+            fileChooser.setCurrentDirectory(directory);
+        }
+
+        return fileChooser;
     }
 
     public static JFileChooser getHullFileChooser() {
-        FileNameExtensionFilter pngFilter = new FileNameExtensionFilter(
+        FileNameExtensionFilter shipFilter = new FileNameExtensionFilter(
                 StringValues.JSON_SHIP_FILES, "ship");
-        return FileUtilities.getFileChooser(pngFilter);
+
+        JFileChooser fileChooser = FileUtilities.getFileChooser(shipFilter);
+
+        File directory = FileUtilities.getLastShipDirectory();
+        if (directory != null) {
+            fileChooser.setCurrentDirectory(directory);
+        }
+
+        return fileChooser;
     }
 
     public static File ensureFileExtension(JFileChooser fileChooser, String extension) {

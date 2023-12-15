@@ -382,6 +382,11 @@ public final class ViewerLayersPanel extends SortableTabbedPane {
             printLayer.addActionListener(event -> {
                 var chooser = FileUtilities.getImageChooser();
 
+                File directory = FileUtilities.getLastGeneralDirectory();
+                if (directory != null) {
+                    chooser.setCurrentDirectory(directory);
+                }
+
                 SpinnerNumberModel widthModel = new SpinnerNumberModel(1000.0d,
                         100.0d, 4000.0d, 1.0d);
                 SpinnerNumberModel heightModel = new SpinnerNumberModel(1000.0d,
@@ -403,7 +408,7 @@ public final class ViewerLayersPanel extends SortableTabbedPane {
                 chooser.setDialogTitle("Print layer to image file");
 
                 int returnVal = chooser.showSaveDialog(null);
-                FileUtilities.setLastDirectory(chooser.getCurrentDirectory());
+                FileUtilities.setLastGeneralDirectory(chooser.getCurrentDirectory());
 
                 if (returnVal == JFileChooser.APPROVE_OPTION) {
                     String extension = ((FileNameExtensionFilter) chooser.getFileFilter()).getExtensions()[0];

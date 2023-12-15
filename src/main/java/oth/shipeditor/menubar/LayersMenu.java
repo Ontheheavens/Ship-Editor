@@ -91,10 +91,16 @@ public class LayersMenu extends JMenu {
 
         printViewer.addActionListener(event -> {
             var chooser = FileUtilities.getImageChooser();
+
+            File directory = FileUtilities.getLastGeneralDirectory();
+            if (directory != null) {
+                chooser.setCurrentDirectory(directory);
+            }
+
             chooser.setDialogTitle("Print viewer content to image file");
 
             int returnVal = chooser.showSaveDialog(null);
-            FileUtilities.setLastDirectory(chooser.getCurrentDirectory());
+            FileUtilities.setLastGeneralDirectory(chooser.getCurrentDirectory());
 
             if (returnVal == JFileChooser.APPROVE_OPTION) {
                 String extension = ((FileNameExtensionFilter) chooser.getFileFilter()).getExtensions()[0];

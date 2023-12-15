@@ -23,7 +23,7 @@ public class OpenSpriteAction extends AbstractAction {
         JFileChooser spriteChooser = FileUtilities.getImageChooser();
 
         int returnVal = spriteChooser.showOpenDialog(null);
-        FileUtilities.lastDirectory = spriteChooser.getCurrentDirectory();
+        FileUtilities.setLastSpriteDirectory(spriteChooser.getCurrentDirectory());
         if (returnVal == JFileChooser.APPROVE_OPTION) {
             File file = spriteChooser.getSelectedFile();
 
