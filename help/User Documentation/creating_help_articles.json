@@ -1,0 +1,52 @@
+{
+    "name": "Creating Help Articles",
+    "articleParts": [
+        {
+            "type": "TITLE",
+            "title": "Introduction to the Help Articles"
+        },
+        {
+            "type": "TEXT_BLOCK",
+            "text": "The help article framework is a way for users to enhance the editor application with relevant information and guidance without any changes to source code."
+        },
+        {
+            "type": "SEPARATOR",
+            "title": "Getting Started"
+        },
+        {
+            "type": "TEXT_BLOCK",
+            "text": "To get started, follow these steps:"
+        },
+        {
+            "type": "TEXT_BLOCK",
+            "text": "1. Structure Your Articles: Organize your help articles into sections. Each section is represented by a folder in the 'help' directory."
+        },
+        {
+            "type": "TEXT_BLOCK",
+            "text": "2. Create JSON Files: Inside each section folder, create JSON files for each article. Use the provided JSON structure to define the content of your articles."
+        },
+        {
+            "type": "TEXT_BLOCK",
+            "text": "3. Specify Article Parts: Use the 'articleParts' array to define the parts of your article. Each part has a 'type' field indicating its type (e.g., TITLE, SEPARATOR, TEXT_BLOCK, CODE_BLOCK).",
+            "pad": 4
+        },
+        {
+            "type": "SEPARATOR",
+            "title": "Example Article"
+        },
+        {
+            "type": "TEXT_BLOCK",
+            "text": "Here's an example article to illustrate the framework:",
+            "pad": 6
+        },
+        {
+            "type": "CODE_BLOCK",
+            "code": "{\n  \"name\": \"My Example Article\",\n  \"articleParts\": [\n    {\n      \"type\": \"TITLE\",\n      \"title\": \"Introduction\"\n    },\n    {\n      \"type\": \"TEXT_BLOCK\",\n      \"text\": \"This is the introduction to my article.\"\n    },\n    {\n      \"type\": \"SEPARATOR\",\n      \"title\": \"Section One\"\n    },\n    {\n      \"type\": \"TEXT_BLOCK\",\n      \"text\": \"Content for section one.\",\n      \"pad\": 8\n    },\n    {\n      \"type\": \"TEXT_BLOCK\",\n      \"text\": \"More content for section one.\"\n    }\n  ]\n}"
+        },
+        {
+            "type": "TEXT_BLOCK",
+            "text": "Should you happen to write an article that you think would be beneficial to the users at large, feel free to share said article in the application's forum thread.",
+            "pad": 12
+        }
+    ]
+}

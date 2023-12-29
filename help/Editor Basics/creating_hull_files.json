@@ -1,0 +1,47 @@
+{
+    "name": "Create Hull File",
+    "articleParts": [
+        {
+            "type": "TITLE",
+            "title": "Hull file editing: short summary"
+        },
+        {
+            "type": "TEXT_BLOCK",
+            "text": "Ship entities in Starsector are comprised of several parts: sprite, hull file, and CSV data row. On top of that, skin file can act as a mutator of hull file (in other words, skin file applies changes to base hull to result in a modified hull file that is considered to be a skin), and variant file is a layer on top of the hull, containing all the info about installed weapons and hullmods."
+        },
+        {
+            "type": "SEPARATOR",
+            "title": "Creating Hull"
+        },
+        {
+            "type": "TEXT_BLOCK",
+            "text": "To get started with hull creation and saving, follow these steps:"
+        },
+        {
+            "type": "TEXT_BLOCK",
+            "text": "1. Create new ship layer. Then open a sprite file to this layer. Note that the opened sprite loads to the layer that is currently selected - something to be aware of if you have several layers in work."
+        },
+        {
+            "type": "TEXT_BLOCK",
+            "text": "2. Once you have a layer with a graphical data - which is your sprite file - you can either open existing hull file onto it or create a brand new hull data. Navigate to the Layer menu and choose 'Create new ship data'."
+        },
+        {
+            "type": "TEXT_BLOCK",
+            "text": "3. Now you can descend through editor tabs and populate the hull with needed data. Start with collision and ship center, then shield center and radius, then bounds, and so on."
+        },
+        {
+            "type": "SEPARATOR",
+            "title": "Saving"
+        },
+        {
+            "type": "TEXT_BLOCK",
+            "text": "Once you have finished editing hull data, right-click the layer tab and choose 'Save hull data'."
+        },
+
+        {
+            "type": "TEXT_BLOCK",
+            "text": "Note that the resulting .ship file still requires CSV data to be available - consider using specialized CSV editor for that.",
+            "pad": 12
+        }
+    ]
+}
