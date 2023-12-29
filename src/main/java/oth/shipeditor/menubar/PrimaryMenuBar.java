@@ -49,7 +49,8 @@ public final class PrimaryMenuBar extends JMenuBar {
 
         JPanel aboutInfoPanel = new JPanel();
         aboutInfoPanel.setLayout(new BoxLayout(aboutInfoPanel, BoxLayout.PAGE_AXIS));
-        aboutInfoPanel.add(new JLabel("Made by: Ontheheavens & Xenoargh"));
+        aboutInfoPanel.add(new JLabel("Authors: Ontheheavens & Xenoargh"));
+        aboutInfoPanel.add(new JLabel("Contributors: Nathan67003"));
         aboutInfoPanel.add(new JLabel("Started: March 2023"));
         String projectVersion = Main.VERSION;
         aboutInfoPanel.add(new JLabel("Current version: " + projectVersion));
