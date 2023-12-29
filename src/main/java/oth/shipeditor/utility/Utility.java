@@ -23,7 +23,6 @@ import java.awt.geom.Point2D;
 import java.awt.image.BufferedImage;
 import java.awt.image.RenderedImage;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.nio.file.Path;
@@ -32,7 +31,6 @@ import java.text.DecimalFormat;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
-import java.util.function.Consumer;
 import java.util.function.Supplier;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -223,26 +221,19 @@ public final class Utility {
         return transformed - 90;
     }
 
-    @SuppressWarnings("CallToPrintStackTrace")
-    public static void setSpriteFromPath(String pathInPackage, Consumer<Sprite> setter, Path packageFolderPath) {
+    public static Sprite loadSpriteFromPath(String pathInPackage, Path packageFolderPath) {
         if (pathInPackage != null && !pathInPackage.isEmpty()) {
             Path filePath = Path.of(pathInPackage);
             File spriteFile = FileLoading.fetchDataFile(filePath, packageFolderPath);
 
             if (spriteFile == null) {
-                String report = "Image file not found: " + filePath;
-                JOptionPane.showMessageDialog(null,
-                        report,
-                        StringValues.FILE_LOADING_ERROR,
-                        JOptionPane.ERROR_MESSAGE);
-                FileNotFoundException notFoundException = new FileNotFoundException(report);
-                notFoundException.printStackTrace();
-                return;
+                Errors.showSpriteNotFound(pathInPackage);
+                return null;
             }
-
-            Sprite newSprite = FileLoading.loadSprite(spriteFile);
-            setter.accept(newSprite);
+            return FileLoading.loadSprite(spriteFile);
         }
+        Errors.showSpriteNotFound(pathInPackage);
+        return null;
     }
 
     public static String translateIntegerValue(Supplier<Integer> getter) {

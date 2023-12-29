@@ -137,6 +137,15 @@ public final class Spinners {
         return Spinners.createWheelable(model, IncrementType.CHUNK);
     }
 
+    public static JSpinner createUnaryIntegerWheelable(SpinnerNumberModel model) {
+        JSpinner spinner = Spinners.createWheelable(model, IncrementType.UNARY);
+        JSpinner.DefaultEditor spinnerEditor = (JSpinner.DefaultEditor) spinner.getEditor();
+        JFormattedTextField textField = spinnerEditor.getTextField();
+        textField.setEditable(true);
+        textField.setColumns(1);
+        return spinner;
+    }
+
     /**
      * @param model expected to operate exclusively with Double numbers!
      */

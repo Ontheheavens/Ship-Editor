@@ -54,6 +54,8 @@ public class ShipCSVEntry implements CSVEntry, InstallableEntry {
 
     private Sprite entrySprite;
 
+    private List<ShipTypeHints> cachedBaseHullHints;
+
     public ShipCSVEntry(Map<String, String> row, Map.Entry<HullSpecFile, Map<String, SkinSpecFile>> hullWithSkins,
                         Path folder, String fileName) {
         this.packageFolderPath = folder;
@@ -70,6 +72,9 @@ public class ShipCSVEntry implements CSVEntry, InstallableEntry {
 
     @SuppressWarnings("WeakerAccess")
     public List<ShipTypeHints> getBaseHullHints() {
+        if (cachedBaseHullHints != null) {
+            return cachedBaseHullHints;
+        }
         List<ShipTypeHints> result = new ArrayList<>();
         String cellData = rowData.get(StringConstants.HINTS);
         if (cellData != null && !cellData.isEmpty()) {
@@ -79,6 +84,7 @@ public class ShipCSVEntry implements CSVEntry, InstallableEntry {
                 result.add(typeHint);
             });
         }
+        cachedBaseHullHints = result;
         return result;
     }
 

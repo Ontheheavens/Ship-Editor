@@ -148,4 +148,6 @@ public interface StringConstants {
 
     String TREE_PAINT_LINES = "Tree.paintLines";
 
+    char EXTENSION_DOT = '.';
+
 }

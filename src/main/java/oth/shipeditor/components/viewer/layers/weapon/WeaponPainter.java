@@ -44,14 +44,14 @@ public class WeaponPainter extends LayerPainter {
     @Getter @Setter
     private WeaponRenderOrdering renderOrderType;
 
-    @SuppressWarnings("unused")
-    private boolean drawGlow;
-
     /**
      * Stamp-pattern: single instance is mutated and painted for each offset point.
      */
     @Getter @Setter
     private ProjectilePainter projectilePainter;
+
+    @Getter
+    private final WeaponAnimator animator;
 
     private final AffineTransform cachedTransform = new AffineTransform();
 
@@ -59,6 +59,7 @@ public class WeaponPainter extends LayerPainter {
     public WeaponPainter(ViewerLayer layer) {
         super(layer);
         this.weaponSprites = new WeaponSprites();
+        this.animator = new WeaponAnimator();
 
         this.turretOffsetPainter = new WeaponOffsetPainter(this, WeaponMount.TURRET);
         this.hardpointOffsetPainter = new WeaponOffsetPainter(this, WeaponMount.HARDPOINT);
@@ -99,9 +100,9 @@ public class WeaponPainter extends LayerPainter {
 
             if (hasHint(WeaponRenderHints.RENDER_BARREL_BELOW)) {
                 this.drawSpritePart(g, worldToScreen, weaponSprites.getGunSprite(mount));
-                this.drawSpritePart(g, worldToScreen, weaponSprites.getMainSprite(mount));
+                this.drawMainSprite(g, worldToScreen);
             } else {
-                this.drawSpritePart(g, worldToScreen, weaponSprites.getMainSprite(mount));
+                this.drawMainSprite(g, worldToScreen);
                 this.drawSpritePart(g, worldToScreen, weaponSprites.getGunSprite(mount));
             }
 
@@ -110,8 +111,16 @@ public class WeaponPainter extends LayerPainter {
             this.paintLoadedMissiles(g, worldToScreen, w, h);
         }
 
-        if (mount != WeaponMount.HIDDEN && drawGlow) {
+        if (mount != WeaponMount.HIDDEN && animator.isDrawGlow()) {
             this.drawSpritePart(g, worldToScreen, weaponSprites.getGlowSprite(mount));
+        }
+    }
+
+    private void drawMainSprite(Graphics2D g, AffineTransform worldToScreen) {
+        if (animator.isInitialized()) {
+            this.drawSpritePart(g, worldToScreen, animator.getCurrentSprite(mount));
+        } else {
+            this.drawSpritePart(g, worldToScreen, weaponSprites.getMainSprite(mount));
         }
     }
 

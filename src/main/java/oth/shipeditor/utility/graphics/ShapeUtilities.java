@@ -10,6 +10,10 @@ import java.awt.geom.*;
 @SuppressWarnings("WeakerAccess")
 public final class ShapeUtilities {
 
+    private static final AffineTransform CACHED_WTS = new AffineTransform();
+
+    private static final AffineTransform CACHED_SCALE = new AffineTransform();
+
     private ShapeUtilities() {
     }
 
@@ -44,24 +48,20 @@ public final class ShapeUtilities {
      * @return new AffineTransform that represents the scaled version of the original world-to-screen transformation.
      */
     public static AffineTransform getScaledWtS(Point2D center, AffineTransform worldToScreen, float scale) {
-        return ShapeUtilities.getScaledWtS(center, worldToScreen, scale, scale);
+        CACHED_SCALE.setToIdentity();
+        AffineTransform scaleTX = ShapeUtilities.getScaled(center, CACHED_SCALE, scale, scale);
+        CACHED_WTS.setToIdentity();
+        CACHED_WTS.setTransform(worldToScreen);
+        CACHED_WTS.concatenate(scaleTX);
+        return CACHED_WTS;
     }
 
-    public static AffineTransform getScaledWtS(Point2D center, AffineTransform worldToScreen,
-                                               double scaleX, double scaleY) {
-        AffineTransform scaleTX = ShapeUtilities.getScaled(center, scaleX, scaleY);
-        AffineTransform delegateWTS = new AffineTransform();
-        delegateWTS.setTransform(worldToScreen);
-        delegateWTS.concatenate(scaleTX);
-        return delegateWTS;
-    }
-
-    public static AffineTransform getScaled(Point2D center, double scaleX, double scaleY) {
-        AffineTransform scaleTX = new AffineTransform();
-        scaleTX.translate(center.getX(), center.getY());
-        scaleTX.scale(scaleX, scaleY);
-        scaleTX.translate(-center.getX(), -center.getY());
-        return scaleTX;
+    public static AffineTransform getScaled(Point2D center, AffineTransform scaleTransform,
+                                            double scaleX, double scaleY) {
+        scaleTransform.translate(center.getX(), center.getY());
+        scaleTransform.scale(scaleX, scaleY);
+        scaleTransform.translate(-center.getX(), -center.getY());
+        return scaleTransform;
     }
 
     public static Shape translateShape(Shape shape, double deltaX, double deltaY) {

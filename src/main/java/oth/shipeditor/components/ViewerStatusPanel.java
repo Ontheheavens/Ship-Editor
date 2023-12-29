@@ -100,11 +100,7 @@ final class ViewerStatusPanel extends JPanel {
 
         SpinnerNumberModel linkageSpinnerModel = new SpinnerNumberModel(1.0d,
                 linkageSpinnerMin, linkageSpinnerMax, 1.0d);
-        JSpinner linkageSpinner = Spinners.createWheelable(linkageSpinnerModel, IncrementType.UNARY);
-        JSpinner.DefaultEditor spinnerEditor = (JSpinner.DefaultEditor) linkageSpinner.getEditor();
-        JFormattedTextField textField = spinnerEditor.getTextField();
-        textField.setEditable(true);
-        textField.setColumns(1);
+        JSpinner linkageSpinner = Spinners.createUnaryIntegerWheelable(linkageSpinnerModel);
 
         JLabel toleranceLabel = new JLabel("Distance:");
         toleranceLabel.setToolTipText("Determines maximum distance at which mirrored points link for interaction");

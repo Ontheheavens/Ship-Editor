@@ -38,6 +38,8 @@ public class InstalledFeatureList extends SortableList<InstalledFeature> {
 
     private final Consumer<InstalledFeature> uninstaller;
 
+    private final Consumer<InstalledFeature> selectionAction;
+
     private final Consumer<Map<String, InstalledFeature>> sorter;
 
     protected static final DataFlavor FEATURE_FLAVOR = new DataFlavor(InstalledFeature.class,
@@ -45,10 +47,12 @@ public class InstalledFeatureList extends SortableList<InstalledFeature> {
 
     public InstalledFeatureList(ListModel<InstalledFeature> dataModel,
                                 Consumer<InstalledFeature> removeAction,
-                                Consumer<Map<String, InstalledFeature>> sortAction) {
+                                Consumer<Map<String, InstalledFeature>> sortAction,
+                                Consumer<InstalledFeature> selectAction) {
         super(dataModel);
         this.uninstaller = removeAction;
         this.sorter = sortAction;
+        this.selectionAction = selectAction;
         this.addListSelectionListener(e -> {
             this.actOnSelectedEntry(this::handleEntrySelection);
             if (propagationBlock) {
@@ -68,7 +72,11 @@ public class InstalledFeatureList extends SortableList<InstalledFeature> {
         return StaticController.getSelectedSlotPainter();
     }
 
-    protected void handleEntrySelection(InstalledFeature feature) {}
+    protected void handleEntrySelection(InstalledFeature feature) {
+        if (feature == null) return;
+        if (this.selectionAction == null) return;
+        this.selectionAction.accept(feature);
+    }
 
     private static ListCellRenderer<InstalledFeature> createCellRenderer() {
         return new InstalledFeatureCellRenderer();

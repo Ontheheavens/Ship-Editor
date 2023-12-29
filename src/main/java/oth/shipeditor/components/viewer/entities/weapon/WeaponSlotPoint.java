@@ -28,6 +28,7 @@ import java.util.List;
  * @author Ontheheavens
  * @since 25.07.2023
  */
+@SuppressWarnings("ClassWithTooManyFields")
 public class WeaponSlotPoint extends AngledPoint implements SlotPoint {
 
     @Getter @Setter
@@ -56,6 +57,8 @@ public class WeaponSlotPoint extends AngledPoint implements SlotPoint {
 
     @Getter @Setter
     private double transparency = 1.0d;
+
+    private Double cachedRelativeOffset;
 
     private SlotDrawer slotDrawer;
 
@@ -261,7 +264,16 @@ public class WeaponSlotPoint extends AngledPoint implements SlotPoint {
         return canFit(dataEntry);
     }
 
+    @Override
+    public void setPosition(double x, double y) {
+        super.setPosition(x, y);
+        cachedRelativeOffset = null;
+    }
+
     public double getOffsetRelativeToAxis() {
+        if (cachedRelativeOffset != null) {
+            return cachedRelativeOffset;
+        }
         double result;
 
         ShipPainter shipPainter = this.getParent();
@@ -285,6 +297,7 @@ public class WeaponSlotPoint extends AngledPoint implements SlotPoint {
                     + Math.abs(locationRelativeToCenter.getX() / 10000000);
         }
 
+        cachedRelativeOffset = result;
         return result;
     }
 

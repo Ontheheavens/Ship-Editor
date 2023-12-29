@@ -8,12 +8,16 @@ import oth.shipeditor.communication.events.components.WeaponEntryPicked;
 import oth.shipeditor.communication.events.viewer.points.PointSelectedConfirmed;
 import oth.shipeditor.components.datafiles.entities.WeaponCSVEntry;
 import oth.shipeditor.components.instrument.EditorInstrument;
+import oth.shipeditor.components.instrument.ship.shared.WeaponAnimationPanel;
 import oth.shipeditor.components.viewer.layers.ViewerLayer;
 import oth.shipeditor.components.viewer.layers.ship.FeaturesOverseer;
 import oth.shipeditor.components.viewer.layers.ship.ShipLayer;
 import oth.shipeditor.components.viewer.layers.ship.ShipPainter;
 import oth.shipeditor.components.viewer.layers.ship.data.ShipHull;
 import oth.shipeditor.components.viewer.layers.ship.data.ShipVariant;
+import oth.shipeditor.components.viewer.layers.weapon.WeaponAnimator;
+import oth.shipeditor.components.viewer.layers.weapon.WeaponPainter;
+import oth.shipeditor.components.viewer.painters.points.ship.features.InstalledFeature;
 import oth.shipeditor.utility.components.ComponentUtilities;
 import oth.shipeditor.utility.components.dialog.DialogUtilities;
 import oth.shipeditor.utility.components.rendering.CustomTreeNode;
@@ -39,6 +43,9 @@ public class VariantWeaponsPanel extends AbstractVariantPanel {
 
     private JPanel pickedWeaponPanel;
 
+    private final WeaponAnimationPanel animationPanel;
+
+    private final JPanel animationPanelContainer;
 
     public VariantWeaponsPanel() {
         this.setLayout(new BorderLayout());
@@ -51,8 +58,14 @@ public class VariantWeaponsPanel extends AbstractVariantPanel {
         contentPanel.setLayout(new BorderLayout());
         this.add(contentPanel, BorderLayout.CENTER);
 
+        this.animationPanelContainer = new JPanel();
+        animationPanelContainer.setLayout(new BorderLayout());
+
+        animationPanel = new WeaponAnimationPanel();
+        ComponentUtilities.outfitPanelWithTitle(this.animationPanel, StringValues.WEAPON_ANIMATION);
+
         CustomTreeNode weaponGroups = new CustomTreeNode("Weapon Groups");
-        weaponsTree = new VariantWeaponsTree(weaponGroups);
+        weaponsTree = new VariantWeaponsTree(weaponGroups, this::refreshAnimationPanel);
         ToolTipManager.sharedInstance().registerComponent(weaponsTree);
 
         JScrollPane scroller = new JScrollPane(weaponsTree);
@@ -60,6 +73,23 @@ public class VariantWeaponsPanel extends AbstractVariantPanel {
 
         ViewerLayer layer = StaticController.getActiveLayer();
         this.refreshPanel(layer);
+    }
+
+    private void refreshAnimationPanel(InstalledFeature feature) {
+        this.animationPanelContainer.removeAll();
+        if (feature == null) {
+            this.animationPanel.refresh(null);
+            return;
+        }
+        if (feature.getFeaturePainter() instanceof WeaponPainter weaponPainter) {
+            WeaponAnimator weaponAnimator = weaponPainter.getAnimator();
+            if (weaponAnimator.isInitialized()) {
+                this.animationPanelContainer.add(animationPanel, BorderLayout.CENTER);
+                this.animationPanel.refresh(weaponPainter);
+            }
+        } else {
+            this.animationPanel.refresh(null);
+        }
     }
 
     @Override
@@ -134,7 +164,9 @@ public class VariantWeaponsPanel extends AbstractVariantPanel {
             JButton rearrangeGroups = new JButton("Rearrange weapons");
             rearrangeGroups.addActionListener(e -> DialogUtilities.showWeaponGroupsDialog(activeVariant));
 
-            buttonContainer.add(rearrangeGroups, BorderLayout.CENTER);
+            buttonContainer.add(rearrangeGroups, BorderLayout.PAGE_START);
+            buttonContainer.add(animationPanelContainer, BorderLayout.CENTER);
+
             northPanel.add(buttonContainer, BorderLayout.PAGE_START);
 
             northPanel.add(VariantWeaponsPanel.createDataSummary(checkedLayer, activeVariant),

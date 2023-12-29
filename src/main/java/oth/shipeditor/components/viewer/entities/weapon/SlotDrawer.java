@@ -17,6 +17,7 @@ import java.awt.geom.*;
  * @author Ontheheavens
  * @since 12.08.2023
  */
+@SuppressWarnings("ClassWithTooManyFields")
 @Getter @Setter
 public class SlotDrawer {
 
@@ -39,6 +40,8 @@ public class SlotDrawer {
     private boolean drawArc = true;
 
     private boolean drawAngle = true;
+
+    private static final AffineTransform SCALE_TRANSFORM = new AffineTransform();
 
     public SlotDrawer(SlotPoint parent) {
         this.parentPoint = parent;
@@ -97,7 +100,9 @@ public class SlotDrawer {
     private void paintMount(Graphics2D g, AffineTransform worldToScreen, Shape input, double scale, double screenSize) {
         Point2D position = this.pointPosition;
         double finalScale = scale * paintSizeMultiplier;
-        AffineTransform transform = ShapeUtilities.getScaled(position, finalScale, finalScale);
+        SCALE_TRANSFORM.setToIdentity();
+        AffineTransform transform = ShapeUtilities.getScaled(position, SCALE_TRANSFORM,
+                finalScale, finalScale);
         Shape enlarged = transform.createTransformedShape(input);
         Shape transformed = ShapeUtilities.ensureDynamicScaleShape(worldToScreen,
                 position, enlarged, screenSize * paintSizeMultiplier);

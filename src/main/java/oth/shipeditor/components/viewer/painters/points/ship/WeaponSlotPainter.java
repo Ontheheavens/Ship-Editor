@@ -57,6 +57,8 @@ public class WeaponSlotPainter extends AngledPointPainter {
     @Getter @Setter
     private List<WeaponSlotPoint> slotPoints;
 
+    private final Map<String, WeaponSlotPoint> slotsByID = new HashMap<>();
+
     private final SlotDrawer slotMockDrawer = new SlotDrawer(null);
 
     private final SlotDrawer counterpartMockDrawer = new SlotDrawer(null);
@@ -102,13 +104,20 @@ public class WeaponSlotPainter extends AngledPointPainter {
         return EditorInstrument.WEAPON_SLOTS;
     }
 
+    private void invalidateCaches() {
+        this.slotsByID.clear();
+    }
+
     public WeaponSlotPoint getSlotByID(String slotID) {
-        WeaponSlotPoint result = null;
-        for (WeaponSlotPoint slotPoint : this.slotPoints) {
-            String slotPointId = slotPoint.getId();
-            if (slotPointId.equals(slotID)) {
-                result = slotPoint;
+        WeaponSlotPoint result = this.slotsByID.get(slotID);
+        if (result == null) {
+            for (WeaponSlotPoint slotPoint : this.slotPoints) {
+                String slotPointId = slotPoint.getId();
+                if (slotPointId.equals(slotID)) {
+                    result = slotPoint;
+                }
             }
+            this.slotsByID.put(slotID, result);
         }
         return result;
     }
@@ -332,6 +341,7 @@ public class WeaponSlotPainter extends AngledPointPainter {
     protected void addPointToIndex(BaseWorldPoint point) {
         if (point instanceof WeaponSlotPoint checked) {
             slotPoints.add(checked);
+            invalidateCaches();
         } else {
             throwIllegalPoint();
         }
@@ -341,6 +351,7 @@ public class WeaponSlotPainter extends AngledPointPainter {
     protected void removePointFromIndex(BaseWorldPoint point) {
         if (point instanceof WeaponSlotPoint checked) {
             slotPoints.remove(checked);
+            invalidateCaches();
         } else {
             throwIllegalPoint();
         }

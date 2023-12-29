@@ -3,17 +3,22 @@ package oth.shipeditor.components.instrument.ship.hull;
 import com.formdev.flatlaf.ui.FlatLineBorder;
 import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.components.LayerTabUpdated;
+import oth.shipeditor.components.datafiles.OpenDataTarget;
 import oth.shipeditor.components.viewer.PrimaryViewer;
+import oth.shipeditor.components.viewer.layers.LayerPainter;
 import oth.shipeditor.components.viewer.layers.ship.ShipLayer;
 import oth.shipeditor.components.viewer.layers.ship.data.ShipHull;
+import oth.shipeditor.parsing.FileUtilities;
 import oth.shipeditor.parsing.loading.OpenSpriteAction;
 import oth.shipeditor.persistence.SettingsManager;
 import oth.shipeditor.representation.GameDataRepository;
+import oth.shipeditor.representation.SizeEnum;
 import oth.shipeditor.representation.ship.HullSize;
 import oth.shipeditor.representation.ship.HullStyle;
 import oth.shipeditor.utility.components.ComponentUtilities;
 import oth.shipeditor.utility.components.MouseoverLabelListener;
 import oth.shipeditor.utility.graphics.ColorUtilities;
+import oth.shipeditor.utility.graphics.Sprite;
 import oth.shipeditor.utility.overseers.EventScheduler;
 import oth.shipeditor.utility.overseers.StaticController;
 import oth.shipeditor.utility.text.StringValues;
@@ -22,6 +27,7 @@ import oth.shipeditor.utility.themes.Themes;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
+import java.nio.file.Path;
 import java.util.Collection;
 import java.util.Map;
 
@@ -128,7 +134,7 @@ public class HullDataControlPanel extends JPanel {
                                                           int index, boolean isSelected,
                                                           boolean cellHasFocus) {
                 super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
-                HullSize size = (HullSize) value;
+                SizeEnum size = (SizeEnum) value;
                 if (size != null) {
                     setText(size.getDisplayedName());
                 } else {
@@ -230,7 +236,32 @@ public class HullDataControlPanel extends JPanel {
             }
         });
         spriteChooserMenu.add(changeSprite);
+
+        spriteChooserMenu.addSeparator();
+
+        JMenuItem openSourceFile = new JMenuItem(StringValues.OPEN_SOURCE_FILE);
+        openSourceFile.addActionListener(e -> HullDataControlPanel.openSpritePath(OpenDataTarget.FILE));
+        spriteChooserMenu.add(openSourceFile);
+        JMenuItem openInExplorer = new JMenuItem(StringValues.OPEN_CONTAINING_FOLDER);
+        openInExplorer.addActionListener(e -> HullDataControlPanel.openSpritePath(OpenDataTarget.CONTAINER));
+        spriteChooserMenu.add(openInExplorer);
+
         return spriteChooserMenu;
+    }
+
+    private static void openSpritePath(OpenDataTarget target) {
+        var activeLayer = StaticController.getActiveLayer();
+        LayerPainter layerPainter = activeLayer.getPainter();
+        Sprite sprite = layerPainter.getSprite();
+        if (sprite == null) return;
+        Path toOpen = null;
+        switch (target) {
+            case FILE -> toOpen = sprite.getPath();
+            case CONTAINER -> toOpen = sprite.getPath().getParent();
+        }
+        if (toOpen != null) {
+            FileUtilities.openPathInDesktop(toOpen);
+        }
     }
 
     private void addCoversColorChooser() {
@@ -305,6 +336,7 @@ public class HullDataControlPanel extends JPanel {
 
         ShipHull shipHull = layer.getHull();
         var coversColor = shipHull.getCoversColor();
+        String notDefined = "Not defined";
         if (coversColor != null) {
             ImageIcon colorIcon = ComponentUtilities.createIconFromColor(coversColor, 10, 10);
             coversColorValue.setIcon(colorIcon);
@@ -314,7 +346,7 @@ public class HullDataControlPanel extends JPanel {
             coversColorValue.setToolTipText(ColorUtilities.getColorBreakdown(coversColor));
             coversColorValue.setText(null);
         } else {
-            coversColorValue.setText("Not defined");
+            coversColorValue.setText(notDefined);
         }
         coversColorValue.setForeground(Themes.getTextColor());
 
@@ -331,7 +363,8 @@ public class HullDataControlPanel extends JPanel {
         spritePathValue.setForeground(Themes.getTextColor());
         spritePathValue.setToolTipText(relativeSpritePath);
 
-        String spriteName = layer.getSpriteName();
+        Sprite sprite = layer.getBaseHullSprite();
+        String spriteName = sprite != null ? sprite.getFilename() : notDefined;
         spriteNameValue.setText(spriteName);
         spriteNameValue.setForeground(Themes.getTextColor());
         spriteNameValue.setToolTipText(spriteName);

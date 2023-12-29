@@ -22,6 +22,8 @@ import oth.shipeditor.components.viewer.layers.ship.data.ActiveShipSpec;
 import oth.shipeditor.components.viewer.layers.ship.data.ShipSkin;
 import oth.shipeditor.components.viewer.layers.ship.data.ShipVariant;
 import oth.shipeditor.components.viewer.layers.ship.data.Variant;
+import oth.shipeditor.components.viewer.layers.weapon.WeaponAnimator;
+import oth.shipeditor.components.viewer.layers.weapon.WeaponPainter;
 import oth.shipeditor.components.viewer.painters.points.AbstractPointPainter;
 import oth.shipeditor.components.viewer.painters.points.ship.*;
 import oth.shipeditor.components.viewer.painters.points.ship.features.InstalledFeature;
@@ -136,6 +138,13 @@ public class ShipPainter extends LayerPainter {
             if (parentLayer != null) {
                 var loadedVariants = parentLayer.getLoadedVariants();
                 loadedVariants.put(variantId, activeVariant);
+            }
+
+            for (InstalledFeature installedFeature : activeVariant.getAllFittedWeaponsList()) {
+                if (installedFeature.getFeaturePainter() instanceof WeaponPainter weaponPainter) {
+                    WeaponAnimator weaponAnimator = weaponPainter.getAnimator();
+                    weaponAnimator.startAnimation();
+                }
             }
         }
     }
@@ -254,8 +263,20 @@ public class ShipPainter extends LayerPainter {
         allPainters.add(enginePainter);
     }
 
+    private void startBuiltInsAnimations() {
+        Map<String, InstalledFeature> weapons = getBuiltInWeapons();
+        for (InstalledFeature installedFeature : weapons.values()) {
+            if (installedFeature.getFeaturePainter() instanceof WeaponPainter weaponPainter) {
+                WeaponAnimator weaponAnimator = weaponPainter.getAnimator();
+                weaponAnimator.startAnimation();
+            }
+        }
+    }
+
     void finishInitialization() {
         this.setUninitialized(false);
+        this.startBuiltInsAnimations();
+
         log.trace("{} initialized!", this);
         EventBus.publish(new LayerShipDataInitialized(this));
         EventBus.publish(new ViewerRepaintQueued());

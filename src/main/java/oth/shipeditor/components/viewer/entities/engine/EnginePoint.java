@@ -67,6 +67,8 @@ public class EnginePoint extends AngledPoint implements EngineData {
 
     private static final BufferedImage FLAME_CORE;
 
+    private static final EngineDrawAction drawAction = new EngineDrawAction();
+
     private BufferedImage flameColored;
 
     static {
@@ -258,27 +260,9 @@ public class EnginePoint extends AngledPoint implements EngineData {
 
         Point2D topLeft = new Point2D.Double(position.getX(), position.getY() - halfWidth);
 
-        GraphicsAction graphicsAction = graphics2D -> {
-            RenderingHints hints = g.getRenderingHints();
-
-            g.setRenderingHint(RenderingHints.KEY_INTERPOLATION,
-                    RenderingHints.VALUE_INTERPOLATION_BILINEAR);
-            g.setRenderingHint(RenderingHints.KEY_RENDERING,
-                    RenderingHints.VALUE_RENDER_SPEED);
-            g.setRenderingHint(RenderingHints.KEY_ALPHA_INTERPOLATION,
-                    RenderingHints.VALUE_ALPHA_INTERPOLATION_SPEED);
-
-            AffineTransform transform = new AffineTransform();
-            transform.translate(topLeft.getX(), topLeft.getY());
-            transform.scale(engineLength/FLAME_CORE.getWidth(), engineWidth/FLAME_CORE.getHeight());
-
-            g.drawImage(flameColored, transform, null);
-            g.drawImage(FLAME_CORE, transform, null);
-
-            g.setRenderingHints(hints);
-        };
+        drawAction.configureGraphics(g,topLeft, engineLength, engineWidth, flameColored);
         DrawUtilities.drawWithRotationTransform(g, worldToScreen, position,
-                Math.toRadians(transformedAngle), graphicsAction);
+                Math.toRadians(transformedAngle), drawAction);
     }
 
     public static void drawRectangleStatically(Graphics2D g, AffineTransform worldToScreen, Point2D position,
@@ -296,5 +280,51 @@ public class EnginePoint extends AngledPoint implements EngineData {
                 });
     }
 
+    @SuppressWarnings("ParameterHidesMemberVariable")
+    private static class EngineDrawAction implements GraphicsAction {
+
+        private Graphics2D g;
+        private Point2D topLeft;
+        private double engineLength;
+        private double engineWidth;
+        private BufferedImage flameColored;
+        private final AffineTransform affineTransform = new AffineTransform();
+
+        void configureGraphics(Graphics2D g, Point2D topLeft, double engineLength,
+                               double engineWidth, BufferedImage flameColored) {
+            this.g = g;
+            this.topLeft = topLeft;
+            this.engineLength = engineLength;
+            this.engineWidth = engineWidth;
+            this.flameColored = flameColored;
+        }
+
+        @Override
+        public void draw(Graphics2D graphics2D) {
+            RenderingHints hints = g.getRenderingHints();
+
+            g.setRenderingHint(RenderingHints.KEY_INTERPOLATION,
+                    RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+            g.setRenderingHint(RenderingHints.KEY_RENDERING,
+                    RenderingHints.VALUE_RENDER_SPEED);
+            g.setRenderingHint(RenderingHints.KEY_ALPHA_INTERPOLATION,
+                    RenderingHints.VALUE_ALPHA_INTERPOLATION_SPEED);
+
+            if (FLAME_CORE == null) {
+                throw new IllegalStateException("Flame image not loaded!");
+            }
+
+            AffineTransform transform = affineTransform;
+            transform.translate(topLeft.getX(), topLeft.getY());
+            transform.scale(engineLength / FLAME_CORE.getWidth(), engineWidth / FLAME_CORE.getHeight());
+
+            g.drawImage(flameColored, transform, null);
+            g.drawImage(FLAME_CORE, transform, null);
+
+            g.setRenderingHints(hints);
+            transform.setToIdentity();
+        }
+
+    }
 
 }

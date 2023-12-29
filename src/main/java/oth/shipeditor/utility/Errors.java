@@ -7,6 +7,7 @@ import oth.shipeditor.persistence.SettingsManager;
 import oth.shipeditor.utility.text.StringValues;
 
 import javax.swing.*;
+import java.io.FileNotFoundException;
 
 /**
  * @author Ontheheavens
@@ -48,6 +49,16 @@ public final class Errors {
         if (exception != null) {
             Errors.printToStream(exception);
         }
+    }
+
+    static void showSpriteNotFound(String filePath) {
+        String report = "Image file not found: " + filePath;
+        JOptionPane.showMessageDialog(null,
+                report,
+                StringValues.FILE_LOADING_ERROR,
+                JOptionPane.ERROR_MESSAGE);
+        FileNotFoundException notFoundException = new FileNotFoundException(report);
+        Errors.printToStream(notFoundException);
     }
 
     public static void printToStream(Throwable throwable) {

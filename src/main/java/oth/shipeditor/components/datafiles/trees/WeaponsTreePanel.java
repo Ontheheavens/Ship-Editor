@@ -18,7 +18,6 @@ import oth.shipeditor.representation.weapon.WeaponSpecFile;
 import oth.shipeditor.representation.weapon.WeaponType;
 import oth.shipeditor.utility.Utility;
 import oth.shipeditor.utility.components.ComponentUtilities;
-import oth.shipeditor.utility.components.MouseoverLabelListener;
 import oth.shipeditor.utility.graphics.Sprite;
 import oth.shipeditor.utility.text.StringValues;
 
@@ -356,29 +355,20 @@ public class WeaponsTreePanel extends CSVDataTreePanel<WeaponCSVEntry>{
 
     private static void addSpriteLabel(JPanel labelContainer, Sprite sprite, String description) {
         if (sprite != null) {
-            JLabel label = WeaponsTreePanel.createFileLabel(sprite.getPath(), description);
+            JLabel label = ComponentUtilities.createFileLabel(sprite.getPath(), description);
             labelContainer.add(Box.createVerticalStrut(2));
             labelContainer.add(label);
         }
     }
 
-    private static JLabel createFileLabel(Path path, String description) {
-        JLabel label = new JLabel(description + path.getFileName());
-        label.setToolTipText(String.valueOf(path));
-        label.setBorder(ComponentUtilities.createLabelSimpleBorder(ComponentUtilities.createLabelInsets()));
-        JPopupMenu pathContextMenu = ComponentUtilities.createPathContextMenu(path);
-        label.addMouseListener(new MouseoverLabelListener(pathContextMenu, label));
-        return label;
-    }
-
     private static JLabel createWeaponFileLabel(WeaponSpecFile weaponSpecFile) {
         Path weaponSpecFilePath = weaponSpecFile.getWeaponSpecFilePath();
-        return WeaponsTreePanel.createFileLabel(weaponSpecFilePath, "Weapon file : ");
+        return ComponentUtilities.createFileLabel(weaponSpecFilePath, "Weapon file : ");
     }
 
     private static JLabel createProjectileFileLabel(ProjectileSpecFile projectileSpecFile) {
         Path projectileSpecFilePath = projectileSpecFile.getProjectileSpecFilePath();
-        return WeaponsTreePanel.createFileLabel(projectileSpecFilePath, "Projectile file : ");
+        return ComponentUtilities.createFileLabel(projectileSpecFilePath, "Projectile file : ");
     }
 
     @Override

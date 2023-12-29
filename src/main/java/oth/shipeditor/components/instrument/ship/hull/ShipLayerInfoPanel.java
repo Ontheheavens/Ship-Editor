@@ -32,10 +32,14 @@ public final class ShipLayerInfoPanel extends AbstractLayerInfoPanel {
         JPanel dataContainer = new JPanel();
         dataContainer.setLayout(new BorderLayout());
 
+        JPanel centralContainer = new JPanel(new BorderLayout());
+
         hullDataPanel = new HullDataControlPanel();
         hullDataPanel.setAlignmentY(0);
 
-        dataContainer.add(hullDataPanel, BorderLayout.PAGE_START);
+        centralContainer.add(hullDataPanel, BorderLayout.PAGE_START);
+
+        dataContainer.add(centralContainer, BorderLayout.PAGE_START);
 
         weaponSlotsSummaryPanel = new JPanel();
         weaponSlotsSummaryPanel.setLayout(new BoxLayout(weaponSlotsSummaryPanel, BoxLayout.PAGE_AXIS));

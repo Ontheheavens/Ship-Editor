@@ -67,6 +67,7 @@ public class DraggedObjectsPainter implements Painter {
 
         } else if (dragged instanceof WeaponCSVEntry weaponEntry) {
             boolean isWeaponsMode = editorMode == EditorInstrument.BUILT_IN_WEAPONS
+                    || editorMode == EditorInstrument.DECORATIVES
                     || editorMode == EditorInstrument.VARIANT_WEAPONS;
             if (!isWeaponsMode) {
                 rotation = 0;

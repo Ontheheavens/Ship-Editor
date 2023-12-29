@@ -114,7 +114,7 @@ public enum WeaponType {
                         && isSameSize);
             }
             case BUILT_IN -> result = (weaponType != WeaponType.DECORATIVE && isSameOrSmaller);
-            case DECORATIVE -> result = (weaponType == WeaponType.DECORATIVE && isSameOrSmaller);
+            case DECORATIVE -> result = (weaponType == WeaponType.DECORATIVE);
             default -> {
                 result = false;
             }

@@ -223,25 +223,25 @@ public final class BoundPointsPainter extends MirrorablePointPainter {
      * @return list of the two BoundPoints in this list that are closest to the given point.
      */
     private List<BoundPoint> findClosestBoundPoints(Point2D point) {
-    double minDist = Double.MAX_VALUE;
-    List<BoundPoint> closestPoints = new ArrayList<>(2);
-    List<BoundPoint> bounds = this.boundPoints;
-    int numPoints = bounds.size();
-    for (int i = 0; i < numPoints; i++) {
-        BoundPoint currentPoint = bounds.get(i);
-        // Wrap around to the first point if it's the last segment.
-        BoundPoint nextPoint = bounds.get((i + 1) % numPoints);
-        Line2D segment = new Line2D.Double(currentPoint.getPosition(), nextPoint.getPosition());
-        double dist = segment.ptSegDist(point);
-        if (dist < minDist) {
-            minDist = dist;
-            closestPoints.clear();
-            closestPoints.add(currentPoint);
-            closestPoints.add(nextPoint);
+        double minDist = Double.MAX_VALUE;
+        List<BoundPoint> closestPoints = new ArrayList<>(2);
+        List<BoundPoint> bounds = this.boundPoints;
+        int numPoints = bounds.size();
+        for (int i = 0; i < numPoints; i++) {
+            BoundPoint currentPoint = bounds.get(i);
+            // Wrap around to the first point if it's the last segment.
+            BoundPoint nextPoint = bounds.get((i + 1) % numPoints);
+            Line2D segment = new Line2D.Double(currentPoint.getPosition(), nextPoint.getPosition());
+            double dist = segment.ptSegDist(point);
+            if (dist < minDist) {
+                minDist = dist;
+                closestPoints.clear();
+                closestPoints.add(currentPoint);
+                closestPoints.add(nextPoint);
+            }
         }
+        return closestPoints;
     }
-    return closestPoints;
-}
 
     @Override
     public void paintPainterContent(Graphics2D g, AffineTransform worldToScreen, double w, double h) {

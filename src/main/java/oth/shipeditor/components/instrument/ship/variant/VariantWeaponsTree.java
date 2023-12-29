@@ -64,8 +64,11 @@ public class VariantWeaponsTree extends DynamicWidthTree {
 
     private DefaultTreeModel model;
 
-    VariantWeaponsTree(CustomTreeNode root) {
+    private final Consumer<InstalledFeature> selectionAction;
+
+    VariantWeaponsTree(CustomTreeNode root, Consumer<InstalledFeature> selector) {
         super(root);
+        this.selectionAction = selector;
         this.rootNode = root;
         this.model = new DefaultTreeModel(rootNode);
         this.setModel(model);
@@ -103,6 +106,7 @@ public class VariantWeaponsTree extends DynamicWidthTree {
                     EventBus.publish(new PointSelectQueued(slot));
                     EventBus.publish(new ViewerRepaintQueued());
                 }
+                selectionAction.accept(checked);
             }
         });
         this.addMouseListener(new ContextMenuListener());

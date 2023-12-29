@@ -25,7 +25,7 @@ public final class ModuleList extends InstalledFeatureList {
     ModuleList(Runnable refreshAction, ListModel<InstalledFeature> dataModel,
                Consumer<InstalledFeature> removeAction,
                Consumer<Map<String, InstalledFeature>> sortAction) {
-        super(dataModel, removeAction, sortAction);
+        super(dataModel, removeAction, sortAction, null);
         this.refresher = refreshAction;
     }
 

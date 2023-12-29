@@ -505,4 +505,13 @@ public final class ComponentUtilities {
         return ComponentUtilities.createHintPanel(hintText, hintIcon);
     }
 
+    public static JLabel createFileLabel(Path path, String description) {
+        JLabel label = new JLabel(description + path.getFileName());
+        label.setToolTipText(String.valueOf(path));
+        label.setBorder(ComponentUtilities.createLabelSimpleBorder(ComponentUtilities.createLabelInsets()));
+        JPopupMenu pathContextMenu = ComponentUtilities.createPathContextMenu(path);
+        label.addMouseListener(new MouseoverLabelListener(pathContextMenu, label));
+        return label;
+    }
+
 }

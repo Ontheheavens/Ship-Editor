@@ -72,19 +72,7 @@ public class PaintOrderController implements Painter {
     @Override
     public void paint(Graphics2D g, AffineTransform worldToScreen, double w, double h) {
         if (showBackgroundImage) {
-            if (backgroundImage == null) {
-                backgroundImage = PaintOrderController.createCheckerboardImage();
-            }
-            int width = (int) w;
-            int height = (int) h;
-
-            float alpha = 0.5f;
-            Composite old = Utility.setAlphaComposite(g, alpha);
-
-            g.drawImage(backgroundImage, 0, 0, width, height,
-                    0, 0, width, height, null);
-
-            g.setComposite(old);
+            paintBackgroundImage(g, (int) w, (int) h);
         }
 
         PaintOrderController.paintIfPresent(g, worldToScreen, w, h, guidesPainters.getAxesPaint());
@@ -104,6 +92,20 @@ public class PaintOrderController implements Painter {
         }
 
         PaintOrderController.paintIfPresent(g, worldToScreen, w, h, hotkeyPainter);
+    }
+
+    private void paintBackgroundImage(Graphics2D g, int w, int h) {
+        if (backgroundImage == null) {
+            backgroundImage = PaintOrderController.createCheckerboardImage();
+        }
+
+        float alpha = 0.5f;
+        Composite old = Utility.setAlphaComposite(g, alpha);
+
+        g.drawImage(backgroundImage, 0, 0, w, h,
+                0, 0, w, h, null);
+
+        g.setComposite(old);
     }
 
     private static void paintIfPresent(Graphics2D g, AffineTransform worldToScreen,

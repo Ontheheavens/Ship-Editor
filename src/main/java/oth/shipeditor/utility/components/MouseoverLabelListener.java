@@ -1,5 +1,6 @@
 package oth.shipeditor.utility.components;
 
+import lombok.Getter;
 import oth.shipeditor.utility.themes.Themes;
 
 import javax.swing.*;
@@ -11,6 +12,7 @@ import java.awt.event.MouseEvent;
  * @author Ontheheavens
  * @since 10.07.2023
  */
+@Getter
 public class MouseoverLabelListener extends MouseAdapter {
 
     private final JComponent component;
@@ -20,10 +22,6 @@ public class MouseoverLabelListener extends MouseAdapter {
     private final Color highlight;
 
     private final Runnable action;
-
-    public MouseoverLabelListener(Runnable clickAction, JComponent inputComponent) {
-        this(null, clickAction, inputComponent, Themes.getPanelHighlightColor());
-    }
 
     public MouseoverLabelListener(JPopupMenu menu, JComponent inputComponent) {
         this(menu, null, inputComponent, Themes.getPanelHighlightColor());
@@ -46,8 +44,9 @@ public class MouseoverLabelListener extends MouseAdapter {
         if (!component.isEnabled()) {
             return;
         }
-        if (popupMenu != null) {
-            if (!popupMenu.isEnabled()) return;
+        JPopupMenu menu = getPopupMenu();
+        if (menu != null) {
+            if (!menu.isEnabled()) return;
         }
         component.setBackground(highlight);
         component.setOpaque(true);
@@ -62,9 +61,10 @@ public class MouseoverLabelListener extends MouseAdapter {
 
     @Override
     public void mouseClicked(MouseEvent e) {
-        if (popupMenu != null && SwingUtilities.isRightMouseButton(e)) {
-            if (!popupMenu.isEnabled() || !component.isEnabled()) return;
-            popupMenu.show(component, e.getX(), e.getY());
+        JPopupMenu menu = getPopupMenu();
+        if (menu != null && SwingUtilities.isRightMouseButton(e)) {
+            if (!menu.isEnabled() || !component.isEnabled()) return;
+            menu.show(component, e.getX(), e.getY());
         } else if (SwingUtilities.isLeftMouseButton(e) && action != null) {
             action.run();
         }

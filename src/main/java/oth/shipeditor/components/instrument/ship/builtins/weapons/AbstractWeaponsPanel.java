@@ -8,6 +8,7 @@ import oth.shipeditor.components.datafiles.entities.WeaponCSVEntry;
 import oth.shipeditor.components.instrument.EditorInstrument;
 import oth.shipeditor.components.instrument.ship.AbstractShipPropertiesPanel;
 import oth.shipeditor.components.instrument.ship.shared.InstalledFeatureList;
+import oth.shipeditor.components.instrument.ship.shared.WeaponAnimationPanel;
 import oth.shipeditor.components.viewer.entities.weapon.WeaponSlotPoint;
 import oth.shipeditor.components.viewer.layers.LayerPainter;
 import oth.shipeditor.components.viewer.layers.ViewerLayer;
@@ -15,6 +16,7 @@ import oth.shipeditor.components.viewer.layers.ship.FeaturesOverseer;
 import oth.shipeditor.components.viewer.layers.ship.ShipLayer;
 import oth.shipeditor.components.viewer.layers.ship.ShipPainter;
 import oth.shipeditor.components.viewer.layers.ship.data.ShipSkin;
+import oth.shipeditor.components.viewer.layers.weapon.WeaponPainter;
 import oth.shipeditor.components.viewer.painters.points.ship.features.InstalledFeature;
 import oth.shipeditor.undo.EditDispatch;
 import oth.shipeditor.utility.components.ComponentUtilities;
@@ -41,11 +43,13 @@ public abstract class AbstractWeaponsPanel extends AbstractShipPropertiesPanel {
 
     private DefaultListModel<InstalledFeature> skinEntriesModel;
 
+    private WeaponAnimationPanel weaponAnimationPanel;
+
     private JPanel pickerPanel;
 
     private JPanel pickerInfo;
 
-    @SuppressWarnings({"OverlyComplexBooleanExpression", "ChainedMethodCall"})
+    @SuppressWarnings("ChainedMethodCall")
     @Override
     public void refreshContent(LayerPainter layerPainter) {
         DefaultListModel<InstalledFeature> newBaseModel = new DefaultListModel<>();
@@ -54,10 +58,10 @@ public abstract class AbstractWeaponsPanel extends AbstractShipPropertiesPanel {
         int[] baseCachedSelected = this.baseHullList.getSelectedIndices();
         int[] skinCachedSelected = this.skinEntriesList.getSelectedIndices();
 
+        refreshWeaponAnimationPanel(null);
+
         if (!(layerPainter instanceof ShipPainter shipPainter)
-                || shipPainter.isUninitialized()
-                || shipPainter.getActiveVariant() == null
-                || shipPainter.getActiveVariant().isEmpty()) {
+                || shipPainter.isUninitialized()) {
 
             this.baseModel = newBaseModel;
             this.skinEntriesModel = newSkinModel;
@@ -107,6 +111,18 @@ public abstract class AbstractWeaponsPanel extends AbstractShipPropertiesPanel {
         fireRefresherListeners(layerPainter);
     }
 
+    private void refreshWeaponAnimationPanel(InstalledFeature feature) {
+        if (feature == null) {
+            this.weaponAnimationPanel.refresh(null);
+            return;
+        }
+        if (feature.getFeaturePainter() instanceof WeaponPainter weaponPainter) {
+            this.weaponAnimationPanel.refresh(weaponPainter);
+        } else {
+            this.weaponAnimationPanel.refresh(null);
+        }
+    }
+
     @Override
     protected void populateContent() {
         this.setLayout(new BorderLayout());
@@ -137,13 +153,16 @@ public abstract class AbstractWeaponsPanel extends AbstractShipPropertiesPanel {
         JScrollBar verticalScrollBar = scroller.getVerticalScrollBar();
         verticalScrollBar.setUnitIncrement(16);
 
-        JPanel infoPanel = ComponentUtilities.createDragInfoPanel();
+        this.weaponAnimationPanel = new WeaponAnimationPanel();
 
+        ComponentUtilities.outfitPanelWithTitle(this.weaponAnimationPanel, StringValues.WEAPON_ANIMATION);
+
+        weaponAnimationPanel.refresh(null);
         pickerPanel = new JPanel(new BorderLayout());
 
         JPanel northContainer = new JPanel();
         northContainer.setLayout(new BorderLayout());
-        northContainer.add(infoPanel, BorderLayout.PAGE_START);
+        northContainer.add(weaponAnimationPanel, BorderLayout.PAGE_START);
         northContainer.add(pickerPanel, BorderLayout.CENTER);
 
         this.add(northContainer, BorderLayout.PAGE_START);
@@ -227,7 +246,7 @@ public abstract class AbstractWeaponsPanel extends AbstractShipPropertiesPanel {
             baseSortAction.accept(features);
         });
 
-        return AbstractWeaponsPanel.createList(baseModel, removeAction, sortAction);
+        return this.createList(baseModel, removeAction, sortAction);
     }
 
     private InstalledFeatureList createSkinEntriesList() {
@@ -248,14 +267,14 @@ public abstract class AbstractWeaponsPanel extends AbstractShipPropertiesPanel {
                     skinSortAction.accept(features);
                 });
 
-        return AbstractWeaponsPanel.createList(skinEntriesModel, removeAction, sortAction);
+        return this.createList(skinEntriesModel, removeAction, sortAction);
     }
 
-    private static InstalledFeatureList createList(ListModel<InstalledFeature> dataModel,
+    private InstalledFeatureList createList(ListModel<InstalledFeature> dataModel,
                                                    Consumer<InstalledFeature> removeAction,
                                                    Consumer<Map<String, InstalledFeature>> sortAction) {
         InstalledFeatureList entriesList = new InstalledFeatureList(dataModel,
-                removeAction, sortAction);
+                removeAction, sortAction, this::refreshWeaponAnimationPanel);
         entriesList.setBorder(new LineBorder(Color.LIGHT_GRAY));
         return entriesList;
     }

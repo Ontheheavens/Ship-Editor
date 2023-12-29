@@ -17,6 +17,7 @@ import oth.shipeditor.persistence.Settings;
 import oth.shipeditor.persistence.SettingsManager;
 import oth.shipeditor.utility.graphics.Sprite;
 import oth.shipeditor.utility.overseers.StaticController;
+import oth.shipeditor.utility.text.StringConstants;
 import oth.shipeditor.utility.text.StringValues;
 
 import javax.swing.*;
@@ -212,6 +213,11 @@ public final class FileUtilities {
             result = new File(selectedFile + "." + extension);
         }
         return result;
+    }
+
+    public static String getExtension(String fileName) {
+        int dotIndex = fileName.lastIndexOf(StringConstants.EXTENSION_DOT);
+        return (dotIndex == -1) ? "" : fileName.substring(dotIndex + 1);
     }
 
     public static boolean isFileWithinGamePackages(File file) {

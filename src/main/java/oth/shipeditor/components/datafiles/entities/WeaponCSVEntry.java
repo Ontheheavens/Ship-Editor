@@ -5,20 +5,17 @@ import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.viewer.layers.ActiveLayerUpdated;
 import oth.shipeditor.components.viewer.entities.weapon.OffsetPoint;
 import oth.shipeditor.components.viewer.layers.ship.ShipPainterInitialization;
-import oth.shipeditor.components.viewer.layers.weapon.WeaponLayer;
-import oth.shipeditor.components.viewer.layers.weapon.WeaponPainter;
-import oth.shipeditor.components.viewer.layers.weapon.WeaponRenderOrdering;
-import oth.shipeditor.components.viewer.layers.weapon.WeaponSprites;
+import oth.shipeditor.components.viewer.layers.weapon.*;
 import oth.shipeditor.components.viewer.painters.points.weapon.ProjectilePainter;
 import oth.shipeditor.parsing.loading.FileLoading;
 import oth.shipeditor.representation.GameDataRepository;
 import oth.shipeditor.representation.weapon.*;
-import oth.shipeditor.utility.graphics.DrawUtilities;
-import oth.shipeditor.utility.objects.Size2D;
-import oth.shipeditor.utility.overseers.StaticController;
 import oth.shipeditor.utility.Utility;
 import oth.shipeditor.utility.components.ComponentUtilities;
+import oth.shipeditor.utility.graphics.DrawUtilities;
 import oth.shipeditor.utility.graphics.Sprite;
+import oth.shipeditor.utility.objects.Size2D;
+import oth.shipeditor.utility.overseers.StaticController;
 import oth.shipeditor.utility.text.StringConstants;
 import oth.shipeditor.utility.text.StringValues;
 
@@ -248,6 +245,12 @@ public class WeaponCSVEntry implements CSVEntry, InstallableEntry {
         weaponPainter.setWeaponSprites(spriteHolder);
         weaponPainter.setWeaponID(weaponSpecFile.getId());
 
+        if (weaponSpecFile.getNumFrames() > 0) {
+            WeaponAnimator weaponAnimator = weaponPainter.getAnimator();
+
+            weaponAnimator.initAnimations(weaponSpecFile, spriteHolder);
+        }
+
         if (weaponSpecFile.isRenderBelowAllWeapons()) {
             weaponPainter.setRenderOrderType(WeaponRenderOrdering.BELOW_ALL);
         } else if (weaponSpecFile.isRenderAboveAllWeapons()) {
@@ -316,7 +319,11 @@ public class WeaponCSVEntry implements CSVEntry, InstallableEntry {
     }
 
     private void setSpecSpriteFromPath(String pathInPackage, Consumer<Sprite> setter) {
-        Utility.setSpriteFromPath(pathInPackage, setter, this.packageFolderPath);
+        if (pathInPackage == null || pathInPackage.isEmpty()) {
+            return;
+        }
+        Sprite sprite = Utility.loadSpriteFromPath(pathInPackage, this.packageFolderPath);
+        setter.accept(sprite);
     }
 
     public JPanel createPickedWeaponPanel() {
