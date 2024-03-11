@@ -30,8 +30,6 @@ public class ShipCenterPoint extends BaseWorldPoint {
 
     private final Paint collisionCircleColor = new Color(0xFFDCDC40, true);
 
-
-
     public ShipCenterPoint(Point2D pointPosition, float radius, ShipPainter layer, CenterPointPainter parent) {
         super(pointPosition, layer);
         this.collisionRadius = radius;

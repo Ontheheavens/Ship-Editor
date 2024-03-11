@@ -86,60 +86,57 @@ public class HotkeyHelpPainter implements Painter {
     private static Pair<EditorInstrument, List<String>> getHintsToDisplay() {
         EditorInstrument current = StaticController.getEditorMode();
         List<String> hints = new ArrayList<>();
+        final String radiusHotkey = "Alter radius: CTRL and move";
+        final String pointPositionHotkey = "Move point: LMB and drag";
+        final String addPointHotkey = "Add point: SHIFT + LMB";
+        final String angleHotkey = "Alter angle: ALT + LMB and drag";
         switch (current) {
-            case COLLISION -> {
-                String radiusHint = "Alter radius: C";
-                hints.add(radiusHint);
-            }
-            case SHIELD -> {
-                String radiusHint = "Alter radius: S";
-                hints.add(radiusHint);
+            case COLLISION, SHIELD -> {
+                hints.add(radiusHotkey);
+                hints.add(pointPositionHotkey);
             }
             case BOUNDS -> {
-                String appendHint = "Add: Z+LMB";
-                String insertHint = "Insert: X+LMB";
-                String removeHint = "Remove: Del";
+                String insertHint = "Insert point: CTRL + LMB";
+                String removeHint = "Remove point: Backspace";
                 hints.add(removeHint);
                 hints.add(insertHint);
-                hints.add(appendHint);
+                hints.add(addPointHotkey);
+                hints.add(pointPositionHotkey);
             }
             case WEAPON_SLOTS -> {
-                String angleHint = "Alter angle: A+LMB";
-                String arcHint = "Alter arc: A+RMB";
-                String addHint = "Add slot: W+LMB";
-                hints.add(angleHint);
+                String arcHint = "Alter arc: ALT + RMB and drag";
+                hints.add(angleHotkey);
                 hints.add(arcHint);
-                hints.add(addHint);
+                hints.add(addPointHotkey);
+                hints.add(pointPositionHotkey);
             }
             case LAUNCH_BAYS -> {
-                String addPort = "Add port: P+LMB";
-                String addBay = "Add bay: B+LMB";
+                String addPort = "Add port: SHIFT + LMB";
+                String addBay = "Add bay: CTRL + LMB";
                 hints.add(addPort);
                 hints.add(addBay);
             }
             case ENGINES -> {
-                String angleHint = "Alter angle: D+LMB";
-                String sizeHint = "Alter size: D+RMB";
-                String addHint = "Add engine: E+LMB";
-                hints.add(angleHint);
+                String sizeHint = "Alter size: ALT + RMB and drag";
+                hints.add(angleHotkey);
                 hints.add(sizeHint);
-                hints.add(addHint);
+                hints.add(addPointHotkey);
             }
             case BUILT_IN_WEAPONS, VARIANT_WEAPONS -> {
                 String installHint = "Install weapon: CTRL+LMB";
-                String removeHint = "Uninstall weapon: Del";
+                String removeHint = "Uninstall weapon: Backspace";
                 hints.add(installHint);
                 hints.add(removeHint);
             }
             case VARIANT_MODULES -> {
                 String installHint = "Install module: CTRL+LMB";
-                String removeHint = "Uninstall module: Del";
+                String removeHint = "Uninstall module: Backspace";
                 hints.add(installHint);
                 hints.add(removeHint);
             }
             case DECORATIVES -> {
                 String installHint = "Install decorative: CTRL+LMB";
-                String removeHint = "Uninstall decorative: Del";
+                String removeHint = "Uninstall decorative: Backspace";
                 hints.add(installHint);
                 hints.add(removeHint);
             }

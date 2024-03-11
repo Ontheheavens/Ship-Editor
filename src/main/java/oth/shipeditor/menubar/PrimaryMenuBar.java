@@ -110,7 +110,7 @@ public final class PrimaryMenuBar extends JMenuBar {
         undo.setAction(UndoOverseer.getUndoAction());
         undo.setIcon(FontIcon.of(FluentUiRegularAL.ARROW_UNDO_20, 16, Themes.getIconColor()));
         undo.setDisabledIcon(FontIcon.of(FluentUiRegularAL.ARROW_UNDO_20, 16, Themes.getDisabledIconColor()));
-        KeyStroke keyStrokeToUndo = KeyStroke.getKeyStroke(KeyEvent.VK_U, InputEvent.CTRL_DOWN_MASK);
+        KeyStroke keyStrokeToUndo = KeyStroke.getKeyStroke(KeyEvent.VK_Z, InputEvent.CTRL_DOWN_MASK);
         undo.setAccelerator(keyStrokeToUndo);
         editMenu.add(undo);
 
@@ -118,7 +118,7 @@ public final class PrimaryMenuBar extends JMenuBar {
         redo.setAction(UndoOverseer.getRedoAction());
         redo.setIcon(FontIcon.of(FluentUiRegularAL.ARROW_REDO_20, 16, Themes.getIconColor()));
         redo.setDisabledIcon(FontIcon.of(FluentUiRegularAL.ARROW_REDO_20, 16, Themes.getDisabledIconColor()));
-        KeyStroke keyStrokeToRedo = KeyStroke.getKeyStroke(KeyEvent.VK_R, InputEvent.CTRL_DOWN_MASK);
+        KeyStroke keyStrokeToRedo = KeyStroke.getKeyStroke(KeyEvent.VK_X, InputEvent.CTRL_DOWN_MASK);
         redo.setAccelerator(keyStrokeToRedo);
         editMenu.add(redo);
 

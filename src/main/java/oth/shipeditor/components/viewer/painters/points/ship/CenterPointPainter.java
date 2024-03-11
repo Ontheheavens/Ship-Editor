@@ -49,7 +49,7 @@ public class CenterPointPainter extends SinglePointPainter {
 
     private final TextPainter moduleAnchorText;
 
-    private static final int dragCollisionRadiusHotkey = KeyEvent.VK_C;
+    private static final int dragCollisionRadiusHotkey = KeyEvent.VK_CONTROL;
 
     private boolean collisionRadiusHotkeyPressed;
 

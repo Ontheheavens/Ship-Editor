@@ -75,15 +75,15 @@ public final class ControlPredicates {
     );
 
     static final Predicate<MouseEvent> layerMovePredicate = Predicates.and(
-            InputEventPredicates.buttonDown(1),
+            InputEventPredicates.buttonDown(2),
             InputEventPredicates.shiftDown()
     );
 
     static final Predicate<MouseEvent> layerSelectPredicate = InputEventPredicates.altDown();
 
     static final Predicate<MouseEvent> layerRotatePredicate = Predicates.and(
-            InputEventPredicates.buttonDown(3),
-            InputEventPredicates.shiftDown()
+            InputEventPredicates.buttonDown(2),
+            InputEventPredicates.altDown()
     );
 
     static final Predicate<MouseEvent> removePointPredicate = Predicates.and(
@@ -98,12 +98,12 @@ public final class ControlPredicates {
 
     static final Predicate<MouseEvent> changeAnglePredicate = Predicates.and(
             InputEventPredicates.buttonDown(1),
-            InputEventPredicates.noModifiers()
+            InputEventPredicates.altDown()
     );
 
     static final Predicate<MouseEvent> changeArcOrSizePredicate = Predicates.and(
             InputEventPredicates.buttonDown(3),
-            InputEventPredicates.noModifiers()
+            InputEventPredicates.altDown()
     );
 
     static final Predicate<MouseEvent> rotatePredicate = InputEventPredicates.controlDown();

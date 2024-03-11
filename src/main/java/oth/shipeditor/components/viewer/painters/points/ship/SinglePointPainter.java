@@ -14,9 +14,9 @@ import java.awt.geom.AffineTransform;
  * @author Ontheheavens
  * @since 26.07.2023
  */
+@Getter
 public abstract class SinglePointPainter extends AbstractPointPainter {
 
-    @Getter
     private final ShipPainter parentLayer;
 
     SinglePointPainter(ShipPainter parent) {
@@ -26,6 +26,12 @@ public abstract class SinglePointPainter extends AbstractPointPainter {
     @Override
     protected boolean isParentLayerActive() {
         return this.parentLayer.isLayerActive();
+    }
+
+    @SuppressWarnings("NoopMethodInAbstractClass")
+    @Override
+    protected void handlePointRemovalEvent(BaseWorldPoint point, boolean removalViaListPanel) {
+        // Not relevant for center points.
     }
 
     @Override

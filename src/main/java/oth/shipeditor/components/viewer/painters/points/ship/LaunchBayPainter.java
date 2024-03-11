@@ -44,8 +44,8 @@ public class LaunchBayPainter extends MirrorablePointPainter {
     @Getter
     private static boolean addBayHotkeyPressed;
 
-    private static final int addPortHotkey = KeyEvent.VK_P;
-    private static final int addBayHotkey = KeyEvent.VK_B;
+    private static final int addPortHotkey = KeyEvent.VK_SHIFT;
+    private static final int addBayHotkey = KeyEvent.VK_CONTROL;
 
     private KeyEventDispatcher hotkeyDispatcher;
 

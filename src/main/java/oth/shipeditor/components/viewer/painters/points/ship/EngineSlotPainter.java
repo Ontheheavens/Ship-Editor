@@ -76,12 +76,12 @@ public class EngineSlotPainter extends AngledPointPainter {
 
     @Override
     protected int getControlHotkey() {
-        return KeyEvent.VK_D;
+        return KeyEvent.VK_ALT;
     }
 
     @Override
     protected int getCreationHotkey() {
-        return KeyEvent.VK_E;
+        return KeyEvent.VK_SHIFT;
     }
 
     @SuppressWarnings("ChainOfInstanceofChecks")

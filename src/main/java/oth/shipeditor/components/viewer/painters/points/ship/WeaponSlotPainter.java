@@ -81,12 +81,12 @@ public class WeaponSlotPainter extends AngledPointPainter {
 
     @Override
     protected int getControlHotkey() {
-        return KeyEvent.VK_A;
+        return KeyEvent.VK_ALT;
     }
 
     @Override
     protected int getCreationHotkey() {
-        return KeyEvent.VK_W;
+        return KeyEvent.VK_SHIFT;
     }
 
     public boolean hasSlotsOfType(WeaponType type) {

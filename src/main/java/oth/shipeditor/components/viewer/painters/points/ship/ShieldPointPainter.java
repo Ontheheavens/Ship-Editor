@@ -36,7 +36,7 @@ public class ShieldPointPainter extends SinglePointPainter {
     @Getter
     private ShieldCenterPoint shieldCenterPoint;
 
-    private static final int dragShieldRadiusHotkey = KeyEvent.VK_S;
+    private static final int dragShieldRadiusHotkey = KeyEvent.VK_CONTROL;
 
     private boolean shieldRadiusHotkeyPressed;
 

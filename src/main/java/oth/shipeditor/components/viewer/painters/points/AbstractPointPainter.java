@@ -150,7 +150,7 @@ public abstract class AbstractPointPainter implements Painter {
         }
     }
 
-    private void handlePointRemovalEvent(BaseWorldPoint point, boolean removalViaListPanel) {
+    protected void handlePointRemovalEvent(BaseWorldPoint point, boolean removalViaListPanel) {
         Class<? extends BaseWorldPoint> typeReference = getTypeReference();
         if (typeReference.isInstance(point) && removalViaListPanel) {
             this.commencePointRemoval(point);

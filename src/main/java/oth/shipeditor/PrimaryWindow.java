@@ -77,6 +77,21 @@ public final class PrimaryWindow extends JFrame {
 
     public static PrimaryWindow create() {
         PrimaryWindow primaryWindow = new PrimaryWindow();
+
+        primaryWindow.addFocusListener(new FocusListener() {
+            private final KeyEventDispatcher altDisabler = e -> e.getKeyCode() == 18;
+
+            @Override
+            public void focusGained(FocusEvent e) {
+                KeyboardFocusManager.getCurrentKeyboardFocusManager().addKeyEventDispatcher(altDisabler);
+            }
+
+            @Override
+            public void focusLost(FocusEvent e) {
+                KeyboardFocusManager.getCurrentKeyboardFocusManager().removeKeyEventDispatcher(altDisabler);
+            }
+        });
+
         primaryWindow.restoreSize();
         return primaryWindow;
     }

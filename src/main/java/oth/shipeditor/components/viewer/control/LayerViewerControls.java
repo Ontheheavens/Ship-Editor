@@ -88,8 +88,8 @@ public final class LayerViewerControls implements ViewerControl {
 
     private void initKeyBinding() {
         InputMap inputMap = parentViewer.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW);
-        String deleteKey = "Delete";
-        inputMap.put(KeyStroke.getKeyStroke((char)KeyEvent.VK_DELETE), deleteKey);
+        String deleteKey = "Backspace";
+        inputMap.put(KeyStroke.getKeyStroke((char)KeyEvent.VK_BACK_SPACE), deleteKey);
         ActionMap actionMap = parentViewer.getActionMap();
         actionMap.put(deleteKey, new AbstractAction() {
             @Override
