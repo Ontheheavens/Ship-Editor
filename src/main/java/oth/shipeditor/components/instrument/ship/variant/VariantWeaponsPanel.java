@@ -28,6 +28,7 @@ import oth.shipeditor.utility.themes.Themes;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
+import java.util.List;
 
 /**
  * @author Ontheheavens
@@ -162,6 +163,12 @@ public class VariantWeaponsPanel extends AbstractVariantPanel {
             buttonContainer.setBorder(new EmptyBorder(4, 4, 0, 4));
 
             JButton rearrangeGroups = new JButton("Rearrange weapons");
+
+            List<InstalledFeature> allFittedWeaponsList = activeVariant.getAllFittedWeaponsList();
+            if (allFittedWeaponsList.isEmpty()) {
+                rearrangeGroups.setEnabled(false);
+            }
+
             rearrangeGroups.addActionListener(e -> DialogUtilities.showWeaponGroupsDialog(activeVariant));
 
             buttonContainer.add(rearrangeGroups, BorderLayout.PAGE_START);

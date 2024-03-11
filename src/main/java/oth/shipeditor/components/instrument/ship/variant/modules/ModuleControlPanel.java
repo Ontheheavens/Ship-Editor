@@ -4,6 +4,7 @@ import oth.shipeditor.components.instrument.LayerPropertiesPanel;
 import oth.shipeditor.components.instrument.ship.centers.ModuleAnchorPanel;
 import oth.shipeditor.components.viewer.layers.LayerPainter;
 import oth.shipeditor.components.viewer.layers.ship.ShipPainter;
+import oth.shipeditor.components.viewer.layers.ship.data.ShipVariant;
 import oth.shipeditor.components.viewer.painters.PainterVisibility;
 import oth.shipeditor.components.viewer.painters.points.AbstractPointPainter;
 import oth.shipeditor.components.viewer.painters.points.ship.features.InstalledFeature;
@@ -58,6 +59,9 @@ public class ModuleControlPanel extends LayerPropertiesPanel {
         JPanel topContainer = new JPanel(new BorderLayout());
 
         Map<JLabel, JComponent> topWidgets = new LinkedHashMap<>();
+
+        var moduleOpacityWidget = createModuleOpacitySlider();
+        topWidgets.put(moduleOpacityWidget.getFirst(), moduleOpacityWidget.getSecond());
 
         var collisionVisibilityWidget = createCollisionVisibilityWidget();
         topWidgets.put(collisionVisibilityWidget.getFirst(), collisionVisibilityWidget.getSecond());
@@ -139,6 +143,30 @@ public class ModuleControlPanel extends LayerPropertiesPanel {
 
         JLabel opacityLabel = opacityWidget.getFirst();
         opacityLabel.setText(StringValues.SLOTS_VIEW);
+
+        return opacityWidget;
+    }
+
+    private Pair<JLabel, JSlider> createModuleOpacitySlider() {
+        Consumer<Float> opacitySetter = changedValue -> {
+            LayerPainter layerPainter = getCachedLayerPainter();
+            if (layerPainter != null) {
+                layerPainter.setSpriteOpacity(changedValue);
+
+                if (layerPainter instanceof ShipPainter shipPainter) {
+                    ShipVariant moduleVariant = shipPainter.getActiveVariant();
+                    moduleVariant.setOpacityForAllFitted(changedValue);
+                }
+            }
+            processChange();
+        };
+
+        Function<LayerPainter, Float> opacityGetter = LayerPainter::getSpriteOpacity;
+
+        Pair<JLabel, JSlider> opacityWidget = super.createOpacityWidget(opacityGetter, opacitySetter);
+
+        JLabel opacityLabel = opacityWidget.getFirst();
+        opacityLabel.setText("Module opacity");
 
         return opacityWidget;
     }

@@ -141,10 +141,7 @@ public final class InstalledFeaturePainter {
             return Integer.MAX_VALUE;
         }
         if (slotPoint.isPointSelected() && InstalledFeaturePainter.isInteractable(slotPainter.getParentLayer())) {
-            installablePainter.setSpriteOpacity(0.75f);
             cachedSelectCounterpart = (WeaponSlotPoint) slotPainter.getMirroredCounterpart(slotPoint);
-        } else {
-            installablePainter.setSpriteOpacity(1.0f);
         }
 
         feature.setInvalidated(false);

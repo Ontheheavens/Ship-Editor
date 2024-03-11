@@ -9,7 +9,9 @@ import oth.shipeditor.communication.events.viewer.layers.LayerRotationQueued;
 import oth.shipeditor.communication.events.viewer.points.*;
 import oth.shipeditor.components.viewer.PrimaryViewer;
 import oth.shipeditor.components.viewer.ViewerDropReceiver;
+import oth.shipeditor.components.viewer.layers.LayerManager;
 import oth.shipeditor.components.viewer.layers.LayerPainter;
+import oth.shipeditor.components.viewer.layers.ViewerLayer;
 import oth.shipeditor.components.viewer.layers.ship.ShipPainter;
 import oth.shipeditor.components.viewer.painters.points.ship.BoundPointsPainter;
 import oth.shipeditor.components.viewer.painters.points.ship.EngineSlotPainter;
@@ -36,7 +38,7 @@ import java.awt.geom.Point2D;
  * @since 29.04.2023
  */
 
-@SuppressWarnings("OverlyCoupledClass")
+@SuppressWarnings({"OverlyCoupledClass", "OverlyComplexClass"})
 @Log4j2
 public final class LayerViewerControls implements ViewerControl {
 
@@ -275,7 +277,8 @@ public final class LayerViewerControls implements ViewerControl {
         this.previousPoint.setLocation(x, y);
         this.parentViewer.setRepaintQueued();
         boolean selectionHoldActive = e.isControlDown() && ControlPredicates.isSelectionHoldingEnabled();
-        if (ControlPredicates.getSelectionMode() == PointSelectionMode.CLOSEST && !selectionHoldActive) {
+        if (ControlPredicates.getSelectionMode() == PointSelectionMode.CLOSEST && !selectionHoldActive &&
+                !ControlPredicates.layerSelectPredicate.test(e)) {
             EventBus.publish(new PointSelectQueued(null));
         }
         if (ControlPredicates.changeAnglePredicate.test(e)) {
@@ -397,9 +400,45 @@ public final class LayerViewerControls implements ViewerControl {
             if (!appendBoundDown && !insertBoundDown && !angleHotkeysDown) {
                 EventBus.publish(new PointDragQueued(screenToWorld, cursor));
             }
+        } else if (ControlPredicates.layerSelectPredicate.test(event)) {
+            this.tryMouseLayerSelection(mousePoint);
         }
         updateViewerCursorState();
         this.parentViewer.setRepaintQueued();
+    }
+
+    private void tryMouseLayerSelection(Point2D targetPoint) {
+        LayerManager layerManager = parentViewer.getLayerManager();
+        java.util.List<ViewerLayer> layers = layerManager.getLayers();
+
+        if (layers.size() > 1) {
+            ViewerLayer closestLayer = null;
+            double closestDistance = Double.MAX_VALUE;
+
+            Point2D cachedTransformedCenter = new Point2D.Double();
+            AffineTransform worldToScreen = parentViewer.getWorldToScreen();
+            AffineTransform transformCache = new AffineTransform();
+
+            Point2D spriteCenterCached = new Point2D.Double();
+
+            for (ViewerLayer layer : layers) {
+                LayerPainter painter = layer.getPainter();
+                AffineTransform transform = painter.getWithRotation(worldToScreen, transformCache);
+
+                Point2D layerCenter = painter.getSpriteCenter(spriteCenterCached);
+                Point2D transformed = transform.transform(layerCenter, cachedTransformedCenter);
+
+                double checkedDistance = transformed.distance(targetPoint);
+                if (checkedDistance < closestDistance) {
+                    closestLayer = layer;
+                    closestDistance = checkedDistance;
+                }
+            }
+
+            if (closestLayer != null && !closestLayer.equals(layerManager.getActiveLayer())) {
+                layerManager.setActiveLayer(closestLayer);
+            }
+        }
     }
 
     private void updateViewerCursorState() {

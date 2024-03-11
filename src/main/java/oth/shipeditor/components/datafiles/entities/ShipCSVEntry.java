@@ -33,7 +33,7 @@ import java.util.*;
  */
 @Log4j2
 @Getter
-public class ShipCSVEntry implements CSVEntry, InstallableEntry {
+public class ShipCSVEntry implements LayerableEntry, InstallableEntry {
 
     private final Map<String, String> rowData;
 
@@ -221,6 +221,7 @@ public class ShipCSVEntry implements CSVEntry, InstallableEntry {
     }
 
     @SuppressWarnings("MethodWithMultipleReturnPoints")
+    @Override
     public ShipLayer loadLayerFromEntry() {
         String spriteName = this.hullSpecFile.getSpriteName();
         Path spriteFilePath = Path.of(spriteName);

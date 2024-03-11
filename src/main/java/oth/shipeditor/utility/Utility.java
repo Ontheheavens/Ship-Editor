@@ -12,6 +12,7 @@ import oth.shipeditor.components.viewer.layers.ship.ShipPainter;
 import oth.shipeditor.parsing.loading.FileLoading;
 import oth.shipeditor.persistence.SettingsManager;
 import oth.shipeditor.utility.graphics.Sprite;
+import oth.shipeditor.utility.overseers.MiscCaching;
 import oth.shipeditor.utility.overseers.StaticController;
 import oth.shipeditor.utility.text.StringValues;
 
@@ -75,7 +76,11 @@ public final class Utility {
     }
 
     public static Point2D getSpriteCenterDifferenceToAnchor(RenderedImage image) {
-        return new Point2D.Double((image.getWidth() / 2.0f), (image.getHeight() / 2.0f));
+        Point2D point = MiscCaching.getNewPoint();
+        float x = image.getWidth() / 2.0f;
+        float y = image.getHeight() / 2.0f;
+        point.setLocation(x, y);
+        return point;
     }
 
     public static Point2D correctAdjustedCursor(Point2D adjustedCursor, AffineTransform screenToWorld) {

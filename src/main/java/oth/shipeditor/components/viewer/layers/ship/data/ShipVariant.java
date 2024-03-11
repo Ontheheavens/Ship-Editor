@@ -7,6 +7,7 @@ import oth.shipeditor.components.datafiles.entities.HullmodCSVEntry;
 import oth.shipeditor.components.datafiles.entities.ShipCSVEntry;
 import oth.shipeditor.components.datafiles.entities.WeaponCSVEntry;
 import oth.shipeditor.components.datafiles.entities.WingCSVEntry;
+import oth.shipeditor.components.viewer.layers.LayerPainter;
 import oth.shipeditor.components.viewer.layers.ship.ShipLayer;
 import oth.shipeditor.components.viewer.layers.ship.ShipPainter;
 import oth.shipeditor.components.viewer.layers.weapon.WeaponPainter;
@@ -260,6 +261,14 @@ public class ShipVariant implements Variant {
             result.addAll(weaponsInGroup.valueList());
         }
         return result;
+    }
+
+    public void setOpacityForAllFitted(float opacity) {
+        List<InstalledFeature> fittedWeaponsList = this.getAllFittedWeaponsList();
+        fittedWeaponsList.forEach(weapon -> {
+            LayerPainter featurePainter = weapon.getFeaturePainter();
+            featurePainter.setSpriteOpacity(opacity);
+        });
     }
 
     public void initialize(VariantFile file) {

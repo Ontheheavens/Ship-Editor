@@ -100,6 +100,7 @@ public final class StringValues {
     public static final String BOUNDS_VIEW = "Bounds view";
     public static final String POINT_LOCATION_IN_WORLD_COORDINATES = "Point location in world coordinates";
     public static final String WEAPON_ANIMATION = "Weapon Animation";
+    public static final String SPRITE_OPACITY = "Sprite opacity:";
 
     private StringValues() {
     }

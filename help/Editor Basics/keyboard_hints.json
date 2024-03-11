@@ -1,0 +1,45 @@
+{
+    "name": "Keyboard Hints",
+    "articleParts": [
+        {
+            "type": "TITLE",
+            "title": "Hotkey and keyboard hints"
+        },
+        {
+            "type": "TEXT_BLOCK",
+            "text": "There is a number of ways you can manipulate your layers when editing ships or weapons. You can drag, rotate, and quickly switch between them."
+        },
+        {
+            "type": "SEPARATOR",
+            "title": "Layer Manipulation"
+        },
+        {
+            "type": "TEXT_BLOCK",
+            "text": "1. Press SHIFT, hold left mouse button and drag to drag a selected layer around."
+        },
+        {
+            "type": "TEXT_BLOCK",
+            "text": "2. Press SHIFT, hold right mouse button and drag to rotate selected layer."
+        },
+        {
+            "type": "TEXT_BLOCK",
+            "text": "3. Press ALT to select a layer, sprite center of which is the closest to the mouse cursor."
+        },
+        {
+            "type": "SEPARATOR",
+            "title": "Point Manipulation"
+        },
+        {
+            "type": "TEXT_BLOCK",
+            "text": "1. There are two point selection modes supported: closest and strict. When in closest selection mode, closest point to the mouse cursor will be selected with every mouse motion."
+        },
+        {
+            "type": "TEXT_BLOCK",
+            "text": "2. Hold CTRL when moving the mouse to prevent point reselection when in closest selection mode."
+        },
+        {
+            "type": "TEXT_BLOCK",
+            "text": "3. Hold left mouse button and drag to move selected point."
+        }
+    ]
+}

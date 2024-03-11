@@ -38,7 +38,7 @@ import java.util.function.Consumer;
  */
 @SuppressWarnings("OverlyCoupledClass")
 @Getter
-public class WeaponCSVEntry implements CSVEntry, InstallableEntry {
+public class WeaponCSVEntry implements LayerableEntry, InstallableEntry {
 
     private final Map<String, String> rowData;
 
@@ -194,7 +194,8 @@ public class WeaponCSVEntry implements CSVEntry, InstallableEntry {
                 rotation, targetLocation, neededSprite);
     }
 
-    public void loadLayerFromEntry() {
+    @Override
+    public WeaponLayer loadLayerFromEntry() {
         String turretSprite = this.specFile.getTurretSprite();
 
         if (turretSprite == null || turretSprite.isEmpty()) {
@@ -202,7 +203,7 @@ public class WeaponCSVEntry implements CSVEntry, InstallableEntry {
                     "Layer initialization failed, sprite file not defined for: " + this.getWeaponID(),
                     StringValues.FILE_LOADING_ERROR,
                     JOptionPane.ERROR_MESSAGE);
-            return;
+            return null;
         }
 
         Path spriteFilePath = Path.of(turretSprite);
@@ -213,7 +214,7 @@ public class WeaponCSVEntry implements CSVEntry, InstallableEntry {
                     "Layer initialization failed, sprite file not found for: " + this.getWeaponID(),
                     StringValues.FILE_LOADING_ERROR,
                     JOptionPane.ERROR_MESSAGE);
-            return;
+            return null;
         }
 
         Sprite sprite = FileLoading.loadSprite(spriteFile);
@@ -233,6 +234,8 @@ public class WeaponCSVEntry implements CSVEntry, InstallableEntry {
         viewer.loadLayer(newLayer, sprite);
 
         EventBus.publish(new ActiveLayerUpdated(newLayer));
+
+        return newLayer;
     }
 
     /**

@@ -45,6 +45,23 @@ public final class ModuleList extends InstalledFeatureList {
     }
 
     @Override
+    protected JPopupMenu getContextMenu() {
+        JPopupMenu menu = super.getContextMenu();
+        InstalledFeature selected = getSelectedValue();
+
+        if (menu != null && selected != null) {
+            JMenuItem loadAsLayer = new JMenuItem("Load as separate layer");
+
+            loadAsLayer.addActionListener(event -> actOnSelectedEntry(InstalledFeature::loadAsSeparateLayer));
+            if (!(selected.getDataEntry() instanceof ShipCSVEntry)) {
+                loadAsLayer.setEnabled(false);
+            }
+            menu.add(loadAsLayer);
+        }
+        return menu;
+    }
+
+    @Override
     protected JMenuItem getSelectEntryOption(InstalledFeature selected) {
         JMenuItem selectEntry = new JMenuItem(StringValues.SELECT_SHIP_ENTRY);
         selectEntry.addActionListener(event -> actOnSelectedEntry(feature -> {

@@ -7,6 +7,7 @@ import oth.shipeditor.components.viewer.painters.PainterVisibility;
 import oth.shipeditor.components.viewer.painters.points.AbstractPointPainter;
 import oth.shipeditor.utility.components.ComponentUtilities;
 import oth.shipeditor.utility.objects.Pair;
+import oth.shipeditor.utility.text.StringValues;
 
 import javax.swing.*;
 import java.awt.*;
@@ -153,5 +154,20 @@ public abstract class LayerPropertiesPanel extends JPanel {
         );
     }
 
+    protected Pair<JLabel, JSlider> createOpacityWidget(Function<LayerPainter, Float> opacityGetter,
+                                                        Consumer<Float> opacitySetter) {
+        BooleanSupplier readinessChecker = this::isWidgetsReadyForInput;
+
+        BiConsumer<JComponent, Consumer<LayerPainter>> clearerListener = this::registerWidgetClearer;
+        BiConsumer<JComponent, Consumer<LayerPainter>> refresherListener = this::registerWidgetRefresher;
+
+        Pair<JLabel, JSlider> opacityWidget = ComponentUtilities.createOpacityWidget(readinessChecker,
+                opacityGetter, opacitySetter, clearerListener, refresherListener);
+
+        JLabel opacityLabel = opacityWidget.getFirst();
+        opacityLabel.setText(StringValues.SPRITE_OPACITY);
+
+        return opacityWidget;
+    }
 
 }

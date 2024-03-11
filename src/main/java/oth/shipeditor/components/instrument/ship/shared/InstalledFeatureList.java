@@ -167,21 +167,21 @@ public class InstalledFeatureList extends SortableList<InstalledFeature> {
         return transferable.getTransferDataFlavors()[0].equals(FEATURE_FLAVOR);
     }
 
+    protected JPopupMenu getContextMenu() {
+        InstalledFeature selected = getSelectedValue();
+        if (selected == null) return null;
+        JPopupMenu menu = new JPopupMenu();
+        JMenuItem removePoint = new JMenuItem(StringValues.UNINSTALL_FEATURE);
+        removePoint.addActionListener(event -> actOnSelectedEntry(uninstaller));
+        menu.add(removePoint);
+
+        JMenuItem selectEntry = getSelectEntryOption(selected);
+        menu.add(selectEntry);
+
+        return menu;
+    }
+
     private class FeatureContextMenuListener extends MouseAdapter {
-
-        private JPopupMenu getContextMenu() {
-            InstalledFeature selected = getSelectedValue();
-            if (selected == null) return null;
-            JPopupMenu menu = new JPopupMenu();
-            JMenuItem removePoint = new JMenuItem(StringValues.UNINSTALL_FEATURE);
-            removePoint.addActionListener(event -> actOnSelectedEntry(uninstaller));
-            menu.add(removePoint);
-
-            JMenuItem selectEntry = getSelectEntryOption(selected);
-            menu.add(selectEntry);
-
-            return menu;
-        }
 
         public void mousePressed(MouseEvent e) {
             if ( SwingUtilities.isRightMouseButton(e) ) {

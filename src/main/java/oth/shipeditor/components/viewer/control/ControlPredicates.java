@@ -79,6 +79,8 @@ public final class ControlPredicates {
             InputEventPredicates.shiftDown()
     );
 
+    static final Predicate<MouseEvent> layerSelectPredicate = InputEventPredicates.altDown();
+
     static final Predicate<MouseEvent> layerRotatePredicate = Predicates.and(
             InputEventPredicates.buttonDown(3),
             InputEventPredicates.shiftDown()

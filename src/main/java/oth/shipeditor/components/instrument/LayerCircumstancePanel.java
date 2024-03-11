@@ -3,7 +3,6 @@ package oth.shipeditor.components.instrument;
 import oth.shipeditor.components.viewer.control.ControlPredicates;
 import oth.shipeditor.components.viewer.layers.LayerPainter;
 import oth.shipeditor.utility.Utility;
-import oth.shipeditor.utility.components.ComponentUtilities;
 import oth.shipeditor.utility.components.widgets.IncrementType;
 import oth.shipeditor.utility.components.widgets.PointLocationWidget;
 import oth.shipeditor.utility.components.widgets.Spinners;
@@ -16,7 +15,9 @@ import java.awt.*;
 import java.awt.geom.Point2D;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.function.*;
+import java.util.function.Consumer;
+import java.util.function.Function;
+import java.util.function.Supplier;
 
 /**
  * @author Ontheheavens
@@ -57,27 +58,17 @@ public class LayerCircumstancePanel extends LayerPropertiesPanel {
     }
 
     private Pair<JLabel, JSlider> createLayerOpacitySlider() {
-        BooleanSupplier readinessChecker = this::isWidgetsReadyForInput;
         Consumer<Float> opacitySetter = changedValue -> {
-            LayerPainter cachedLayerPainter = getCachedLayerPainter();
-            if (cachedLayerPainter != null) {
-                cachedLayerPainter.setSpriteOpacity(changedValue);
+            LayerPainter layerPainter = getCachedLayerPainter();
+            if (layerPainter != null) {
+                layerPainter.setSpriteOpacity(changedValue);
             }
             processChange();
         };
 
-        BiConsumer<JComponent, Consumer<LayerPainter>> clearerListener = this::registerWidgetClearer;
-        BiConsumer<JComponent, Consumer<LayerPainter>> refresherListener = this::registerWidgetRefresher;
-
         Function<LayerPainter, Float> opacityGetter = LayerPainter::getSpriteOpacity;
 
-        Pair<JLabel, JSlider> opacityWidget = ComponentUtilities.createOpacityWidget(readinessChecker,
-                opacityGetter, opacitySetter, clearerListener, refresherListener);
-
-        JLabel opacityLabel = opacityWidget.getFirst();
-        opacityLabel.setText("Sprite opacity:");
-
-        return opacityWidget;
+        return super.createOpacityWidget(opacityGetter, opacitySetter);
     }
 
     private Pair<JLabel, JSpinner> createLayerRotationSpinner() {

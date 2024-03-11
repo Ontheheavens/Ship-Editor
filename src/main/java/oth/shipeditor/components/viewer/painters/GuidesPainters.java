@@ -244,15 +244,17 @@ public final class GuidesPainters {
         @Override
         public void paint(Graphics2D g, AffineTransform worldToScreen, double w, double h) {
             if (!drawBorders) return;
-
             LayerPainter layer = parent.getSelectedLayer();
             if (layer == null || layer.getSprite() == null) return;
             Sprite sprite = layer.getSprite();
             RenderedImage shipSprite = sprite.getImage();
-            int width = shipSprite.getWidth();
-            int height = shipSprite.getHeight();
+            int width = layer.getSpriteWidth();
+            int height = layer.getSpriteHeight();
             Point2D layerAnchor = layer.getAnchor();
-            DrawUtilities.drawSpriteBorders(g, worldToScreen, shipSprite, layerAnchor);
+            double anchorX = layerAnchor.getX();
+            double anchorY = layerAnchor.getY();
+            Shape spriteBorder = new Rectangle2D.Double(anchorX, anchorY, width, height);
+            DrawUtilities.drawSpriteBorders(g, worldToScreen, shipSprite, spriteBorder);
         }
 
     }

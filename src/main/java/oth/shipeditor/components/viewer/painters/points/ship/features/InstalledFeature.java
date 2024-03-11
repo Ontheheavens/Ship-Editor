@@ -8,10 +8,14 @@ import oth.shipeditor.components.datafiles.entities.ShipCSVEntry;
 import oth.shipeditor.components.datafiles.entities.WeaponCSVEntry;
 import oth.shipeditor.components.viewer.entities.weapon.WeaponSlotPoint;
 import oth.shipeditor.components.viewer.layers.LayerPainter;
+import oth.shipeditor.components.viewer.layers.ship.ShipLayer;
 import oth.shipeditor.components.viewer.layers.ship.ShipPainter;
+import oth.shipeditor.components.viewer.layers.ship.data.ShipVariant;
 import oth.shipeditor.components.viewer.layers.weapon.WeaponPainter;
 import oth.shipeditor.components.viewer.painters.points.AbstractPointPainter;
+import oth.shipeditor.representation.GameDataRepository;
 import oth.shipeditor.representation.SizeEnum;
+import oth.shipeditor.representation.ship.VariantFile;
 import oth.shipeditor.representation.weapon.WeaponMount;
 import oth.shipeditor.representation.weapon.WeaponSpecFile;
 import oth.shipeditor.representation.weapon.WeaponType;
@@ -51,6 +55,8 @@ public final class InstalledFeature implements InstallableEntry {
      */
     @Setter
     private FittedWeaponGroup parentGroup;
+
+    private final AffineTransform cachedTransform = new AffineTransform();
 
     private InstalledFeature(String slot, String id, LayerPainter painter, CSVEntry entry) {
         this.slotID = slot;
@@ -165,6 +171,10 @@ public final class InstalledFeature implements InstallableEntry {
         }
         painter.setShouldDrawPainter(true);
 
+        InstalledFeature.configurePainterBySlot(slotPoint, painter);
+    }
+
+    private static void configurePainterBySlot(WeaponSlotPoint slotPoint, LayerPainter painter) {
         Point2D position = slotPoint.getPosition();
         Point2D entityCenter = painter.getCenterAnchorDifference();
         if (painter instanceof WeaponPainter weaponPainter) {
@@ -179,7 +189,34 @@ public final class InstalledFeature implements InstallableEntry {
         }
 
         double transformedAngle = Utility.transformAngle(slotPoint.getAngle());
-        painter.setRotationRadians(Math.toRadians(transformedAngle + 90));
+        double rotationRadians = Math.toRadians(transformedAngle + 90);
+        painter.setRotationRadians(rotationRadians);
+    }
+
+    public void loadAsSeparateLayer() {
+        LayerPainter layerPainter = this.getFeaturePainter();
+        if (layerPainter instanceof ShipPainter shipPainter) {
+            float opacity = 0.3f;
+            layerPainter.setSpriteOpacity(opacity);
+
+            ShipVariant variant = shipPainter.getActiveVariant();
+            variant.setOpacityForAllFitted(opacity);
+
+            VariantFile rawVariant = GameDataRepository.getVariantByID(variant.getVariantId());
+            if (rawVariant != null && !rawVariant.isEmpty()) {
+                ShipLayer loadedFromModule = GameDataRepository.createLayerFromVariant(rawVariant);
+
+                ShipPainter newPainter = loadedFromModule.getPainter();
+
+                Point2D anchor = layerPainter.getAnchor();
+                newPainter.setAnchor(new Point2D.Double(anchor.getX(), anchor.getY()));
+
+                double rotationDegrees = Math.toDegrees(shipPainter.getRotationRadians());
+                newPainter.rotateLayer(rotationDegrees);
+            }
+        } else {
+            throw new IllegalStateException("Can only load modules as separate layers!");
+        }
     }
 
     @Override
@@ -190,7 +227,7 @@ public final class InstalledFeature implements InstallableEntry {
 
     public void paint(Graphics2D g, AffineTransform worldToScreen, double w, double h) {
         LayerPainter layerPainter = this.getFeaturePainter();
-        AffineTransform transform = layerPainter.getWithRotation(worldToScreen);
+        AffineTransform transform = layerPainter.getWithRotation(worldToScreen, cachedTransform);
         layerPainter.paint(g, transform, w, h);
 
         List<AbstractPointPainter> allPainters = layerPainter.getAllPainters();

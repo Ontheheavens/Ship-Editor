@@ -15,8 +15,10 @@ import oth.shipeditor.utility.components.ComponentUtilities;
 import oth.shipeditor.utility.overseers.StaticController;
 
 import javax.swing.*;
+import javax.swing.border.EmptyBorder;
 import javax.swing.border.LineBorder;
 import java.awt.*;
+import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
 
@@ -73,7 +75,14 @@ public class VariantModulesPanel extends AbstractShipPropertiesPanel {
         this.controlPanel = new ModuleControlPanel(moduleList);
 
         JPanel northContainer = new JPanel(new BorderLayout());
-        ComponentUtilities.outfitPanelWithTitle(northContainer, "Selected module");
+
+        JPanel buttonContainer = new JPanel(new BorderLayout());
+        buttonContainer.setBorder(new EmptyBorder(4, 4, 0, 4));
+        buttonContainer.add(getLoadModulesButton(), BorderLayout.CENTER);
+
+        northContainer.add(buttonContainer, BorderLayout.PAGE_START);
+
+        ComponentUtilities.outfitPanelWithTitle(controlPanel, "Selected module");
         northContainer.add(controlPanel, BorderLayout.CENTER);
 
         this.refreshModuleControlPane();
@@ -82,6 +91,33 @@ public class VariantModulesPanel extends AbstractShipPropertiesPanel {
 
         this.add(northContainer, BorderLayout.PAGE_START);
         this.add(scrollableContainer, BorderLayout.CENTER);
+    }
+
+    private JButton getLoadModulesButton() {
+        JButton loadModulesAsLayers = new JButton("Load modules as layers");
+
+        registerWidgetListeners(loadModulesAsLayers, layer ->
+                loadModulesAsLayers.setEnabled(false), layer -> {
+            ShipVariant currentVariant = getCurrentVariant();
+            if (currentVariant != null) {
+                List<InstalledFeature> fittedModulesList = currentVariant.getFittedModulesList();
+                loadModulesAsLayers.setEnabled(!fittedModulesList.isEmpty());
+            } else {
+                loadModulesAsLayers.setEnabled(false);
+            }
+        });
+
+        loadModulesAsLayers.addActionListener(event -> {
+            ShipVariant currentVariant = getCurrentVariant();
+            if (currentVariant != null) {
+                List<InstalledFeature> fittedModulesList = currentVariant.getFittedModulesList();
+                if (!fittedModulesList.isEmpty()) {
+                    fittedModulesList.forEach(InstalledFeature::loadAsSeparateLayer);
+                }
+            }
+        });
+
+        return loadModulesAsLayers;
     }
 
     @Override

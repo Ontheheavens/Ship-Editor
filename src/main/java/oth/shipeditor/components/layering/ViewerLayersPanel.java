@@ -100,7 +100,9 @@ public final class ViewerLayersPanel extends SortableTabbedPane {
             log.trace("Layer panel change!");
             // If the change results from the last layer being removed and the newly selected layer is null,
             // call to set active layer is unnecessary as this case is handled directly by layer manager.
-            if (newlySelected != null) {
+            ViewerLayer activeLayer = layerManager.getActiveLayer();
+
+            if (newlySelected != null && activeLayer != newlySelected) {
                 layerManager.setActiveLayer(newlySelected);
             }
         });

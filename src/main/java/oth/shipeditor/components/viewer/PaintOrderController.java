@@ -12,6 +12,7 @@ import oth.shipeditor.components.viewer.painters.HotkeyHelpPainter;
 import oth.shipeditor.components.viewer.painters.points.AbstractPointPainter;
 import oth.shipeditor.components.viewer.painters.points.ship.MarkPointsPainter;
 import oth.shipeditor.utility.Utility;
+import oth.shipeditor.utility.overseers.MiscCaching;
 
 import javax.swing.*;
 import java.awt.*;
@@ -120,7 +121,8 @@ public class PaintOrderController implements Painter {
         LayerPainter layerPainter = layer.getPainter();
         if (layerPainter == null) return;
 
-        AffineTransform transform = layerPainter.getWithRotation(worldToScreen);
+        AffineTransform transform = MiscCaching.getLayerRotationTransform();
+        transform = layerPainter.getWithRotation(worldToScreen, transform);
 
         layerPainter.paint(g, transform, w, h);
 
@@ -132,9 +134,9 @@ public class PaintOrderController implements Painter {
 
     private void paintLayerDependentGuides(Graphics2D g, AffineTransform worldToScreen, double w, double h) {
         LayerPainter selected = parent.getSelectedLayer();
-        AffineTransform transform = new AffineTransform(worldToScreen);
+        AffineTransform transform = MiscCaching.getLayerRotationTransform();
         if (selected != null) {
-            transform = selected.getWithRotation(worldToScreen);
+            transform = selected.getWithRotation(worldToScreen, transform);
         }
 
         PaintOrderController.paintIfPresent(g, transform, w, h, guidesPainters.getBordersPaint());

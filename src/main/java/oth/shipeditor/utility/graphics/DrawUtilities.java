@@ -24,6 +24,8 @@ public final class DrawUtilities {
 
     private static final DrawMode DRAW_MODE = DrawMode.FAST;
 
+    private static final AffineTransform CACHED_TRANSFORM = new AffineTransform();
+
     private DrawUtilities() {
     }
 
@@ -57,12 +59,17 @@ public final class DrawUtilities {
         DrawUtilities.fillShape(g, transformed,color);
     }
 
-    public static void outlineShape(Graphics2D g, Shape shape, Paint color, float strokeWidth) {
+    private static Stroke getStroke(float strokeWidth) {
         Stroke cached = CACHED_STROKES.get(strokeWidth);
         if (cached == null) {
             cached = new BasicStroke(strokeWidth);
             CACHED_STROKES.put(strokeWidth, cached);
         }
+        return cached;
+    }
+
+    public static void outlineShape(Graphics2D g, Shape shape, Paint color, float strokeWidth) {
+        Stroke cached = DrawUtilities.getStroke(strokeWidth);
         DrawUtilities.outlineShape(g, shape, color, cached);
     }
 
@@ -115,19 +122,9 @@ public final class DrawUtilities {
     @SuppressWarnings({"BooleanParameter", "WeakerAccess"})
     public static void drawOutlined(Graphics2D g, Shape shape, Paint color, boolean quality) {
         float widthFive = 5.0f;
-        Stroke cachedFive = CACHED_STROKES.get(widthFive);
-        if (cachedFive == null) {
-            cachedFive = new BasicStroke(widthFive);
-            CACHED_STROKES.put(widthFive, cachedFive);
-        }
-
+        Stroke cachedFive = DrawUtilities.getStroke(widthFive);
         float widthThree = 3.0f;
-        Stroke cachedThree = CACHED_STROKES.get(widthThree);
-        if (cachedThree == null) {
-            cachedThree = new BasicStroke(widthThree);
-            CACHED_STROKES.put(widthThree, cachedThree);
-        }
-
+        Stroke cachedThree = DrawUtilities.getStroke(widthThree);
         DrawUtilities.drawOutlined(g, shape, color, quality, cachedFive, cachedThree);
     }
 
@@ -286,17 +283,15 @@ public final class DrawUtilities {
     public static void drawWithRotationTransform(Graphics2D g, AffineTransform worldToScreen,
                                                  Point2D anchor, double radiansRotation, GraphicsAction action) {
         AffineTransform oldAT = g.getTransform();
-        AffineTransform oldWtS = new AffineTransform(worldToScreen);
-        AffineTransform rotateInstance = AffineTransform.getRotateInstance(radiansRotation,
-                anchor.getX(), anchor.getY());
-        worldToScreen.concatenate(rotateInstance);
+        CACHED_TRANSFORM.setTransform(worldToScreen);
+        CACHED_TRANSFORM.translate(anchor.getX(), anchor.getY());
+        CACHED_TRANSFORM.rotate(radiansRotation);
+        CACHED_TRANSFORM.translate(-anchor.getX(), -anchor.getY());
 
-        g.transform(worldToScreen);
-
+        g.transform(CACHED_TRANSFORM);
         action.draw(g);
-
-        worldToScreen.setTransform(oldWtS);
         g.setTransform(oldAT);
+        CACHED_TRANSFORM.setToIdentity();
     }
 
     @SuppressWarnings("MethodWithTooManyParameters")
@@ -359,16 +354,14 @@ public final class DrawUtilities {
     }
 
     public static void drawSpriteBorders(Graphics2D g, AffineTransform worldToScreen,
-                                         RenderedImage sprite, Point2D anchor) {
-        int width = sprite.getWidth();
-        int height = sprite.getHeight();
-        Shape spriteBorder = new Rectangle2D.Double(anchor.getX(), anchor.getY(), width, height);
-        Shape transformed = worldToScreen.createTransformedShape(spriteBorder);
+                                         RenderedImage sprite, Shape border) {
+        Shape transformed = worldToScreen.createTransformedShape(border);
 
         Stroke oldStroke = g.getStroke();
         Paint oldPaint = g.getPaint();
 
-        g.setStroke(new BasicStroke(3));
+        Stroke cached = DrawUtilities.getStroke(3);
+        g.setStroke(cached);
         g.setPaint(Color.BLACK);
         g.draw(transformed);
         g.setStroke(oldStroke);
