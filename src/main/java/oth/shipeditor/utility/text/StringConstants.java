@@ -77,7 +77,7 @@ public interface StringConstants {
 
     String LAUNCH_BAY = "LAUNCH_BAY";
 
-    String JTABBED_PANE_TAB_AREA_ALIGNMENT = "JTabbedPane.tabAreaAlignment";
+    String TABBED_PANE_TAB_AREA_ALIGNMENT = "JTabbedPane.tabAreaAlignment";
 
     String DEFAULT_ID = "DEFAULT";
 

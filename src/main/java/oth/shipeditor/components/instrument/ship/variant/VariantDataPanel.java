@@ -30,7 +30,7 @@ public class VariantDataPanel extends JPanel {
         tabContainer.addTab(StringValues.WINGS, variantWingsPanel);
 
         tabContainer.setTabLayoutPolicy(JTabbedPane.SCROLL_TAB_LAYOUT);
-        tabContainer.putClientProperty(StringConstants.JTABBED_PANE_TAB_AREA_ALIGNMENT, "fill");
+        tabContainer.putClientProperty(StringConstants.TABBED_PANE_TAB_AREA_ALIGNMENT, "fill");
         this.add(tabContainer, BorderLayout.CENTER);
 
         tabContainer.addChangeListener(event -> {
