@@ -149,15 +149,13 @@ public class ModuleControlPanel extends LayerPropertiesPanel {
 
     private Pair<JLabel, JSlider> createModuleOpacitySlider() {
         Consumer<Float> opacitySetter = changedValue -> {
-            LayerPainter layerPainter = getCachedLayerPainter();
-            if (layerPainter != null) {
-                layerPainter.setSpriteOpacity(changedValue);
-
-                if (layerPainter instanceof ShipPainter shipPainter) {
-                    ShipVariant moduleVariant = shipPainter.getActiveVariant();
-                    moduleVariant.setOpacityForAllFitted(changedValue);
-                }
-            }
+            actOnSelectedModules(shipPainter -> {
+                if (shipPainter == null) return;
+                shipPainter.setSpriteOpacity(changedValue);
+                ShipVariant moduleVariant = shipPainter.getActiveVariant();
+                if (moduleVariant == null || moduleVariant.isEmpty()) return;
+                moduleVariant.setOpacityForAllFitted(changedValue);
+            });
             processChange();
         };
 
