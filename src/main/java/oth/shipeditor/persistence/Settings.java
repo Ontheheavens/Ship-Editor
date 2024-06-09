@@ -49,6 +49,9 @@ public class Settings {
     @JsonProperty("loadSpritesFromAnywhere")
     boolean loadSpritesFromAnywhere;
 
+    @JsonProperty("numericSuffixesForSlots")
+    boolean numericSuffixesForSlots = true;
+
     @JsonProperty("theme")
     Theme theme = Theme.FLAT_INTELLIJ;
 
@@ -110,6 +113,11 @@ public class Settings {
 
     public void setLoadSpritesFromAnywhere(boolean loadSprites) {
         this.loadSpritesFromAnywhere = loadSprites;
+        SettingsManager.updateFileFromRuntime();
+    }
+
+    public void setNumericSuffixesForSlots(boolean numericSuffixes) {
+        this.numericSuffixesForSlots = numericSuffixes;
         SettingsManager.updateFileFromRuntime();
     }
 

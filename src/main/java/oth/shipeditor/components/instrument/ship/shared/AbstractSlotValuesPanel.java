@@ -6,6 +6,8 @@ import oth.shipeditor.components.viewer.entities.weapon.SlotPoint;
 import oth.shipeditor.components.viewer.entities.weapon.WeaponSlotOverride;
 import oth.shipeditor.components.viewer.layers.LayerPainter;
 import oth.shipeditor.components.viewer.layers.ship.ShipPainter;
+import oth.shipeditor.persistence.Settings;
+import oth.shipeditor.persistence.SettingsManager;
 import oth.shipeditor.representation.weapon.WeaponMount;
 import oth.shipeditor.representation.weapon.WeaponSize;
 import oth.shipeditor.representation.weapon.WeaponType;
@@ -81,6 +83,10 @@ public abstract class AbstractSlotValuesPanel extends LayerPropertiesPanel {
     protected void populateContent() {
         this.setLayout(new BorderLayout());
 
+        JPanel suffixesPanel = AbstractSlotValuesPanel.createSuffixesWidgetPanel();
+
+        this.add(suffixesPanel, BorderLayout.PAGE_START);
+
         Map<JLabel, JComponent> widgets = new LinkedHashMap<>();
 
         var slotIdWidget = createIDWidget();
@@ -108,6 +114,20 @@ public abstract class AbstractSlotValuesPanel extends LayerPropertiesPanel {
 
         JPanel widgetsPanel = createWidgetsPanel(widgets);
         this.add(widgetsPanel, BorderLayout.CENTER);
+    }
+
+    private static JPanel createSuffixesWidgetPanel() {
+        JPanel suffixesPanel = new JPanel();
+        suffixesPanel.setLayout(new BoxLayout(suffixesPanel, BoxLayout.LINE_AXIS));
+
+        JCheckBox numericSuffixesWidget = new JCheckBox("Append numeric suffixes to IDs");
+        numericSuffixesWidget.setSelected(SettingsManager.isNumericSuffixesForSlotsEnabled());
+        Settings settings = SettingsManager.getSettings();
+        numericSuffixesWidget.addActionListener(
+                e -> settings.setNumericSuffixesForSlots(numericSuffixesWidget.isSelected())
+        );
+        suffixesPanel.add(numericSuffixesWidget);
+        return suffixesPanel;
     }
 
     @Override

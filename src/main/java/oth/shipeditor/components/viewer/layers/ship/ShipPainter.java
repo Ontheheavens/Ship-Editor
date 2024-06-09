@@ -400,7 +400,7 @@ public class ShipPainter extends LayerPainter {
 
         String baseID = id.substring(0, id.lastIndexOf(SPACE) + 1);
 
-        int suffix = 0;
+        int suffix;
         try {
             suffix = Integer.parseInt(id.substring(id.lastIndexOf(SPACE) + 1));
         } catch (NumberFormatException e) {

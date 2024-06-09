@@ -81,22 +81,26 @@ class FileMenu extends JMenu {
             File currentDirectory = fileChooser.getCurrentDirectory();
             FileUtilities.setLastGeneralDirectory(currentDirectory);
             if (returnVal == JFileChooser.APPROVE_OPTION) {
-                File file = fileChooser.getSelectedFile();
-
-                String result = JsonProcessor.straightenMalformed(file);
-
-                String fixedFileName = Utility.getFilenameWithoutExtension(file.getName()) + "_corrected.json";
-
-                String path = currentDirectory.getPath();
-                String targetFilePath = path + "\\" + fixedFileName;
-                try (PrintWriter out = new PrintWriter(targetFilePath, StandardCharsets.UTF_8)) {
-                    out.println(result);
-                } catch (IOException ex) {
-                    throw new RuntimeException(ex);
-                }
+                FileMenu.correctJSON(fileChooser, currentDirectory);
             }
         });
         return jsonCorrector;
+    }
+
+    private static void correctJSON(JFileChooser fileChooser, File currentDirectory) {
+        File file = fileChooser.getSelectedFile();
+
+        String result = JsonProcessor.straightenMalformed(file);
+
+        String fixedFileName = Utility.getFilenameWithoutExtension(file.getName()) + "_corrected.json";
+
+        String path = currentDirectory.getPath();
+        String targetFilePath = path + "\\" + fixedFileName;
+        try (PrintWriter out = new PrintWriter(targetFilePath, StandardCharsets.UTF_8)) {
+            out.println(result);
+        } catch (IOException ex) {
+            throw new RuntimeException(ex);
+        }
     }
 
 }

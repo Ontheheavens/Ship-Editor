@@ -19,6 +19,7 @@ import oth.shipeditor.components.viewer.entities.weapon.WeaponSlotPoint;
 import oth.shipeditor.components.viewer.layers.ship.ShipPainter;
 import oth.shipeditor.components.viewer.layers.ship.data.ShipSkin;
 import oth.shipeditor.components.viewer.painters.points.AngledPointPainter;
+import oth.shipeditor.persistence.SettingsManager;
 import oth.shipeditor.representation.weapon.WeaponMount;
 import oth.shipeditor.representation.weapon.WeaponSize;
 import oth.shipeditor.representation.weapon.WeaponType;
@@ -243,10 +244,37 @@ public class WeaponSlotPainter extends AngledPointPainter {
     }
 
     public void changeSlotsIDWithMirrorCheck(String inputIDText, Iterable<WeaponSlotPoint> slots) {
-        Collection<WeaponSlotPoint> slotsWithCounterparts = this.getSlotsWithCounterparts(slots);
-        for (WeaponSlotPoint slot : slotsWithCounterparts) {
-            String newID = generateUniqueSlotID(inputIDText);
-            EditDispatch.postSlotIDChanged(slot, newID);
+        if (SettingsManager.isNumericSuffixesForSlotsEnabled()) {
+            Collection<WeaponSlotPoint> slotsWithCounterparts = this.getSlotsWithCounterparts(slots);
+            for (WeaponSlotPoint slot : slotsWithCounterparts) {
+                String newID = inputIDText;
+                if (inputIDText.isEmpty()) {
+                    newID = generateUniqueSlotID();
+                } else if (SettingsManager.isNumericSuffixesForSlotsEnabled()) {
+                    newID = generateUniqueSlotID(inputIDText);
+                }
+                EditDispatch.postSlotIDChanged(slot, newID);
+            }
+        } else {
+            for (WeaponSlotPoint slot : slots) {
+                String newID = inputIDText;
+                if (newID.isEmpty()) {
+                    newID = generateUniqueSlotID();
+                }
+                ShipPainter parentLayer = getParentLayer();
+                if (!parentLayer.isGeneratedIDUnassigned(newID)) {
+                    continue;
+                }
+
+                boolean mirrorMode = ControlPredicates.isMirrorModeEnabled();
+                BaseWorldPoint mirroredCounterpart = getMirroredCounterpart(slot);
+                if (mirrorMode && mirroredCounterpart instanceof WeaponSlotPoint checkedSlot) {
+                    String mirroredID = newID + " [Mirrored]";
+                    EditDispatch.postSlotIDChanged(checkedSlot, mirroredID);
+                }
+
+                EditDispatch.postSlotIDChanged(slot, newID);
+            }
         }
     }
 

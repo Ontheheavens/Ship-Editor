@@ -1,12 +1,15 @@
 package oth.shipeditor.menubar;
 
 import org.kordamp.ikonli.fluentui.FluentUiRegularAL;
+import org.kordamp.ikonli.fluentui.FluentUiRegularMZ;
 import org.kordamp.ikonli.swing.FontIcon;
+import oth.shipeditor.parsing.FileUtilities;
 import oth.shipeditor.persistence.Settings;
 import oth.shipeditor.persistence.SettingsManager;
 import oth.shipeditor.utility.themes.Themes;
 
 import javax.swing.*;
+import java.io.File;
 
 /**
  * @author Ontheheavens
@@ -46,6 +49,24 @@ public class SettingsMenu extends JMenu {
                 settings.setLoadSpritesFromAnywhere(toggleLoadSpritesAnywhere.isSelected())
         );
         this.add(toggleLoadSpritesAnywhere);
+
+        this.addSeparator();
+
+        JMenuItem openSettings = new JMenuItem("Open settings file");
+        openSettings.setIcon(FontIcon.of(FluentUiRegularMZ.SETTINGS_20, 16, Themes.getIconColor()));
+        openSettings.addActionListener(e -> {
+            File settingsPath = SettingsManager.getSettingsPath();
+            FileUtilities.openPathInDesktop(settingsPath);
+        });
+        this.add(openSettings);
+
+        JMenuItem openEditorFolder = new JMenuItem("Open editor folder");
+        openEditorFolder.setIcon(FontIcon.of(FluentUiRegularAL.FOLDER_OPEN_20, 16, Themes.getIconColor()));
+        openEditorFolder.addActionListener(e -> {
+            File editorFolder = SettingsManager.getSettingsPath().getParentFile();
+            FileUtilities.openPathInDesktop(editorFolder);
+        });
+        this.add(openEditorFolder);
     }
 
 }

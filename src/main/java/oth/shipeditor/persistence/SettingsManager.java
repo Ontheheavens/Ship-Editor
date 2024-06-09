@@ -92,11 +92,15 @@ public final class SettingsManager {
         return settings.loadSpritesFromAnywhere;
     }
 
+    public static boolean isNumericSuffixesForSlotsEnabled() {
+        return settings.numericSuffixesForSlots;
+    }
+
     public static boolean isDataAutoloadEnabled() {
         return settings.loadDataAtStart;
     }
 
-    static File getSettingsPath() {
+    public static File getSettingsPath() {
         if (settingsFilePath != null) {
             return settingsFilePath.toFile();
         } else {

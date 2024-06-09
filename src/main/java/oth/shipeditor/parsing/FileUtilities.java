@@ -15,6 +15,7 @@ import oth.shipeditor.parsing.loading.FileLoading;
 import oth.shipeditor.persistence.BasicPrettyPrinter;
 import oth.shipeditor.persistence.Settings;
 import oth.shipeditor.persistence.SettingsManager;
+import oth.shipeditor.utility.Errors;
 import oth.shipeditor.utility.graphics.Sprite;
 import oth.shipeditor.utility.overseers.StaticController;
 import oth.shipeditor.utility.text.StringConstants;
@@ -95,17 +96,11 @@ public final class FileUtilities {
         FileUtilities.openPathInDesktop(toOpen.toFile());
     }
 
-    @SuppressWarnings("CallToPrintStackTrace")
-    private static void openPathInDesktop(File toOpen) {
+    public static void openPathInDesktop(File toOpen) {
         try {
             Desktop.getDesktop().open(toOpen);
         } catch (IOException | IllegalArgumentException ex) {
-            log.error("Failed to open {} in Explorer!", toOpen);
-            JOptionPane.showMessageDialog(null,
-                    "Failed to open file in Explorer, exception thrown at: " + toOpen,
-                    "File interaction error!",
-                    JOptionPane.ERROR_MESSAGE);
-            ex.printStackTrace();
+            Errors.showFileOpeningError(toOpen, ex);
         }
     }
 

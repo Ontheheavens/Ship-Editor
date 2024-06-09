@@ -7,6 +7,7 @@ import oth.shipeditor.persistence.SettingsManager;
 import oth.shipeditor.utility.text.StringValues;
 
 import javax.swing.*;
+import java.io.File;
 import java.io.FileNotFoundException;
 
 /**
@@ -49,6 +50,17 @@ public final class Errors {
         if (exception != null) {
             Errors.printToStream(exception);
         }
+    }
+
+    public static void showFileOpeningError(File toOpen, Throwable exception) {
+        String filePath = toOpen.getAbsolutePath();
+
+        log.error("Failed to open {} in Explorer!", filePath);
+        JOptionPane.showMessageDialog(null,
+                "Failed to open file in Explorer, exception thrown at: " + filePath,
+                StringValues.FILE_LOADING_ERROR,
+                JOptionPane.ERROR_MESSAGE);
+        Errors.printToStream(exception);
     }
 
     static void showSpriteNotFound(String filePath) {
