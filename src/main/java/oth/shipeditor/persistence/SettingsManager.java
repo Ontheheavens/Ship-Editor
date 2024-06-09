@@ -88,6 +88,10 @@ public final class SettingsManager {
         return settings.showLoadingErrors;
     }
 
+    public static boolean isLoadingSpritesFromAnywhereEnabled() {
+        return settings.loadSpritesFromAnywhere;
+    }
+
     public static boolean isDataAutoloadEnabled() {
         return settings.loadDataAtStart;
     }

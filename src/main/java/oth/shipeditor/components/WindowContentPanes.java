@@ -13,8 +13,6 @@ import oth.shipeditor.components.logging.LogsPanel;
 import oth.shipeditor.components.viewer.LayerViewer;
 import oth.shipeditor.components.viewer.PrimaryViewer;
 import oth.shipeditor.parsing.loading.FileLoading;
-import oth.shipeditor.persistence.Settings;
-import oth.shipeditor.persistence.SettingsManager;
 import oth.shipeditor.utility.themes.Themes;
 
 import javax.swing.*;
@@ -156,24 +154,6 @@ public final class WindowContentPanes {
                     reloadAllGameData.setEnabled(false);
                 }
                 menu.add(reloadAllGameData);
-
-                Settings settings = SettingsManager.getSettings();
-
-                JMenuItem autoLoadData = new JCheckBoxMenuItem("Auto-load data at start");
-                autoLoadData.setSelected(SettingsManager.isDataAutoloadEnabled());
-                autoLoadData.setIcon(FontIcon.of(FluentUiRegularAL.DOCUMENT_AUTOSAVE_24, 16, Themes.getIconColor()));
-                autoLoadData.addActionListener(event ->
-                        settings.setLoadDataAtStart(autoLoadData.isSelected())
-                );
-                menu.add(autoLoadData);
-
-                JMenuItem toggleFileErrorPopups = new JCheckBoxMenuItem("Enable file error pop-ups");
-                toggleFileErrorPopups.setSelected(SettingsManager.areFileErrorPopupsEnabled());
-                toggleFileErrorPopups.setIcon(FontIcon.of(FluentUiRegularAL.DOCUMENT_ERROR_20, 16, Themes.getIconColor()));
-                toggleFileErrorPopups.addActionListener(event ->
-                        settings.setShowLoadingErrors(toggleFileErrorPopups.isSelected())
-                );
-                menu.add(toggleFileErrorPopups);
 
                 menu.show(westTabsPane, e.getPoint().x, e.getPoint().y);
             }

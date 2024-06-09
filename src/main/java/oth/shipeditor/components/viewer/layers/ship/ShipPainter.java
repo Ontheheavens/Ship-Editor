@@ -399,7 +399,13 @@ public class ShipPainter extends LayerPainter {
         Set<String> existingIDs = this.getAllSlotIDs();
 
         String baseID = id.substring(0, id.lastIndexOf(SPACE) + 1);
-        int suffix = Integer.parseInt(id.substring(id.lastIndexOf(SPACE) + 1));
+
+        int suffix = 0;
+        try {
+            suffix = Integer.parseInt(id.substring(id.lastIndexOf(SPACE) + 1));
+        } catch (NumberFormatException e) {
+            return id + " 001";
+        }
 
         while (true) {
             suffix++;

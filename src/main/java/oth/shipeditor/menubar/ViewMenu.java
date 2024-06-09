@@ -1,5 +1,6 @@
 package oth.shipeditor.menubar;
 
+import org.kordamp.ikonli.Ikon;
 import org.kordamp.ikonli.boxicons.BoxiconsRegular;
 import org.kordamp.ikonli.fluentui.FluentUiRegularAL;
 import org.kordamp.ikonli.fluentui.FluentUiRegularMZ;
@@ -17,6 +18,7 @@ import oth.shipeditor.utility.themes.Themes;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ActionListener;
 
 /**
  * @author Ontheheavens
@@ -36,7 +38,7 @@ class ViewMenu extends JMenu {
     }
 
     void initialize() {
-        JMenuItem changeBackground = PrimaryMenuBar.createMenuOption("Change background color",
+        JMenuItem changeBackground = ViewMenu.createMenuOption("Change background color",
                 FluentUiRegularAL.COLOR_BACKGROUND_20,
                 event -> {
                     Color chosen = ColorUtilities.showColorChooser();
@@ -55,7 +57,7 @@ class ViewMenu extends JMenu {
 
         this.addSeparator();
 
-        JMenuItem resetTransform = PrimaryMenuBar.createMenuOption("Center on selected layer",
+        JMenuItem resetTransform = ViewMenu.createMenuOption("Center on selected layer",
                 FluentUiRegularMZ.PICTURE_IN_PICTURE_20,
                 event ->
                         EventBus.publish(new ViewerTransformsReset())
@@ -113,6 +115,13 @@ class ViewMenu extends JMenu {
         guidesSubmenu.add(toggleAxes);
 
         return guidesSubmenu;
+    }
+
+    static JMenuItem createMenuOption(String text, Ikon icon, ActionListener action) {
+        JMenuItem newOption = new JMenuItem(text);
+        newOption.setIcon(FontIcon.of(icon, 16, Themes.getIconColor()));
+        newOption.addActionListener(action);
+        return newOption;
     }
 
 }

@@ -4,6 +4,7 @@ import lombok.extern.log4j.Log4j2;
 import oth.shipeditor.communication.EventBus;
 import oth.shipeditor.communication.events.files.SpriteOpened;
 import oth.shipeditor.parsing.FileUtilities;
+import oth.shipeditor.persistence.SettingsManager;
 import oth.shipeditor.utility.graphics.Sprite;
 import oth.shipeditor.utility.text.StringValues;
 
@@ -24,22 +25,24 @@ public class OpenSpriteAction extends AbstractAction {
 
         int returnVal = spriteChooser.showOpenDialog(null);
         FileUtilities.setLastSpriteDirectory(spriteChooser.getCurrentDirectory());
-        if (returnVal == JFileChooser.APPROVE_OPTION) {
-            File file = spriteChooser.getSelectedFile();
 
-            if (FileUtilities.isFileWithinGamePackages(file)) {
-                Sprite sprite = FileLoading.loadSprite(file);
-                action.accept(sprite);
-            } else {
-                log.error("Selected file is outside of any game packages. Image loading aborted.");
-                JOptionPane.showMessageDialog(null,
-                        "Selected image is outside of any game packages: " + file,
-                        StringValues.FILE_LOADING_ERROR,
-                        JOptionPane.ERROR_MESSAGE);
-            }
-        }
-        else {
+        if (returnVal != JFileChooser.APPROVE_OPTION) {
             log.info(FileUtilities.OPEN_COMMAND_CANCELLED_BY_USER);
+            return;
+        }
+
+        File file = spriteChooser.getSelectedFile();
+
+        boolean loadingFromAnywhere = SettingsManager.isLoadingSpritesFromAnywhereEnabled();
+        if (FileUtilities.isFileWithinGamePackages(file) || loadingFromAnywhere) {
+            Sprite sprite = FileLoading.loadSprite(file);
+            action.accept(sprite);
+        } else {
+            log.error("Selected file is outside of any game packages. Image loading aborted.");
+            JOptionPane.showMessageDialog(null,
+                    "Selected image is outside of any game packages: " + file,
+                    StringValues.FILE_LOADING_ERROR,
+                    JOptionPane.ERROR_MESSAGE);
         }
     }
 

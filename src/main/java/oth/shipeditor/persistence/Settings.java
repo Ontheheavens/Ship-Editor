@@ -19,6 +19,7 @@ import java.util.List;
  * @author Ontheheavens
  * @since 19.06.2023
  */
+@SuppressWarnings("ClassWithTooManyFields")
 @Getter
 public class Settings {
 
@@ -44,6 +45,9 @@ public class Settings {
 
     @JsonProperty("loadDataAtStart")
     boolean loadDataAtStart = true;
+
+    @JsonProperty("loadSpritesFromAnywhere")
+    boolean loadSpritesFromAnywhere;
 
     @JsonProperty("theme")
     Theme theme = Theme.FLAT_INTELLIJ;
@@ -101,6 +105,11 @@ public class Settings {
 
     public void setLoadDataAtStart(boolean loadData) {
         this.loadDataAtStart = loadData;
+        SettingsManager.updateFileFromRuntime();
+    }
+
+    public void setLoadSpritesFromAnywhere(boolean loadSprites) {
+        this.loadSpritesFromAnywhere = loadSprites;
         SettingsManager.updateFileFromRuntime();
     }
 
