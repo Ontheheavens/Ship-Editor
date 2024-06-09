@@ -83,9 +83,11 @@ public abstract class AbstractSlotValuesPanel extends LayerPropertiesPanel {
     protected void populateContent() {
         this.setLayout(new BorderLayout());
 
-        JPanel suffixesPanel = AbstractSlotValuesPanel.createSuffixesWidgetPanel();
+        if (shouldIncludeTypeSelector()) {
+            JPanel suffixesPanel = AbstractSlotValuesPanel.createSuffixesWidgetPanel();
 
-        this.add(suffixesPanel, BorderLayout.PAGE_START);
+            this.add(suffixesPanel, BorderLayout.PAGE_START);
+        }
 
         Map<JLabel, JComponent> widgets = new LinkedHashMap<>();
 
