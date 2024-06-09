@@ -21,6 +21,7 @@ import oth.shipeditor.components.viewer.layers.ship.ShipPainter;
 import oth.shipeditor.components.viewer.layers.weapon.WeaponLayer;
 import oth.shipeditor.components.viewer.layers.weapon.WeaponPainter;
 import oth.shipeditor.components.viewer.layers.weapon.WeaponSprites;
+import oth.shipeditor.undo.EditDispatch;
 import oth.shipeditor.undo.UndoOverseer;
 import oth.shipeditor.utility.graphics.Sprite;
 import oth.shipeditor.utility.overseers.StaticController;
@@ -151,11 +152,8 @@ public final class PrimaryViewer extends Viewer implements LayerViewer {
             this.loadLayer(layer, sprite);
         } else if (sprite != null) {
             LayerPainter painter = layer.getPainter();
-            painter.reconfigureSpriteCircumstance(sprite);
-            if (painter instanceof ShipPainter shipPainter) {
-                shipPainter.setBaseHullSprite(sprite);
-            }
-            EventBus.publish(new ActiveLayerUpdated(layer));
+            Sprite oldSprite = painter.getSprite();
+            EditDispatch.postLayerSpriteSwapped(painter, oldSprite, sprite);
         }
     }
 

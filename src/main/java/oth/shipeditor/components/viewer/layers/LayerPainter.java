@@ -120,6 +120,10 @@ public abstract class LayerPainter implements Painter {
         this.anchor = inputAnchor;
     }
 
+    /**
+     * Is expected to contain a setSprite() call as well.
+     * @param updated new sprite to be used.
+     */
     public void reconfigureSpriteCircumstance(Sprite updated) {
         BufferedImage previous = this.getSpriteImage();
         var spriteHeight = previous.getHeight();

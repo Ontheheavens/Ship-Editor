@@ -19,6 +19,7 @@ import oth.shipeditor.components.viewer.entities.weapon.SlotData;
 import oth.shipeditor.components.viewer.entities.weapon.WeaponSlotPoint;
 import oth.shipeditor.components.viewer.layers.LayerPainter;
 import oth.shipeditor.components.viewer.layers.ship.ShipLayer;
+import oth.shipeditor.components.viewer.layers.ship.ShipPainter;
 import oth.shipeditor.components.viewer.layers.ship.data.ShipVariant;
 import oth.shipeditor.components.viewer.painters.points.AbstractPointPainter;
 import oth.shipeditor.components.viewer.painters.points.MirrorablePointPainter;
@@ -38,6 +39,7 @@ import oth.shipeditor.undo.edits.points.*;
 import oth.shipeditor.undo.edits.points.engines.*;
 import oth.shipeditor.undo.edits.points.slots.*;
 import oth.shipeditor.utility.Utility;
+import oth.shipeditor.utility.graphics.Sprite;
 import oth.shipeditor.utility.objects.Size2D;
 import oth.shipeditor.utility.overseers.StaticController;
 
@@ -86,12 +88,15 @@ public final class EditDispatch {
         EventBus.publish(new TimedEditConcluded());
     }
 
-    private static void handleContinuousEdit(Edit edit) {
+    private static void postContinuousEdit(Edit edit) {
         BusEventListener finishListener = new DefaultEditFinisher(edit);
-        EditDispatch.handleContinuousEdit(edit, finishListener);
+        EditDispatch.postContinuousEdit(edit, finishListener);
     }
 
-    private static void handleContinuousEdit(Edit edit, BusEventListener finishListener) {
+    /**
+     * Is a special version of {@link oth.shipeditor.undo.UndoOverseer#post(Edit)} that handles continuous edits.
+     */
+    private static void postContinuousEdit(Edit edit, BusEventListener finishListener) {
         Class<? extends Edit> editClass = edit.getClass();
         Edit previousEdit = UndoOverseer.getNextUndoable();
         if (editClass.isInstance(previousEdit) && !previousEdit.isFinished()) {
@@ -159,11 +164,22 @@ public final class EditDispatch {
         Point2D oldOffset = layerPainter.getAnchor();
         Edit offsetChangeEdit = new AnchorOffsetEdit(layerPainter, oldOffset, updated);
 
-        EditDispatch.handleContinuousEdit(offsetChangeEdit);
+        EditDispatch.postContinuousEdit(offsetChangeEdit);
         layerPainter.setAnchor(updated);
         var repainter = StaticController.getScheduler();
         repainter.queueLayerPropertiesRepaint();
         repainter.queueCenterPanelsRepaint();
+    }
+
+    public static void postLayerSpriteSwapped(LayerPainter layerPainter, Sprite old, Sprite updated) {
+        Edit spriteSwapEdit = new SpriteSwapEdit(layerPainter, old, updated);
+        UndoOverseer.post(spriteSwapEdit);
+
+        layerPainter.reconfigureSpriteCircumstance(updated);
+        if (layerPainter instanceof ShipPainter shipPainter) {
+            shipPainter.setBaseHullSprite(updated);
+        }
+        EventBus.publish(new ActiveLayerUpdated(layerPainter.getParentLayer()));
     }
 
     public static void postModuleAnchorChanged(CenterPointPainter centersPainter, Point2D updated) {
@@ -180,7 +196,7 @@ public final class EditDispatch {
             }
         };
 
-        EditDispatch.handleContinuousEdit(offsetChangeEdit, finishListener);
+        EditDispatch.postContinuousEdit(offsetChangeEdit, finishListener);
         centersPainter.setModuleAnchorOffset(updated);
         var repainter = StaticController.getScheduler();
         repainter.queueViewerRepaint();
@@ -190,7 +206,7 @@ public final class EditDispatch {
 
     public static void postSlotAngleSet(SlotData slotPoint, double old, double updated ) {
         Edit angleEdit = new SlotAngleSet(slotPoint, old, updated);
-        EditDispatch.handleContinuousEdit(angleEdit);
+        EditDispatch.postContinuousEdit(angleEdit);
         slotPoint.setAngle(updated);
         var repainter = StaticController.getScheduler();
         repainter.queueViewerRepaint();
@@ -200,7 +216,7 @@ public final class EditDispatch {
 
     public static void postEngineAngleSet(EnginePoint enginePoint, double old, double updated ) {
         Edit angleEdit = new EngineAngleSet(enginePoint, old, updated);
-        EditDispatch.handleContinuousEdit(angleEdit);
+        EditDispatch.postContinuousEdit(angleEdit);
         enginePoint.setAngle(updated);
         var repainter = StaticController.getScheduler();
         repainter.queueViewerRepaint();
@@ -210,7 +226,7 @@ public final class EditDispatch {
     public static void postEngineSizeChanged(EnginePoint enginePoint, Size2D updated) {
         Size2D oldSize = enginePoint.getSize();
         Edit sizeEdit = new EngineSizeSet(enginePoint, oldSize, updated);
-        EditDispatch.handleContinuousEdit(sizeEdit);
+        EditDispatch.postContinuousEdit(sizeEdit);
         enginePoint.setSize(updated);
         var repainter = StaticController.getScheduler();
         repainter.queueViewerRepaint();
@@ -220,7 +236,7 @@ public final class EditDispatch {
     public static void postEngineContrailChanged(EnginePoint enginePoint, int updated) {
         int oldContrail = (int) enginePoint.getContrailSize();
         Edit contrailEdit = new EngineContrailSet(enginePoint, oldContrail, updated);
-        EditDispatch.handleContinuousEdit(contrailEdit);
+        EditDispatch.postContinuousEdit(contrailEdit);
         enginePoint.setContrailSize(updated);
         var repainter = StaticController.getScheduler();
         repainter.queueViewerRepaint();
@@ -239,7 +255,7 @@ public final class EditDispatch {
 
     public static void postSlotArcSet(SlotData slotPoint, double old, double updated ) {
         Edit arcEdit = new SlotArcSet(slotPoint, old, updated);
-        EditDispatch.handleContinuousEdit(arcEdit);
+        EditDispatch.postContinuousEdit(arcEdit);
         slotPoint.setArc(updated);
         var repainter = StaticController.getScheduler();
         repainter.queueViewerRepaint();
@@ -260,7 +276,7 @@ public final class EditDispatch {
             }
         };
 
-        EditDispatch.handleContinuousEdit(renderOrderChangeEdit, finishListener);
+        EditDispatch.postContinuousEdit(renderOrderChangeEdit, finishListener);
         slotPoint.setRenderOrderMod(updated);
         var repainter = StaticController.getScheduler();
         repainter.queueViewerRepaint();
@@ -270,7 +286,7 @@ public final class EditDispatch {
 
     public static void postLayerRotated(LayerPainter painter, double old, double updated) {
         Edit rotationEdit = new LayerRotationEdit(painter, old, updated);
-        EditDispatch.handleContinuousEdit(rotationEdit);
+        EditDispatch.postContinuousEdit(rotationEdit);
         painter.setRotationRadians(updated);
         var repainter = StaticController.getScheduler();
         repainter.queueLayerPropertiesRepaint();
@@ -282,7 +298,7 @@ public final class EditDispatch {
         Point2D wrappedOld = new Point2D.Double(position.getX(), position.getY());
         Point2D wrappedNew = new Point2D.Double(changedPosition.getX(), changedPosition.getY());
         Edit dragEdit = new PointDragEdit(selected, wrappedOld, wrappedNew);
-        EditDispatch.handleContinuousEdit(dragEdit);
+        EditDispatch.postContinuousEdit(dragEdit);
         selected.setPosition(changedPosition);
         PointDragEdit.repaintByPointType(selected);
     }
@@ -290,7 +306,7 @@ public final class EditDispatch {
     public static void postCollisionRadiusChanged(ShipCenterPoint point, float radius) {
         float oldRadius = point.getCollisionRadius();
         Edit radiusEdit = new CollisionRadiusEdit(point, oldRadius, radius);
-        EditDispatch.handleContinuousEdit(radiusEdit);
+        EditDispatch.postContinuousEdit(radiusEdit);
         point.setCollisionRadius(radius);
         var repainter = StaticController.getScheduler();
         repainter.queueViewerRepaint();
@@ -300,7 +316,7 @@ public final class EditDispatch {
     public static void postShieldRadiusChanged(ShieldCenterPoint point, float radius) {
         float oldRadius = point.getShieldRadius();
         Edit radiusEdit = new ShieldRadiusEdit(point, oldRadius, radius);
-        EditDispatch.handleContinuousEdit(radiusEdit);
+        EditDispatch.postContinuousEdit(radiusEdit);
         point.setShieldRadius(radius);
         var repainter = StaticController.getScheduler();
         repainter.queueViewerRepaint();

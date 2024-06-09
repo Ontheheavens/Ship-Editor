@@ -9,16 +9,16 @@ import java.util.*;
  * @author Ontheheavens
  * @since 16.06.2023
  */
+@Getter
 public abstract class AbstractEdit implements Edit {
 
     /**
      * These are meant to be consequential after the parent edit, meaning that first undo() of sub-edits is invoked.
      * Sub-edits are undone from head to tail, after that the parent layer is undone.
      */
-    @Getter
     private final Deque<Edit> subEdits = new ArrayDeque<>();
 
-    @Getter @Setter
+    @Setter
     private boolean finished = true;
 
     @Override
