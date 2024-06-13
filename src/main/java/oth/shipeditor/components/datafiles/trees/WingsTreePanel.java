@@ -116,7 +116,7 @@ public class WingsTreePanel extends CSVDataTreePanel<WingCSVEntry>{
         rightPanel.add(variantWrapper, constraints);
 
         Map<String, String> data = selected.getRowData();
-        createRightPanelDataTable(data);
+        createRightPanelDataTable(selected);
     }
 
     @Override

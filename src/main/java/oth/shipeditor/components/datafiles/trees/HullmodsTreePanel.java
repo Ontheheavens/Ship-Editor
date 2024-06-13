@@ -98,7 +98,7 @@ class HullmodsTreePanel extends CSVDataTreePanel<HullmodCSVEntry>{
             rightPanel.add(hullmodIconPanel, constraints);
         }
         Map<String, String> data = selected.getRowData();
-        createRightPanelDataTable(data);
+        createRightPanelDataTable(selected);
     }
 
     private static JPanel createHullmodIconPanel(OrdnancedCSVEntry selected) {

@@ -130,7 +130,8 @@ class ShipFilesSubpanel extends JPanel {
 
         labelContainer.setLayout(new BoxLayout(labelContainer, BoxLayout.PAGE_AXIS));
         JLabel shipNameLabel = new JLabel("Ship name: " + shipName);
-        shipNameLabel.setBorder(new EmptyBorder(ComponentUtilities.createLabelInsets()));
+        Insets labelInsets = ComponentUtilities.createLabelInsets();
+        shipNameLabel.setBorder(new EmptyBorder(labelInsets));
         labelContainer.add(shipNameLabel);
 
         labelContainer.add(Box.createRigidArea(ShipFilesSubpanel.createPadding()));
@@ -138,14 +139,15 @@ class ShipFilesSubpanel extends JPanel {
         currentShipHullID = shipId;
 
         JLabel shipIDLabel = new JLabel("Ship ID: " + shipId);
-        shipIDLabel.setBorder(new EmptyBorder(ComponentUtilities.createLabelInsets()));
+        shipIDLabel.setBorder(new EmptyBorder(labelInsets));
         labelContainer.add(shipIDLabel);
 
         labelContainer.add(Box.createRigidArea(ShipFilesSubpanel.createPadding()));
 
         JLabel hullFileNameLabel = new JLabel("Hull file : " + hullFileName);
         hullFileNameLabel.setToolTipText(shipFilePathName);
-        hullFileNameLabel.setBorder(ComponentUtilities.createLabelSimpleBorder(ComponentUtilities.createLabelInsets()));
+        Border labelSimpleBorder = ComponentUtilities.createLabelSimpleBorder(labelInsets);
+        hullFileNameLabel.setBorder(labelSimpleBorder);
         JPopupMenu hullContextMenu = ComponentUtilities.createPathContextMenu(shipFilePath);
         hullFileNameLabel.addMouseListener(new MouseoverLabelListener(hullContextMenu, hullFileNameLabel));
         labelContainer.add(hullFileNameLabel);
@@ -160,7 +162,7 @@ class ShipFilesSubpanel extends JPanel {
         } else {
             spriteFileNameLabel = new JLabel("Sprite file: failed to fetch! ");
         }
-        spriteFileNameLabel.setBorder(ComponentUtilities.createLabelSimpleBorder(ComponentUtilities.createLabelInsets()));
+        spriteFileNameLabel.setBorder(labelSimpleBorder);
         JPopupMenu spriteContextMenu;
         if (spriteFile != null) {
             spriteContextMenu = ComponentUtilities.createPathContextMenu(spriteFile.toPath());
@@ -173,7 +175,7 @@ class ShipFilesSubpanel extends JPanel {
             labelContainer.add(Box.createRigidArea(ShipFilesSubpanel.createPadding()));
 
             JLabel skinFileNameLabel = new JLabel("Skin file: " + skinFileName);
-            skinFileNameLabel.setBorder(ComponentUtilities.createLabelSimpleBorder(ComponentUtilities.createLabelInsets()));
+            skinFileNameLabel.setBorder(labelSimpleBorder);
             JPopupMenu skinContextMenu = ComponentUtilities.createPathContextMenu(skinFilePath);
             skinFileNameLabel.addMouseListener(new MouseoverLabelListener(skinContextMenu, skinFileNameLabel));
             skinFileNameLabel.setToolTipText(skinFilePath.toString());

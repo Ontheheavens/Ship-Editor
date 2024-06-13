@@ -326,7 +326,7 @@ public class WeaponsTreePanel extends CSVDataTreePanel<WeaponCSVEntry>{
         rightPanel.add(specFilePanel, constraints);
 
         Map<String, String> data = selected.getRowData();
-        createRightPanelDataTable(data);
+        createRightPanelDataTable(selected);
 
         cachedEntry = selected;
 

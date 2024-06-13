@@ -9,6 +9,7 @@ import oth.shipeditor.components.datafiles.entities.CSVEntry;
 import oth.shipeditor.components.viewer.layers.ship.FeaturesOverseer;
 import oth.shipeditor.components.viewer.layers.ship.ShipLayer;
 import oth.shipeditor.components.viewer.layers.ship.ShipPainter;
+import oth.shipeditor.parsing.FileUtilities;
 import oth.shipeditor.persistence.GameDataPackage;
 import oth.shipeditor.persistence.SettingsManager;
 import oth.shipeditor.representation.ship.VariantFile;
@@ -421,12 +422,13 @@ public abstract class DataTreePanel extends JPanel {
         return null;
     }
 
-    void createRightPanelDataTable(Map<String, String> data) {
+    void createRightPanelDataTable(CSVEntry entry) {
+        Map<String, String> data = entry.getRowData();
         JScrollPane tableContainer = DataTreePanel.createTableFromMap(data);
-        this.addContentToRightPanel(tableContainer);
+        this.addContentToRightPanel(tableContainer, entry);
     }
 
-    private void addContentToRightPanel(JComponent component) {
+    private void addContentToRightPanel(JComponent component, CSVEntry entry) {
         GridBagConstraints otherConstraints = new GridBagConstraints();
         otherConstraints.gridx = 0;
         otherConstraints.gridy = 2;
@@ -434,9 +436,41 @@ public abstract class DataTreePanel extends JPanel {
         otherConstraints.weightx = 1.0;
         otherConstraints.weighty = 1.0;
         otherConstraints.insets = new Insets(0, 0, 0, 0);
-        rightPanel.add(component, otherConstraints);
+
+        JPanel tableContainer = new JPanel();
+        tableContainer.setLayout(new BorderLayout());
+
+        JPanel buttonsContainer = DataTreePanel.createTableButtons(entry);
+
+        ComponentUtilities.outfitPanelWithTitle(buttonsContainer,
+                new Insets(1, 0, 0, 0), "CSV Data");
+
+        tableContainer.add(component, BorderLayout.CENTER);
+        tableContainer.add(buttonsContainer, BorderLayout.PAGE_START);
+
+        rightPanel.add(tableContainer, otherConstraints);
         rightPanel.revalidate();
         rightPanel.repaint();
+    }
+
+    private static JPanel createTableButtons(CSVEntry entry) {
+        JPanel buttonsContainer = new JPanel();
+        buttonsContainer.setLayout(new GridLayout(1, 2));
+
+        JButton openTableButton = new JButton("Open table");
+        openTableButton.addActionListener(e -> {
+            Path toOpen = entry.getTableFilePath();
+            FileUtilities.openPathInDesktop(toOpen);
+        });
+        buttonsContainer.add(openTableButton);
+
+        JButton openFolderButton = new JButton("Open folder");
+        openFolderButton.addActionListener(e -> {
+            Path toOpen = entry.getTableFilePath().getParent();
+            FileUtilities.openPathInDesktop(toOpen);
+        });
+        buttonsContainer.add(openFolderButton);
+        return buttonsContainer;
     }
 
     static void configureCellRendererColors(Object userObject, JLabel stamp) {

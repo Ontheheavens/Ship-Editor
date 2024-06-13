@@ -74,7 +74,7 @@ class ShipSystemsTreePanel extends CSVDataTreePanel<ShipSystemCSVEntry>{
         JPanel rightPanel = getRightPanel();
         rightPanel.removeAll();
         Map<String, String> data = selected.getRowData();
-        createRightPanelDataTable(data);
+        createRightPanelDataTable(selected);
     }
 
     @Override

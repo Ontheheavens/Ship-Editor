@@ -180,7 +180,7 @@ class HullsTreePanel extends DataTreePanel {
 
         rightPanel.add(shipFilesPanel, constraints);
         Map<String, String> data = selected.getRowData();
-        createRightPanelDataTable(data);
+        createRightPanelDataTable(selected);
 
         cachedEntry = selected;
 
