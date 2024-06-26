@@ -9,7 +9,6 @@ import oth.shipeditor.components.viewer.painters.points.ship.WeaponSlotPainter;
 import oth.shipeditor.representation.weapon.WeaponMount;
 import oth.shipeditor.representation.weapon.WeaponSize;
 import oth.shipeditor.representation.weapon.WeaponType;
-import oth.shipeditor.utility.Utility;
 import oth.shipeditor.utility.overseers.StaticController;
 
 import java.util.List;
@@ -24,9 +23,16 @@ public class SlotDataControlPane extends AbstractSlotValuesPanel {
 
     private final WeaponSlotList slotList;
 
+    private WeaponSlotPoint cachedSelected;
+
     SlotDataControlPane(WeaponSlotList weaponSlotList) {
         super(true);
         this.slotList = weaponSlotList;
+    }
+
+    public void refreshWithSelectedPoint(LayerPainter painter, WeaponSlotPoint selected) {
+        this.cachedSelected = selected;
+        this.refresh(painter);
     }
 
     @Override
@@ -36,7 +42,7 @@ public class SlotDataControlPane extends AbstractSlotValuesPanel {
 
     @Override
     protected WeaponSlotPoint getSelectedFromLayer(LayerPainter layerPainter) {
-        return Utility.getSelectedFromLayer(layerPainter);
+        return cachedSelected;
     }
 
     @Override

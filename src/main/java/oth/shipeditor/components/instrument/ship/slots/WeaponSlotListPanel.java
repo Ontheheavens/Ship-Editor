@@ -47,8 +47,10 @@ public class WeaponSlotListPanel extends AbstractShipPropertiesPanel {
         ShipPainter painter = (ShipPainter) getCachedLayerPainter();
         if (slotPoint != null) {
             painter = slotPoint.getParent();
+            this.slotDataPane.refreshWithSelectedPoint(painter, slotPoint);
+        } else {
+            this.slotDataPane.refresh(painter);
         }
-        this.slotDataPane.refresh(painter);
     }
 
     @Override
