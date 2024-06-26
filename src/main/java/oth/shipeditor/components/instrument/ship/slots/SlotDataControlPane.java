@@ -9,6 +9,7 @@ import oth.shipeditor.components.viewer.painters.points.ship.WeaponSlotPainter;
 import oth.shipeditor.representation.weapon.WeaponMount;
 import oth.shipeditor.representation.weapon.WeaponSize;
 import oth.shipeditor.representation.weapon.WeaponType;
+import oth.shipeditor.utility.Utility;
 import oth.shipeditor.utility.overseers.StaticController;
 
 import java.util.List;
@@ -42,7 +43,16 @@ public class SlotDataControlPane extends AbstractSlotValuesPanel {
 
     @Override
     protected WeaponSlotPoint getSelectedFromLayer(LayerPainter layerPainter) {
-        return cachedSelected;
+        // Such a check is probably unnecessary, but we better err on the side of safety...
+        boolean layerContainsPoint = false;
+        if (layerPainter instanceof ShipPainter shipPainter) {
+            WeaponSlotPainter weaponSlotPainter = shipPainter.getWeaponSlotPainter();
+            List<WeaponSlotPoint> pointsIndex = weaponSlotPainter.getPointsIndex();
+            layerContainsPoint = pointsIndex.contains(cachedSelected);
+        }
+        if (cachedSelected != null && layerContainsPoint) {
+            return cachedSelected;
+        } else return Utility.getSelectedFromLayer(layerPainter);
     }
 
     @Override
