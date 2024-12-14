@@ -111,6 +111,9 @@ public class ShieldPointPainter extends SinglePointPainter {
 
     private void initHotkeys() {
         hotkeyDispatcher = ke -> {
+            if (!this.getParentLayer().isLayerActive()) {
+                return false;
+            }
             int keyCode = ke.getKeyCode();
             boolean isShieldHotkey = (keyCode == dragShieldRadiusHotkey);
             switch (ke.getID()) {

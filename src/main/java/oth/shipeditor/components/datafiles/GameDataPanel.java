@@ -54,26 +54,27 @@ public class GameDataPanel extends JPanel {
 
     private void initEventListening() {
         EventBus.subscribe(event -> {
-            switch (event) {
-                case SelectShipDataEntry ignored -> selectShipTab();
-                case SelectWeaponDataEntry ignored -> selectWeaponTab();
-                case InstrumentModeChanged updated -> handleInstrumentModeChange(updated.newMode());
-                case VariantDataTabSelected tabEvent -> {
-                    VariantDataTab variantDataTab = tabEvent.selected();
-                    if (variantDataTab == VariantDataTab.HULLMODS) {
-                        selectHullmodsTab();
-                    } else if (variantDataTab == VariantDataTab.WINGS) {
-                        selectWingsTab();
-                    }
+            // Looks ugly enough, Java 21's pattern matching was here,
+            // but was cut out for Alex's compatibility.
+            if (event instanceof SelectShipDataEntry) {
+                selectShipTab();
+            } else if (event instanceof SelectWeaponDataEntry) {
+                selectWeaponTab();
+            } else if (event instanceof InstrumentModeChanged updated) {
+                handleInstrumentModeChange(updated.newMode());
+            } else if (event instanceof VariantDataTabSelected tabEvent) {
+                VariantDataTab variantDataTab = tabEvent.selected();
+                if (variantDataTab == VariantDataTab.HULLMODS) {
+                    selectHullmodsTab();
+                } else if (variantDataTab == VariantDataTab.WINGS) {
+                    selectWingsTab();
                 }
-                case DataTreesReloadQueued treesReload -> {
-                    hullsTreePanel.reload();
-                    weaponsTreePanel.reload();
-                    hullmodsTreePanel.reload();
-                    systemsTreePanel.reload();
-                    wingsTreePanel.reload();
-                }
-                default -> {}
+            } else if (event instanceof DataTreesReloadQueued treesReload) {
+                hullsTreePanel.reload();
+                weaponsTreePanel.reload();
+                hullmodsTreePanel.reload();
+                systemsTreePanel.reload();
+                wingsTreePanel.reload();
             }
         });
     }

@@ -28,14 +28,10 @@ public class TwinSpinnerPanel extends JPanel {
         secondSpinner.setValue(0.0d);
     }
 
-    public void disable() {
-        firstSpinner.setEnabled(false);
-        secondSpinner.setEnabled(false);
-    }
-
-    public void enable() {
-        firstSpinner.setEnabled(true);
-        secondSpinner.setEnabled(true);
+    @Override
+    public void setEnabled(boolean enabled) {
+        firstSpinner.setEnabled(enabled);
+        secondSpinner.setEnabled(enabled);
     }
 
 }

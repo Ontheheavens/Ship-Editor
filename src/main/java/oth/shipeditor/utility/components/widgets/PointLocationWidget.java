@@ -69,13 +69,13 @@ public abstract class PointLocationWidget extends LayerPropertiesPanel {
 
         registerWidgetListeners(twinSpinnerPanel, layer -> {
             twinSpinnerPanel.clear();
-            twinSpinnerPanel.disable();
+            twinSpinnerPanel.setEnabled(false);
         }, layer -> {
             Supplier<Point2D> getter = retrieveGetter();
             Point2D existing = getter.get();
 
             if (existing != null) {
-                twinSpinnerPanel.enable();
+                twinSpinnerPanel.setEnabled(true);
 
                 JSpinner firstSpinner = twinSpinnerPanel.getFirstSpinner();
                 firstSpinner.setValue(existing.getX());
@@ -84,12 +84,12 @@ public abstract class PointLocationWidget extends LayerPropertiesPanel {
                 secondSpinner.setValue(existing.getY());
             } else {
                 twinSpinnerPanel.clear();
-                twinSpinnerPanel.disable();
+                twinSpinnerPanel.setEnabled(false);
             }
         });
 
         twinSpinnerPanel.clear();
-        twinSpinnerPanel.disable();
+        twinSpinnerPanel.setEnabled(false);
 
         addPanelTitle();
 

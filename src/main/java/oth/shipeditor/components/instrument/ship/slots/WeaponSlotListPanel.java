@@ -117,8 +117,8 @@ public class WeaponSlotListPanel extends AbstractShipPropertiesPanel {
     protected void initLayerListeners() {
         super.initLayerListeners();
         EventBus.subscribe(event -> {
-            if (event instanceof InstrumentRepaintQueued(EditorInstrument editorMode)) {
-                if (editorMode != EditorInstrument.WEAPON_SLOTS) {
+            if (event instanceof InstrumentRepaintQueued checked) {
+                if (checked.editorMode() != EditorInstrument.WEAPON_SLOTS) {
                     return;
                 }
                 WeaponSlotPainter cachedSlotPainter = getCachedSlotPainter();

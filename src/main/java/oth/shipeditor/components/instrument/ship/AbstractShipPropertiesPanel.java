@@ -21,10 +21,11 @@ public abstract class AbstractShipPropertiesPanel extends LayerPropertiesPanel {
     @SuppressWarnings("ChainOfInstanceofChecks")
     protected void initLayerListeners() {
         EventBus.subscribe(event -> {
-            if (event instanceof LayerWasSelected(var old, var selected)) {
+            if (event instanceof LayerWasSelected checked) {
+                var selected = checked.selected();
                 this.handleRefreshFromLayer(selected);
-            } else if (event instanceof ActiveLayerUpdated(var updated)) {
-                this.handleRefreshFromLayer(updated);
+            } else if (event instanceof ActiveLayerUpdated checked) {
+                this.handleRefreshFromLayer(checked.updated());
             }
         });
     }

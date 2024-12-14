@@ -42,6 +42,9 @@ public abstract class AngledPointPainter extends MirrorablePointPainter {
 
     protected void initHotkeys() {
         hotkeyDispatcher = ke -> {
+            if (!this.getParentLayer().isLayerActive()) {
+                return false;
+            }
             int keyCode = ke.getKeyCode();
             boolean isControlHotkey = (keyCode == getControlHotkey());
             boolean isCreationHotkey = (keyCode == getCreationHotkey());

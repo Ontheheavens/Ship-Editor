@@ -105,6 +105,9 @@ public class CenterPointPainter extends SinglePointPainter {
 
     private void initHotkeys() {
         hotkeyDispatcher = ke -> {
+            if (!this.getParentLayer().isLayerActive()) {
+                return false;
+            }
             int keyCode = ke.getKeyCode();
             boolean isCollisionHotkey = (keyCode == dragCollisionRadiusHotkey);
             switch (ke.getID()) {

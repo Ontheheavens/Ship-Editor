@@ -196,8 +196,8 @@ public abstract class AbstractWeaponsPanel extends AbstractShipPropertiesPanel {
     protected void initLayerListeners() {
         super.initLayerListeners();
         EventBus.subscribe(event -> {
-            if (event instanceof InstrumentRepaintQueued(EditorInstrument editorMode)) {
-                if (editorMode != getMode()) {
+            if (event instanceof InstrumentRepaintQueued checked) {
+                if (checked.editorMode() != getMode()) {
                     return;
                 }
                 ViewerLayer activeLayer = StaticController.getActiveLayer();

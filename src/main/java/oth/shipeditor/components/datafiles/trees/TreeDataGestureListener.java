@@ -36,22 +36,21 @@ public class TreeDataGestureListener implements DragGestureListener {
             Object userObject = node.getUserObject();
 
             Transferable transferable;
-            switch (userObject) {
-                case ShipCSVEntry shipEntry -> {
-                    transferable = new TransferableShip(shipEntry, tree);
-                    ViewerDropReceiver.commenceDragToViewer(shipEntry, TransferableEntry.TRANSFERABLE_SHIP);
-                }
-                case WeaponCSVEntry weaponEntry -> {
-                    transferable = new TransferableWeapon(weaponEntry, tree);
-                    ViewerDropReceiver.commenceDragToViewer(weaponEntry, TransferableEntry.TRANSFERABLE_WEAPON);
-                }
-                case HullmodCSVEntry hullmodEntry -> transferable = new TransferableHullmod(hullmodEntry, tree);
-                case WingCSVEntry wingEntry -> transferable = new TransferableWing(wingEntry, tree);
-                default -> {
-                    ViewerDropReceiver.finishDragToViewer();
-                    return;
-                }
+            if (userObject instanceof ShipCSVEntry shipEntry) {
+                transferable = new TransferableShip(shipEntry, tree);
+                ViewerDropReceiver.commenceDragToViewer(shipEntry, TransferableEntry.TRANSFERABLE_SHIP);
+            } else if (userObject instanceof WeaponCSVEntry weaponEntry) {
+                transferable = new TransferableWeapon(weaponEntry, tree);
+                ViewerDropReceiver.commenceDragToViewer(weaponEntry, TransferableEntry.TRANSFERABLE_WEAPON);
+            } else if (userObject instanceof HullmodCSVEntry hullmodEntry) {
+                transferable = new TransferableHullmod(hullmodEntry, tree);
+            } else if (userObject instanceof WingCSVEntry wingEntry) {
+                transferable = new TransferableWing(wingEntry, tree);
+            } else {
+                ViewerDropReceiver.finishDragToViewer();
+                return;
             }
+
             dge.startDrag(DragSource.DefaultMoveDrop, transferable, new ViewerDragListener());
         }
     }

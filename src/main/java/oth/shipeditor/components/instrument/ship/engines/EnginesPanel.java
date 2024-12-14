@@ -124,8 +124,8 @@ public class EnginesPanel extends AbstractShipPropertiesPanel {
     protected void initLayerListeners() {
         super.initLayerListeners();
         EventBus.subscribe(event -> {
-            if (event instanceof InstrumentRepaintQueued(EditorInstrument editorMode)) {
-                if (editorMode != EditorInstrument.ENGINES) {
+            if (event instanceof InstrumentRepaintQueued checked) {
+                if (checked.editorMode() != EditorInstrument.ENGINES) {
                     return;
                 }
                 EngineSlotPainter cachedEnginePainter = getCachedEnginePainter();

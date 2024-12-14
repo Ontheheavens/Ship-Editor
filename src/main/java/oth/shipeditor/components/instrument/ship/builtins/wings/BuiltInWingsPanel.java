@@ -106,8 +106,8 @@ public class BuiltInWingsPanel extends JPanel {
             }
         });
         EventBus.subscribe(event -> {
-            if (event instanceof InstrumentRepaintQueued(EditorInstrument editorMode)) {
-                if (editorMode == EditorInstrument.BUILT_IN_WINGS) {
+            if (event instanceof InstrumentRepaintQueued checked) {
+                if (checked.editorMode() == EditorInstrument.BUILT_IN_WINGS) {
                     this.refreshLayerInfo(StaticController.getActiveLayer());
                 }
             }

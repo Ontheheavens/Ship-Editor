@@ -52,11 +52,12 @@ public final class WindowContentPanes {
     public WindowContentPanes(Container pane) {
         this.primaryContentPane = pane;
         EventBus.subscribe(event -> {
-            switch (event) {
-                case SelectWeaponDataEntry weaponDataEntry -> westTabsPane.setSelectedIndex(0);
-                case SelectShipDataEntry shipDataEntry -> westTabsPane.setSelectedIndex(0);
-                case InstrumentModeChanged modeChanged -> westTabsPane.setSelectedIndex(0);
-                default -> {}
+            if (event instanceof SelectWeaponDataEntry) {
+                westTabsPane.setSelectedIndex(0);
+            } else if (event instanceof SelectShipDataEntry) {
+                westTabsPane.setSelectedIndex(0);
+            } else if (event instanceof InstrumentModeChanged) {
+                westTabsPane.setSelectedIndex(0);
             }
         });
     }

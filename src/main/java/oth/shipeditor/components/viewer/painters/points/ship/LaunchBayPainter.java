@@ -103,6 +103,9 @@ public class LaunchBayPainter extends MirrorablePointPainter {
 
     private void initHotkeys() {
         hotkeyDispatcher = ke -> {
+            if (!this.getParentLayer().isLayerActive()) {
+                return false;
+            }
             int keyCode = ke.getKeyCode();
             boolean isPortHotkey = (keyCode == addPortHotkey);
             boolean isBayHotkey = (keyCode == addBayHotkey);

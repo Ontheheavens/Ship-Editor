@@ -17,8 +17,8 @@ public class ProgressBarPanel extends JPanel {
         progressBar = new JProgressBar(SwingConstants.HORIZONTAL);
         progressBar.setIndeterminate(true);
         EventBus.subscribe(event -> {
-            if (event instanceof LoadingActionFired(boolean started)) {
-                if (started) {
+            if (event instanceof LoadingActionFired checked) {
+                if (checked.started()) {
                     this.add(progressBar);
                 } else {
                     this.remove(progressBar);

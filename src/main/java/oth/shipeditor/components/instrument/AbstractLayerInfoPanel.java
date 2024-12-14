@@ -32,7 +32,8 @@ public abstract class AbstractLayerInfoPanel extends JPanel {
         EventBus.subscribe(event -> {
             if (event instanceof LayerWasSelected checked) {
                 handleLayerSelected(checked.selected());
-            } else if (event instanceof InstrumentRepaintQueued(EditorInstrument editorMode)) {
+            } else if (event instanceof InstrumentRepaintQueued checked) {
+                var editorMode = checked.editorMode();
                 if (editorMode == EditorInstrument.LAYER) {
                     handleLayerSelected(StaticController.getActiveLayer());
                 }

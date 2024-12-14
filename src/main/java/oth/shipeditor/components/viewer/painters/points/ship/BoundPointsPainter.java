@@ -114,6 +114,9 @@ public final class BoundPointsPainter extends MirrorablePointPainter {
 
     private void initHotkeys() {
         hotkeyDispatcher = ke -> {
+            if (!this.getParentLayer().isLayerActive()) {
+                return false;
+            }
             int keyCode = ke.getKeyCode();
             // Remember, single equals is assignments, while double is boolean evaluation.
             // First we evaluate whether the passed keycode is one of our hotkeys, then assign the result to field.

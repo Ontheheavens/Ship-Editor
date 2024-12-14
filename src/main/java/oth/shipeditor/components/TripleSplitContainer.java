@@ -168,16 +168,12 @@ final class TripleSplitContainer extends JSplitPane {
             }
         });
         EventBus.subscribe(event -> {
-            switch (event) {
-                case SelectWeaponDataEntry ignored -> {
-                    this.minimizer.maximize();
-                    minimizer.setMinimized(false);
-                }
-                case SelectShipDataEntry ignored -> {
-                    this.minimizer.maximize();
-                    minimizer.setMinimized(false);
-                }
-                default -> {}
+            if (event instanceof SelectWeaponDataEntry) {
+                this.minimizer.maximize();
+                minimizer.setMinimized(false);
+            } else if (event instanceof SelectShipDataEntry) {
+                this.minimizer.maximize();
+                minimizer.setMinimized(false);
             }
         });
         EventBus.subscribe(event -> {

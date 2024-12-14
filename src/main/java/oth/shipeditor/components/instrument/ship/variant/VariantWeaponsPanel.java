@@ -104,8 +104,8 @@ public class VariantWeaponsPanel extends AbstractVariantPanel {
             }
         });
         EventBus.subscribe(event -> {
-            if (event instanceof InstrumentRepaintQueued(EditorInstrument editorMode)) {
-                if (editorMode == EditorInstrument.VARIANT_WEAPONS) {
+            if (event instanceof InstrumentRepaintQueued checked) {
+                if (checked.editorMode() == EditorInstrument.VARIANT_WEAPONS) {
                     this.refreshPanel(StaticController.getActiveLayer());
                     this.refreshWeaponPicker();
                 }

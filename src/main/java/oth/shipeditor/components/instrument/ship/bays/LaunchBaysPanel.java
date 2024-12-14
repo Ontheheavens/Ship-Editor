@@ -8,7 +8,6 @@ import oth.shipeditor.communication.events.viewer.points.PointAddConfirmed;
 import oth.shipeditor.communication.events.viewer.points.PointRemovedConfirmed;
 import oth.shipeditor.components.instrument.EditorInstrument;
 import oth.shipeditor.components.instrument.ship.AbstractShipPropertiesPanel;
-import oth.shipeditor.components.viewer.entities.bays.LaunchBay;
 import oth.shipeditor.components.viewer.entities.bays.LaunchPortPoint;
 import oth.shipeditor.components.viewer.entities.weapon.SlotPoint;
 import oth.shipeditor.components.viewer.layers.LayerPainter;
@@ -52,15 +51,18 @@ public class LaunchBaysPanel extends AbstractShipPropertiesPanel {
 
     private void initPointListener() {
         EventBus.subscribe(event -> {
-            if (event instanceof InstrumentRepaintQueued(EditorInstrument editorMode)) {
-                if (editorMode == EditorInstrument.LAUNCH_BAYS) {
+            if (event instanceof InstrumentRepaintQueued checked) {
+                if (checked.editorMode() == EditorInstrument.LAUNCH_BAYS) {
                     this.baysTree.reloadModel();
                     this.refreshPointDataPane(null);
                 }
             }
         });
         EventBus.subscribe(event -> {
-            if (event instanceof LaunchBayAddConfirmed(LaunchBay added, int index)) {
+            if (event instanceof LaunchBayAddConfirmed checked) {
+                var added = checked.added();
+                var index = checked.index();
+
                 if (index == -1) {
                     baysTree.addBay(added);
                 } else {

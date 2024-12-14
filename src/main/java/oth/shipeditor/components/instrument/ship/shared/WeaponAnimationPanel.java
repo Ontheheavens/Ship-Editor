@@ -53,7 +53,8 @@ public class WeaponAnimationPanel extends LayerPropertiesPanel {
             if (!isWidgetsReadyForInput()) {
                 return;
             }
-            if (getCachedLayerPainter() instanceof WeaponPainter weaponPainter) {
+            if (getCachedLayerPainter() != null) {
+                WeaponPainter weaponPainter = getCachedLayerPainter();
                 spritePathRefresher.accept(weaponPainter);
                 currentFrameRefresher.accept(weaponPainter);
             }

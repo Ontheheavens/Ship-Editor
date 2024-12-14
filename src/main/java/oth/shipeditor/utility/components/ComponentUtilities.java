@@ -366,8 +366,8 @@ public final class ComponentUtilities {
         topContainer.add(new JLabel(labelText));
         JButton loadButton = new JButton(buttonAction);
         EventBus.subscribe(event -> {
-            if (event instanceof LoadingActionFired(boolean started)) {
-                loadButton.setEnabled(!started);
+            if (event instanceof LoadingActionFired checked) {
+                loadButton.setEnabled(!checked.started());
                 loadButton.repaint();
             }
         });

@@ -22,10 +22,10 @@ public abstract class AbstractVariantPanel extends JPanel {
     @SuppressWarnings("ChainOfInstanceofChecks")
     protected void initLayerListeners() {
         EventBus.subscribe(event -> {
-            if (event instanceof LayerWasSelected(var old, var selected)) {
-                this.refreshPanel(selected);
-            } else if (event instanceof ActiveLayerUpdated(var updated)) {
-                this.refreshPanel(updated);
+            if (event instanceof LayerWasSelected checked) {
+                this.refreshPanel(checked.selected());
+            } else if (event instanceof ActiveLayerUpdated checked) {
+                this.refreshPanel(checked.updated());
             }
         });
     }

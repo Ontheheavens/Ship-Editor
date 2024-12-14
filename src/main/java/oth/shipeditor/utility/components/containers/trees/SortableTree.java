@@ -70,11 +70,15 @@ public abstract class SortableTree extends JTree {
                 return;
             }
             draggedNode = (DefaultMutableTreeNode) path.getLastPathComponent();
-            if (draggedNode instanceof DefaultMutableTreeNode mutableTreeNode && mutableTreeNode.isLeaf()) {
-                Transferable trans = new TreeNodeTransferable(mutableTreeNode);
-                DragSource.getDefaultDragSource().startDrag(dge,
-                        Cursor.getDefaultCursor(), trans, listener);
+            if (draggedNode != null) {
+                DefaultMutableTreeNode mutableTreeNode = draggedNode;
+                if (mutableTreeNode.isLeaf()) {
+                    Transferable trans = new TreeNodeTransferable(mutableTreeNode);
+                    DragSource.getDefaultDragSource().startDrag(dge,
+                            Cursor.getDefaultCursor(), trans, listener);
+                }
             }
+
         }
     }
 
@@ -150,8 +154,8 @@ public abstract class SortableTree extends JTree {
                     .map(TreePath::getLastPathComponent).orElse(null);
             DefaultMutableTreeNode targetNode = (DefaultMutableTreeNode) path.getLastPathComponent();
             DefaultMutableTreeNode parent = (DefaultMutableTreeNode) targetNode.getParent();
-            if (parent instanceof DefaultMutableTreeNode ancestor && draggingNode instanceof TreeNode) {
-                List<TreeNode> treeNodes = Arrays.asList(ancestor.getPath());
+            if (parent != null && draggingNode instanceof TreeNode) {
+                List<TreeNode> treeNodes = Arrays.asList(parent.getPath());
                 if (treeNodes.contains(draggingNode)) {
                     rejectDrag(dtde);
                     return;

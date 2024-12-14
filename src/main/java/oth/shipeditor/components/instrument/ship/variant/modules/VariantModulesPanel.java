@@ -160,8 +160,8 @@ public class VariantModulesPanel extends AbstractShipPropertiesPanel {
             }
         });
         EventBus.subscribe(event -> {
-            if (event instanceof InstrumentRepaintQueued(EditorInstrument editorMode)) {
-                if (editorMode != EditorInstrument.VARIANT_MODULES) {
+            if (event instanceof InstrumentRepaintQueued checked) {
+                if (checked.editorMode() != EditorInstrument.VARIANT_MODULES) {
                     return;
                 }
                 ShipVariant currentVariant = getCurrentVariant();

@@ -105,15 +105,15 @@ public class SkinDataPanel extends JPanel {
     @SuppressWarnings("ChainOfInstanceofChecks")
     private void initLayerListeners() {
         EventBus.subscribe(event -> {
-            if (event instanceof LayerWasSelected(ViewerLayer old, ViewerLayer selected)) {
-                this.refreshPanel(selected);
-            } else if (event instanceof ActiveLayerUpdated(ViewerLayer updated)) {
-                this.refreshPanel(updated);
+            if (event instanceof LayerWasSelected checked) {
+                this.refreshPanel(checked.selected());
+            } else if (event instanceof ActiveLayerUpdated checked) {
+                this.refreshPanel(checked.updated());
             }
         });
         EventBus.subscribe(event -> {
-            if (event instanceof InstrumentRepaintQueued(EditorInstrument editorMode)) {
-                if (editorMode == EditorInstrument.SKIN_DATA) {
+            if (event instanceof InstrumentRepaintQueued checked) {
+                if (checked.editorMode() == EditorInstrument.SKIN_DATA) {
                     this.repaint();
                 }
             }

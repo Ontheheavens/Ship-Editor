@@ -299,52 +299,60 @@ public class VariantWeaponsTree extends DynamicWidthTree {
 
         private JPopupMenu createContextMenu(Object nodeUserObject) {
             JPopupMenu contextMenu = null;
-            switch (nodeUserObject) {
-                case FittedWeaponGroup weaponGroup -> {
-                    contextMenu = new JPopupMenu();
 
-                    JMenu modeSubmenu = getModeSubmenu(weaponGroup);
-                    contextMenu.add(modeSubmenu);
-
-                    JCheckBoxMenuItem autofire = new JCheckBoxMenuItem("Toggle autofire");
-                    autofire.setSelected(weaponGroup.isAutofire());
-                    autofire.addActionListener(e -> {
-                        weaponGroup.setAutofire(autofire.isSelected());
-                        VariantWeaponsTree.this.repaint();
-                    });
-                    contextMenu.add(autofire);
-
-                    contextMenu.addSeparator();
-
-                    JMenuItem removeGroup = new JMenuItem("Remove weapon group");
-                    removeGroup.addActionListener(e -> removeWeaponGroup(weaponGroup));
-                    contextMenu.add(removeGroup);
-                }
-                case InstalledFeature feature -> {
-                    contextMenu = new JPopupMenu();
-
-                    if (!feature.isContainedInBuiltIns()) {
-                        JMenuItem uninstallFeature = new JMenuItem(StringValues.UNINSTALL_FEATURE);
-                        uninstallFeature.addActionListener(e -> {
-                            var group = feature.getParentGroup();
-                            EditDispatch.postFeatureUninstalled(group.getWeapons(), feature.getSlotID(),
-                                    feature, null);
-                        });
-                        contextMenu.add(uninstallFeature);
-                    }
-
-                    JMenuItem selectEntry = new JMenuItem(StringValues.SELECT_WEAPON_ENTRY);
-                    selectEntry.addActionListener(event ->  {
-                        CSVEntry dataEntry = feature.getDataEntry();
-                        if (dataEntry instanceof WeaponCSVEntry weaponEntry) {
-                            EventBus.publish(new SelectWeaponDataEntry(weaponEntry));
-                        }
-                    });
-                    contextMenu.add(selectEntry);
-                }
-                default -> {}
+            if (nodeUserObject instanceof FittedWeaponGroup) {
+                contextMenu = getWeaponGroupContextPopupMenu((FittedWeaponGroup) nodeUserObject);
+            } else if (nodeUserObject instanceof InstalledFeature) {
+                contextMenu = getInstalledFeatureContextMenu((InstalledFeature) nodeUserObject);
             }
 
+            return contextMenu;
+        }
+
+        private static JPopupMenu getInstalledFeatureContextMenu(InstalledFeature feature) {
+            JPopupMenu contextMenu;
+            contextMenu = new JPopupMenu();
+
+            if (!feature.isContainedInBuiltIns()) {
+                JMenuItem uninstallFeature = new JMenuItem(StringValues.UNINSTALL_FEATURE);
+                uninstallFeature.addActionListener(e -> {
+                    var group = feature.getParentGroup();
+                    EditDispatch.postFeatureUninstalled(group.getWeapons(), feature.getSlotID(),
+                            feature, null);
+                });
+                contextMenu.add(uninstallFeature);
+            }
+
+            JMenuItem selectEntry = new JMenuItem(StringValues.SELECT_WEAPON_ENTRY);
+            selectEntry.addActionListener(event ->  {
+                CSVEntry dataEntry = feature.getDataEntry();
+                if (dataEntry instanceof WeaponCSVEntry weaponEntry) {
+                    EventBus.publish(new SelectWeaponDataEntry(weaponEntry));
+                }
+            });
+            contextMenu.add(selectEntry);
+            return contextMenu;
+        }
+
+        private JPopupMenu getWeaponGroupContextPopupMenu(FittedWeaponGroup weaponGroup) {
+            JPopupMenu contextMenu = new JPopupMenu();
+
+            JMenu modeSubmenu = getModeSubmenu(weaponGroup);
+            contextMenu.add(modeSubmenu);
+
+            JCheckBoxMenuItem autofire = new JCheckBoxMenuItem("Toggle autofire");
+            autofire.setSelected(weaponGroup.isAutofire());
+            autofire.addActionListener(e -> {
+                weaponGroup.setAutofire(autofire.isSelected());
+                VariantWeaponsTree.this.repaint();
+            });
+            contextMenu.add(autofire);
+
+            contextMenu.addSeparator();
+
+            JMenuItem removeGroup = new JMenuItem("Remove weapon group");
+            removeGroup.addActionListener(e -> removeWeaponGroup(weaponGroup));
+            contextMenu.add(removeGroup);
             return contextMenu;
         }
 

@@ -254,8 +254,8 @@ public class VariantMainPanel extends AbstractVariantPanel {
     protected void initLayerListeners() {
         super.initLayerListeners();
         EventBus.subscribe(event -> {
-            if (event instanceof InstrumentRepaintQueued(EditorInstrument editorMode)) {
-                if (editorMode == EditorInstrument.VARIANT_DATA) {
+            if (event instanceof InstrumentRepaintQueued checked) {
+                if (checked.editorMode() == EditorInstrument.VARIANT_DATA) {
                     this.refreshOrdnanceInfo(selectedLayer);
                 }
             }

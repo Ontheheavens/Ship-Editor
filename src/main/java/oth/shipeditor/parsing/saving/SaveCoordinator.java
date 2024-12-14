@@ -16,10 +16,10 @@ public final class SaveCoordinator {
     @SuppressWarnings("ChainOfInstanceofChecks")
     public static void init() {
         EventBus.subscribe(event -> {
-            if (event instanceof VariantSaveQueued(var variant)) {
-                SaveVariantAction.saveVariant(variant);
-            } else if (event instanceof HullSaveQueued(var shipLayer)) {
-                SaveHullAction.saveHullFromLayer(shipLayer);
+            if (event instanceof VariantSaveQueued checked) {
+                SaveVariantAction.saveVariant(checked.variant());
+            } else if (event instanceof HullSaveQueued checked) {
+                SaveHullAction.saveHullFromLayer(checked.shipLayer());
             }
         });
     }

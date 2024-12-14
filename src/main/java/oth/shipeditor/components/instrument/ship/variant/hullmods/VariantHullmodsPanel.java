@@ -104,8 +104,8 @@ public class VariantHullmodsPanel extends JPanel {
             }
         });
         EventBus.subscribe(event -> {
-            if (event instanceof InstrumentRepaintQueued(EditorInstrument editorMode)) {
-                if (editorMode == EditorInstrument.VARIANT_DATA) {
+            if (event instanceof InstrumentRepaintQueued checked) {
+                if (checked.editorMode() == EditorInstrument.VARIANT_DATA) {
                     this.refreshLayerInfo(StaticController.getActiveLayer());
                 }
             }

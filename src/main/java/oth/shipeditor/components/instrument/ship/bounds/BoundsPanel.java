@@ -49,8 +49,8 @@ public class BoundsPanel extends AbstractShipPropertiesPanel {
 
     private void initPointListeners() {
         EventBus.subscribe(event -> {
-            if (event instanceof InstrumentRepaintQueued(EditorInstrument editorMode)) {
-                if (editorMode == EditorInstrument.BOUNDS) {
+            if (event instanceof InstrumentRepaintQueued checked) {
+                if (checked.editorMode() == EditorInstrument.BOUNDS) {
                     LayerPainter cachedLayerPainter = getCachedLayerPainter();
                     if (cachedLayerPainter != null) {
                         DefaultListModel<BoundPoint> newModel = new DefaultListModel<>();
